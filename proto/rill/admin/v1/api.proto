@@ -2469,6 +2469,7 @@ message RemoveUsergroupMemberUserResponse {}
 
 message UserPreferences {
   optional string time_zone = 1;
+  optional string language = 2;
 }
 
 message UpdateUserPreferencesRequest {

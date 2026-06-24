@@ -631,6 +631,7 @@ func (s *Server) githubConnectCallback(w http.ResponseWriter, r *http.Request) {
 		QuotaSingleuserOrgs:  user.QuotaSingleuserOrgs,
 		QuotaTrialOrgs:       user.QuotaTrialOrgs,
 		PreferenceTimeZone:   user.PreferenceTimeZone,
+		PreferenceLanguage:   user.PreferenceLanguage,
 	})
 	if err != nil {
 		s.logger.Error("failed to update user's github username")
@@ -840,6 +841,7 @@ func (s *Server) githubAuthCallback(w http.ResponseWriter, r *http.Request) {
 		QuotaSingleuserOrgs:  user.QuotaSingleuserOrgs,
 		QuotaTrialOrgs:       user.QuotaTrialOrgs,
 		PreferenceTimeZone:   user.PreferenceTimeZone,
+		PreferenceLanguage:   user.PreferenceLanguage,
 	})
 	if err != nil {
 		http.Error(w, fmt.Sprintf("failed to save user information %s", err.Error()), http.StatusInternalServerError)
@@ -1065,6 +1067,7 @@ func (s *Server) userAccessToken(ctx context.Context, user *database.User) (stri
 		QuotaSingleuserOrgs:  user.QuotaSingleuserOrgs,
 		QuotaTrialOrgs:       user.QuotaTrialOrgs,
 		PreferenceTimeZone:   user.PreferenceTimeZone,
+		PreferenceLanguage:   user.PreferenceLanguage,
 	})
 	if err != nil {
 		s.logger.Error("failed to update user's github refresh token")

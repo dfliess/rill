@@ -81,6 +81,79 @@ func TestUser(t *testing.T) {
 		require.Equal(t, 3, len(resp.Organizations))
 	})
 
+	t.Run("Preference language valid BCP-47", func(t *testing.T) {
+		_, c1 := fix.NewUser(t)
+
+		// Set a valid BCP-47 language tag
+		resp, err := c1.UpdateUserPreferences(ctx, &adminv1.UpdateUserPreferencesRequest{
+			Preferences: &adminv1.UserPreferences{
+				Language: strPtr("es"),
+			},
+		})
+		require.NoError(t, err)
+		require.Equal(t, "es", *resp.Preferences.Language)
+
+		// Verify it persists via GetCurrentUser
+		cur, err := c1.GetCurrentUser(ctx, &adminv1.GetCurrentUserRequest{})
+		require.NoError(t, err)
+		require.Equal(t, "es", *cur.Preferences.Language)
+
+		// Set a more complex BCP-47 tag
+		resp, err = c1.UpdateUserPreferences(ctx, &adminv1.UpdateUserPreferencesRequest{
+			Preferences: &adminv1.UserPreferences{
+				Language: strPtr("pt-BR"),
+			},
+		})
+		require.NoError(t, err)
+		require.Equal(t, "pt-BR", *resp.Preferences.Language)
+
+		// Set language to empty string (reset)
+		resp, err = c1.UpdateUserPreferences(ctx, &adminv1.UpdateUserPreferencesRequest{
+			Preferences: &adminv1.UserPreferences{
+				Language: strPtr(""),
+			},
+		})
+		require.NoError(t, err)
+		require.Equal(t, "", *resp.Preferences.Language)
+	})
+
+	t.Run("Preference language invalid tag", func(t *testing.T) {
+		_, c1 := fix.NewUser(t)
+
+		// Try a malformed language tag (single char is not valid BCP-47)
+		_, err := c1.UpdateUserPreferences(ctx, &adminv1.UpdateUserPreferencesRequest{
+			Preferences: &adminv1.UserPreferences{
+				Language: strPtr("a"),
+			},
+		})
+		require.Error(t, err)
+		require.Equal(t, codes.InvalidArgument, status.Code(err))
+	})
+
+	t.Run("Preference language returned in GetCurrentUser", func(t *testing.T) {
+		_, c1 := fix.NewUser(t)
+
+		// Initially empty
+		cur, err := c1.GetCurrentUser(ctx, &adminv1.GetCurrentUserRequest{})
+		require.NoError(t, err)
+		require.NotNil(t, cur.Preferences)
+		require.NotNil(t, cur.Preferences.Language)
+		require.Equal(t, "", *cur.Preferences.Language)
+
+		// Set a language
+		_, err = c1.UpdateUserPreferences(ctx, &adminv1.UpdateUserPreferencesRequest{
+			Preferences: &adminv1.UserPreferences{
+				Language: strPtr("en-US"),
+			},
+		})
+		require.NoError(t, err)
+
+		// Read it back
+		cur, err = c1.GetCurrentUser(ctx, &adminv1.GetCurrentUserRequest{})
+		require.NoError(t, err)
+		require.Equal(t, "en-US", *cur.Preferences.Language)
+	})
+
 	t.Run("Token basics", func(t *testing.T) {
 		u1, c1 := fix.NewUser(t)
 
@@ -155,4 +228,57 @@ func TestUser(t *testing.T) {
 		}
 
 	})
+}
+
+func TestCreateOrUpdateUserLocale(t *testing.T) {
+	ctx := context.Background()
+	fix := testadmin.New(t)
+
+	t.Run("Locale seeds preference_language for new user", func(t *testing.T) {
+		email := "locale-new@test.io"
+		u, err := fix.Admin.CreateOrUpdateUser(ctx, email, "Locale Test", "", "es")
+		require.NoError(t, err)
+		require.Equal(t, "es", u.PreferenceLanguage)
+	})
+
+	t.Run("Locale does not overwrite existing preference_language", func(t *testing.T) {
+		email := "locale-nooverwrite@test.io"
+
+		// Create user with locale "fr"
+		u, err := fix.Admin.CreateOrUpdateUser(ctx, email, "Test", "", "fr")
+		require.NoError(t, err)
+		require.Equal(t, "fr", u.PreferenceLanguage)
+
+		// Call again with different locale "de" — should NOT overwrite
+		u, err = fix.Admin.CreateOrUpdateUser(ctx, email, "Test", "", "de")
+		require.NoError(t, err)
+		require.Equal(t, "fr", u.PreferenceLanguage)
+	})
+
+	t.Run("Locale seeds empty preference_language on update", func(t *testing.T) {
+		email := "locale-seedupdate@test.io"
+
+		// Create user with no locale
+		u, err := fix.Admin.CreateOrUpdateUser(ctx, email, "Test", "", "")
+		require.NoError(t, err)
+		require.Equal(t, "", u.PreferenceLanguage)
+
+		// Update with locale — should seed because currently empty
+		u, err = fix.Admin.CreateOrUpdateUser(ctx, email, "Test", "", "ja")
+		require.NoError(t, err)
+		require.Equal(t, "ja", u.PreferenceLanguage)
+	})
+
+	t.Run("Invalid locale is ignored", func(t *testing.T) {
+		email := "locale-invalid@test.io"
+
+		// Create user with malformed locale tag — should be silently ignored
+		u, err := fix.Admin.CreateOrUpdateUser(ctx, email, "Test", "", "123")
+		require.NoError(t, err)
+		require.Equal(t, "", u.PreferenceLanguage)
+	})
+}
+
+func strPtr(s string) *string {
+	return &s
 }

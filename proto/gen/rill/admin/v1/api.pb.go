@@ -11721,6 +11721,7 @@ type UserPreferences struct {
 	unknownFields protoimpl.UnknownFields
 
 	TimeZone *string `protobuf:"bytes,1,opt,name=time_zone,json=timeZone,proto3,oneof" json:"time_zone,omitempty"`
+	Language *string `protobuf:"bytes,2,opt,name=language,proto3,oneof" json:"language,omitempty"`
 }
 
 func (x *UserPreferences) Reset() {
@@ -11758,6 +11759,13 @@ func (*UserPreferences) Descriptor() ([]byte, []int) {
 func (x *UserPreferences) GetTimeZone() string {
 	if x != nil && x.TimeZone != nil {
 		return *x.TimeZone
+	}
+	return ""
+}
+
+func (x *UserPreferences) GetLanguage() string {
+	if x != nil && x.Language != nil {
+		return *x.Language
 	}
 	return ""
 }

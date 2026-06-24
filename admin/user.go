@@ -9,6 +9,7 @@ import (
 
 	"github.com/rilldata/rill/admin/database"
 	"go.uber.org/zap"
+	"golang.org/x/text/language"
 )
 
 // InsertOrganizationMemberUser inserts a user as a member of an organization.
@@ -126,18 +127,31 @@ func (s *Service) UpdateOrganizationMemberUserRole(ctx context.Context, orgID, u
 	return tx.Commit()
 }
 
-// CreateOrUpdateUser creates or updates a user with the given email, name, and photo URL.
+// CreateOrUpdateUser creates or updates a user with the given email, name, photo URL, and OIDC locale.
 // If the user doesn't exist, it creates a new user and simultaneously adds them to any orgs and projects they have been invited to.
-func (s *Service) CreateOrUpdateUser(ctx context.Context, email, name, photoURL string) (*database.User, error) {
+// The locale parameter seeds preference_language for new users and for existing users only if preference_language is empty.
+func (s *Service) CreateOrUpdateUser(ctx context.Context, email, name, photoURL, locale string) (*database.User, error) {
 	// Validate email address
 	_, err := mail.ParseAddress(email)
 	if err != nil {
 		return nil, fmt.Errorf("invalid user email address %q", email)
 	}
 
+	// Validate locale if provided
+	if locale != "" {
+		if _, err := language.Parse(locale); err != nil {
+			locale = "" // ignore invalid locale from OIDC
+		}
+	}
+
 	// Update user if exists
 	user, err := s.DB.FindUserByEmail(ctx, email)
 	if err == nil {
+		// Only seed preference_language from OIDC locale if currently empty (never overwrite)
+		lang := user.PreferenceLanguage
+		if lang == "" && locale != "" {
+			lang = locale
+		}
 		return s.DB.UpdateUser(ctx, user.ID, &database.UpdateUserOptions{
 			DisplayName:          name,
 			PhotoURL:             photoURL,
@@ -148,6 +162,7 @@ func (s *Service) CreateOrUpdateUser(ctx context.Context, email, name, photoURL 
 			QuotaSingleuserOrgs:  user.QuotaSingleuserOrgs,
 			QuotaTrialOrgs:       user.QuotaTrialOrgs,
 			PreferenceTimeZone:   user.PreferenceTimeZone,
+			PreferenceLanguage:   lang,
 		})
 	} else if !errors.Is(err, database.ErrNotFound) {
 		return nil, err
@@ -183,6 +198,7 @@ func (s *Service) CreateOrUpdateUser(ctx context.Context, email, name, photoURL 
 		QuotaSingleuserOrgs: deref(s.Biller.DefaultUserQuotas().SingleuserOrgs, -1),
 		QuotaTrialOrgs:      deref(s.Biller.DefaultUserQuotas().TrialOrgs, -1),
 		Superuser:           isFirstUser,
+		PreferenceLanguage:  locale,
 	}
 
 	// Create user

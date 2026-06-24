@@ -17,6 +17,7 @@ import (
 	adminv1 "github.com/rilldata/rill/proto/gen/rill/admin/v1"
 	"github.com/rilldata/rill/runtime/pkg/observability"
 	"go.opentelemetry.io/otel/attribute"
+	"golang.org/x/text/language"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -124,6 +125,7 @@ func (s *Server) GetCurrentUser(ctx context.Context, req *adminv1.GetCurrentUser
 		User: s.userToPB(u, true),
 		Preferences: &adminv1.UserPreferences{
 			TimeZone: &u.PreferenceTimeZone,
+			Language: &u.PreferenceLanguage,
 		},
 	}, nil
 }
@@ -145,6 +147,15 @@ func (s *Server) UpdateUserPreferences(ctx context.Context, req *adminv1.UpdateU
 		observability.AddRequestAttributes(ctx, attribute.String("preferences_time_zone", *req.Preferences.TimeZone))
 	}
 
+	if req.Preferences.Language != nil && *req.Preferences.Language != "" {
+		_, err := language.Parse(*req.Preferences.Language)
+		if err != nil {
+			return nil, status.Errorf(codes.InvalidArgument, "invalid language tag: %s", *req.Preferences.Language)
+		}
+
+		observability.AddRequestAttributes(ctx, attribute.String("preferences_language", *req.Preferences.Language))
+	}
+
 	// Owner is a user
 	user, err := s.admin.DB.FindUser(ctx, claims.OwnerID())
 	if err != nil {
@@ -162,6 +173,7 @@ func (s *Server) UpdateUserPreferences(ctx context.Context, req *adminv1.UpdateU
 		QuotaSingleuserOrgs:  user.QuotaSingleuserOrgs,
 		QuotaTrialOrgs:       user.QuotaTrialOrgs,
 		PreferenceTimeZone:   valOrDefault(req.Preferences.TimeZone, user.PreferenceTimeZone),
+		PreferenceLanguage:   valOrDefault(req.Preferences.Language, user.PreferenceLanguage),
 	})
 	if err != nil {
 		return nil, err
@@ -170,6 +182,7 @@ func (s *Server) UpdateUserPreferences(ctx context.Context, req *adminv1.UpdateU
 	return &adminv1.UpdateUserPreferencesResponse{
 		Preferences: &adminv1.UserPreferences{
 			TimeZone: &updatedUser.PreferenceTimeZone,
+			Language: &updatedUser.PreferenceLanguage,
 		},
 	}, nil
 }
@@ -575,6 +588,7 @@ func (s *Server) SudoUpdateUserQuotas(ctx context.Context, req *adminv1.SudoUpda
 		QuotaSingleuserOrgs:  int(valOrDefault(req.SingleuserOrgs, int32(user.QuotaSingleuserOrgs))),
 		QuotaTrialOrgs:       int(valOrDefault(req.TrialOrgs, int32(user.QuotaTrialOrgs))),
 		PreferenceTimeZone:   user.PreferenceTimeZone,
+		PreferenceLanguage:   user.PreferenceLanguage,
 	})
 	if err != nil {
 		return nil, err
