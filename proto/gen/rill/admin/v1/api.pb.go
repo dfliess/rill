@@ -24358,6 +24358,7 @@ type GetReportMetaResponse_DeliveryMeta struct {
 	UnsubscribeUrl string           `protobuf:"bytes,4,opt,name=unsubscribe_url,json=unsubscribeUrl,proto3" json:"unsubscribe_url,omitempty"`
 	UserId         string           `protobuf:"bytes,5,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	UserAttrs      *structpb.Struct `protobuf:"bytes,6,opt,name=user_attrs,json=userAttrs,proto3" json:"user_attrs,omitempty"` // user attributes of intended recipient, will be empty for creator mode and for non Rill users
+	Locale         string           `protobuf:"bytes,7,opt,name=locale,proto3" json:"locale,omitempty"`
 }
 
 func (x *GetReportMetaResponse_DeliveryMeta) Reset() {
@@ -24434,6 +24435,13 @@ func (x *GetReportMetaResponse_DeliveryMeta) GetUserAttrs() *structpb.Struct {
 	return nil
 }
 
+func (x *GetReportMetaResponse_DeliveryMeta) GetLocale() string {
+	if x != nil {
+		return x.Locale
+	}
+	return ""
+}
+
 type GetAlertMetaResponse_URLs struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -24442,6 +24450,7 @@ type GetAlertMetaResponse_URLs struct {
 	OpenUrl        string `protobuf:"bytes,1,opt,name=open_url,json=openUrl,proto3" json:"open_url,omitempty"`
 	EditUrl        string `protobuf:"bytes,2,opt,name=edit_url,json=editUrl,proto3" json:"edit_url,omitempty"`
 	UnsubscribeUrl string `protobuf:"bytes,3,opt,name=unsubscribe_url,json=unsubscribeUrl,proto3" json:"unsubscribe_url,omitempty"`
+	Locale         string `protobuf:"bytes,4,opt,name=locale,proto3" json:"locale,omitempty"`
 }
 
 func (x *GetAlertMetaResponse_URLs) Reset() {
@@ -24493,6 +24502,13 @@ func (x *GetAlertMetaResponse_URLs) GetEditUrl() string {
 func (x *GetAlertMetaResponse_URLs) GetUnsubscribeUrl() string {
 	if x != nil {
 		return x.UnsubscribeUrl
+	}
+	return ""
+}
+
+func (x *GetAlertMetaResponse_URLs) GetLocale() string {
+	if x != nil {
+		return x.Locale
 	}
 	return ""
 }

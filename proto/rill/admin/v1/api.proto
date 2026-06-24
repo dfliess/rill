@@ -3007,6 +3007,7 @@ message GetReportMetaResponse {
     string unsubscribe_url = 4;
     string user_id = 5;
     google.protobuf.Struct user_attrs = 6; // user attributes of intended recipient, will be empty for creator mode and for non Rill users
+    string locale = 7; // recipient's preference_language (BCP-47); empty means default
   }
   map<string, DeliveryMeta> delivery_meta = 2;
   reserved 1;
@@ -3031,6 +3032,7 @@ message GetAlertMetaResponse {
     string open_url = 1;
     string edit_url = 2;
     string unsubscribe_url = 3;
+    string locale = 4; // recipient's preference_language (BCP-47); empty means default
   }
   map<string, URLs> recipient_urls = 2;
   google.protobuf.Struct query_for_attributes = 3;

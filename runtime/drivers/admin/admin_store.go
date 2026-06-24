@@ -40,6 +40,7 @@ func (h *Handle) GetReportMetadata(ctx context.Context, reportName, ownerID, web
 			UnsubscribeURL: v.UnsubscribeUrl,
 			UserID:         v.UserId,
 			UserAttrs:      v.UserAttrs.AsMap(),
+			Locale:         v.Locale,
 		}
 	}
 
@@ -75,6 +76,7 @@ func (h *Handle) GetAlertMetadata(ctx context.Context, alertName, ownerID string
 			OpenURL:        urls.OpenUrl,
 			EditURL:        urls.EditUrl,
 			UnsubscribeURL: urls.UnsubscribeUrl,
+			Locale:         urls.Locale,
 		}
 	}
 

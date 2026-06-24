@@ -76,6 +76,16 @@ func (s *Server) GetAlertMeta(ctx context.Context, req *adminv1.GetAlertMetaRequ
 		}
 	}
 
+	// Resolve per-recipient locale from user preferences
+	recipientLocales := make(map[string]string)
+	for _, email := range req.EmailRecipients {
+		u, err := s.admin.DB.FindUserByEmail(ctx, email)
+		if err == nil && u.PreferenceLanguage != "" {
+			recipientLocales[email] = u.PreferenceLanguage
+		}
+		// Non-users or users without a language preference get empty string (default locale)
+	}
+
 	// Handle email recipients - create magic tokens for all recipients
 	recipientURLs := make(map[string]*adminv1.GetAlertMetaResponse_URLs)
 
@@ -108,6 +118,7 @@ func (s *Server) GetAlertMeta(ctx context.Context, req *adminv1.GetAlertMetaRequ
 				recipientURLs[email] = &adminv1.GetAlertMetaResponse_URLs{
 					OpenUrl: s.admin.URLs.WithCustomDomain(org.CustomDomain).AlertOpen(org.Name, proj.Name, req.Alert, token),
 					EditUrl: s.admin.URLs.WithCustomDomain(org.CustomDomain).AlertEdit(org.Name, proj.Name, req.Alert),
+					Locale:  recipientLocales[email],
 				}
 				continue
 			}
@@ -115,6 +126,7 @@ func (s *Server) GetAlertMeta(ctx context.Context, req *adminv1.GetAlertMetaRequ
 			recipientURLs[email] = &adminv1.GetAlertMetaResponse_URLs{
 				OpenUrl:        s.admin.URLs.WithCustomDomain(org.CustomDomain).AlertOpen(org.Name, proj.Name, req.Alert, token),
 				UnsubscribeUrl: s.admin.URLs.WithCustomDomain(org.CustomDomain).AlertUnsubscribe(org.Name, proj.Name, req.Alert, token),
+				Locale:         recipientLocales[email],
 			}
 		}
 	}

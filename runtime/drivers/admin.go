@@ -28,12 +28,14 @@ type ReportDelivery struct {
 	UnsubscribeURL string
 	UserID         string         // user ID of the intended recipient, will be empty for non-Rill users and users not having project access. In creator mode this will be the user ID of the creator.
 	UserAttrs      map[string]any // user attrs of the intended recipient, will be empty for non-Rill users and users not having project access. In creator mode this will be the user attrs of the creator.
+	Locale         string         // recipient's preference_language (BCP-47); empty means default
 }
 
 type AlertURLs struct {
 	OpenURL        string
 	EditURL        string
 	UnsubscribeURL string
+	Locale         string // recipient's preference_language (BCP-47); empty means default
 }
 
 type AlertMetadata struct {

@@ -86,6 +86,16 @@ func (s *Server) GetReportMeta(ctx context.Context, req *adminv1.GetReportMetaRe
 		return nil, fmt.Errorf("failed to issue magic auth tokens: %w", err)
 	}
 
+	// Resolve per-recipient locale from user preferences
+	recipientLocales := make(map[string]string)
+	for _, email := range req.EmailRecipients {
+		u, err := s.admin.DB.FindUserByEmail(ctx, email)
+		if err == nil && u.PreferenceLanguage != "" {
+			recipientLocales[email] = u.PreferenceLanguage
+		}
+		// Non-users or users without a language preference get empty string (default locale)
+	}
+
 	var ownerAttrs *structpb.Struct
 	if req.OwnerId != "" {
 		attr, _, _, err := s.getAttributesForUser(ctx, proj.OrganizationID, proj.ID, req.OwnerId, "")
@@ -113,6 +123,7 @@ func (s *Server) GetReportMeta(ctx context.Context, req *adminv1.GetReportMetaRe
 					EditUrl:   s.admin.URLs.WithCustomDomain(org.CustomDomain).ReportEdit(org.Name, proj.Name, req.Report),
 					UserId:    req.OwnerId,
 					UserAttrs: ownerAttrs,
+					Locale:    recipientLocales[recipient],
 				}
 			} else {
 				delivery[recipient] = &adminv1.GetReportMetaResponse_DeliveryMeta{
@@ -121,6 +132,7 @@ func (s *Server) GetReportMeta(ctx context.Context, req *adminv1.GetReportMetaRe
 					EditUrl:   s.admin.URLs.WithCustomDomain(org.CustomDomain).ReportEdit(org.Name, proj.Name, req.Report),
 					UserId:    req.OwnerId,
 					UserAttrs: ownerAttrs,
+					Locale:    recipientLocales[recipient],
 				}
 			}
 			continue
@@ -132,6 +144,7 @@ func (s *Server) GetReportMeta(ctx context.Context, req *adminv1.GetReportMetaRe
 				UnsubscribeUrl: s.admin.URLs.WithCustomDomain(org.CustomDomain).ReportUnsubscribe(org.Name, proj.Name, req.Report, tokens[recipient], recipient),
 				UserId:         req.OwnerId,
 				UserAttrs:      ownerAttrs,
+				Locale:         recipientLocales[recipient],
 			}
 		} else if webOpenMode == WebOpenModeRecipient {
 			attr, userID, err := s.getAttributesForProjectMember(ctx, recipient, proj.OrganizationID, proj.ID)
@@ -148,6 +161,7 @@ func (s *Server) GetReportMeta(ctx context.Context, req *adminv1.GetReportMetaRe
 				UnsubscribeUrl: s.admin.URLs.WithCustomDomain(org.CustomDomain).ReportUnsubscribe(org.Name, proj.Name, req.Report, tokens[recipient], recipient), // still use token for unsubscribe so that it works seamlessly for non Rill users
 				UserId:         userID,
 				UserAttrs:      pbAttrs,
+				Locale:         recipientLocales[recipient],
 			}
 		} else { // same as recipient but no open url
 			attr, userID, err := s.getAttributesForProjectMember(ctx, recipient, proj.OrganizationID, proj.ID)
@@ -163,6 +177,7 @@ func (s *Server) GetReportMeta(ctx context.Context, req *adminv1.GetReportMetaRe
 				UnsubscribeUrl: s.admin.URLs.WithCustomDomain(org.CustomDomain).ReportUnsubscribe(org.Name, proj.Name, req.Report, tokens[recipient], recipient), // still use token for unsubscribe so that it works seamlessly for non Rill users
 				UserId:         userID,
 				UserAttrs:      pbAttrs,
+				Locale:         recipientLocales[recipient],
 			}
 		}
 	}

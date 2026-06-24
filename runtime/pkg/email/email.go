@@ -246,8 +246,10 @@ func (c *Client) SendScheduledReport(opts *ScheduledReport) error {
 // ---------------------------------------------------------------------------
 
 func (c *Client) SendAlertStatus(opts *drivers.AlertStatus) error {
-	// drivers.AlertStatus has no Locale field; use defaultLocale.
-	locale := c.defaultLocale
+	locale := opts.Locale
+	if locale == "" {
+		locale = c.defaultLocale
+	}
 
 	switch opts.Status {
 	case runtimev1.AssertionStatus_ASSERTION_STATUS_PASS:

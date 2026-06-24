@@ -573,6 +573,7 @@ func (r *ReportReconciler) sendReport(ctx context.Context, self *runtimev1.Resou
 				editLink:        delivery.EditURL,
 				unsubscribeLink: delivery.UnsubscribeURL,
 				summary:         truncateSummary(report.summary, 500),
+				locale:          delivery.Locale,
 			}
 		}
 	default: // add more resolvers here, for default just generate export links
@@ -587,6 +588,7 @@ func (r *ReportReconciler) sendReport(ctx context.Context, self *runtimev1.Resou
 				unsubscribeLink: delivery.UnsubscribeURL,
 				downloadLink:    downloadURL.String(),
 				downloadFormat:  formatExportFormat(rep.Spec.ExportFormat),
+				locale:          delivery.Locale,
 			}
 		}
 	}
@@ -624,6 +626,7 @@ func (r *ReportReconciler) sendEmailNotification(ctx context.Context, self *runt
 		opts := &email.ScheduledReport{
 			ToEmail:         recipient,
 			ToName:          "",
+			Locale:          content.locale,
 			DisplayName:     rep.Spec.DisplayName,
 			ReportTime:      t,
 			Summary:         content.summary,
@@ -697,6 +700,7 @@ type notificationData struct {
 	downloadFormat  string
 	unsubscribeLink string
 	summary         string
+	locale          string
 } // add more fields as needed for new resolver types that reports will support
 
 type aiReport struct {

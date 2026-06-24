@@ -888,7 +888,7 @@ func (r *AlertReconciler) popCurrentExecution(ctx context.Context, self *runtime
 				for _, recipient := range recipients {
 					msg.ToEmail = recipient
 
-					// Set recipient-specific URLs if available from admin metadata
+					// Set recipient-specific URLs and locale if available from admin metadata
 					if adminMeta != nil && adminMeta.RecipientURLs != nil {
 						if recipientURLs, ok := adminMeta.RecipientURLs[recipient]; ok {
 							// Use recipient-specific URLs (with magic token)
@@ -899,11 +899,13 @@ func (r *AlertReconciler) popCurrentExecution(ctx context.Context, self *runtime
 							msg.OpenLink = openLink
 							msg.EditLink = recipientURLs.EditURL
 							msg.UnsubscribeLink = recipientURLs.UnsubscribeURL
+							msg.Locale = recipientURLs.Locale
 						} else {
 							// Note: adminMeta may not always be available (if outside of cloud) or no links sent for this recipient. In those cases, we leave the links blank (no clickthrough available).
 							msg.OpenLink = ""
 							msg.EditLink = ""
 							msg.UnsubscribeLink = ""
+							msg.Locale = ""
 						}
 					}
 

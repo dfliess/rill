@@ -13298,6 +13298,13 @@ export class GetReportMetaResponse_DeliveryMeta extends Message<GetReportMetaRes
    */
   userAttrs?: Struct;
 
+  /**
+   * recipient's preference_language (BCP-47); empty means default
+   *
+   * @generated from field: string locale = 7;
+   */
+  locale = "";
+
   constructor(data?: PartialMessage<GetReportMetaResponse_DeliveryMeta>) {
     super();
     proto3.util.initPartial(data, this);
@@ -13312,6 +13319,7 @@ export class GetReportMetaResponse_DeliveryMeta extends Message<GetReportMetaRes
     { no: 4, name: "unsubscribe_url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 5, name: "user_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 6, name: "user_attrs", kind: "message", T: Struct },
+    { no: 7, name: "locale", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetReportMetaResponse_DeliveryMeta {
@@ -13479,6 +13487,13 @@ export class GetAlertMetaResponse_URLs extends Message<GetAlertMetaResponse_URLs
    */
   unsubscribeUrl = "";
 
+  /**
+   * recipient's preference_language (BCP-47); empty means default
+   *
+   * @generated from field: string locale = 4;
+   */
+  locale = "";
+
   constructor(data?: PartialMessage<GetAlertMetaResponse_URLs>) {
     super();
     proto3.util.initPartial(data, this);
@@ -13490,6 +13505,7 @@ export class GetAlertMetaResponse_URLs extends Message<GetAlertMetaResponse_URLs
     { no: 1, name: "open_url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "edit_url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "unsubscribe_url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "locale", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetAlertMetaResponse_URLs {
