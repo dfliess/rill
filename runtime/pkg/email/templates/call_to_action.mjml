@@ -15,7 +15,7 @@
   <mj-body>
     <mj-section padding-top="24px">
       <mj-column>
-        <mj-image container-background-color="#FFF" width="48px" src="https://cdn.rilldata.com/email-transactional/rill-logo-purple-square.png" />
+        <mj-image container-background-color="#FFF" width="48px" src="{{ (brand).LogoURL }}" />
       </mj-column>
     </mj-section>
     <mj-section>
@@ -24,7 +24,7 @@
           {{ .PreButton }}
         </mj-text>
 
-        <mj-button padding-top="24px" padding-bottom="14px" background-color="#4736F5" color="#fff" font-weight="600" href="{{ .ButtonLink }}">
+        <mj-button padding-top="24px" padding-bottom="14px" background-color="{{ (brand).PrimaryColor }}" color="#fff" font-weight="600" href="{{ .ButtonLink }}">
           {{ .ButtonText }}
         </mj-button>
 
@@ -34,10 +34,10 @@
 
         <mj-text>
           {{ if .ShowFooter }}
-            We are here to help you and your team. If you have any questions, feel free to contact us via <a href="mailto:support@rilldata.com" style="color:#4736F5">email</a>, or via chat on <a href="https://docs.rilldata.com/contact#in-app-chat" style="color:#4736F5">Rill Developer or Rill Cloud.</a>
+            We are here to help you and your team. If you have any questions, feel free to contact us via <a href="mailto:{{ (brand).SupportEmail }}" style="color:{{ (brand).PrimaryColor }}">email</a>, or via chat on <a href="{{ (brand).ChatURL }}" style="color:{{ (brand).PrimaryColor }}">{{ (brand).ProductName }}.</a>
             <br /><br />
           {{ end }}
-          - The Rill Team
+          - {{ (brand).TeamSignature }}
         </mj-text>
       </mj-column>
     </mj-section>
@@ -49,11 +49,11 @@
         <mj-spacer height="20px" />
 
         <mj-text align="center" font-size="12px" line-height="1.5">
-          © {{ now.Year }} Rill Data, Inc.<br />
-          18 Bartol St. • San Francisco • CA<br />
-          <a href="https://www.rilldata.com/contact">Contact us</a> •
-          <a href="https://bit.ly/3unvA05">Community</a> •
-          <a href="https://www.rilldata.com/legal/privacy">Privacy Policy</a>
+          © {{ now.Year }} {{ (brand).CompanyName }}<br />
+          {{ (brand).Address }}<br />
+          <a href="{{ (brand).ContactURL }}">Contact us</a> •
+          <a href="{{ (brand).CommunityURL }}">Community</a> •
+          <a href="{{ (brand).PrivacyURL }}">Privacy Policy</a>
         </mj-text>
       </mj-column>
     </mj-section>

@@ -55,17 +55,24 @@ func htmlToText(s string) string {
 
 type Client struct {
 	Sender    Sender
+	branding  *Branding
 	templates *template.Template
 }
 
-func New(sender Sender) *Client {
+func New(sender Sender, opts ...Option) *Client {
+	c := &Client{
+		Sender:   sender,
+		branding: DefaultBranding(),
+	}
+	for _, opt := range opts {
+		opt(c)
+	}
 	templateFuncs := template.FuncMap{
-		"now": time.Now,
+		"now":   time.Now,
+		"brand": func() *Branding { return c.branding },
 	}
-	return &Client{
-		Sender:    sender,
-		templates: template.Must(template.New("").Funcs(templateFuncs).ParseFS(templatesFS, "templates/gen/*.html")),
-	}
+	c.templates = template.Must(template.New("").Funcs(templateFuncs).ParseFS(templatesFS, "templates/gen/*.html"))
+	return c
 }
 
 type ScheduledReport struct {
@@ -326,14 +333,14 @@ type OrganizationInvite struct {
 
 func (c *Client) SendOrganizationInvite(opts *OrganizationInvite) error {
 	if opts.InvitedByName == "" {
-		opts.InvitedByName = "Rill"
+		opts.InvitedByName = c.branding.ProductName
 	}
 
 	return c.SendCallToAction(&CallToAction{
 		ToEmail:    opts.ToEmail,
 		ToName:     opts.ToName,
-		Subject:    fmt.Sprintf("%s invited you to join Rill", opts.InvitedByName),
-		PreButton:  template.HTML(fmt.Sprintf("%s has invited you to join <b>%s</b> as a %s for their Rill account. Get started interacting with fast, exploratory dashboards by clicking the button below to sign in and accept your invitation.", opts.InvitedByName, opts.OrgName, opts.RoleName)),
+		Subject:    fmt.Sprintf("%s invited you to join %s", opts.InvitedByName, c.branding.ProductName),
+		PreButton:  template.HTML(fmt.Sprintf("%s has invited you to join <b>%s</b> as a %s for their %s account. Get started interacting with fast, exploratory dashboards by clicking the button below to sign in and accept your invitation.", opts.InvitedByName, opts.OrgName, opts.RoleName, c.branding.ProductName)),
 		ButtonText: "Accept invitation",
 		ButtonLink: opts.AcceptURL,
 	})
@@ -350,14 +357,14 @@ type OrganizationAddition struct {
 
 func (c *Client) SendOrganizationAddition(opts *OrganizationAddition) error {
 	if opts.InvitedByName == "" {
-		opts.InvitedByName = "Rill"
+		opts.InvitedByName = c.branding.ProductName
 	}
 
 	return c.SendCallToAction(&CallToAction{
 		ToEmail:    opts.ToEmail,
 		ToName:     opts.ToName,
 		Subject:    fmt.Sprintf("%s has added you to %s", opts.InvitedByName, opts.OrgName),
-		PreButton:  template.HTML(fmt.Sprintf("%s has added you as a %s for <b>%s</b>. Click the button below to view and collaborate on Rill dashboard projects for %s.", opts.InvitedByName, opts.RoleName, opts.OrgName, opts.OrgName)),
+		PreButton:  template.HTML(fmt.Sprintf("%s has added you as a %s for <b>%s</b>. Click the button below to view and collaborate on %s dashboard projects for %s.", opts.InvitedByName, opts.RoleName, opts.OrgName, c.branding.ProductName, opts.OrgName)),
 		ButtonText: "View account",
 		ButtonLink: opts.OpenURL,
 	})
@@ -375,7 +382,7 @@ type ProjectInvite struct {
 
 func (c *Client) SendProjectInvite(opts *ProjectInvite) error {
 	if opts.InvitedByName == "" {
-		opts.InvitedByName = "Rill"
+		opts.InvitedByName = c.branding.ProductName
 	}
 
 	return c.SendCallToAction(&CallToAction{
@@ -400,7 +407,7 @@ type ProjectAddition struct {
 
 func (c *Client) SendProjectAddition(opts *ProjectAddition) error {
 	if opts.InvitedByName == "" {
-		opts.InvitedByName = "Rill"
+		opts.InvitedByName = c.branding.ProductName
 	}
 
 	return c.SendCallToAction(&CallToAction{
@@ -471,7 +478,7 @@ func (c *Client) SendProjectAccessGranted(opts *ProjectAccessGranted) error {
 		ToName:     opts.ToName,
 		Subject:    fmt.Sprintf("Your request to %s/%s has been approved", opts.OrgName, opts.ProjectName),
 		PreButton:  template.HTML(fmt.Sprintf("Your request to <b>%s/%s</b> has been approved", opts.OrgName, opts.ProjectName)),
-		ButtonText: "View project in Rill",
+		ButtonText: fmt.Sprintf("View project in %s", c.branding.ProductName),
 		ButtonLink: opts.OpenURL,
 	})
 }
@@ -533,12 +540,12 @@ func (c *Client) SendInvoicePaymentSuccess(opts *InvoicePaymentSuccess) error {
 		Body: template.HTML(fmt.Sprintf(`
 Thank you for your payment!
 <br /><br />
-Your payment for <b>%s</b> has been successfully processed. 
+Your payment for <b>%s</b> has been successfully processed.
 <br /><br />
-If you believe this charge to be in error or have any questions, please email support@rilldata.com.
+If you believe this charge to be in error or have any questions, please email %s.
 <br /><br />
 You can manage your subscription by visiting the <a href=%q>Billing settings</a>
-`, opts.OrgName, opts.BillingPageURL)),
+`, opts.OrgName, c.branding.SupportEmail, opts.BillingPageURL)),
 		ShowFooter: false,
 	})
 }
@@ -584,13 +591,13 @@ func (c *Client) SendSubscriptionCancelled(opts *SubscriptionCancelled) error {
 		PreButton: template.HTML(fmt.Sprintf(`
 We’re sorry to see you go!
 <br /><br />
-You’ve successfully canceled the %s plan for <b>%s</b>. You’ll still have access to Rill Cloud until <b>%s</b>. After this date, your subscription will expire, and you will no longer have access.
+You’ve successfully canceled the %s plan for <b>%s</b>. You’ll still have access to %s until <b>%s</b>. After this date, your subscription will expire, and you will no longer have access.
 <br /><br />
 If you change your mind, you can always reactivate your subscription!
-`, opts.PlanName, opts.ToName, opts.EndDate.Format(dateFormat))),
+`, opts.PlanName, opts.ToName, c.branding.ProductName+" Cloud", opts.EndDate.Format(dateFormat))),
 		ButtonText: "Billing Settings",
 		ButtonLink: opts.BillingURL,
-		PostButton: `If you found that our service did not meet your needs, please contact us via <a href="mailto:support@rilldata.com" style="color:#4736F5">email</a>, or via chat on <a href="https://docs.rilldata.com/contact#in-app-chat" style="color:#4736F5">Rill Developer or Rill Cloud.</a> and we'll do our best to address your feedback and concerns.`,
+		PostButton: template.HTML(fmt.Sprintf(`If you found that our service did not meet your needs, please contact us via <a href="mailto:%s" style="color:%s">email</a>, or via chat on <a href="%s" style="color:%s">%s.</a> and we’ll do our best to address your feedback and concerns.`, c.branding.SupportEmail, c.branding.PrimaryColor, c.branding.ChatURL, c.branding.PrimaryColor, c.branding.ProductName)),
 		ShowFooter: false,
 	})
 }
@@ -608,17 +615,17 @@ func (c *Client) SendSubscriptionEnded(opts *SubscriptionEnded) error {
 		ToName:  opts.ToName,
 		Subject: fmt.Sprintf("Subscription for %s has now ended. Org is hibernated", opts.OrgName),
 		PreButton: template.HTML(fmt.Sprintf(`
-Your cancelled subscription for <b>%s</b> has ended and its projects are now <a href="https://docs.rilldata.com/developers/other/FAQ#what-is-project-hibernation">hibernating</a>. We hope you enjoyed using Rill Cloud during your time with us.
+Your cancelled subscription for <b>%s</b> has ended and its projects are now <a href="%s/developers/other/FAQ#what-is-project-hibernation">hibernating</a>. We hope you enjoyed using %s during your time with us.
 <br /><br />
 If you’d like to reactivate your subscription and regain access, you can easily do so at any time by renewing your subscription from here:
-`, opts.OrgName)),
+`, opts.OrgName, c.branding.DocsURL, c.branding.ProductName+" Cloud")),
 		ButtonText: "Billing Settings",
 		ButtonLink: opts.BillingURL,
-		PostButton: `
-If you have any feedback about your experience or how we can improve, please feel free to contact us via <a href="mailto:support@rilldata.com" style="color:#4736F5">email</a>, or via chat on <a href="https://docs.rilldata.com/contact#in-app-chat" style="color:#4736F5">Rill Developer or Rill Cloud.</a>
+		PostButton: template.HTML(fmt.Sprintf(`
+If you have any feedback about your experience or how we can improve, please feel free to contact us via <a href="mailto:%s" style="color:%s">email</a>, or via chat on <a href="%s" style="color:%s">%s.</a>
 <br /><br />
-Thank you for trying Rill Cloud. We hope to see you again in the future!
-`,
+Thank you for trying %s. We hope to see you again in the future!
+`, c.branding.SupportEmail, c.branding.PrimaryColor, c.branding.ChatURL, c.branding.PrimaryColor, c.branding.ProductName, c.branding.ProductName+" Cloud")),
 		ShowFooter: false,
 	})
 }
@@ -638,13 +645,13 @@ func (c *Client) SendTrialStarted(opts *TrialStarted) error {
 		Subject:     fmt.Sprintf("A 30-day free trial for %s has started", opts.OrgName),
 		FrontendURL: opts.FrontendURL,
 		WelcomeText: template.HTML(fmt.Sprintf(`
-You now have access to Rill Cloud until <b>%s</b> to explore all features including:
+You now have access to %s until <b>%s</b> to explore all features including:
 <ul>
 <li>User management (RBAC)</li>
 <li>Embedded dashboards</li>
 <li>Alerts and scheduled reports</li>
 </ul>
-`, opts.TrialEndDate.Format(dateFormat))),
+`, c.branding.ProductName+" Cloud", opts.TrialEndDate.Format(dateFormat))),
 	})
 }
 
@@ -662,16 +669,16 @@ func (c *Client) SendTrialEndingSoon(opts *TrialEndingSoon) error {
 	return c.SendCallToAction(&CallToAction{
 		ToEmail: opts.ToEmail,
 		ToName:  opts.ToName,
-		Subject: fmt.Sprintf("Your Rill Cloud trial for %s is expiring in %d days", opts.OrgName, days),
+		Subject: fmt.Sprintf("Your %s trial for %s is expiring in %d days", c.branding.ProductName+" Cloud", opts.OrgName, days),
 		PreButton: template.HTML(fmt.Sprintf(`
 Your trial for <b>%s</b> ends on <b>%s</b>.
 <br /><br />
-How's Rill working out for you? Have you checked out our newest features highlighted in our <a href="https://docs.rilldata.com/notes">Release Notes</a>? 
+How's %s working out for you? Have you checked out our newest features highlighted in our <a href="%s">Release Notes</a>?
 <br /><br />
-Our team is here to help you in any way we can, so don't hesitate to contact us via <a href="mailto:support@rilldata.com" style="color:#4736F5">email</a>, or via chat on <a href="https://docs.rilldata.com/contact#in-app-chat" style="color:#4736F5">Rill Developer or Rill Cloud.</a> if you have a question, encounter an issue, or need guidance.
+Our team is here to help you in any way we can, so don't hesitate to contact us via <a href="mailto:%s" style="color:%s">email</a>, or via chat on <a href="%s" style="color:%s">%s.</a> if you have a question, encounter an issue, or need guidance.
 <br /><br />
 If you're ready to upgrade, simply click the button below.
-`, opts.ToName, opts.TrialEndDate.Format(dateFormat))),
+`, opts.ToName, opts.TrialEndDate.Format(dateFormat), c.branding.ProductName, c.branding.ReleaseNotesURL, c.branding.SupportEmail, c.branding.PrimaryColor, c.branding.ChatURL, c.branding.PrimaryColor, c.branding.ProductName)),
 		ButtonText: "Upgrade Now",
 		ButtonLink: opts.UpgradeURL,
 		ShowFooter: false,
@@ -690,12 +697,12 @@ func (c *Client) SendTrialEnded(opts *TrialEnded) error {
 	return c.SendCallToAction(&CallToAction{
 		ToEmail: opts.ToEmail,
 		ToName:  opts.ToName,
-		Subject: fmt.Sprintf("Your Rill Cloud trial for %s has expired", opts.OrgName),
+		Subject: fmt.Sprintf("Your %s trial for %s has expired", c.branding.ProductName+" Cloud", opts.OrgName),
 		PreButton: template.HTML(fmt.Sprintf(`
-Hi %s, 
+Hi %s,
 <br /><br />
-Your Rill Cloud trial has now expired. <b>%s</b> will be hibernated on <b>%s</b>. We hope you’ve enjoyed using our software. If you’d like to keep using Rill Cloud, upgrade to our Team Plan!
-`, opts.ToName, opts.OrgName, opts.GracePeriodEndDate.Format(dateFormat))),
+Your %s trial has now expired. <b>%s</b> will be hibernated on <b>%s</b>. We hope you’ve enjoyed using our software. If you’d like to keep using %s, upgrade to our Team Plan!
+`, opts.ToName, c.branding.ProductName+" Cloud", opts.OrgName, opts.GracePeriodEndDate.Format(dateFormat), c.branding.ProductName+" Cloud")),
 		ButtonText: "Upgrade to Team Plan",
 		ButtonLink: opts.UpgradeURL,
 		ShowFooter: true,
@@ -715,17 +722,17 @@ func (c *Client) SendTrialGracePeriodEnded(opts *TrialGracePeriodEnded) error {
 		ToName:  opts.ToName,
 		Subject: fmt.Sprintf("Trial plan grace period for %s has ended. Org is now hibernated", opts.OrgName),
 		PreButton: template.HTML(fmt.Sprintf(`
-<b>%s</b> and its projects are now <a href="https://docs.rilldata.com/developers/other/FAQ#what-is-project-hibernation">hibernating</a>.
+<b>%s</b> and its projects are now <a href="%s/developers/other/FAQ#what-is-project-hibernation">hibernating</a>.
 <br /><br />
 Reactivate your org by upgrading to the Team Plan today!
-`, opts.OrgName)),
+`, opts.OrgName, c.branding.DocsURL)),
 		ButtonText: "Upgrade to Team Plan",
 		ButtonLink: opts.UpgradeURL,
-		PostButton: `
-We'd love to hear from you! If you have any feedback about your experience or how we can improve, please feel free to contact us via <a href="mailto:support@rilldata.com" style="color:#4736F5">email</a>, or via chat on <a href="https://docs.rilldata.com/contact#in-app-chat" style="color:#4736F5">Rill Developer or Rill Cloud.</a>
+		PostButton: template.HTML(fmt.Sprintf(`
+We'd love to hear from you! If you have any feedback about your experience or how we can improve, please feel free to contact us via <a href="mailto:%s" style="color:%s">email</a>, or via chat on <a href="%s" style="color:%s">%s.</a>
 <br /><br />
-Thank you for trying Rill Cloud. We hope to see you again in the future!
-`,
+Thank you for trying %s. We hope to see you again in the future!
+`, c.branding.SupportEmail, c.branding.PrimaryColor, c.branding.ChatURL, c.branding.PrimaryColor, c.branding.ProductName, c.branding.ProductName+" Cloud")),
 		ShowFooter: false,
 	})
 }
@@ -742,21 +749,21 @@ func (c *Client) SendCreditTrialStarted(opts *CreditTrialStarted) error {
 	return c.SendCallToAction(&CallToAction{
 		ToEmail: opts.ToEmail,
 		ToName:  opts.ToName,
-		Subject: fmt.Sprintf("Welcome to Rill — start using your $%d credit", opts.CreditAllocation),
+		Subject: fmt.Sprintf("Welcome to %s — start using your $%d credit", c.branding.ProductName, opts.CreditAllocation),
 		PreButton: template.HTML(fmt.Sprintf(`
 Hi there,
 <br /><br />
-Welcome to Rill! Your account is ready and loaded with <b>$%d in free credit</b> to explore the full platform — dashboards, metrics, embedded analytics, AI-powered exploration, and more.
+Welcome to %s! Your account is ready and loaded with <b>$%d in free credit</b> to explore the full platform — dashboards, metrics, embedded analytics, AI-powered exploration, and more.
 <br /><br />
 Your $%d credit covers $0.15/compute unit/hr and $1/GB storage/mo for managed data above 1GB. There's no time limit — your credit is only consumed when your dashboards are running. A typical project with 4 compute units gives you a few weeks to build and share real dashboards with your team. Don't forget to hibernate your project when you're not using it!
-`, opts.CreditAllocation, opts.CreditAllocation)),
-		ButtonText: "Open Rill Cloud",
+`, c.branding.ProductName, opts.CreditAllocation, opts.CreditAllocation)),
+		ButtonText: fmt.Sprintf("Open %s", c.branding.ProductName+" Cloud"),
 		ButtonLink: opts.FrontendURL,
-		PostButton: template.HTML(`
-If you have any questions, feel free to contact us via <a href="mailto:support@rilldata.com" style="color:#4736F5">email</a>, or via chat on <a href="https://docs.rilldata.com/contact#in-app-chat" style="color:#4736F5">Rill Developer or Rill Cloud.</a> You can also check out <a href="https://docs.rilldata.com" style="color:#4736F5">docs.rilldata.com</a> to learn more.
+		PostButton: template.HTML(fmt.Sprintf(`
+If you have any questions, feel free to contact us via <a href="mailto:%s" style="color:%s">email</a>, or via chat on <a href="%s" style="color:%s">%s.</a> You can also check out <a href="%s" style="color:%s">%s</a> to learn more.
 <br /><br />
 Happy exploring,
-`),
+`, c.branding.SupportEmail, c.branding.PrimaryColor, c.branding.ChatURL, c.branding.PrimaryColor, c.branding.ProductName, c.branding.DocsURL, c.branding.PrimaryColor, c.branding.DocsURL)),
 		ShowFooter: false,
 	})
 }
@@ -775,23 +782,23 @@ func (c *Client) SendCreditTrialLow(opts *CreditTrialLow) error {
 	return c.SendCallToAction(&CallToAction{
 		ToEmail: opts.ToEmail,
 		ToName:  opts.ToName,
-		Subject: "Your Rill credit is getting low",
+		Subject: fmt.Sprintf("Your %s credit is getting low", c.branding.ProductName),
 		PreButton: template.HTML(fmt.Sprintf(`
 Hi there,
 <br /><br />
-You have about <b>$%.2f</b> of your original $%d Rill credit remaining. Once it's used up, your dashboards will go into hibernation.
+You have about <b>$%.2f</b> of your original $%d %s credit remaining. Once it's used up, your dashboards will go into hibernation.
 <br /><br />
 Hibernation means your dashboards pause and go offline — but nothing is deleted. Your models, data connections, and configuration all stay intact. Upgrading to Pro reactivates everything.
 <br /><br />
 The Pro plan is simple: $0.15/compute unit/hr, $1/GB storage/mo for managed data above 1GB, no monthly minimums, and any remaining free credit carries over so nothing goes to waste.
-`, opts.RemainingBalance, opts.CreditAllocation)),
+`, opts.RemainingBalance, opts.CreditAllocation, c.branding.ProductName)),
 		ButtonText: "Upgrade to Pro",
 		ButtonLink: opts.UpgradeURL,
-		PostButton: template.HTML(`
-If you have any questions, feel free to contact us via <a href="mailto:support@rilldata.com" style="color:#4736F5">email</a>, or via chat on <a href="https://docs.rilldata.com/contact#in-app-chat" style="color:#4736F5">Rill Developer or Rill Cloud.</a>
+		PostButton: template.HTML(fmt.Sprintf(`
+If you have any questions, feel free to contact us via <a href="mailto:%s" style="color:%s">email</a>, or via chat on <a href="%s" style="color:%s">%s.</a>
 <br /><br />
 Happy building,
-`),
+`, c.branding.SupportEmail, c.branding.PrimaryColor, c.branding.ChatURL, c.branding.PrimaryColor, c.branding.ProductName)),
 		ShowFooter: false,
 	})
 }
@@ -809,25 +816,25 @@ func (c *Client) SendCreditTrialDepleted(opts *CreditTrialDepleted) error {
 	return c.SendCallToAction(&CallToAction{
 		ToEmail: opts.ToEmail,
 		ToName:  opts.ToName,
-		Subject: "Your Rill dashboards are now hibernated",
+		Subject: fmt.Sprintf("Your %s dashboards are now hibernated", c.branding.ProductName),
 		PreButton: template.HTML(fmt.Sprintf(`
 Hi there,
 <br /><br />
-Your $%d Rill credit has been fully used and your dashboards are now <a href="https://docs.rilldata.com/developers/other/FAQ#what-is-project-hibernation" style="color:#4736F5">hibernated</a>. All deployments are paused — your team and any embedded analytics are currently offline.
+Your $%d %s credit has been fully used and your dashboards are now <a href="%s/developers/other/FAQ#what-is-project-hibernation" style="color:%s">hibernated</a>. All deployments are paused — your team and any embedded analytics are currently offline.
 <br /><br />
 <b>Nothing has been deleted.</b> Your entire project — data connections, models, dashboards, and configuration — is preserved exactly as you left it.
 <br /><br />
 To bring everything back online, upgrade to the Pro plan. It takes under a minute: add a payment method, confirm the upgrade, and your dashboards reactivate with your existing configuration.
-`, opts.CreditAllocation)),
+`, opts.CreditAllocation, c.branding.ProductName, c.branding.DocsURL, c.branding.PrimaryColor)),
 		ButtonText: "Upgrade to Pro",
 		ButtonLink: opts.UpgradeURL,
-		PostButton: template.HTML(`
+		PostButton: template.HTML(fmt.Sprintf(`
 Pro pricing is straightforward: $0.15/compute unit/hr, $1/GB storage/mo for managed data above 1GB. No contracts, no seat fees. Scale up or down anytime.
 <br /><br />
-If you'd like to discuss your options or need a custom arrangement, feel free to contact us via <a href="mailto:support@rilldata.com" style="color:#4736F5">email</a>, or via chat on <a href="https://docs.rilldata.com/contact#in-app-chat" style="color:#4736F5">Rill Developer or Rill Cloud.</a>
+If you'd like to discuss your options or need a custom arrangement, feel free to contact us via <a href="mailto:%s" style="color:%s">email</a>, or via chat on <a href="%s" style="color:%s">%s.</a>
 <br /><br />
 Hope to see you back soon,
-`),
+`, c.branding.SupportEmail, c.branding.PrimaryColor, c.branding.ChatURL, c.branding.PrimaryColor, c.branding.ProductName)),
 		ShowFooter: false,
 	})
 }
@@ -885,10 +892,10 @@ func (c *Client) SendPaidPlanStarted(opts *PaidPlan) error {
 		PreButton: template.HTML(fmt.Sprintf(`
 Hi there,
 <br /><br />
-You're all set on the Rill %s plan. Your next billing cycle starts on <b>%s</b>.
+You're all set on the %s %s plan. Your next billing cycle starts on <b>%s</b>.
 <br /><br />
 Billing is usage-based with no contracts — you'll receive a monthly invoice with a full breakdown of compute hours and data storage.
-`, opts.PlanName, opts.BillingStartDate.Format(dateFormat))),
+`, c.branding.ProductName, opts.PlanName, opts.BillingStartDate.Format(dateFormat))),
 		ButtonText: "View Your Billing Dashboard",
 		ButtonLink: opts.BillingURL,
 		PostButton: template.HTML(`

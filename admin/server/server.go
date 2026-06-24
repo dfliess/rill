@@ -20,6 +20,7 @@ import (
 	"github.com/rilldata/rill/admin/server/cookies"
 	adminv1 "github.com/rilldata/rill/proto/gen/rill/admin/v1"
 	"github.com/rilldata/rill/runtime/pkg/activity"
+	"github.com/rilldata/rill/runtime/pkg/email"
 	"github.com/rilldata/rill/runtime/pkg/graceful"
 	"github.com/rilldata/rill/runtime/pkg/httputil"
 	"github.com/rilldata/rill/runtime/pkg/middleware"
@@ -89,6 +90,16 @@ var _ adminv1.AdminServiceServer = (*Server)(nil)
 var _ adminv1.AIServiceServer = (*Server)(nil)
 
 var _ adminv1.TelemetryServiceServer = (*Server)(nil)
+
+// orgEmailClient returns an email client branded with the org's display name
+// and logo. For orgs without custom branding the Rill defaults apply.
+func (s *Server) orgEmailClient(org *database.Organization) *email.Client {
+	var logoURL string
+	if org.LogoAssetID != nil {
+		logoURL = s.admin.URLs.WithCustomDomain(org.CustomDomain).Asset(*org.LogoAssetID)
+	}
+	return s.admin.NewEmailClient(email.WithBranding(email.BrandingFromOrg(org.DisplayName, logoURL)))
+}
 
 func New(logger *zap.Logger, adm *admin.Service, issuer *runtimeauth.Issuer, limiter ratelimit.Limiter, activityClient *activity.Client, opts *Options) (*Server, error) {
 	if len(opts.SessionKeyPairs) == 0 {

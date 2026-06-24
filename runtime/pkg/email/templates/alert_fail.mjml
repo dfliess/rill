@@ -12,10 +12,10 @@
   <mj-body>
     <mj-section>
       <mj-column>
-        <mj-image container-background-color="#FFF" width="100px" src="https://cdn.rilldata.com/email-transactional/rill-logo-purple.png" />
-        
+        <mj-image container-background-color="#FFF" width="100px" src="{{ (brand).LogoURL }}" />
+
         <mj-spacer height="35px" />
-        
+
         <mj-text font-size="20px" font-weight="bold">
           {{ .DisplayName }}
         </mj-text>
@@ -35,23 +35,23 @@
         <mj-button background-color="#ECF0FF" color="#3524C7" font-weight="bold" href="{{ .OpenLink }}">
           Open in browser
         </mj-button>
-        
+
         <mj-spacer height="20px" />
 
         <mj-divider border-color="#AAA" border-width="1px"></mj-divider>
 
         <mj-spacer height="20px" />
-        
+
         <mj-text align="center" font-size="12px">
           {{ if .EditLink }} To edit this alert, <a href="{{ .EditLink }}">click here</a>. {{ end }} {{ if .UnsubscribeLink }} To unsubscribe from this alert, <a href="{{ .UnsubscribeLink }}">click here</a>. {{ end }}
         </mj-text>
-        
+
         <mj-text align="center" font-size="12px" line-height="1.5">
-          © {{ now.Year }} Rill Data, Inc.<br />
-          18 Bartol St. • San Francisco • CA<br />
-          <a href="https://www.rilldata.com/contact">Contact us</a> •
-          <a href="https://bit.ly/3unvA05">Community</a> •
-          <a href="https://www.rilldata.com/legal/privacy">Privacy Policy</a>
+          © {{ now.Year }} {{ (brand).CompanyName }}<br />
+          {{ (brand).Address }}<br />
+          <a href="{{ (brand).ContactURL }}">Contact us</a> •
+          <a href="{{ (brand).CommunityURL }}">Community</a> •
+          <a href="{{ (brand).PrivacyURL }}">Privacy Policy</a>
         </mj-text>
       </mj-column>
     </mj-section>

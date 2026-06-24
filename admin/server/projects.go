@@ -1243,7 +1243,7 @@ func (s *Server) AddProjectMemberUser(ctx context.Context, req *adminv1.AddProje
 		}
 
 		// Send invitation email
-		err = s.admin.Email.SendProjectInvite(&email.ProjectInvite{
+		err = s.orgEmailClient(org).SendProjectInvite(&email.ProjectInvite{
 			ToEmail:       req.Email,
 			ToName:        "",
 			AcceptURL:     s.admin.URLs.WithCustomDomain(org.CustomDomain).ProjectInviteAccept(org.Name, proj.Name),
@@ -1280,7 +1280,7 @@ func (s *Server) AddProjectMemberUser(ctx context.Context, req *adminv1.AddProje
 		}
 	}
 
-	err = s.admin.Email.SendProjectAddition(&email.ProjectAddition{
+	err = s.orgEmailClient(org).SendProjectAddition(&email.ProjectAddition{
 		ToEmail:       req.Email,
 		ToName:        "",
 		OpenURL:       s.admin.URLs.WithCustomDomain(org.CustomDomain).Project(org.Name, proj.Name),
@@ -1588,8 +1588,9 @@ func (s *Server) RequestProjectAccess(ctx context.Context, req *adminv1.RequestP
 		return nil, err
 	}
 
+	orgClient := s.orgEmailClient(org)
 	for _, u := range admins {
-		err = s.admin.Email.SendProjectAccessRequest(&email.ProjectAccessRequest{
+		err = orgClient.SendProjectAccessRequest(&email.ProjectAccessRequest{
 			ToEmail:     u.Email,
 			ToName:      u.DisplayName,
 			Email:       user.Email,
@@ -1704,7 +1705,7 @@ func (s *Server) ApproveProjectAccess(ctx context.Context, req *adminv1.ApproveP
 		return nil, err
 	}
 
-	err = s.admin.Email.SendProjectAccessGranted(&email.ProjectAccessGranted{
+	err = s.orgEmailClient(org).SendProjectAccessGranted(&email.ProjectAccessGranted{
 		ToEmail:     user.Email,
 		ToName:      user.DisplayName,
 		OpenURL:     s.admin.URLs.WithCustomDomain(org.CustomDomain).Project(org.Name, proj.Name),
@@ -1753,7 +1754,7 @@ func (s *Server) DenyProjectAccess(ctx context.Context, req *adminv1.DenyProject
 		return nil, err
 	}
 
-	err = s.admin.Email.SendProjectAccessRejected(&email.ProjectAccessRejected{
+	err = s.orgEmailClient(org).SendProjectAccessRejected(&email.ProjectAccessRejected{
 		ToEmail:     user.Email,
 		ToName:      user.DisplayName,
 		OrgName:     org.Name,

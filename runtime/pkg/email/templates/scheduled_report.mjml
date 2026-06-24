@@ -23,7 +23,7 @@
   <mj-body>
     <mj-section>
       <mj-column>
-        <mj-image container-background-color="#FFF" width="100px" src="https://cdn.rilldata.com/email-transactional/rill-logo-purple.png" />
+        <mj-image container-background-color="#FFF" width="100px" src="{{ (brand).LogoURL }}" />
 
         <mj-spacer height="35px" />
 
@@ -62,11 +62,11 @@
         </mj-text>
 
         <mj-text align="center" font-size="12px" line-height="1.5">
-          © {{ now.Year }} Rill Data, Inc.<br />
-          18 Bartol St. • San Francisco • CA<br />
-          <a href="https://www.rilldata.com/contact">Contact us</a> •
-          <a href="https://bit.ly/3unvA05">Community</a> •
-          <a href="https://www.rilldata.com/legal/privacy">Privacy Policy</a>
+          © {{ now.Year }} {{ (brand).CompanyName }}<br />
+          {{ (brand).Address }}<br />
+          <a href="{{ (brand).ContactURL }}">Contact us</a> •
+          <a href="{{ (brand).CommunityURL }}">Community</a> •
+          <a href="{{ (brand).PrivacyURL }}">Privacy Policy</a>
         </mj-text>
       </mj-column>
     </mj-section>

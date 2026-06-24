@@ -83,8 +83,8 @@ type Config struct {
 	EmailSMTPPassword       string                 `split_words:"true"`
 	EmailSenderEmail        string                 `split_words:"true"`
 	EmailSenderName         string                 `split_words:"true"`
-	EmailBCC                string                 `split_words:"true"`
-	ConnectionCacheSize     int                    `default:"100" split_words:"true"`
+	EmailBCC            string `split_words:"true"`
+	ConnectionCacheSize int    `default:"100" split_words:"true"`
 	QueryCacheSizeBytes     int64                  `default:"104857600" split_words:"true"` // 100MB by default
 	SecurityEngineCacheSize int                    `default:"1000" split_words:"true"`
 	LogBufferCapacity       int                    `default:"10000" split_words:"true"`    // 10k log lines

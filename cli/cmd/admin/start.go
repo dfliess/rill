@@ -93,8 +93,8 @@ type Config struct {
 	EmailSMTPPassword                 string `split_words:"true"`
 	EmailSenderEmail                  string `split_words:"true"`
 	EmailSenderName                   string `split_words:"true"`
-	EmailBCC                          string `split_words:"true"`
-	AIDriver                          string `default:"" split_words:"true"`
+	EmailBCC   string `split_words:"true"`
+	AIDriver   string `default:"" split_words:"true"`
 	OpenAIAPIKey                      string `envconfig:"openai_api_key"`
 	ClaudeAPIKey                      string `envconfig:"claude_api_key"`
 	GeminiAPIKey                      string `envconfig:"gemini_api_key"`

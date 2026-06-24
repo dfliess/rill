@@ -483,7 +483,7 @@ func (s *Server) AddOrganizationMemberUser(ctx context.Context, req *adminv1.Add
 		}
 
 		// Send invitation email
-		err = s.admin.Email.SendOrganizationInvite(&email.OrganizationInvite{
+		err = s.orgEmailClient(org).SendOrganizationInvite(&email.OrganizationInvite{
 			ToEmail:       req.Email,
 			ToName:        "",
 			AcceptURL:     s.admin.URLs.WithCustomDomain(org.CustomDomain).OrganizationInviteAccept(org.Name),
@@ -518,7 +518,7 @@ func (s *Server) AddOrganizationMemberUser(ctx context.Context, req *adminv1.Add
 		return nil, status.Error(codes.AlreadyExists, "user is already a member of the organization")
 	}
 
-	err = s.admin.Email.SendOrganizationAddition(&email.OrganizationAddition{
+	err = s.orgEmailClient(org).SendOrganizationAddition(&email.OrganizationAddition{
 		ToEmail:       req.Email,
 		ToName:        "",
 		OpenURL:       s.admin.URLs.WithCustomDomain(org.CustomDomain).Organization(org.Name),

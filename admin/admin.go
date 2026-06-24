@@ -150,6 +150,13 @@ func New(ctx context.Context, opts *Options, logger *zap.Logger, issuer *auth.Is
 	}, nil
 }
 
+// NewEmailClient creates an email Client sharing this service's Sender,
+// optionally applying per-call options (e.g. org-specific branding).
+// When called with no options it returns a default Rill-branded client.
+func (s *Service) NewEmailClient(opts ...email.Option) *email.Client {
+	return email.New(s.Email.Sender, opts...)
+}
+
 func (s *Service) Close() error {
 	var allErrs error
 	for _, p := range s.ProvisionerSet {
