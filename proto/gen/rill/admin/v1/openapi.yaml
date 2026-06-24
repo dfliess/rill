@@ -4,6 +4,9 @@ components:
             properties:
                 editUrl:
                     type: string
+                locale:
+                    title: recipient's preference_language (BCP-47); empty means default
+                    type: string
                 openUrl:
                     type: string
                 unsubscribeUrl:
@@ -22,6 +25,9 @@ components:
                 editUrl:
                     type: string
                 exportUrl:
+                    type: string
+                locale:
+                    title: recipient's preference_language (BCP-47); empty means default
                     type: string
                 openUrl:
                     type: string
@@ -2389,6 +2395,8 @@ components:
             type: object
         v1UserPreferences:
             properties:
+                preferredLocale:
+                    type: string
                 timeZone:
                     type: string
             type: object

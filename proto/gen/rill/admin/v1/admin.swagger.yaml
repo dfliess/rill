@@ -4619,6 +4619,9 @@ definitions:
         type: string
       unsubscribeUrl:
         type: string
+      locale:
+        type: string
+        title: recipient's preference_language (BCP-47); empty means default
   GetGithubPullRequestResponseState:
     type: string
     enum:
@@ -4643,6 +4646,9 @@ definitions:
       userAttrs:
         type: object
         title: user attributes of intended recipient, will be empty for creator mode and for non Rill users
+      locale:
+        type: string
+        title: recipient's preference_language (BCP-47); empty means default
   ListGithubUserReposResponseRepo:
     type: object
     properties:
@@ -7049,6 +7055,8 @@ definitions:
     type: object
     properties:
       timeZone:
+        type: string
+      preferredLocale:
         type: string
   v1UserQuotas:
     type: object

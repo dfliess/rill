@@ -9,6 +9,7 @@ export interface GetAlertMetaResponseURLs {
   openUrl?: string;
   editUrl?: string;
   unsubscribeUrl?: string;
+  locale?: string;
 }
 
 export type GetGithubPullRequestResponseState =
@@ -33,6 +34,7 @@ export interface GetReportMetaResponseDeliveryMeta {
   unsubscribeUrl?: string;
   userId?: string;
   userAttrs?: GetReportMetaResponseDeliveryMetaUserAttrs;
+  locale?: string;
 }
 
 export interface ListGithubUserReposResponseRepo {
@@ -1711,6 +1713,7 @@ export interface V1UserAuthToken {
 
 export interface V1UserPreferences {
   timeZone?: string;
+  preferredLocale?: string;
 }
 
 export interface V1UserQuotas {

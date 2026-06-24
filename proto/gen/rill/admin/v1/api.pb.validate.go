@@ -25179,6 +25179,10 @@ func (m *UserPreferences) validate(all bool) error {
 		// no validation rules for TimeZone
 	}
 
+	if m.PreferredLocale != nil {
+		// no validation rules for PreferredLocale
+	}
+
 	if len(errors) > 0 {
 		return UserPreferencesMultiError(errors)
 	}
@@ -50449,6 +50453,8 @@ func (m *GetReportMetaResponse_DeliveryMeta) validate(all bool) error {
 		}
 	}
 
+	// no validation rules for Locale
+
 	if len(errors) > 0 {
 		return GetReportMetaResponse_DeliveryMetaMultiError(errors)
 	}
@@ -50558,6 +50564,8 @@ func (m *GetAlertMetaResponse_URLs) validate(all bool) error {
 	// no validation rules for EditUrl
 
 	// no validation rules for UnsubscribeUrl
+
+	// no validation rules for Locale
 
 	if len(errors) > 0 {
 		return GetAlertMetaResponse_URLsMultiError(errors)
