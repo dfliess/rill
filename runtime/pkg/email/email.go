@@ -60,6 +60,22 @@ func htmlToText(s string) string {
 	return strings.TrimSpace(s)
 }
 
+// escapeData returns a copy of data with all string values HTML-escaped.
+func escapeData(data map[string]any) map[string]any {
+	if data == nil {
+		return nil
+	}
+	escaped := make(map[string]any, len(data))
+	for k, v := range data {
+		if s, ok := v.(string); ok {
+			escaped[k] = html.EscapeString(s)
+		} else {
+			escaped[k] = v
+		}
+	}
+	return escaped
+}
+
 // Client sends transactional emails with i18n support.
 type Client struct {
 	Sender        Sender
@@ -83,11 +99,18 @@ func New(sender Sender, opts ...Option) *Client {
 	// Init i18n bundle
 	c.bundle = i18n.NewBundle(language.English)
 	c.bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
-	// Load all catalog files; ignore errors for missing locales.
-	entries, _ := fs.ReadDir(catalogFS, "catalog")
+	// Load all embedded catalog files. These are compile-time assets —
+	// if they're broken, it's a build/packaging bug, so we panic (like
+	// template.Must).
+	entries, err := fs.ReadDir(catalogFS, "catalog")
+	if err != nil {
+		panic(fmt.Sprintf("email: reading catalog directory: %v", err))
+	}
 	for _, e := range entries {
 		if !e.IsDir() && strings.HasSuffix(e.Name(), ".toml") {
-			_, _ = c.bundle.LoadMessageFileFS(catalogFS, "catalog/"+e.Name())
+			if _, err := c.bundle.LoadMessageFileFS(catalogFS, "catalog/"+e.Name()); err != nil {
+				panic(fmt.Sprintf("email: loading catalog %s: %v", e.Name(), err))
+			}
 		}
 	}
 
@@ -122,11 +145,25 @@ func (c *Client) T(locale, messageID string, data map[string]any) string {
 	return s
 }
 
-// THtml returns a localized string as template.HTML. The caller must audit
-// catalog entries used with THtml for XSS safety — only use for messages that
-// contain trusted HTML markup.
+// THtml returns a localized string as template.HTML. String values in data are
+// HTML-escaped before interpolation to prevent XSS.
 func (c *Client) THtml(locale, messageID string, data map[string]any) template.HTML {
-	return template.HTML(c.T(locale, messageID, data))
+	return template.HTML(c.T(locale, messageID, escapeData(data)))
+}
+
+// TPlural returns a localized string with plural-form selection based on count.
+// If the message ID is not found, the messageID itself is returned as a fallback.
+func (c *Client) TPlural(locale, messageID string, data map[string]any, count int) string {
+	loc := c.localizer(locale)
+	s, err := loc.Localize(&i18n.LocalizeConfig{
+		MessageID:    messageID,
+		TemplateData: data,
+		PluralCount:  count,
+	})
+	if err != nil {
+		return messageID
+	}
+	return s
 }
 
 // ---------------------------------------------------------------------------
@@ -1018,7 +1055,7 @@ func (c *Client) SendTrialEndingSoon(opts *TrialEndingSoon) error {
 		ToEmail:    opts.ToEmail,
 		ToName:     opts.ToName,
 		Locale:     locale,
-		Subject:    c.T(locale, "email.subject.trial_ending_soon", d),
+		Subject:    c.TPlural(locale, "email.subject.trial_ending_soon", d, days),
 		PreButton:  c.THtml(locale, "email.body.trial_ending_soon", d),
 		ButtonText: c.T(locale, "email.button.upgrade_now", nil),
 		ButtonLink: opts.UpgradeURL,

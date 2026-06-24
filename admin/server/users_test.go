@@ -87,34 +87,34 @@ func TestUser(t *testing.T) {
 		// Set a valid BCP-47 language tag
 		resp, err := c1.UpdateUserPreferences(ctx, &adminv1.UpdateUserPreferencesRequest{
 			Preferences: &adminv1.UserPreferences{
-				Language: strPtr("es"),
+				PreferredLocale: strPtr("es"),
 			},
 		})
 		require.NoError(t, err)
-		require.Equal(t, "es", *resp.Preferences.Language)
+		require.Equal(t, "es", *resp.Preferences.PreferredLocale)
 
 		// Verify it persists via GetCurrentUser
 		cur, err := c1.GetCurrentUser(ctx, &adminv1.GetCurrentUserRequest{})
 		require.NoError(t, err)
-		require.Equal(t, "es", *cur.Preferences.Language)
+		require.Equal(t, "es", *cur.Preferences.PreferredLocale)
 
 		// Set a more complex BCP-47 tag
 		resp, err = c1.UpdateUserPreferences(ctx, &adminv1.UpdateUserPreferencesRequest{
 			Preferences: &adminv1.UserPreferences{
-				Language: strPtr("pt-BR"),
+				PreferredLocale: strPtr("pt-BR"),
 			},
 		})
 		require.NoError(t, err)
-		require.Equal(t, "pt-BR", *resp.Preferences.Language)
+		require.Equal(t, "pt-BR", *resp.Preferences.PreferredLocale)
 
 		// Set language to empty string (reset)
 		resp, err = c1.UpdateUserPreferences(ctx, &adminv1.UpdateUserPreferencesRequest{
 			Preferences: &adminv1.UserPreferences{
-				Language: strPtr(""),
+				PreferredLocale: strPtr(""),
 			},
 		})
 		require.NoError(t, err)
-		require.Equal(t, "", *resp.Preferences.Language)
+		require.Equal(t, "", *resp.Preferences.PreferredLocale)
 	})
 
 	t.Run("Preference language invalid tag", func(t *testing.T) {
@@ -123,7 +123,7 @@ func TestUser(t *testing.T) {
 		// Try a malformed language tag (single char is not valid BCP-47)
 		_, err := c1.UpdateUserPreferences(ctx, &adminv1.UpdateUserPreferencesRequest{
 			Preferences: &adminv1.UserPreferences{
-				Language: strPtr("a"),
+				PreferredLocale: strPtr("a"),
 			},
 		})
 		require.Error(t, err)
@@ -137,13 +137,13 @@ func TestUser(t *testing.T) {
 		cur, err := c1.GetCurrentUser(ctx, &adminv1.GetCurrentUserRequest{})
 		require.NoError(t, err)
 		require.NotNil(t, cur.Preferences)
-		require.NotNil(t, cur.Preferences.Language)
-		require.Equal(t, "", *cur.Preferences.Language)
+		require.NotNil(t, cur.Preferences.PreferredLocale)
+		require.Equal(t, "", *cur.Preferences.PreferredLocale)
 
 		// Set a language
 		_, err = c1.UpdateUserPreferences(ctx, &adminv1.UpdateUserPreferencesRequest{
 			Preferences: &adminv1.UserPreferences{
-				Language: strPtr("en-US"),
+				PreferredLocale: strPtr("en-US"),
 			},
 		})
 		require.NoError(t, err)
@@ -151,7 +151,7 @@ func TestUser(t *testing.T) {
 		// Read it back
 		cur, err = c1.GetCurrentUser(ctx, &adminv1.GetCurrentUserRequest{})
 		require.NoError(t, err)
-		require.Equal(t, "en-US", *cur.Preferences.Language)
+		require.Equal(t, "en-US", *cur.Preferences.PreferredLocale)
 	})
 
 	t.Run("Token basics", func(t *testing.T) {

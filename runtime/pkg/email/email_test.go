@@ -582,6 +582,25 @@ func TestTHtmlMethod(t *testing.T) {
 	require.Contains(t, string(h), "<b>TestOrg</b>")
 }
 
+func TestTHtmlXSSPrevention(t *testing.T) {
+	mock := &mockSender{}
+	client := New(mock)
+
+	err := client.SendOrganizationInvite(&OrganizationInvite{
+		ToEmail:       "test@example.com",
+		ToName:        "User",
+		AcceptURL:     "https://example.com/accept",
+		OrgName:       "TestOrg",
+		RoleName:      "admin",
+		InvitedByName: `<script>alert(1)</script>`,
+	})
+	require.NoError(t, err)
+
+	// The raw script tag must not appear — it should be escaped
+	require.NotContains(t, mock.body, "<script>")
+	require.Contains(t, mock.body, "&lt;script&gt;")
+}
+
 func TestLocaleSpanishInvoicePaymentFailed(t *testing.T) {
 	mock := &mockSender{}
 	client := New(mock)
@@ -633,4 +652,61 @@ func TestLocalePerRequestOverridesDefault(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Contains(t, mock.subject, "ha sido actualizado al plan Pro")
+}
+
+func TestTrialEndingSoonPluralDays(t *testing.T) {
+	mock := &mockSender{}
+	client := New(mock)
+
+	// days=1 should use singular form "1 day" (not "1 days")
+	err := client.SendTrialEndingSoon(&TrialEndingSoon{
+		ToEmail:      "test@example.com",
+		ToName:       "User",
+		OrgName:      "TestOrg",
+		UpgradeURL:   "https://example.com/upgrade",
+		TrialEndDate: time.Now().Add(24 * time.Hour),
+	})
+	require.NoError(t, err)
+	require.Contains(t, mock.subject, "1 day")
+	require.NotContains(t, mock.subject, "1 days")
+
+	// days=5 should use plural form "5 days"
+	err = client.SendTrialEndingSoon(&TrialEndingSoon{
+		ToEmail:      "test@example.com",
+		ToName:       "User",
+		OrgName:      "TestOrg",
+		UpgradeURL:   "https://example.com/upgrade",
+		TrialEndDate: time.Now().Add(5 * 24 * time.Hour),
+	})
+	require.NoError(t, err)
+	require.Contains(t, mock.subject, "5 days")
+}
+
+func TestTrialEndingSoonPluralSpanish(t *testing.T) {
+	mock := &mockSender{}
+	client := New(mock)
+
+	// days=1 in Spanish should use singular "1 día"
+	err := client.SendTrialEndingSoon(&TrialEndingSoon{
+		ToEmail:      "test@example.com",
+		ToName:       "User",
+		Locale:       "es",
+		OrgName:      "TestOrg",
+		UpgradeURL:   "https://example.com/upgrade",
+		TrialEndDate: time.Now().Add(24 * time.Hour),
+	})
+	require.NoError(t, err)
+	require.Contains(t, mock.subject, "1 día")
+	require.NotContains(t, mock.subject, "1 días")
+}
+
+func TestSanitizeHeader(t *testing.T) {
+	result := sanitizeHeader("normal value")
+	require.Equal(t, "normal value", result)
+
+	result = sanitizeHeader("injected\r\nBcc: evil@example.com")
+	require.Equal(t, "injectedBcc: evil@example.com", result)
+
+	result = sanitizeHeader("line\rfeed\nonly")
+	require.Equal(t, "linefeedonly", result)
 }

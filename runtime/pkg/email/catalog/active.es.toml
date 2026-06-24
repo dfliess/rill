@@ -226,6 +226,7 @@ other = "Ahora tiene acceso a {{.ProductNameCloud}} hasta el <b>{{.TrialEndDate}
 # ---------------------------------------------------------------------------
 
 [email.subject.trial_ending_soon]
+one = "Su prueba de {{.ProductNameCloud}} para {{.OrgName}} vence en {{.Days}} día"
 other = "Su prueba de {{.ProductNameCloud}} para {{.OrgName}} vence en {{.Days}} días"
 
 [email.body.trial_ending_soon]

@@ -80,6 +80,9 @@ func (s *Server) GetAlertMeta(ctx context.Context, req *adminv1.GetAlertMetaRequ
 	recipientLocales := make(map[string]string)
 	for _, email := range req.EmailRecipients {
 		u, err := s.admin.DB.FindUserByEmail(ctx, email)
+		if err != nil && !errors.Is(err, database.ErrNotFound) {
+			return nil, status.Errorf(codes.Internal, "looking up recipient locale: %v", err)
+		}
 		if err == nil && u.PreferenceLanguage != "" {
 			recipientLocales[email] = u.PreferenceLanguage
 		}

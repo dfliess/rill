@@ -124,8 +124,8 @@ func (s *Server) GetCurrentUser(ctx context.Context, req *adminv1.GetCurrentUser
 	return &adminv1.GetCurrentUserResponse{
 		User: s.userToPB(u, true),
 		Preferences: &adminv1.UserPreferences{
-			TimeZone: &u.PreferenceTimeZone,
-			Language: &u.PreferenceLanguage,
+			TimeZone:        &u.PreferenceTimeZone,
+			PreferredLocale: &u.PreferenceLanguage,
 		},
 	}, nil
 }
@@ -147,13 +147,13 @@ func (s *Server) UpdateUserPreferences(ctx context.Context, req *adminv1.UpdateU
 		observability.AddRequestAttributes(ctx, attribute.String("preferences_time_zone", *req.Preferences.TimeZone))
 	}
 
-	if req.Preferences.Language != nil && *req.Preferences.Language != "" {
-		_, err := language.Parse(*req.Preferences.Language)
+	if req.Preferences.PreferredLocale != nil && *req.Preferences.PreferredLocale != "" {
+		_, err := language.Parse(*req.Preferences.PreferredLocale)
 		if err != nil {
-			return nil, status.Errorf(codes.InvalidArgument, "invalid language tag: %s", *req.Preferences.Language)
+			return nil, status.Errorf(codes.InvalidArgument, "invalid language tag: %s", *req.Preferences.PreferredLocale)
 		}
 
-		observability.AddRequestAttributes(ctx, attribute.String("preferences_language", *req.Preferences.Language))
+		observability.AddRequestAttributes(ctx, attribute.String("preferences_preferred_locale", *req.Preferences.PreferredLocale))
 	}
 
 	// Owner is a user
@@ -173,7 +173,7 @@ func (s *Server) UpdateUserPreferences(ctx context.Context, req *adminv1.UpdateU
 		QuotaSingleuserOrgs:  user.QuotaSingleuserOrgs,
 		QuotaTrialOrgs:       user.QuotaTrialOrgs,
 		PreferenceTimeZone:   valOrDefault(req.Preferences.TimeZone, user.PreferenceTimeZone),
-		PreferenceLanguage:   valOrDefault(req.Preferences.Language, user.PreferenceLanguage),
+		PreferenceLanguage:   valOrDefault(req.Preferences.PreferredLocale, user.PreferenceLanguage),
 	})
 	if err != nil {
 		return nil, err
@@ -181,8 +181,8 @@ func (s *Server) UpdateUserPreferences(ctx context.Context, req *adminv1.UpdateU
 
 	return &adminv1.UpdateUserPreferencesResponse{
 		Preferences: &adminv1.UserPreferences{
-			TimeZone: &updatedUser.PreferenceTimeZone,
-			Language: &updatedUser.PreferenceLanguage,
+			TimeZone:        &updatedUser.PreferenceTimeZone,
+			PreferredLocale: &updatedUser.PreferenceLanguage,
 		},
 	}, nil
 }

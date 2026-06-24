@@ -3,12 +3,14 @@ package email
 import (
 	"bytes"
 	"fmt"
+	"mime"
 	"mime/multipart"
 	"mime/quotedprintable"
 	"net/mail"
 	"net/smtp"
 	"net/textproto"
 	"strconv"
+	"strings"
 
 	"go.uber.org/zap"
 )
@@ -36,6 +38,12 @@ type SMTPOptions struct {
 	BCC          string
 }
 
+func sanitizeHeader(s string) string {
+	s = strings.ReplaceAll(s, "\r", "")
+	s = strings.ReplaceAll(s, "\n", "")
+	return s
+}
+
 type smtpSender struct {
 	opts *SMTPOptions
 }
@@ -61,14 +69,18 @@ func NewSMTPSender(opts *SMTPOptions) (Sender, error) {
 }
 
 func (s *smtpSender) Send(msg *Message) error {
+	if _, err := mail.ParseAddress(msg.ToEmail); err != nil {
+		return fmt.Errorf("invalid recipient address %q: %w", msg.ToEmail, err)
+	}
+
 	from := mail.Address{Name: s.opts.FromName, Address: s.opts.FromEmail}
-	to := mail.Address{Name: msg.ToName, Address: msg.ToEmail}
+	to := mail.Address{Name: sanitizeHeader(msg.ToName), Address: msg.ToEmail}
 
 	var buf bytes.Buffer
 	// Common headers
 	fmt.Fprintf(&buf, "From: %s\r\n", from.String())
 	fmt.Fprintf(&buf, "To: %s\r\n", to.String())
-	fmt.Fprintf(&buf, "Subject: %s\r\n", msg.Subject)
+	fmt.Fprintf(&buf, "Subject: %s\r\n", mime.QEncoding.Encode("utf-8", msg.Subject))
 	fmt.Fprintf(&buf, "MIME-Version: 1.0\r\n")
 
 	if msg.Text != "" {
