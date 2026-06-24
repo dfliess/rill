@@ -4,8 +4,11 @@ import (
 	"bytes"
 	"embed"
 	"fmt"
+	"html"
 	"html/template"
 	"math"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/rilldata/rill/admin/database"
@@ -17,6 +20,38 @@ import (
 var templatesFS embed.FS
 
 const dateFormat = "January 2, 2006"
+
+// htmlToText converts HTML to a plain-text approximation suitable for the
+// text/plain part of a multipart/alternative email.
+func htmlToText(s string) string {
+	// Convert block-level closing tags and breaks to newlines
+	for _, tag := range []string{"<br>", "<br/>", "<br />", "<BR>", "<BR/>", "<BR />"} {
+		s = strings.ReplaceAll(s, tag, "\n")
+	}
+	for _, tag := range []string{"</p>", "</div>", "</tr>", "</h1>", "</h2>", "</h3>", "</h4>"} {
+		s = strings.ReplaceAll(s, tag, "\n")
+	}
+	s = strings.ReplaceAll(s, "</li>", "\n")
+	s = strings.ReplaceAll(s, "<li>", "- ")
+	s = strings.ReplaceAll(s, "<LI>", "- ")
+
+	// Strip remaining HTML tags
+	s = regexp.MustCompile(`<[^>]*>`).ReplaceAllString(s, "")
+
+	// Decode HTML entities
+	s = html.UnescapeString(s)
+
+	// Collapse runs of blank lines
+	s = regexp.MustCompile(`\n{3,}`).ReplaceAllString(s, "\n\n")
+
+	// Trim leading/trailing whitespace per line, then overall
+	lines := strings.Split(s, "\n")
+	for i, line := range lines {
+		lines[i] = strings.TrimSpace(line)
+	}
+	s = strings.Join(lines, "\n")
+	return strings.TrimSpace(s)
+}
 
 type Client struct {
 	Sender    Sender
@@ -82,7 +117,13 @@ func (c *Client) SendScheduledReport(opts *ScheduledReport) error {
 	}
 	html := buf.String()
 
-	return c.Sender.Send(opts.ToEmail, opts.ToName, subject, html)
+	return c.Sender.Send(&Message{
+		ToEmail: opts.ToEmail,
+		ToName:  opts.ToName,
+		Subject: subject,
+		HTML:    html,
+		Text:    htmlToText(html),
+	})
 }
 
 func (c *Client) SendAlertStatus(opts *drivers.AlertStatus) error {
@@ -140,7 +181,13 @@ func (c *Client) sendAlertFail(opts *drivers.AlertStatus, data *alertFailData) e
 	}
 	html := buf.String()
 
-	return c.Sender.Send(opts.ToEmail, opts.ToName, subject, html)
+	return c.Sender.Send(&Message{
+		ToEmail: opts.ToEmail,
+		ToName:  opts.ToName,
+		Subject: subject,
+		HTML:    html,
+		Text:    htmlToText(html),
+	})
 }
 
 type alertStatusData struct {
@@ -168,7 +215,13 @@ func (c *Client) sendAlertStatus(opts *drivers.AlertStatus, data *alertStatusDat
 	}
 	html := buf.String()
 
-	return c.Sender.Send(opts.ToEmail, opts.ToName, subject, html)
+	return c.Sender.Send(&Message{
+		ToEmail: opts.ToEmail,
+		ToName:  opts.ToName,
+		Subject: subject,
+		HTML:    html,
+		Text:    htmlToText(html),
+	})
 }
 
 type CallToAction struct {
@@ -189,7 +242,13 @@ func (c *Client) SendCallToAction(opts *CallToAction) error {
 		return fmt.Errorf("email template error: %w", err)
 	}
 	html := buf.String()
-	return c.Sender.Send(opts.ToEmail, opts.ToName, opts.Subject, html)
+	return c.Sender.Send(&Message{
+		ToEmail: opts.ToEmail,
+		ToName:  opts.ToName,
+		Subject: opts.Subject,
+		HTML:    html,
+		Text:    htmlToText(html),
+	})
 }
 
 type Informational struct {
@@ -207,7 +266,13 @@ func (c *Client) SendInformational(opts *Informational) error {
 		return fmt.Errorf("email template error: %w", err)
 	}
 	html := buf.String()
-	return c.Sender.Send(opts.ToEmail, opts.ToName, opts.Subject, html)
+	return c.Sender.Send(&Message{
+		ToEmail: opts.ToEmail,
+		ToName:  opts.ToName,
+		Subject: opts.Subject,
+		HTML:    html,
+		Text:    htmlToText(html),
+	})
 }
 
 type Welcome struct {
@@ -225,7 +290,13 @@ func (c *Client) SendWelcomeToTrial(opts *Welcome) error {
 		return fmt.Errorf("email template error: %w", err)
 	}
 	html := buf.String()
-	return c.Sender.Send(opts.ToEmail, opts.ToName, opts.Subject, html)
+	return c.Sender.Send(&Message{
+		ToEmail: opts.ToEmail,
+		ToName:  opts.ToName,
+		Subject: opts.Subject,
+		HTML:    html,
+		Text:    htmlToText(html),
+	})
 }
 
 func (c *Client) SendWelcomeToTeam(opts *Welcome) error {
@@ -235,7 +306,13 @@ func (c *Client) SendWelcomeToTeam(opts *Welcome) error {
 		return fmt.Errorf("email template error: %w", err)
 	}
 	html := buf.String()
-	return c.Sender.Send(opts.ToEmail, opts.ToName, opts.Subject, html)
+	return c.Sender.Send(&Message{
+		ToEmail: opts.ToEmail,
+		ToName:  opts.ToName,
+		Subject: opts.Subject,
+		HTML:    html,
+		Text:    htmlToText(html),
+	})
 }
 
 type OrganizationInvite struct {
@@ -371,7 +448,13 @@ func (c *Client) SendProjectAccessRequest(opts *ProjectAccessRequest) error {
 		return fmt.Errorf("email template error: %w", err)
 	}
 	html := buf.String()
-	return c.Sender.Send(opts.ToEmail, opts.ToName, subject, html)
+	return c.Sender.Send(&Message{
+		ToEmail: opts.ToEmail,
+		ToName:  opts.ToName,
+		Subject: subject,
+		HTML:    html,
+		Text:    htmlToText(html),
+	})
 }
 
 type ProjectAccessGranted struct {

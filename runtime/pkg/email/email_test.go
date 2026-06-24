@@ -18,13 +18,15 @@ type mockSender struct {
 	toName    string
 	subject   string
 	body      string
+	text      string
 }
 
-func (m *mockSender) Send(toEmail, toName, subject, body string) error {
-	m.toEmail = toEmail
-	m.toName = toName
-	m.subject = subject
-	m.body = body
+func (m *mockSender) Send(msg *Message) error {
+	m.toEmail = msg.ToEmail
+	m.toName = msg.ToName
+	m.subject = msg.Subject
+	m.body = msg.HTML
+	m.text = msg.Text
 	return nil
 }
 
@@ -152,4 +154,58 @@ func TestAlertError(t *testing.T) {
 	require.Contains(t, mock.body, opts.DisplayName)
 	require.Contains(t, mock.body, opts.ExecutionTime.Format(time.RFC1123))
 	require.Contains(t, mock.body, "hello error")
+}
+
+func TestHTMLToText(t *testing.T) {
+	html := `<p>Hello <b>World</b></p><ul><li>item one</li><li>item two</li></ul><p>End</p>`
+	text := htmlToText(html)
+	require.Contains(t, text, "Hello World")
+	require.Contains(t, text, "- item one")
+	require.Contains(t, text, "- item two")
+	require.Contains(t, text, "End")
+	require.NotContains(t, text, "<")
+}
+
+func TestHTMLToTextEntities(t *testing.T) {
+	text := htmlToText("&amp; &lt;b&gt; &#169;")
+	require.Contains(t, text, "& <b> ©")
+}
+
+func TestMultipartMessageHasText(t *testing.T) {
+	mock := &mockSender{}
+	client := New(mock)
+
+	opts := &CallToAction{
+		ToEmail:    "test@example.com",
+		ToName:     "Test User",
+		Subject:    "Test Subject",
+		PreButton:  "<p>Hello</p>",
+		ButtonText: "Click me",
+		ButtonLink: "https://example.com",
+	}
+	err := client.SendCallToAction(opts)
+	require.NoError(t, err)
+	require.NotEmpty(t, mock.body)
+	require.NotEmpty(t, mock.text)
+	require.NotContains(t, mock.text, "<p>")
+	require.Contains(t, mock.text, "Click me")
+}
+
+func TestTestSenderCapturesText(t *testing.T) {
+	ts := NewTestSender().(*TestSender)
+	client := New(ts)
+
+	err := client.SendCallToAction(&CallToAction{
+		ToEmail:    "to@example.com",
+		ToName:     "Recipient",
+		Subject:    "Test",
+		PreButton:  "<p>Hello</p>",
+		ButtonText: "Click",
+		ButtonLink: "https://example.com",
+	})
+	require.NoError(t, err)
+	require.Len(t, ts.Emails, 1)
+	require.NotEmpty(t, ts.Emails[0].Body)
+	require.NotEmpty(t, ts.Emails[0].Text)
+	require.NotContains(t, ts.Emails[0].Text, "<p>")
 }
