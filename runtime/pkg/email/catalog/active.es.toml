@@ -1,0 +1,406 @@
+# Catálogo de mensajes en español para runtime/pkg/email.
+# Formato: go-i18n/v2 TOML — cada clave usa "other" (o one/other para plurales).
+# Las variables de plantilla usan {{.Var}} (sintaxis de go-i18n).
+
+# ---------------------------------------------------------------------------
+# Reportes programados
+# ---------------------------------------------------------------------------
+
+[email.subject.scheduled_report]
+other = "{{.DisplayName}} ({{.ReportTimeString}})"
+
+[email.body.scheduled_report_ready]
+other = "Su reporte de <b>{{.ReportTimeString}}</b> está listo para ver."
+
+[email.button.open_in_browser]
+other = "Abrir en el navegador"
+
+[email.button.view_full_analysis]
+other = "Ver análisis completo"
+
+[email.button.download_format_file]
+other = "Descargar archivo {{.DownloadFormat}}"
+
+[email.label.edit_report]
+other = "Para editar este reporte, <a href=\"{{.EditLink}}\">haga clic aquí</a>."
+
+[email.label.unsubscribe_report]
+other = "Para cancelar la suscripción a este reporte, <a href=\"{{.UnsubscribeLink}}\">haga clic aquí</a>."
+
+# ---------------------------------------------------------------------------
+# Alertas — falla
+# ---------------------------------------------------------------------------
+
+[email.subject.alert_fail]
+other = "{{.DisplayName}} ({{.ExecutionTimeString}})"
+
+[email.body.alert_fail_trigger]
+other = "Su alerta se activó para <b>{{.ExecutionTimeString}}</b>. La primera fila que coincidió con los criterios de la alerta es:"
+
+[email.label.edit_alert]
+other = "Para editar esta alerta, <a href=\"{{.EditLink}}\">haga clic aquí</a>."
+
+[email.label.unsubscribe_alert]
+other = "Para cancelar la suscripción a esta alerta, <a href=\"{{.UnsubscribeLink}}\">haga clic aquí</a>."
+
+# ---------------------------------------------------------------------------
+# Alertas — estado (aprobada / recuperada / error)
+# ---------------------------------------------------------------------------
+
+[email.subject.alert_status]
+other = "{{.DisplayName}} ({{.ExecutionTimeString}})"
+
+[email.subject.alert_recovered]
+other = "Recuperada: {{.DisplayName}} ({{.ExecutionTimeString}})"
+
+[email.body.alert_error]
+other = "La alerta no pudo evaluarse el <b>{{.ExecutionTimeString}}</b>. Falló con el siguiente mensaje de error: <i>{{.ErrorMessage}}</i>."
+
+[email.body.alert_recovered]
+other = "La alerta se ha recuperado el <b>{{.ExecutionTimeString}}</b> de una falla anterior."
+
+[email.body.alert_passed]
+other = "La alerta ha sido aprobada el <b>{{.ExecutionTimeString}}</b>."
+
+# ---------------------------------------------------------------------------
+# Solicitud de acceso a proyecto
+# ---------------------------------------------------------------------------
+
+[email.button.approve_request]
+other = "Aprobar solicitud"
+
+[email.button.deny_request]
+other = "Denegar solicitud"
+
+[email.subject.project_access_request_admin]
+other = "{{.Email}} desea ser administrador de {{.OrgName}}/{{.ProjectName}}"
+
+[email.subject.project_access_request_editor]
+other = "{{.Email}} desea editar {{.OrgName}}/{{.ProjectName}}"
+
+[email.subject.project_access_request_viewer]
+other = "{{.Email}} desea ver {{.OrgName}}/{{.ProjectName}}"
+
+[email.body.project_access_request]
+other = "<b>{{.Email}}</b> desea {{.AccessPrefix}} <b>{{.OrgName}}/{{.ProjectName}}</b>"
+
+# ---------------------------------------------------------------------------
+# Invitación a organización
+# ---------------------------------------------------------------------------
+
+[email.subject.org_invite]
+other = "{{.InvitedByName}} le invitó a unirse a {{.ProductName}}"
+
+[email.body.org_invite]
+other = "{{.InvitedByName}} le ha invitado a unirse a <b>{{.OrgName}}</b> como {{.RoleName}} en su cuenta de {{.ProductName}}. Comience a interactuar con paneles exploratorios rápidos haciendo clic en el botón de abajo para iniciar sesión y aceptar su invitación."
+
+[email.button.accept_invitation]
+other = "Aceptar invitación"
+
+# ---------------------------------------------------------------------------
+# Adición a organización
+# ---------------------------------------------------------------------------
+
+[email.subject.org_addition]
+other = "{{.InvitedByName}} le ha añadido a {{.OrgName}}"
+
+[email.body.org_addition]
+other = "{{.InvitedByName}} le ha añadido como {{.RoleName}} en <b>{{.OrgName}}</b>. Haga clic en el botón de abajo para ver y colaborar en los proyectos de paneles de {{.ProductName}} de {{.OrgName}}."
+
+[email.button.view_account]
+other = "Ver cuenta"
+
+# ---------------------------------------------------------------------------
+# Invitación a proyecto
+# ---------------------------------------------------------------------------
+
+[email.subject.project_invite]
+other = "Ha sido invitado al proyecto {{.OrgName}}/{{.ProjectName}}"
+
+[email.body.project_invite]
+other = "{{.InvitedByName}} le ha invitado a colaborar como {{.RoleName}} en el proyecto <b>{{.OrgName}}/{{.ProjectName}}</b>. Haga clic en el botón de abajo para aceptar su invitación. "
+
+# ---------------------------------------------------------------------------
+# Adición a proyecto
+# ---------------------------------------------------------------------------
+
+[email.subject.project_addition]
+other = "Ha sido añadido al proyecto {{.OrgName}}/{{.ProjectName}}"
+
+[email.body.project_addition]
+other = "{{.InvitedByName}} le ha invitado a colaborar como {{.RoleName}} en el proyecto <b>{{.ProjectName}}</b>. Haga clic en el botón de abajo para aceptar su invitación. "
+
+# ---------------------------------------------------------------------------
+# Acceso a proyecto concedido / rechazado
+# ---------------------------------------------------------------------------
+
+[email.subject.project_access_granted]
+other = "Su solicitud de acceso a {{.OrgName}}/{{.ProjectName}} ha sido aprobada"
+
+[email.body.project_access_granted]
+other = "Su solicitud de acceso a <b>{{.OrgName}}/{{.ProjectName}}</b> ha sido aprobada"
+
+[email.button.view_project]
+other = "Ver proyecto en {{.ProductName}}"
+
+[email.subject.project_access_rejected]
+other = "Su solicitud de acceso a {{.OrgName}}/{{.ProjectName}} ha sido denegada"
+
+[email.body.project_access_rejected]
+other = "Su solicitud de acceso a <b>{{.OrgName}}/{{.ProjectName}}</b> ha sido denegada. Contacte al administrador del proyecto para obtener ayuda."
+
+# ---------------------------------------------------------------------------
+# Factura — pago fallido
+# ---------------------------------------------------------------------------
+
+[email.subject.invoice_payment_failed]
+other = "El pago de {{.OrgName}} ha fallado. Por favor actualice su método de pago"
+
+[email.body.invoice_payment_failed]
+other = "No pudimos procesar su pago de <b>{{.OrgName}}</b>. Tiene hasta el <b>{{.GracePeriodEndDate}}</b> para actualizar sus datos de pago antes de que su organización sea hibernada."
+
+[email.button.update_payment_info]
+other = "Actualizar información de pago"
+
+# ---------------------------------------------------------------------------
+# Factura — pago exitoso
+# ---------------------------------------------------------------------------
+
+[email.subject.invoice_payment_success]
+other = "Pago exitoso del {{.PaymentDate}}"
+
+[email.body.invoice_payment_success]
+other = "¡Gracias por su pago!\n<br /><br />\nSu pago de <b>{{.OrgName}}</b> ha sido procesado exitosamente.\n<br /><br />\nSi cree que este cargo es un error o tiene alguna pregunta, escriba a {{.SupportEmail}}.\n<br /><br />\nPuede administrar su suscripción visitando la <a href=\"{{.BillingPageURL}}\">Configuración de facturación</a>"
+
+# ---------------------------------------------------------------------------
+# Factura — impaga
+# ---------------------------------------------------------------------------
+
+[email.subject.invoice_unpaid]
+other = "La factura de {{.OrgName}} está vencida. La organización está hibernada"
+
+[email.body.invoice_unpaid]
+other = "<b>{{.ToName}}</b> y sus proyectos han sido hibernados debido a un pago vencido. \n<br /><br />\n¡Restaure el acceso actualizando su información de pago hoy! "
+
+# ---------------------------------------------------------------------------
+# Suscripción cancelada
+# ---------------------------------------------------------------------------
+
+[email.subject.subscription_cancelled]
+other = "{{.PlanName}} para {{.OrgName}} ha sido cancelado. Acceso disponible hasta el {{.EndDate}}"
+
+[email.body.subscription_cancelled]
+other = "¡Lamentamos verle partir!\n<br /><br />\nHa cancelado exitosamente el plan {{.PlanName}} para <b>{{.ToName}}</b>. Aún tendrá acceso a {{.ProductNameCloud}} hasta el <b>{{.EndDate}}</b>. Después de esta fecha, su suscripción expirará y ya no tendrá acceso.\n<br /><br />\nSi cambia de opinión, ¡siempre puede reactivar su suscripción!"
+
+[email.button.billing_settings]
+other = "Configuración de facturación"
+
+[email.postbutton.subscription_cancelled]
+other = "Si nuestro servicio no cumplió con sus expectativas, contáctenos por <a href=\"mailto:{{.SupportEmail}}\" style=\"color:{{.PrimaryColor}}\">correo electrónico</a>, o por chat en <a href=\"{{.ChatURL}}\" style=\"color:{{.PrimaryColor}}\">{{.ProductName}}.</a> Haremos nuestro mejor esfuerzo para atender sus comentarios e inquietudes."
+
+# ---------------------------------------------------------------------------
+# Suscripción finalizada
+# ---------------------------------------------------------------------------
+
+[email.subject.subscription_ended]
+other = "La suscripción de {{.OrgName}} ha finalizado. La organización está hibernada"
+
+[email.body.subscription_ended]
+other = "Su suscripción cancelada de <b>{{.OrgName}}</b> ha finalizado y sus proyectos están ahora en <a href=\"{{.DocsURL}}/developers/other/FAQ#what-is-project-hibernation\">hibernación</a>. Esperamos que haya disfrutado usar {{.ProductNameCloud}} durante su tiempo con nosotros.\n<br /><br />\nSi desea reactivar su suscripción y recuperar el acceso, puede hacerlo fácilmente en cualquier momento renovando su suscripción desde aquí:"
+
+[email.postbutton.subscription_ended]
+other = "Si tiene algún comentario sobre su experiencia o cómo podemos mejorar, no dude en contactarnos por <a href=\"mailto:{{.SupportEmail}}\" style=\"color:{{.PrimaryColor}}\">correo electrónico</a>, o por chat en <a href=\"{{.ChatURL}}\" style=\"color:{{.PrimaryColor}}\">{{.ProductName}}.</a>\n<br /><br />\n¡Gracias por probar {{.ProductNameCloud}}. Esperamos verle de nuevo en el futuro!"
+
+# ---------------------------------------------------------------------------
+# Prueba iniciada
+# ---------------------------------------------------------------------------
+
+[email.subject.trial_started]
+other = "Se ha iniciado una prueba gratuita de 30 días para {{.OrgName}}"
+
+[email.body.trial_started]
+other = "Ahora tiene acceso a {{.ProductNameCloud}} hasta el <b>{{.TrialEndDate}}</b> para explorar todas las funciones, incluyendo:\n<ul>\n<li>Gestión de usuarios (RBAC)</li>\n<li>Paneles integrados</li>\n<li>Alertas y reportes programados</li>\n</ul>"
+
+# ---------------------------------------------------------------------------
+# Prueba por vencer
+# ---------------------------------------------------------------------------
+
+[email.subject.trial_ending_soon]
+other = "Su prueba de {{.ProductNameCloud}} para {{.OrgName}} vence en {{.Days}} días"
+
+[email.body.trial_ending_soon]
+other = "Su prueba de <b>{{.ToName}}</b> finaliza el <b>{{.TrialEndDate}}</b>.\n<br /><br />\n¿Cómo le va con {{.ProductName}}? ¿Ha visto las nuevas funciones destacadas en nuestras <a href=\"{{.ReleaseNotesURL}}\">Notas de versión</a>?\n<br /><br />\nNuestro equipo está aquí para ayudarle en todo lo que podamos, así que no dude en contactarnos por <a href=\"mailto:{{.SupportEmail}}\" style=\"color:{{.PrimaryColor}}\">correo electrónico</a>, o por chat en <a href=\"{{.ChatURL}}\" style=\"color:{{.PrimaryColor}}\">{{.ProductName}}.</a> si tiene alguna pregunta, encuentra un problema o necesita orientación.\n<br /><br />\nSi está listo para actualizar, simplemente haga clic en el botón de abajo."
+
+[email.button.upgrade_now]
+other = "Actualizar ahora"
+
+# ---------------------------------------------------------------------------
+# Prueba finalizada
+# ---------------------------------------------------------------------------
+
+[email.subject.trial_ended]
+other = "Su prueba de {{.ProductNameCloud}} para {{.OrgName}} ha expirado"
+
+[email.body.trial_ended]
+other = "Hola {{.ToName}},\n<br /><br />\nSu prueba de {{.ProductNameCloud}} ha expirado. <b>{{.OrgName}}</b> será hibernada el <b>{{.GracePeriodEndDate}}</b>. Esperamos que haya disfrutado usando nuestro software. Si desea seguir usando {{.ProductNameCloud}}, ¡actualice a nuestro plan Team!"
+
+[email.button.upgrade_to_team_plan]
+other = "Actualizar al plan Team"
+
+# ---------------------------------------------------------------------------
+# Período de gracia de prueba finalizado
+# ---------------------------------------------------------------------------
+
+[email.subject.trial_grace_period_ended]
+other = "El período de gracia de la prueba de {{.OrgName}} ha finalizado. La organización está hibernada"
+
+[email.body.trial_grace_period_ended]
+other = "<b>{{.OrgName}}</b> y sus proyectos están ahora en <a href=\"{{.DocsURL}}/developers/other/FAQ#what-is-project-hibernation\">hibernación</a>.\n<br /><br />\n¡Reactive su organización actualizando al plan Team hoy!"
+
+[email.postbutton.trial_grace_period_ended]
+other = "¡Nos encantaría saber de usted! Si tiene algún comentario sobre su experiencia o cómo podemos mejorar, no dude en contactarnos por <a href=\"mailto:{{.SupportEmail}}\" style=\"color:{{.PrimaryColor}}\">correo electrónico</a>, o por chat en <a href=\"{{.ChatURL}}\" style=\"color:{{.PrimaryColor}}\">{{.ProductName}}.</a>\n<br /><br />\n¡Gracias por probar {{.ProductNameCloud}}. Esperamos verle de nuevo en el futuro!"
+
+# ---------------------------------------------------------------------------
+# Prueba con créditos iniciada
+# ---------------------------------------------------------------------------
+
+[email.subject.credit_trial_started]
+other = "Bienvenido a {{.ProductName}} — comience a usar su crédito de ${{.CreditAllocation}}"
+
+[email.body.credit_trial_started]
+other = "Hola,\n<br /><br />\n¡Bienvenido a {{.ProductName}}! Su cuenta está lista y cargada con <b>${{.CreditAllocation}} en crédito gratuito</b> para explorar toda la plataforma — paneles, métricas, analítica integrada, exploración con IA y más.\n<br /><br />\nSu crédito de ${{.CreditAllocation}} cubre $0.15/unidad de cómputo/hora y $1/GB de almacenamiento/mes para datos administrados superiores a 1GB. No hay límite de tiempo — su crédito solo se consume cuando sus paneles están en funcionamiento. Un proyecto típico con 4 unidades de cómputo le da algunas semanas para construir y compartir paneles reales con su equipo. ¡No olvide hibernar su proyecto cuando no lo esté usando!"
+
+[email.button.open_product_cloud]
+other = "Abrir {{.ProductNameCloud}}"
+
+[email.postbutton.credit_trial_started]
+other = "Si tiene alguna pregunta, no dude en contactarnos por <a href=\"mailto:{{.SupportEmail}}\" style=\"color:{{.PrimaryColor}}\">correo electrónico</a>, o por chat en <a href=\"{{.ChatURL}}\" style=\"color:{{.PrimaryColor}}\">{{.ProductName}}.</a> También puede visitar <a href=\"{{.DocsURL}}\" style=\"color:{{.PrimaryColor}}\">{{.DocsURL}}</a> para más información.\n<br /><br />\nFeliz exploración,"
+
+# ---------------------------------------------------------------------------
+# Crédito de prueba bajo
+# ---------------------------------------------------------------------------
+
+[email.subject.credit_trial_low]
+other = "Su crédito de {{.ProductName}} se está agotando"
+
+[email.body.credit_trial_low]
+other = "Hola,\n<br /><br />\nLe quedan aproximadamente <b>${{.RemainingBalance}}</b> de su crédito original de ${{.CreditAllocation}} de {{.ProductName}}. Una vez agotado, sus paneles entrarán en hibernación.\n<br /><br />\nLa hibernación significa que sus paneles se pausan y quedan fuera de línea, pero nada se elimina. Sus modelos, conexiones de datos y configuración permanecen intactos. Actualizar a Pro reactiva todo.\n<br /><br />\nEl plan Pro es sencillo: $0.15/unidad de cómputo/hora, $1/GB de almacenamiento/mes para datos administrados superiores a 1GB, sin mínimos mensuales, y cualquier crédito gratuito restante se transfiere para que nada se desperdicie."
+
+[email.button.upgrade_to_pro]
+other = "Actualizar a Pro"
+
+[email.postbutton.credit_trial_low]
+other = "Si tiene alguna pregunta, no dude en contactarnos por <a href=\"mailto:{{.SupportEmail}}\" style=\"color:{{.PrimaryColor}}\">correo electrónico</a>, o por chat en <a href=\"{{.ChatURL}}\" style=\"color:{{.PrimaryColor}}\">{{.ProductName}}.</a>\n<br /><br />\nFeliz construcción,"
+
+# ---------------------------------------------------------------------------
+# Crédito de prueba agotado
+# ---------------------------------------------------------------------------
+
+[email.subject.credit_trial_depleted]
+other = "Sus paneles de {{.ProductName}} están ahora hibernados"
+
+[email.body.credit_trial_depleted]
+other = "Hola,\n<br /><br />\nSu crédito de ${{.CreditAllocation}} de {{.ProductName}} se ha agotado y sus paneles están ahora <a href=\"{{.DocsURL}}/developers/other/FAQ#what-is-project-hibernation\" style=\"color:{{.PrimaryColor}}\">hibernados</a>. Todos los despliegues están pausados — su equipo y cualquier analítica integrada están actualmente fuera de línea.\n<br /><br />\n<b>Nada ha sido eliminado.</b> Todo su proyecto — conexiones de datos, modelos, paneles y configuración — se conserva exactamente como lo dejó.\n<br /><br />\nPara restaurar todo, actualice al plan Pro. Toma menos de un minuto: agregue un método de pago, confirme la actualización y sus paneles se reactivan con su configuración existente."
+
+[email.postbutton.credit_trial_depleted]
+other = "El precio del plan Pro es sencillo: $0.15/unidad de cómputo/hora, $1/GB de almacenamiento/mes para datos administrados superiores a 1GB. Sin contratos, sin cargos por usuario. Escale según necesite.\n<br /><br />\nSi desea discutir sus opciones o necesita un acuerdo personalizado, no dude en contactarnos por <a href=\"mailto:{{.SupportEmail}}\" style=\"color:{{.PrimaryColor}}\">correo electrónico</a>, o por chat en <a href=\"{{.ChatURL}}\" style=\"color:{{.PrimaryColor}}\">{{.ProductName}}.</a>\n<br /><br />\nEsperamos verle de vuelta pronto,"
+
+# ---------------------------------------------------------------------------
+# Actualización de plan
+# ---------------------------------------------------------------------------
+
+[email.subject.plan_update]
+other = "Su plan de {{.OrgName}} ha sido actualizado al plan {{.PlanName}}"
+
+[email.body.plan_update]
+other = "<b>\"{{.OrgName}}\"</b> ha sido actualizado al plan \"{{.PlanName}}\"."
+
+# ---------------------------------------------------------------------------
+# Suscripción renovada
+# ---------------------------------------------------------------------------
+
+[email.subject.subscription_renewed]
+other = "Su suscripción {{.PlanName}} del plan {{.OrgName}} ha sido renovada"
+
+[email.body.subscription_renewed]
+other = "Su suscripción de <b>\"{{.OrgName}}\"</b> ha sido renovada para el plan \"{{.PlanName}}\"."
+
+# ---------------------------------------------------------------------------
+# Plan de pago iniciado
+# ---------------------------------------------------------------------------
+
+[email.subject.paid_plan_started]
+other = "Está en el plan {{.PlanName}}"
+
+[email.body.paid_plan_started]
+other = "Hola,\n<br /><br />\nTodo listo con el plan {{.ProductName}} {{.PlanName}}. Su próximo ciclo de facturación comienza el <b>{{.BillingStartDate}}</b>.\n<br /><br />\nLa facturación es basada en uso, sin contratos — recibirá una factura mensual con un desglose completo de horas de cómputo y almacenamiento de datos."
+
+[email.button.view_billing_dashboard]
+other = "Ver su panel de facturación"
+
+[email.postbutton.paid_plan_started]
+other = "Bienvenido a bordo. Feliz construcción,"
+
+# ---------------------------------------------------------------------------
+# Renovación de plan de pago
+# ---------------------------------------------------------------------------
+
+[email.subject.paid_plan_renewal]
+other = "Su suscripción al plan {{.PlanName}} de {{.OrgName}} ha sido renovada"
+
+[email.body.paid_plan_renewal]
+other = "¡Gracias! Ha renovado exitosamente {{.OrgName}} al plan <b>{{.PlanName}}</b>.\n<br /><br />\nSu próximo ciclo de facturación comienza el {{.BillingStartDate}}."
+
+# ---------------------------------------------------------------------------
+# Plantillas de bienvenida
+# ---------------------------------------------------------------------------
+
+[email.label.welcome_to_product]
+other = "Bienvenido a {{.ProductName}}"
+
+[email.label.get_started]
+other = "Comencemos a explorar su entorno:"
+
+[email.button.get_started]
+other = "Comenzar"
+
+[email.label.docs_tutorials]
+other = "Documentación y tutoriales →"
+
+[email.label.docs_tutorials_desc]
+other = "Consulte el inicio rápido, proyectos de ejemplo, y profundice en funciones avanzadas."
+
+[email.label.release_notes]
+other = "Notas de versión →"
+
+[email.label.release_notes_desc]
+other = "Constantemente lanzamos nuevas funciones. Siga nuestras notas de versión para estar al día."
+
+[email.label.help_contact]
+other = "Estamos aquí para ayudarle a usted y a su equipo. Si tiene alguna pregunta, no dude en contactarnos por <a href=\"mailto:{{.SupportEmail}}\" style=\"color:{{.PrimaryColor}}\">correo electrónico</a>, o por chat en <a href=\"{{.ChatURL}}\" style=\"color:{{.PrimaryColor}}\">{{.ProductName}}.</a>"
+
+# ---------------------------------------------------------------------------
+# Prefijos de rol para solicitudes de acceso
+# ---------------------------------------------------------------------------
+
+[email.label.access_prefix_admin]
+other = "ser administrador de"
+
+[email.label.access_prefix_editor]
+other = "editar"
+
+[email.label.access_prefix_viewer]
+other = "ver"
+
+# ---------------------------------------------------------------------------
+# Pie de página / común
+# ---------------------------------------------------------------------------
+
+[email.label.contact_us]
+other = "Contáctenos"
+
+[email.label.community]
+other = "Comunidad"
+
+[email.label.privacy_policy]
+other = "Política de privacidad"

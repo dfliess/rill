@@ -21,7 +21,7 @@
         </mj-text>
 
         <mj-text padding-bottom="0px">
-          Your alert triggered for <b>{{ .ExecutionTimeString }}</b>. The first row that matched your alert criteria is:
+          {{ .TriggerText }}
         </mj-text>
 
         <mj-text padding-bottom="0px">
@@ -33,7 +33,7 @@
         <mj-spacer height="20px" />
 
         <mj-button background-color="#ECF0FF" color="#3524C7" font-weight="bold" href="{{ .OpenLink }}">
-          Open in browser
+          {{ .OpenButtonText }}
         </mj-button>
 
         <mj-spacer height="20px" />
@@ -43,7 +43,7 @@
         <mj-spacer height="20px" />
 
         <mj-text align="center" font-size="12px">
-          {{ if .EditLink }} To edit this alert, <a href="{{ .EditLink }}">click here</a>. {{ end }} {{ if .UnsubscribeLink }} To unsubscribe from this alert, <a href="{{ .UnsubscribeLink }}">click here</a>. {{ end }}
+          {{ if .EditLink }} {{ .EditLinkText }} {{ end }} {{ if .UnsubscribeLink }} {{ .UnsubLinkText }} {{ end }}
         </mj-text>
 
         <mj-text align="center" font-size="12px" line-height="1.5">

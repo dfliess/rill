@@ -51,6 +51,16 @@ func WithBranding(b *Branding) Option {
 	}
 }
 
+// WithDefaultLocale sets the default locale for email translations.
+// If locale is empty, the default ("en") is kept.
+func WithDefaultLocale(locale string) Option {
+	return func(c *Client) {
+		if locale != "" {
+			c.defaultLocale = locale
+		}
+	}
+}
+
 // BrandingFromOrg returns a *Branding that overlays an organization's display
 // name and logo URL on top of the Rill defaults.  Empty/zero fields keep the
 // default.  logoURL should already be a resolved URL (not an asset ID).

@@ -27,11 +27,11 @@
                 <mj-spacer height="20px" />
 
                 <mj-button background-color="#ECF0FF" color="#3524C7" font-weight="bold" href="{{ .ApproveLink }}">
-                    Approve Request
+                    {{ .ApproveButtonText }}
                 </mj-button>
 
                 <mj-button background-color="white" border="1px solid #9CABFF" color="#3524C7" font-weight="bold" href="{{ .DenyLink }}">
-                    Deny Request
+                    {{ .DenyButtonText }}
                 </mj-button>
 
                 <mj-spacer height="20px" />

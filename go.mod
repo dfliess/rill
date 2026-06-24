@@ -77,6 +77,7 @@ require (
 	github.com/mitchellh/hashstructure/v2 v2.0.2
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/modelcontextprotocol/go-sdk v1.4.1
+	github.com/nicksnyder/go-i18n/v2 v2.6.1
 	github.com/openai/openai-go/v3 v3.17.0
 	github.com/orbcorp/orb-go v1.32.0
 	github.com/paulmach/orb v0.12.0
@@ -196,7 +197,7 @@ require (
 	github.com/Azure/go-autorest v14.2.0+incompatible // indirect
 	github.com/Azure/go-autorest/autorest/to v0.4.0 // indirect
 	github.com/AzureAD/microsoft-authentication-library-for-go v1.6.0 // indirect
-	github.com/BurntSushi/toml v1.4.0 // indirect
+	github.com/BurntSushi/toml v1.6.0
 	github.com/ClickHouse/ch-go v0.69.0 // indirect
 	github.com/DefangLabs/secret-detector v0.0.0-20250403165618-22662109213e // indirect
 	github.com/ForceCLI/config v0.0.0-20230217143549-9149d42a3c99 // indirect

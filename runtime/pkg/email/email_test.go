@@ -383,3 +383,254 @@ func TestCustomBrandingProjectAccessGranted(t *testing.T) {
 	require.Contains(t, mock.body, "View project in AcmeDash")
 	require.NotContains(t, mock.body, "View project in Rill")
 }
+
+// ---------------------------------------------------------------------------
+// i18n tests
+// ---------------------------------------------------------------------------
+
+func TestDefaultLocaleEnglish(t *testing.T) {
+	mock := &mockSender{}
+	client := New(mock)
+
+	err := client.SendOrganizationInvite(&OrganizationInvite{
+		ToEmail:       "test@example.com",
+		ToName:        "User",
+		AcceptURL:     "https://example.com/accept",
+		OrgName:       "TestOrg",
+		RoleName:      "admin",
+		InvitedByName: "Alice",
+	})
+	require.NoError(t, err)
+
+	// English catalog text
+	require.Contains(t, mock.subject, "Alice invited you to join Rill")
+	require.Contains(t, mock.body, "Accept invitation")
+	require.Contains(t, mock.body, "has invited you to join")
+}
+
+func TestLocaleSpanish(t *testing.T) {
+	mock := &mockSender{}
+	client := New(mock)
+
+	err := client.SendOrganizationInvite(&OrganizationInvite{
+		ToEmail:       "test@example.com",
+		ToName:        "User",
+		Locale:        "es",
+		AcceptURL:     "https://example.com/accept",
+		OrgName:       "TestOrg",
+		RoleName:      "admin",
+		InvitedByName: "Alice",
+	})
+	require.NoError(t, err)
+
+	// Spanish catalog text
+	require.Contains(t, mock.subject, "Alice le invitó a unirse a Rill")
+	require.Contains(t, mock.body, "Aceptar invitación")
+	require.Contains(t, mock.body, "le ha invitado a unirse a")
+}
+
+func TestLocaleSpanishProjectAccessGranted(t *testing.T) {
+	mock := &mockSender{}
+	client := New(mock)
+
+	err := client.SendProjectAccessGranted(&ProjectAccessGranted{
+		ToEmail:     "test@example.com",
+		ToName:      "User",
+		Locale:      "es",
+		OpenURL:     "https://example.com",
+		OrgName:     "TestOrg",
+		ProjectName: "TestProject",
+	})
+	require.NoError(t, err)
+
+	require.Contains(t, mock.subject, "aprobada")
+	require.Contains(t, mock.body, "Ver proyecto en Rill")
+}
+
+func TestLocaleSpanishAlertFail(t *testing.T) {
+	mock := &mockSender{}
+	client := New(mock, WithDefaultLocale("es"))
+
+	opts := &drivers.AlertStatus{
+		ToEmail:       "test@example.com",
+		ToName:        "User",
+		DisplayName:   "Foobar",
+		ExecutionTime: time.Date(2024, 01, 27, 0, 0, 0, 0, time.UTC),
+		Status:        runtimev1.AssertionStatus_ASSERTION_STATUS_FAIL,
+		FailRow:       map[string]any{"hello": "world"},
+		OpenLink:      "https://example.com",
+		EditLink:      "https://example.com",
+	}
+	err := client.SendAlertStatus(opts)
+	require.NoError(t, err)
+
+	// Spanish: "Su alerta se activó"
+	require.Contains(t, mock.body, "Su alerta se activó")
+	require.Contains(t, mock.body, "Abrir en el navegador")
+}
+
+func TestLocaleSpanishAlertRecover(t *testing.T) {
+	mock := &mockSender{}
+	client := New(mock, WithDefaultLocale("es"))
+
+	opts := &drivers.AlertStatus{
+		ToEmail:       "test@example.com",
+		ToName:        "User",
+		DisplayName:   "Foobar",
+		ExecutionTime: time.Date(2024, 01, 27, 0, 0, 0, 0, time.UTC),
+		Status:        runtimev1.AssertionStatus_ASSERTION_STATUS_PASS,
+		IsRecover:     true,
+		OpenLink:      "https://example.com",
+		EditLink:      "https://example.com",
+	}
+	err := client.SendAlertStatus(opts)
+	require.NoError(t, err)
+
+	// Spanish: "La alerta se ha recuperado"
+	require.Contains(t, mock.body, "recuperado")
+	require.Contains(t, mock.subject, "Recuperada:")
+}
+
+func TestLocaleSpanishScheduledReport(t *testing.T) {
+	mock := &mockSender{}
+	client := New(mock)
+
+	err := client.SendScheduledReport(&ScheduledReport{
+		ToEmail:        "test@example.com",
+		ToName:         "User",
+		Locale:         "es",
+		DisplayName:    "Daily Report",
+		ReportTime:     time.Date(2024, 01, 27, 0, 0, 0, 0, time.UTC),
+		DownloadFormat: "CSV",
+		OpenLink:       "https://example.com",
+		DownloadLink:   "https://example.com/dl",
+		EditLink:       "https://example.com/edit",
+	})
+	require.NoError(t, err)
+
+	// Spanish text
+	require.Contains(t, mock.body, "está listo para ver")
+	require.Contains(t, mock.body, "Abrir en el navegador")
+	require.Contains(t, mock.body, "Descargar archivo CSV")
+}
+
+func TestWithDefaultLocaleOption(t *testing.T) {
+	mock := &mockSender{}
+	client := New(mock, WithDefaultLocale("es"))
+
+	err := client.SendOrganizationInvite(&OrganizationInvite{
+		ToEmail:       "test@example.com",
+		ToName:        "User",
+		AcceptURL:     "https://example.com/accept",
+		OrgName:       "TestOrg",
+		RoleName:      "admin",
+		InvitedByName: "Alice",
+	})
+	require.NoError(t, err)
+
+	// Default locale is es, so even without Locale on opts, we get Spanish
+	require.Contains(t, mock.subject, "le invitó a unirse")
+	require.Contains(t, mock.body, "Aceptar invitación")
+}
+
+func TestFallbackToEnglishForUnknownLocale(t *testing.T) {
+	mock := &mockSender{}
+	client := New(mock)
+
+	err := client.SendOrganizationInvite(&OrganizationInvite{
+		ToEmail:       "test@example.com",
+		ToName:        "User",
+		Locale:        "fr", // no French catalog
+		AcceptURL:     "https://example.com/accept",
+		OrgName:       "TestOrg",
+		RoleName:      "admin",
+		InvitedByName: "Alice",
+	})
+	require.NoError(t, err)
+
+	// Falls back to English
+	require.Contains(t, mock.subject, "Alice invited you to join Rill")
+	require.Contains(t, mock.body, "Accept invitation")
+}
+
+func TestTMethod(t *testing.T) {
+	client := New(NewNoopSender())
+
+	// English
+	s := client.T("en", "email.button.accept_invitation", nil)
+	require.Equal(t, "Accept invitation", s)
+
+	// Spanish
+	s = client.T("es", "email.button.accept_invitation", nil)
+	require.Equal(t, "Aceptar invitación", s)
+
+	// Unknown message ID returns the ID itself
+	s = client.T("en", "email.nonexistent.key", nil)
+	require.Equal(t, "email.nonexistent.key", s)
+}
+
+func TestTHtmlMethod(t *testing.T) {
+	client := New(NewNoopSender())
+
+	h := client.THtml("en", "email.body.org_invite", map[string]any{
+		"InvitedByName": "Alice",
+		"OrgName":       "TestOrg",
+		"RoleName":      "admin",
+		"ProductName":   "Rill",
+	})
+	require.Contains(t, string(h), "Alice has invited you")
+	require.Contains(t, string(h), "<b>TestOrg</b>")
+}
+
+func TestLocaleSpanishInvoicePaymentFailed(t *testing.T) {
+	mock := &mockSender{}
+	client := New(mock)
+
+	err := client.SendInvoicePaymentFailed(&InvoicePaymentFailed{
+		ToEmail:            "test@example.com",
+		ToName:             "User",
+		Locale:             "es",
+		OrgName:            "TestOrg",
+		PaymentURL:         "https://example.com/pay",
+		GracePeriodEndDate: time.Date(2024, 06, 15, 0, 0, 0, 0, time.UTC),
+	})
+	require.NoError(t, err)
+
+	require.Contains(t, mock.subject, "El pago de TestOrg ha fallado")
+	require.Contains(t, mock.body, "Actualizar información de pago")
+}
+
+func TestLocaleSpanishTrialStarted(t *testing.T) {
+	mock := &mockSender{}
+	client := New(mock)
+
+	err := client.SendTrialStarted(&TrialStarted{
+		ToEmail:      "test@example.com",
+		ToName:       "User",
+		Locale:       "es",
+		OrgName:      "TestOrg",
+		FrontendURL:  "https://example.com",
+		TrialEndDate: time.Date(2024, 07, 27, 0, 0, 0, 0, time.UTC),
+	})
+	require.NoError(t, err)
+
+	require.Contains(t, mock.subject, "prueba gratuita de 30 días")
+}
+
+func TestLocalePerRequestOverridesDefault(t *testing.T) {
+	mock := &mockSender{}
+	// Default locale is English
+	client := New(mock)
+
+	// But this specific request uses Spanish
+	err := client.SendPlanUpdate(&PlanUpdate{
+		ToEmail:  "test@example.com",
+		ToName:   "User",
+		Locale:   "es",
+		OrgName:  "TestOrg",
+		PlanName: "Pro",
+	})
+	require.NoError(t, err)
+
+	require.Contains(t, mock.subject, "ha sido actualizado al plan Pro")
+}
