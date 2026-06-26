@@ -2,6 +2,7 @@
   import { dev } from "$app/environment";
   import { page } from "$app/stores";
   import BannerCenter from "@rilldata/web-common/components/banner/BannerCenter.svelte";
+  import { initializeI18n } from "@rilldata/web-common/lib/i18n";
   import NotificationCenter from "@rilldata/web-common/components/notifications/NotificationCenter.svelte";
   import RepresentingUserBanner from "@rilldata/web-common/features/authentication/RepresentingUserBanner.svelte";
   import FileAndResourceWatcher from "@rilldata/web-common/features/entity-management/FileAndResourceWatcher.svelte";
@@ -34,6 +35,8 @@
   import "@rilldata/web-common/app.css";
 
   export let data: LayoutData;
+
+  initializeI18n();
 
   const { deploy } = featureFlags;
 

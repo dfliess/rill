@@ -1,6 +1,7 @@
 <script lang="ts">
   import * as DropdownMenu from "@rilldata/web-common/components/dropdown-menu";
   import CaretDownIcon from "@rilldata/web-common/components/icons/CaretDownIcon.svelte";
+  import * as m from "@rilldata/web-common/paraglide/messages.js";
   import DashboardMetricsDraggableList from "@rilldata/web-common/components/menu/DashboardMetricsDraggableList.svelte";
   import { mergeDimensionAndMeasureFilters } from "@rilldata/web-common/features/dashboards/filters/measure-filters/measure-filter-utils";
   import ReplacePivotDialog from "@rilldata/web-common/features/dashboards/pivot/ReplacePivotDialog.svelte";
@@ -307,7 +308,7 @@
             {#snippet child({ props })}
               <button
                 {...props}
-                aria-label="Select aggregation grain"
+                aria-label={m.dashboard_select_aggregation_grain_aria()}
                 class="flex gap-x-1 items-center text-fg-muted hover:text-fg-accent"
               >
                 by <b>
@@ -361,7 +362,7 @@
           }}
         >
           <Pivot size="16px" />
-          Start Pivot
+          {m.dashboard_start_pivot()}
         </Button>
       {/if}
     {/if}
@@ -451,7 +452,7 @@
                 <DropdownMenu.Item
                   onclick={() => openScreenshotDialog(measure)}
                 >
-                  Download as PNG
+                  {m.dashboard_download_png()}
                 </DropdownMenu.Item>
               </DropdownMenu.Content>
             </DropdownMenu.Root>

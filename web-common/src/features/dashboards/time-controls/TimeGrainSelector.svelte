@@ -1,4 +1,5 @@
 <script lang="ts">
+  import * as m from "@rilldata/web-common/paraglide/messages.js";
   import * as DropdownMenu from "@rilldata/web-common/components/dropdown-menu";
   import CaretDownIcon from "@rilldata/web-common/components/icons/CaretDownIcon.svelte";
   import { TIME_GRAIN } from "@rilldata/web-common/lib/time/config";
@@ -53,13 +54,13 @@
         <button
           {...props}
           class:tdd
-          aria-label="Select a time grain"
+          aria-label={m.dashboard_select_time_grain()}
           class="flex items-center gap-x-1"
         >
           <div class="items-center flex gap-x-1">
             <span>
               <svelte:element this={tdd ? "b" : "span"}>
-                {tdd ? "Time" : "by"}
+                {tdd ? m.time_grain_time() : m.time_grain_by()}
               </svelte:element>
 
               <svelte:element this={tdd ? "span" : "b"}>
@@ -67,7 +68,7 @@
               </svelte:element>
 
               {#if complete}
-                <i class="ml-0.5">complete</i>
+                <i class="ml-0.5">{m.time_grain_complete()}</i>
               {/if}
             </span>
             <span

@@ -9,6 +9,7 @@
     getDimensionDisplayName,
     getMeasureDisplayName,
   } from "./getDisplayName";
+  import * as m from "@rilldata/web-common/paraglide/messages.js";
   import type { MetricsViewName } from "../../canvas/stores/filter-manager";
   import type {
     MetricsViewSpecDimension,
@@ -69,11 +70,13 @@
           {...props}
           class:addBorder
           class:active={open}
-          aria-label="Add filter button"
+          aria-label={m.dashboard_add_filter_button()}
         >
           <Add size="17px" />
         </button>
-        <TooltipContent slot="tooltip-content">Add filter</TooltipContent>
+        <TooltipContent slot="tooltip-content"
+          >{m.dashboard_add_filter()}</TooltipContent
+        >
       </Tooltip>
     {/snippet}
   </DropdownMenu.Trigger>

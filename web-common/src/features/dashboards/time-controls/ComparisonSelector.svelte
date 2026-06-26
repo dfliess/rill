@@ -9,6 +9,7 @@
   import type { MetricsViewSpecDimension } from "@rilldata/web-common/runtime-client";
   import { matchSorter } from "match-sorter";
   import * as DropdownMenu from "@rilldata/web-common/components/dropdown-menu";
+  import * as m from "@rilldata/web-common/paraglide/messages.js";
 
   export let exploreName: string;
 
@@ -65,7 +66,7 @@
     <Tooltip distance={8} suppress={open}>
       <Chip
         theme
-        label="Select a comparison dimension"
+        label={m.dashboard_select_comparison_dimension()}
         active={open}
         type="dimension"
         caret
@@ -82,7 +83,7 @@
   <DropdownMenu.Content align="start">
     <div class="p-2">
       <Search
-        placeholder="Search Dimension"
+        placeholder={m.dashboard_search_dimension()}
         bind:value={searchText}
         showBorderOnFocus={false}
       />

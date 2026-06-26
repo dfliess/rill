@@ -25,6 +25,7 @@
     createAdminServiceGetCurrentUser,
     type V1ProjectPermissions,
   } from "../../client";
+  import LanguageSwitcher from "@rilldata/web-common/components/i18n/LanguageSwitcher.svelte";
   import ViewAsUserPopover from "../view-as-user/ViewAsUserPopover.svelte";
   import ThemeToggle from "@rilldata/web-common/features/themes/ThemeToggle.svelte";
 
@@ -124,6 +125,7 @@
     {/if}
 
     <ThemeToggle />
+    <LanguageSwitcher />
     <DropdownMenu.Separator />
 
     <DropdownMenu.Item

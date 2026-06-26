@@ -1,3 +1,4 @@
+import { paraglideVitePlugin } from "@inlang/paraglide-js";
 import { sveltekit } from "@sveltejs/kit/vite";
 import dns from "dns";
 import { defineConfig } from "vitest/config";
@@ -46,7 +47,17 @@ const config = defineConfig({
       "memoize-weak",
     ],
   },
-  plugins: [sveltekit()],
+  plugins: [
+    paraglideVitePlugin({
+      project: "../web-common/project.inlang",
+      outdir: "../web-common/src/paraglide",
+      strategy: ["cookie", "preferredLanguage", "baseLocale"],
+      emitGitIgnore: false,
+      emitPrettierIgnore: false,
+      outputStructure: "locale-modules",
+    }),
+    sveltekit(),
+  ],
   envDir: "../",
   envPrefix: "RILL_UI_PUBLIC_",
 });
