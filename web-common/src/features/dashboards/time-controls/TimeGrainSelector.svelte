@@ -7,6 +7,7 @@
     getAllowedTimeGrains,
     isGrainBigger,
   } from "@rilldata/web-common/lib/time/grains";
+  import { translateGrainName } from "@rilldata/web-common/lib/time/new-grains";
   import type { AvailableTimeGrain } from "@rilldata/web-common/lib/time/types";
   import type { V1TimeGrain } from "../../../runtime-client";
 
@@ -29,18 +30,18 @@
     activeTimeGrain && TIME_GRAIN[activeTimeGrain as AvailableTimeGrain]?.label;
 
   $: capitalizedLabel = activeTimeGrainLabel
-    ?.split(" ")
-    .map((word) => {
-      return word.charAt(0).toUpperCase() + word.slice(1);
-    })
-    .join(" ");
+    ? translateGrainName(activeTimeGrainLabel)
+        .split(" ")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ")
+    : undefined;
 
   $: timeGrains = minTimeGrain
     ? timeGrainOptions
         .filter((timeGrain) => !isGrainBigger(minTimeGrain, timeGrain.grain))
         .map((timeGrain) => {
           return {
-            main: timeGrain.label,
+            main: translateGrainName(timeGrain.label),
             key: timeGrain.grain,
           };
         })

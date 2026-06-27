@@ -14,10 +14,10 @@
 </script>
 
 <GuardedDialog
-  title="Close without saving?"
-  description="You haven’t saved changes to this alert yet, so closing this window will lose your work."
-  confirmLabel="Close"
-  cancelLabel="Keep editing"
+  title={m.dialog_close_without_saving_title()}
+  description={m.dialog_close_without_saving_alert_desc()}
+  confirmLabel={m.dialog_close_without_saving_confirm()}
+  cancelLabel={m.dialog_close_without_saving_cancel()}
   let:onCancel
   let:onClose
   let:preventClose

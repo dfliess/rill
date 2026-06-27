@@ -1,4 +1,5 @@
 <script lang="ts">
+  import * as m from "@rilldata/web-common/paraglide/messages.js";
   import { page } from "$app/stores";
   import {
     createAdminServiceGetCurrentUser,
@@ -318,7 +319,7 @@
 
 <div class="flex flex-col p-4">
   <div class="flex flex-row items-center mb-4">
-    <div class="text-sm font-medium">Share project: {project}</div>
+    <div class="text-sm font-medium">{m.project_share_heading({ project })}</div>
     <div class="grow"></div>
   </div>
   <UserAndGroupInviteForm {organization} {project} {searchList} />

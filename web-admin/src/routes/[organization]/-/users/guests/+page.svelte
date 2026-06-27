@@ -125,7 +125,6 @@
     <div class="flex flex-col">
       <div class="flex flex-row gap-x-4 h-9">
         <Search
-          placeholder="Search"
           bind:value={searchText}
           large
           autofocus={false}

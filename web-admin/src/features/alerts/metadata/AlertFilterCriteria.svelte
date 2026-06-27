@@ -49,7 +49,7 @@
         class="text-fg-disabled grid items-center"
         style:min-height="26px"
       >
-        No criteria selected
+        {m.alert_form_no_criteria()}
       </div>
     {/if}
   </div>

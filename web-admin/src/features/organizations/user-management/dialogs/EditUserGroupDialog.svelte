@@ -1,4 +1,5 @@
 <script lang="ts">
+  import * as m from "@rilldata/web-common/paraglide/messages.js";
   import { page } from "$app/stores";
   import type { V1OrganizationMemberUser } from "@rilldata/web-admin/client";
   import {
@@ -318,7 +319,7 @@
           <Combobox
             bind:searchValue={searchInput}
             options={coercedUsersToOptions}
-            placeholder="Search to add/remove users"
+            placeholder={m.org_search_add_remove_users()}
             {getMetadata}
             enableClientFiltering={false}
             selectedValues={[

@@ -330,7 +330,7 @@
           class="text-fg-muted grid ml-1 items-center"
           style:min-height={ROW_HEIGHT}
         >
-          No filters selected
+          {m.dashboard_no_filters_selected()}
         </div>
       {:else}
         {#each $allDimensionFilterItems as filterData (filterData.name)}

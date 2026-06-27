@@ -24,7 +24,10 @@
   import { measureSelection } from "@rilldata/web-common/features/dashboards/time-series/measure-selection/measure-selection.ts";
   import { EntityStatus } from "@rilldata/web-common/features/entity-management/types";
   import { useExploreValidSpec } from "@rilldata/web-common/features/explores/selectors";
-  import { V1TimeGrainToDateTimeUnit } from "@rilldata/web-common/lib/time/new-grains";
+  import {
+    V1TimeGrainToDateTimeUnit,
+  } from "@rilldata/web-common/lib/time/new-grains";
+  import { V1TimeGrain } from "@rilldata/web-common/runtime-client";
   import {
     TimeComparisonOption,
     TimeRangePreset,
@@ -49,6 +52,21 @@
   import ScreenshotContainer from "@rilldata/web-common/features/dashboards/time-series/ScreenshotContainer.svelte";
 
   const { rillTime } = featureFlags;
+
+  /** Map a V1TimeGrain to its translated display name. */
+  function getTranslatedGrain(grain: V1TimeGrain | AvailableTimeGrain): string {
+    const unit = V1TimeGrainToDateTimeUnit[grain];
+    const grainMessages: Record<string, () => string> = {
+      minute: m.time_grain_minute,
+      hour: m.time_grain_hour,
+      day: m.time_grain_day,
+      week: m.time_grain_week,
+      month: m.time_grain_month,
+      quarter: m.time_grain_quarter,
+      year: m.time_grain_year,
+    };
+    return grainMessages[unit]?.() ?? unit;
+  }
 
   // Singleton scrub controller — shared across all charts
   const scrubController = new ScrubController();
@@ -311,8 +329,8 @@
                 aria-label={m.dashboard_select_aggregation_grain_aria()}
                 class="flex gap-x-1 items-center text-fg-muted hover:text-fg-accent"
               >
-                by <b>
-                  {V1TimeGrainToDateTimeUnit[activeTimeGrain]}
+                {m.explore_by_grain_prefix()} <b>
+                  {getTranslatedGrain(activeTimeGrain)}
                 </b>
                 <span
                   class:-rotate-90={grainDropdownOpen}
@@ -334,7 +352,7 @@
                   metricsExplorerStore.setTimeGrain(exploreName, option);
                 }}
               >
-                {V1TimeGrainToDateTimeUnit[option]}
+                {getTranslatedGrain(option)}
               </DropdownMenu.CheckboxItem>
             {/each}
           </DropdownMenu.Content>

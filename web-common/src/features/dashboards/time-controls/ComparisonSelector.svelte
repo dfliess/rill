@@ -5,7 +5,7 @@
   import TooltipContent from "@rilldata/web-common/components/tooltip/TooltipContent.svelte";
   import { getStateManagers } from "@rilldata/web-common/features/dashboards/state-managers/state-managers";
   import { metricsExplorerStore } from "@rilldata/web-common/features/dashboards/stores/dashboard-stores";
-  import { NO_COMPARISON_LABEL } from "@rilldata/web-common/lib/time/config";
+  import { getNoComparisonLabel } from "@rilldata/web-common/lib/time/config";
   import type { MetricsViewSpecDimension } from "@rilldata/web-common/runtime-client";
   import { matchSorter } from "match-sorter";
   import * as DropdownMenu from "@rilldata/web-common/components/dropdown-menu";
@@ -38,7 +38,7 @@
 
   $: label = selectedComparisonDimension
     ? getLabelForDimension(selectedComparisonDimension)
-    : NO_COMPARISON_LABEL;
+    : getNoComparisonLabel();
 
   function getLabelForDimension(dimension: string) {
     if (!dimensions) return dimension;
@@ -75,7 +75,7 @@
       </Chip>
 
       <TooltipContent slot="tooltip-content" maxWidth="220px">
-        Select a comparison for the dashboard
+        {m.dashboard_comparison_select_tooltip()}
       </TooltipContent>
     </Tooltip>
   </DropdownMenu.Trigger>
@@ -92,7 +92,7 @@
       <span
         class:font-bold={!selectedComparisonDimension && !showTimeComparison}
       >
-        {NO_COMPARISON_LABEL}
+        {getNoComparisonLabel()}
       </span>
     </DropdownMenu.Item>
 

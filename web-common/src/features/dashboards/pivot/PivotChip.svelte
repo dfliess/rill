@@ -10,6 +10,7 @@
 
 <script lang="ts">
   import * as m from "@rilldata/web-common/paraglide/messages.js";
+  import { translateGrainName } from "@rilldata/web-common/lib/time/new-grains";
 
   export let item: PivotChipData;
   export let removable = false;
@@ -55,7 +56,7 @@
       {#if item.type === PivotChipType.Time}
         <b>{m.pivot_time_prefix()}</b>
         {#if activeTimeGrainLabel}
-          <p class="grain-label truncate">{activeTimeGrainLabel}</p>
+          <p class="grain-label truncate">{translateGrainName(activeTimeGrainLabel)}</p>
         {/if}
       {:else}
         <p class="font-semibold truncate">{item.title}</p>

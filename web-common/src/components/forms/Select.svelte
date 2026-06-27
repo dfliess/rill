@@ -5,6 +5,7 @@
   import Spinner from "@rilldata/web-common/features/entity-management/Spinner.svelte";
   import { EntityStatus } from "@rilldata/web-common/features/entity-management/types.ts";
   import { InfoIcon, X } from "lucide-svelte";
+  import * as m from "@rilldata/web-common/paraglide/messages.js";
   import DataTypeIcon from "../data-types/DataTypeIcon.svelte";
   import Search from "../search/Search.svelte";
   import type { ComponentType, SvelteComponent } from "svelte";
@@ -89,7 +90,7 @@
         {label}
       </span>
       {#if optional}
-        <span class="text-fg-secondary">(optional)</span>
+        <span class="text-fg-secondary">{m.form_optional()}</span>
       {/if}
       {#if tooltip}
         <Tooltip.Root>

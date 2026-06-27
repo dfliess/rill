@@ -55,7 +55,7 @@
     <FiltersForm {filters} {timeControls} maxWidth={750} />
   </FormSection>
   <FormSection
-    description="Select the measures you want to monitor."
+    description={m.alert_form_data_measures_desc()}
     title={m.alert_form_data_title()}
   >
     <Select
@@ -76,7 +76,7 @@
   </FormSection>
   <FormSection
     title={m.alert_form_data_preview()}
-    description="Here’s a look at the data you’ve selected above."
+    description={m.alert_form_data_preview_desc()}
   >
     <DataPreview formValues={$form} {filters} {timeControls} />
   </FormSection>

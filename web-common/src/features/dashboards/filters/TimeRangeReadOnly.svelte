@@ -16,7 +16,7 @@
   );
 
   $: showRange =
-    selectedLabel === "Custom" ||
+    selectedLabel === m.time_custom() ||
     selectedLabel?.startsWith("-") ||
     !isNaN(Number(selectedLabel?.[0]));
 </script>

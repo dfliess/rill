@@ -1,4 +1,5 @@
 <script lang="ts">
+  import * as m from "@rilldata/web-common/paraglide/messages.js";
   import { Button } from "@rilldata/web-common/components/button";
   import UserRoleSelect from "@rilldata/web-admin/features/projects/user-management/UserRoleSelect.svelte";
   import { ProjectUserRoles } from "@rilldata/web-common/features/users/roles.ts";
@@ -21,7 +22,9 @@
   } from "./utils";
   import { debounce } from "@rilldata/web-common/lib/create-debouncer";
 
-  export let placeholder: string = "Search or invite by email";
+  export let placeholder: string | undefined = undefined;
+
+  $: resolvedPlaceholder = placeholder ?? m.project_search_or_invite();
   export let validators: ((value: string) => boolean | string)[] = [];
   export let roleSelect: boolean = false;
   export let initialRole: string = ProjectUserRoles.Viewer;
@@ -370,7 +373,7 @@
           type="text"
           bind:value={input}
           bind:this={inputElement}
-          placeholder={selected.length === 0 ? placeholder : ""}
+          placeholder={selected.length === 0 ? resolvedPlaceholder : ""}
           oninput={handleInput}
           onkeydown={handleInputKeydown}
           onfocus={handleFocus}

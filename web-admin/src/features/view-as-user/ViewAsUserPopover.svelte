@@ -1,4 +1,5 @@
 <script lang="ts">
+  import * as m from "@rilldata/web-common/paraglide/messages.js";
   import * as Command from "@rilldata/web-common/components/command/index.js";
   import {
     createAdminServiceSearchProjectUsers,
@@ -36,7 +37,7 @@
 </div>
 
 <Command.Root>
-  <Command.Input placeholder="Search for users" />
+  <Command.Input placeholder={m.project_search_users()} />
   <Command.List>
     <Command.Empty>No results found.</Command.Empty>
     <Command.Group>

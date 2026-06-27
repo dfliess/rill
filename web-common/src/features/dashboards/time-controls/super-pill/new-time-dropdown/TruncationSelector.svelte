@@ -5,6 +5,8 @@
   import { V1TimeGrain } from "@rilldata/web-common/runtime-client";
   import {
     getOptionsFromSmallestToLargest,
+    translateGrainName,
+    translateV1TimeGrain,
     V1TimeGrainToDateTimeUnit,
   } from "@rilldata/web-common/lib/time/new-grains";
   import TooltipContent from "@rilldata/web-common/components/tooltip/TooltipContent.svelte";
@@ -178,7 +180,7 @@
             <b>
               {humanizedRef}
               {#if dateTimeUnit}
-                {dateTimeUnit}
+                {translateGrainName(dateTimeUnit)}
               {/if}
             </b>
             {#if grain}
@@ -286,7 +288,7 @@
             onSelectEnding(option);
           }}
         >
-          {V1TimeGrainToDateTimeUnit[option]}
+          {translateV1TimeGrain(option)}
         </DropdownMenu.CheckboxItem>
       {:else}
         <div class="px-2 py-1 text-fg-secondary flex justify-center italic">

@@ -30,8 +30,10 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Alert_Form_Data_FiltersInputs */
 /** @typedef {{}} Alert_Form_Data_MeasureInputs */
 /** @typedef {{}} Alert_Form_Data_Measure_PlaceholderInputs */
+/** @typedef {{}} Alert_Form_Data_Measures_DescInputs */
 /** @typedef {{}} Alert_Form_Data_NoneInputs */
 /** @typedef {{}} Alert_Form_Data_PreviewInputs */
+/** @typedef {{}} Alert_Form_Data_Preview_DescInputs */
 /** @typedef {{}} Alert_Form_Data_Split_ByInputs */
 /** @typedef {{}} Alert_Form_Data_Split_PlaceholderInputs */
 /** @typedef {{}} Alert_Form_Data_TitleInputs */
@@ -50,6 +52,7 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Alert_Form_Preview_Table_AriaInputs */
 /** @typedef {{}} Alert_Form_Select_CriteriaInputs */
 /** @typedef {{}} Alert_Form_Slack_Channels_DescInputs */
+/** @typedef {{ docsUrl: NonNullable<unknown> }} Alert_Form_Slack_Not_ConfiguredInputs */
 /** @typedef {{}} Alert_Form_Slack_PlaceholderInputs */
 /** @typedef {{}} Alert_Form_Slack_TitleInputs */
 /** @typedef {{}} Alert_Form_Slack_Users_DescInputs */
@@ -59,12 +62,16 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Alert_Form_Tab_DataInputs */
 /** @typedef {{}} Alert_Form_Tab_DeliveryInputs */
 /** @typedef {{}} Alert_Form_TriggerInputs */
+/** @typedef {{}} Alert_Form_Trigger_Data_RefreshInputs */
+/** @typedef {{}} Alert_Form_Trigger_Set_ScheduleInputs */
 /** @typedef {{}} Alert_Form_UpdateInputs */
+/** @typedef {{ time: NonNullable<unknown> }} Alert_Last_CheckedInputs */
 /** @typedef {{}} Alert_Name_LabelInputs */
 /** @typedef {{}} Alert_No_Filters_BodyInputs */
 /** @typedef {{}} Alert_No_Filters_HeadingInputs */
 /** @typedef {{}} Alert_No_Filters_HintInputs */
 /** @typedef {{}} Alert_NoneInputs */
+/** @typedef {{}} Alert_Not_Checked_YetInputs */
 /** @typedef {{}} Alert_ScheduleInputs */
 /** @typedef {{}} Alert_Slack_NotificationsInputs */
 /** @typedef {{}} Alert_SnoozeInputs */
@@ -295,6 +302,7 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Chart_Stacked_BarInputs */
 /** @typedef {{}} Chart_Undo_ZoomInputs */
 /** @typedef {{}} Chart_Undo_Zoom_LabelInputs */
+/** @typedef {{}} Chart_VsInputs */
 /** @typedef {{}} Chart_ZoomInputs */
 /** @typedef {{}} Chart_Zoom_LabelInputs */
 /** @typedef {{}} Chat_Ai_DisclaimerInputs */
@@ -342,6 +350,7 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Chat_Upvote_TooltipInputs */
 /** @typedef {{}} Common_ApplyInputs */
 /** @typedef {{}} Common_CancelInputs */
+/** @typedef {{}} Common_Close_SearchInputs */
 /** @typedef {{}} Common_ContinueInputs */
 /** @typedef {{}} Common_Must_Be_NumberInputs */
 /** @typedef {{}} Common_PreviewInputs */
@@ -381,6 +390,7 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Dashboard_Collapse_AllInputs */
 /** @typedef {{}} Dashboard_ColumnsInputs */
 /** @typedef {{}} Dashboard_Comparison_Column_AriaInputs */
+/** @typedef {{}} Dashboard_Comparison_Select_TooltipInputs */
 /** @typedef {{}} Dashboard_Complete_DataInputs */
 /** @typedef {{}} Dashboard_Complete_Data_DescriptionInputs */
 /** @typedef {{}} Dashboard_Connect_Sparse_DataInputs */
@@ -538,6 +548,10 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Dashboard_Total_RowInputs */
 /** @typedef {{}} Dashboard_View_AsInputs */
 /** @typedef {{}} Dashboard_Viewing_AsInputs */
+/** @typedef {{}} Dialog_Close_Without_Saving_Alert_DescInputs */
+/** @typedef {{}} Dialog_Close_Without_Saving_CancelInputs */
+/** @typedef {{}} Dialog_Close_Without_Saving_ConfirmInputs */
+/** @typedef {{}} Dialog_Close_Without_Saving_TitleInputs */
 /** @typedef {{}} Error_Access_Denied_BodyInputs */
 /** @typedef {{}} Error_Access_Denied_HeaderInputs */
 /** @typedef {{}} Error_Auth_BodyInputs */
@@ -567,10 +581,69 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Error_Resource_Not_Found_HeaderInputs */
 /** @typedef {{}} Error_Retry_NowInputs */
 /** @typedef {{}} Error_Show_DetailsInputs */
+/** @typedef {{}} Explore_All_DimensionsInputs */
+/** @typedef {{}} Explore_All_MeasuresInputs */
+/** @typedef {{}} Explore_By_Grain_PrefixInputs */
+/** @typedef {{}} Explore_Choose_DimensionsInputs */
+/** @typedef {{}} Explore_Choose_MeasuresInputs */
+/** @typedef {{}} Explore_Clear_FilterInputs */
+/** @typedef {{ tag: NonNullable<unknown> }} Explore_Clear_Filter_TagInputs */
+/** @typedef {{}} Explore_Clear_Search_To_Reorder_DimensionsInputs */
+/** @typedef {{}} Explore_Clear_Search_To_Reorder_MeasuresInputs */
+/** @typedef {{}} Explore_Clear_Tag_FilterInputs */
+/** @typedef {{}} Explore_Clear_Tag_Filter_To_Reorder_DimensionsInputs */
+/** @typedef {{}} Explore_Clear_Tag_Filter_To_Reorder_MeasuresInputs */
+/** @typedef {{ count: NonNullable<unknown>, total: NonNullable<unknown> }} Explore_Dimensions_CountInputs */
+/** @typedef {{ tag: NonNullable<unknown> }} Explore_Filter_By_TagInputs */
+/** @typedef {{}} Explore_Filter_LabelInputs */
 /** @typedef {{}} Explore_Go_To_DashboardInputs */
 /** @typedef {{}} Explore_Go_To_ExploreInputs */
 /** @typedef {{ name: NonNullable<unknown> }} Explore_Go_To_NamedInputs */
+/** @typedef {{}} Explore_Hidden_DimensionsInputs */
+/** @typedef {{}} Explore_Hidden_MeasuresInputs */
+/** @typedef {{}} Explore_Hide_AllInputs */
+/** @typedef {{ tag: NonNullable<unknown> }} Explore_Hide_All_In_Named_TagInputs */
+/** @typedef {{}} Explore_Hide_All_In_TagInputs */
+/** @typedef {{ name: NonNullable<unknown> }} Explore_Hide_ItemInputs */
+/** @typedef {{ count: NonNullable<unknown>, total: NonNullable<unknown> }} Explore_Measures_CountInputs */
+/** @typedef {{}} Explore_Multi_SelectInputs */
+/** @typedef {{}} Explore_Must_Show_One_DimensionInputs */
+/** @typedef {{}} Explore_Must_Show_One_MeasureInputs */
+/** @typedef {{ count: NonNullable<unknown> }} Explore_N_MeasuresInputs */
+/** @typedef {{}} Explore_No_Dimensions_From_TagInputs */
+/** @typedef {{}} Explore_No_Dimensions_Or_TagsInputs */
+/** @typedef {{}} Explore_No_Dimensions_ShownInputs */
+/** @typedef {{}} Explore_No_Hidden_DimensionsInputs */
+/** @typedef {{}} Explore_No_Hidden_MeasuresInputs */
+/** @typedef {{}} Explore_No_Matching_Dimensions_ShownInputs */
+/** @typedef {{}} Explore_No_Matching_Hidden_DimensionsInputs */
+/** @typedef {{}} Explore_No_Matching_Hidden_MeasuresInputs */
+/** @typedef {{}} Explore_No_Matching_Leaderboard_MeasuresInputs */
+/** @typedef {{}} Explore_No_Matching_Measures_ShownInputs */
+/** @typedef {{}} Explore_No_Matching_TagsInputs */
+/** @typedef {{}} Explore_No_Measures_From_TagInputs */
+/** @typedef {{}} Explore_No_Measures_Or_TagsInputs */
+/** @typedef {{}} Explore_No_Measures_ShownInputs */
+/** @typedef {{ tag: NonNullable<unknown> }} Explore_Only_Show_TagInputs */
+/** @typedef {{}} Explore_Only_Show_This_TagInputs */
+/** @typedef {{}} Explore_Search_DimensionsInputs */
+/** @typedef {{}} Explore_Search_Dimensions_Or_TagsInputs */
+/** @typedef {{}} Explore_Search_ListInputs */
+/** @typedef {{}} Explore_Search_MeasuresInputs */
+/** @typedef {{}} Explore_Search_Measures_Or_TagsInputs */
+/** @typedef {{}} Explore_Show_AllInputs */
+/** @typedef {{ tag: NonNullable<unknown> }} Explore_Show_All_In_Named_TagInputs */
+/** @typedef {{}} Explore_Show_All_In_TagInputs */
+/** @typedef {{}} Explore_Show_Context_For_All_MeasuresInputs */
+/** @typedef {{ name: NonNullable<unknown> }} Explore_Show_ItemInputs */
+/** @typedef {{}} Explore_ShowingInputs */
+/** @typedef {{}} Explore_Shown_DimensionsInputs */
+/** @typedef {{}} Explore_Shown_MeasuresInputs */
+/** @typedef {{ visible: NonNullable<unknown>, total: NonNullable<unknown> }} Explore_Tag_Shown_CountInputs */
+/** @typedef {{}} Explore_TagsInputs */
 /** @typedef {{}} Explore_Unable_To_OpenInputs */
+/** @typedef {{}} Explore_Unknown_DimensionInputs */
+/** @typedef {{}} Explore_Unknown_MeasureInputs */
 /** @typedef {{ label: NonNullable<unknown> }} Field_List_Add_FieldsInputs */
 /** @typedef {{ label: NonNullable<unknown> }} Field_List_AriaInputs */
 /** @typedef {{}} Field_List_DimensionsInputs */
@@ -614,6 +687,7 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Footer_Unknown_VersionInputs */
 /** @typedef {{}} Footer_VersionInputs */
 /** @typedef {{}} Footer_View_DocumentationInputs */
+/** @typedef {{}} Form_OptionalInputs */
 /** @typedef {{}} Home_Dashboards_HeadingInputs */
 /** @typedef {{}} Home_Subtitle_No_ChatInputs */
 /** @typedef {{}} Home_Subtitle_With_ChatInputs */
@@ -622,6 +696,10 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Interval_HourInputs */
 /** @typedef {{}} Interval_NoneInputs */
 /** @typedef {{}} Interval_WeekInputs */
+/** @typedef {{}} Kpi_No_ChangeInputs */
+/** @typedef {{}} Kpi_No_DataInputs */
+/** @typedef {{}} Kpi_Not_AvailableInputs */
+/** @typedef {{ comparison: NonNullable<unknown> }} Kpi_Vs_ComparisonInputs */
 /** @typedef {{}} Language_EnInputs */
 /** @typedef {{}} Language_EsInputs */
 /** @typedef {{}} Language_Switcher_LabelInputs */
@@ -673,6 +751,7 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Nav_Tab_SettingsInputs */
 /** @typedef {{}} Nav_Tab_StatusInputs */
 /** @typedef {{}} Org_Check_Out_ProjectsInputs */
+/** @typedef {{}} Org_Search_Add_Remove_UsersInputs */
 /** @typedef {{}} Org_Tab_ProjectsInputs */
 /** @typedef {{}} Org_Tab_SettingsInputs */
 /** @typedef {{}} Org_Tab_UsersInputs */
@@ -695,7 +774,11 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Project_EditInputs */
 /** @typedef {{}} Project_RenameInputs */
 /** @typedef {{}} Project_Role_ViewerInputs */
+/** @typedef {{}} Project_Search_Or_InviteInputs */
+/** @typedef {{}} Project_Search_UsersInputs */
 /** @typedef {{}} Project_ShareInputs */
+/** @typedef {{ project: NonNullable<unknown> }} Project_Share_HeadingInputs */
+/** @typedef {{}} Project_Share_TooltipInputs */
 /** @typedef {{}} Report_Context_Menu_AriaInputs */
 /** @typedef {{ name: NonNullable<unknown> }} Report_Created_ByInputs */
 /** @typedef {{}} Report_Created_Through_CodeInputs */
@@ -789,29 +872,69 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Theme_LabelInputs */
 /** @typedef {{}} Theme_LightInputs */
 /** @typedef {{}} Theme_SystemInputs */
+/** @typedef {{}} Time_1_Day_AgoInputs */
+/** @typedef {{}} Time_1_Hour_AgoInputs */
+/** @typedef {{}} Time_1_Minute_AgoInputs */
+/** @typedef {{}} Time_1_Month_AgoInputs */
+/** @typedef {{}} Time_1_Week_AgoInputs */
+/** @typedef {{}} Time_1_Year_AgoInputs */
 /** @typedef {{ duration: NonNullable<unknown> }} Time_AgoInputs */
 /** @typedef {{}} Time_All_TimeInputs */
 /** @typedef {{}} Time_ComparingInputs */
+/** @typedef {{}} Time_Comparison_Previous_DayInputs */
+/** @typedef {{}} Time_Comparison_Previous_PeriodInputs */
 /** @typedef {{}} Time_CustomInputs */
 /** @typedef {{}} Time_Custom_RangeInputs */
 /** @typedef {{}} Time_Enter_Time_RangeInputs */
 /** @typedef {{ duration: NonNullable<unknown> }} Time_From_NowInputs */
 /** @typedef {{}} Time_Grain_ByInputs */
 /** @typedef {{}} Time_Grain_CompleteInputs */
+/** @typedef {{}} Time_Grain_DayInputs */
+/** @typedef {{}} Time_Grain_DaysInputs */
+/** @typedef {{}} Time_Grain_HourInputs */
+/** @typedef {{}} Time_Grain_HoursInputs */
+/** @typedef {{}} Time_Grain_MinuteInputs */
+/** @typedef {{}} Time_Grain_MinutesInputs */
+/** @typedef {{}} Time_Grain_MonthInputs */
+/** @typedef {{}} Time_Grain_MonthsInputs */
+/** @typedef {{}} Time_Grain_QuarterInputs */
+/** @typedef {{}} Time_Grain_QuartersInputs */
 /** @typedef {{}} Time_Grain_TimeInputs */
+/** @typedef {{}} Time_Grain_WeekInputs */
+/** @typedef {{}} Time_Grain_WeeksInputs */
+/** @typedef {{}} Time_Grain_YearInputs */
+/** @typedef {{}} Time_Grain_YearsInputs */
+/** @typedef {{}} Time_Just_NowInputs */
 /** @typedef {{ duration: NonNullable<unknown> }} Time_Last_DurationInputs */
 /** @typedef {{}} Time_Month_To_DateInputs */
+/** @typedef {{ count: NonNullable<unknown> }} Time_N_Days_AgoInputs */
+/** @typedef {{ count: NonNullable<unknown> }} Time_N_Hours_AgoInputs */
+/** @typedef {{ count: NonNullable<unknown> }} Time_N_Minutes_AgoInputs */
+/** @typedef {{ count: NonNullable<unknown> }} Time_N_Months_AgoInputs */
+/** @typedef {{ count: NonNullable<unknown> }} Time_N_Weeks_AgoInputs */
+/** @typedef {{ count: NonNullable<unknown> }} Time_N_Years_AgoInputs */
+/** @typedef {{}} Time_No_Comparison_DimensionInputs */
 /** @typedef {{}} Time_No_Comparison_PeriodInputs */
 /** @typedef {{}} Time_Previous_MonthInputs */
 /** @typedef {{}} Time_Previous_QuarterInputs */
 /** @typedef {{}} Time_Previous_WeekInputs */
 /** @typedef {{}} Time_Previous_YearInputs */
 /** @typedef {{}} Time_Quarter_To_DateInputs */
+/** @typedef {{ grain: NonNullable<unknown> }} Time_Range_Grain_To_DateInputs */
+/** @typedef {{ count: NonNullable<unknown>, grains: NonNullable<unknown> }} Time_Range_Last_N_GrainsInputs */
+/** @typedef {{ grain: NonNullable<unknown> }} Time_Range_Next_GrainInputs */
+/** @typedef {{ count: NonNullable<unknown>, grains: NonNullable<unknown> }} Time_Range_Next_N_GrainsInputs */
+/** @typedef {{ grain: NonNullable<unknown> }} Time_Range_Previous_GrainInputs */
+/** @typedef {{ grain: NonNullable<unknown> }} Time_Range_This_GrainInputs */
 /** @typedef {{}} Time_Ref_CompleteInputs */
 /** @typedef {{}} Time_Ref_Complete_DataInputs */
 /** @typedef {{}} Time_Ref_CurrentInputs */
+/** @typedef {{}} Time_Ref_EarliestInputs */
 /** @typedef {{}} Time_Ref_LatestInputs */
 /** @typedef {{}} Time_Ref_NowInputs */
+/** @typedef {{ count: NonNullable<unknown> }} Time_Relative_Hours_ShortInputs */
+/** @typedef {{ count: NonNullable<unknown> }} Time_Relative_Minutes_ShortInputs */
+/** @typedef {{}} Time_Relative_NowInputs */
 /** @typedef {{}} Time_TodayInputs */
 /** @typedef {{}} Time_Unable_To_ParseInputs */
 /** @typedef {{}} Time_VsInputs */
@@ -1215,6 +1338,20 @@ export const alert_form_data_measure_placeholder = /** @type {((inputs?: Alert_F
 /**
 * | output |
 * | --- |
+* | "Select the measures you want to monitor." |
+*
+* @param {Alert_Form_Data_Measures_DescInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_data_measures_desc = /** @type {((inputs?: Alert_Form_Data_Measures_DescInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_Data_Measures_DescInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_data_measures_desc(inputs)
+	return __es.alert_form_data_measures_desc(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "None" |
 *
 * @param {Alert_Form_Data_NoneInputs} inputs
@@ -1239,6 +1376,20 @@ export const alert_form_data_preview = /** @type {((inputs?: Alert_Form_Data_Pre
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.alert_form_data_preview(inputs)
 	return __es.alert_form_data_preview(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Here's a look at the data you've selected above." |
+*
+* @param {Alert_Form_Data_Preview_DescInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_data_preview_desc = /** @type {((inputs?: Alert_Form_Data_Preview_DescInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_Data_Preview_DescInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_data_preview_desc(inputs)
+	return __es.alert_form_data_preview_desc(inputs)
 });
 /**
 * | output |
@@ -1495,6 +1646,20 @@ export const alert_form_slack_channels_desc = /** @type {((inputs?: Alert_Form_S
 /**
 * | output |
 * | --- |
+* | "Slack has not been configured for this project. Read the <a href=\"{docsUrl}\" target=\"_blank\">docs</a> to learn more." |
+*
+* @param {Alert_Form_Slack_Not_ConfiguredInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_slack_not_configured = /** @type {((inputs: Alert_Form_Slack_Not_ConfiguredInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_Slack_Not_ConfiguredInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_slack_not_configured(inputs)
+	return __es.alert_form_slack_not_configured(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "# Enter a Slack channel name" |
 *
 * @param {Alert_Form_Slack_PlaceholderInputs} inputs
@@ -1621,6 +1786,34 @@ export const alert_form_trigger = /** @type {((inputs?: Alert_Form_TriggerInputs
 /**
 * | output |
 * | --- |
+* | "Whenever data refreshes" |
+*
+* @param {Alert_Form_Trigger_Data_RefreshInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_trigger_data_refresh = /** @type {((inputs?: Alert_Form_Trigger_Data_RefreshInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_Trigger_Data_RefreshInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_trigger_data_refresh(inputs)
+	return __es.alert_form_trigger_data_refresh(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Set schedule" |
+*
+* @param {Alert_Form_Trigger_Set_ScheduleInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_trigger_set_schedule = /** @type {((inputs?: Alert_Form_Trigger_Set_ScheduleInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_Trigger_Set_ScheduleInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_trigger_set_schedule(inputs)
+	return __es.alert_form_trigger_set_schedule(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Update" |
 *
 * @param {Alert_Form_UpdateInputs} inputs
@@ -1631,6 +1824,20 @@ export const alert_form_update = /** @type {((inputs?: Alert_Form_UpdateInputs, 
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.alert_form_update(inputs)
 	return __es.alert_form_update(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Last checked {time}" |
+*
+* @param {Alert_Last_CheckedInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_last_checked = /** @type {((inputs: Alert_Last_CheckedInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Last_CheckedInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_last_checked(inputs)
+	return __es.alert_last_checked(inputs)
 });
 /**
 * | output |
@@ -1701,6 +1908,20 @@ export const alert_none = /** @type {((inputs?: Alert_NoneInputs, options?: { lo
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.alert_none(inputs)
 	return __es.alert_none(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Hasn't been checked yet" |
+*
+* @param {Alert_Not_Checked_YetInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_not_checked_yet = /** @type {((inputs?: Alert_Not_Checked_YetInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Not_Checked_YetInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_not_checked_yet(inputs)
+	return __es.alert_not_checked_yet(inputs)
 });
 /**
 * | output |
@@ -4925,6 +5146,20 @@ export const chart_undo_zoom_label = /** @type {((inputs?: Chart_Undo_Zoom_Label
 /**
 * | output |
 * | --- |
+* | "vs" |
+*
+* @param {Chart_VsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const chart_vs = /** @type {((inputs?: Chart_VsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Chart_VsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.chart_vs(inputs)
+	return __es.chart_vs(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Zoom" |
 *
 * @param {Chart_ZoomInputs} inputs
@@ -5583,6 +5818,20 @@ export const common_cancel = /** @type {((inputs?: Common_CancelInputs, options?
 /**
 * | output |
 * | --- |
+* | "Close search" |
+*
+* @param {Common_Close_SearchInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const common_close_search = /** @type {((inputs?: Common_Close_SearchInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Common_Close_SearchInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.common_close_search(inputs)
+	return __es.common_close_search(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Continue" |
 *
 * @param {Common_ContinueInputs} inputs
@@ -6125,6 +6374,20 @@ export const dashboard_comparison_column_aria = /** @type {((inputs?: Dashboard_
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.dashboard_comparison_column_aria(inputs)
 	return __es.dashboard_comparison_column_aria(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Select a comparison for the dashboard" |
+*
+* @param {Dashboard_Comparison_Select_TooltipInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const dashboard_comparison_select_tooltip = /** @type {((inputs?: Dashboard_Comparison_Select_TooltipInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Dashboard_Comparison_Select_TooltipInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.dashboard_comparison_select_tooltip(inputs)
+	return __es.dashboard_comparison_select_tooltip(inputs)
 });
 /**
 * | output |
@@ -8327,6 +8590,62 @@ export const dashboard_viewing_as = /** @type {((inputs?: Dashboard_Viewing_AsIn
 /**
 * | output |
 * | --- |
+* | "You haven't saved changes to this alert yet, so closing this window will lose your work." |
+*
+* @param {Dialog_Close_Without_Saving_Alert_DescInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const dialog_close_without_saving_alert_desc = /** @type {((inputs?: Dialog_Close_Without_Saving_Alert_DescInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Dialog_Close_Without_Saving_Alert_DescInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.dialog_close_without_saving_alert_desc(inputs)
+	return __es.dialog_close_without_saving_alert_desc(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Keep editing" |
+*
+* @param {Dialog_Close_Without_Saving_CancelInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const dialog_close_without_saving_cancel = /** @type {((inputs?: Dialog_Close_Without_Saving_CancelInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Dialog_Close_Without_Saving_CancelInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.dialog_close_without_saving_cancel(inputs)
+	return __es.dialog_close_without_saving_cancel(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Close" |
+*
+* @param {Dialog_Close_Without_Saving_ConfirmInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const dialog_close_without_saving_confirm = /** @type {((inputs?: Dialog_Close_Without_Saving_ConfirmInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Dialog_Close_Without_Saving_ConfirmInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.dialog_close_without_saving_confirm(inputs)
+	return __es.dialog_close_without_saving_confirm(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Close without saving?" |
+*
+* @param {Dialog_Close_Without_Saving_TitleInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const dialog_close_without_saving_title = /** @type {((inputs?: Dialog_Close_Without_Saving_TitleInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Dialog_Close_Without_Saving_TitleInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.dialog_close_without_saving_title(inputs)
+	return __es.dialog_close_without_saving_title(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "You don't have access to this page. Please check that you have the correct permissions." |
 *
 * @param {Error_Access_Denied_BodyInputs} inputs
@@ -8733,6 +9052,216 @@ export const error_show_details = /** @type {((inputs?: Error_Show_DetailsInputs
 /**
 * | output |
 * | --- |
+* | "All Dimensions" |
+*
+* @param {Explore_All_DimensionsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_all_dimensions = /** @type {((inputs?: Explore_All_DimensionsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_All_DimensionsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_all_dimensions(inputs)
+	return __es.explore_all_dimensions(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "All Measures" |
+*
+* @param {Explore_All_MeasuresInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_all_measures = /** @type {((inputs?: Explore_All_MeasuresInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_All_MeasuresInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_all_measures(inputs)
+	return __es.explore_all_measures(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "by" |
+*
+* @param {Explore_By_Grain_PrefixInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_by_grain_prefix = /** @type {((inputs?: Explore_By_Grain_PrefixInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_By_Grain_PrefixInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_by_grain_prefix(inputs)
+	return __es.explore_by_grain_prefix(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Choose dimensions to display" |
+*
+* @param {Explore_Choose_DimensionsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_choose_dimensions = /** @type {((inputs?: Explore_Choose_DimensionsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Choose_DimensionsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_choose_dimensions(inputs)
+	return __es.explore_choose_dimensions(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Choose measures to display" |
+*
+* @param {Explore_Choose_MeasuresInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_choose_measures = /** @type {((inputs?: Explore_Choose_MeasuresInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Choose_MeasuresInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_choose_measures(inputs)
+	return __es.explore_choose_measures(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Clear filter" |
+*
+* @param {Explore_Clear_FilterInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_clear_filter = /** @type {((inputs?: Explore_Clear_FilterInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Clear_FilterInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_clear_filter(inputs)
+	return __es.explore_clear_filter(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Clear filter {tag}" |
+*
+* @param {Explore_Clear_Filter_TagInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_clear_filter_tag = /** @type {((inputs: Explore_Clear_Filter_TagInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Clear_Filter_TagInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_clear_filter_tag(inputs)
+	return __es.explore_clear_filter_tag(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Clear search to reorder dimensions." |
+*
+* @param {Explore_Clear_Search_To_Reorder_DimensionsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_clear_search_to_reorder_dimensions = /** @type {((inputs?: Explore_Clear_Search_To_Reorder_DimensionsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Clear_Search_To_Reorder_DimensionsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_clear_search_to_reorder_dimensions(inputs)
+	return __es.explore_clear_search_to_reorder_dimensions(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Clear search to reorder measures." |
+*
+* @param {Explore_Clear_Search_To_Reorder_MeasuresInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_clear_search_to_reorder_measures = /** @type {((inputs?: Explore_Clear_Search_To_Reorder_MeasuresInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Clear_Search_To_Reorder_MeasuresInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_clear_search_to_reorder_measures(inputs)
+	return __es.explore_clear_search_to_reorder_measures(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Clear tag filter" |
+*
+* @param {Explore_Clear_Tag_FilterInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_clear_tag_filter = /** @type {((inputs?: Explore_Clear_Tag_FilterInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Clear_Tag_FilterInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_clear_tag_filter(inputs)
+	return __es.explore_clear_tag_filter(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Clear the tag filter to reorder dimensions." |
+*
+* @param {Explore_Clear_Tag_Filter_To_Reorder_DimensionsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_clear_tag_filter_to_reorder_dimensions = /** @type {((inputs?: Explore_Clear_Tag_Filter_To_Reorder_DimensionsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Clear_Tag_Filter_To_Reorder_DimensionsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_clear_tag_filter_to_reorder_dimensions(inputs)
+	return __es.explore_clear_tag_filter_to_reorder_dimensions(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Clear the tag filter to reorder measures." |
+*
+* @param {Explore_Clear_Tag_Filter_To_Reorder_MeasuresInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_clear_tag_filter_to_reorder_measures = /** @type {((inputs?: Explore_Clear_Tag_Filter_To_Reorder_MeasuresInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Clear_Tag_Filter_To_Reorder_MeasuresInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_clear_tag_filter_to_reorder_measures(inputs)
+	return __es.explore_clear_tag_filter_to_reorder_measures(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "{count} of {total} Dimensions" |
+*
+* @param {Explore_Dimensions_CountInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_dimensions_count = /** @type {((inputs: Explore_Dimensions_CountInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Dimensions_CountInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_dimensions_count(inputs)
+	return __es.explore_dimensions_count(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Filter by {tag}" |
+*
+* @param {Explore_Filter_By_TagInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_filter_by_tag = /** @type {((inputs: Explore_Filter_By_TagInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Filter_By_TagInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_filter_by_tag(inputs)
+	return __es.explore_filter_by_tag(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Filter" |
+*
+* @param {Explore_Filter_LabelInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_filter_label = /** @type {((inputs?: Explore_Filter_LabelInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Filter_LabelInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_filter_label(inputs)
+	return __es.explore_filter_label(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Go to Explore Dashboard" |
 *
 * @param {Explore_Go_To_DashboardInputs} inputs
@@ -8775,6 +9304,594 @@ export const explore_go_to_named = /** @type {((inputs: Explore_Go_To_NamedInput
 /**
 * | output |
 * | --- |
+* | "Hidden dimensions" |
+*
+* @param {Explore_Hidden_DimensionsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_hidden_dimensions = /** @type {((inputs?: Explore_Hidden_DimensionsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Hidden_DimensionsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_hidden_dimensions(inputs)
+	return __es.explore_hidden_dimensions(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Hidden measures" |
+*
+* @param {Explore_Hidden_MeasuresInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_hidden_measures = /** @type {((inputs?: Explore_Hidden_MeasuresInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Hidden_MeasuresInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_hidden_measures(inputs)
+	return __es.explore_hidden_measures(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Hide all" |
+*
+* @param {Explore_Hide_AllInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_hide_all = /** @type {((inputs?: Explore_Hide_AllInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Hide_AllInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_hide_all(inputs)
+	return __es.explore_hide_all(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Hide all in {tag}" |
+*
+* @param {Explore_Hide_All_In_Named_TagInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_hide_all_in_named_tag = /** @type {((inputs: Explore_Hide_All_In_Named_TagInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Hide_All_In_Named_TagInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_hide_all_in_named_tag(inputs)
+	return __es.explore_hide_all_in_named_tag(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Hide all in tag" |
+*
+* @param {Explore_Hide_All_In_TagInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_hide_all_in_tag = /** @type {((inputs?: Explore_Hide_All_In_TagInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Hide_All_In_TagInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_hide_all_in_tag(inputs)
+	return __es.explore_hide_all_in_tag(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Hide {name}" |
+*
+* @param {Explore_Hide_ItemInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_hide_item = /** @type {((inputs: Explore_Hide_ItemInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Hide_ItemInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_hide_item(inputs)
+	return __es.explore_hide_item(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "{count} of {total} Measures" |
+*
+* @param {Explore_Measures_CountInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_measures_count = /** @type {((inputs: Explore_Measures_CountInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Measures_CountInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_measures_count(inputs)
+	return __es.explore_measures_count(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Multi-select" |
+*
+* @param {Explore_Multi_SelectInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_multi_select = /** @type {((inputs?: Explore_Multi_SelectInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Multi_SelectInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_multi_select(inputs)
+	return __es.explore_multi_select(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Must show at least one dimension" |
+*
+* @param {Explore_Must_Show_One_DimensionInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_must_show_one_dimension = /** @type {((inputs?: Explore_Must_Show_One_DimensionInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Must_Show_One_DimensionInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_must_show_one_dimension(inputs)
+	return __es.explore_must_show_one_dimension(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Must show at least one measure" |
+*
+* @param {Explore_Must_Show_One_MeasureInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_must_show_one_measure = /** @type {((inputs?: Explore_Must_Show_One_MeasureInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Must_Show_One_MeasureInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_must_show_one_measure(inputs)
+	return __es.explore_must_show_one_measure(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "{count} measures" |
+*
+* @param {Explore_N_MeasuresInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_n_measures = /** @type {((inputs: Explore_N_MeasuresInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_N_MeasuresInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_n_measures(inputs)
+	return __es.explore_n_measures(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "No dimensions from this tag are shown" |
+*
+* @param {Explore_No_Dimensions_From_TagInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_no_dimensions_from_tag = /** @type {((inputs?: Explore_No_Dimensions_From_TagInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_No_Dimensions_From_TagInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_no_dimensions_from_tag(inputs)
+	return __es.explore_no_dimensions_from_tag(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "No dimensions or tags found" |
+*
+* @param {Explore_No_Dimensions_Or_TagsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_no_dimensions_or_tags = /** @type {((inputs?: Explore_No_Dimensions_Or_TagsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_No_Dimensions_Or_TagsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_no_dimensions_or_tags(inputs)
+	return __es.explore_no_dimensions_or_tags(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "No dimensions shown" |
+*
+* @param {Explore_No_Dimensions_ShownInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_no_dimensions_shown = /** @type {((inputs?: Explore_No_Dimensions_ShownInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_No_Dimensions_ShownInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_no_dimensions_shown(inputs)
+	return __es.explore_no_dimensions_shown(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "No hidden dimensions" |
+*
+* @param {Explore_No_Hidden_DimensionsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_no_hidden_dimensions = /** @type {((inputs?: Explore_No_Hidden_DimensionsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_No_Hidden_DimensionsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_no_hidden_dimensions(inputs)
+	return __es.explore_no_hidden_dimensions(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "No hidden measures" |
+*
+* @param {Explore_No_Hidden_MeasuresInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_no_hidden_measures = /** @type {((inputs?: Explore_No_Hidden_MeasuresInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_No_Hidden_MeasuresInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_no_hidden_measures(inputs)
+	return __es.explore_no_hidden_measures(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "No matching dimensions shown" |
+*
+* @param {Explore_No_Matching_Dimensions_ShownInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_no_matching_dimensions_shown = /** @type {((inputs?: Explore_No_Matching_Dimensions_ShownInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_No_Matching_Dimensions_ShownInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_no_matching_dimensions_shown(inputs)
+	return __es.explore_no_matching_dimensions_shown(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "No matching hidden dimensions" |
+*
+* @param {Explore_No_Matching_Hidden_DimensionsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_no_matching_hidden_dimensions = /** @type {((inputs?: Explore_No_Matching_Hidden_DimensionsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_No_Matching_Hidden_DimensionsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_no_matching_hidden_dimensions(inputs)
+	return __es.explore_no_matching_hidden_dimensions(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "No matching hidden measures" |
+*
+* @param {Explore_No_Matching_Hidden_MeasuresInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_no_matching_hidden_measures = /** @type {((inputs?: Explore_No_Matching_Hidden_MeasuresInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_No_Matching_Hidden_MeasuresInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_no_matching_hidden_measures(inputs)
+	return __es.explore_no_matching_hidden_measures(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "No matching leaderboard measures shown" |
+*
+* @param {Explore_No_Matching_Leaderboard_MeasuresInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_no_matching_leaderboard_measures = /** @type {((inputs?: Explore_No_Matching_Leaderboard_MeasuresInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_No_Matching_Leaderboard_MeasuresInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_no_matching_leaderboard_measures(inputs)
+	return __es.explore_no_matching_leaderboard_measures(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "No matching measures shown" |
+*
+* @param {Explore_No_Matching_Measures_ShownInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_no_matching_measures_shown = /** @type {((inputs?: Explore_No_Matching_Measures_ShownInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_No_Matching_Measures_ShownInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_no_matching_measures_shown(inputs)
+	return __es.explore_no_matching_measures_shown(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "No matching tags" |
+*
+* @param {Explore_No_Matching_TagsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_no_matching_tags = /** @type {((inputs?: Explore_No_Matching_TagsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_No_Matching_TagsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_no_matching_tags(inputs)
+	return __es.explore_no_matching_tags(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "No measures from this tag are shown" |
+*
+* @param {Explore_No_Measures_From_TagInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_no_measures_from_tag = /** @type {((inputs?: Explore_No_Measures_From_TagInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_No_Measures_From_TagInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_no_measures_from_tag(inputs)
+	return __es.explore_no_measures_from_tag(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "No measures or tags found" |
+*
+* @param {Explore_No_Measures_Or_TagsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_no_measures_or_tags = /** @type {((inputs?: Explore_No_Measures_Or_TagsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_No_Measures_Or_TagsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_no_measures_or_tags(inputs)
+	return __es.explore_no_measures_or_tags(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "No measures shown" |
+*
+* @param {Explore_No_Measures_ShownInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_no_measures_shown = /** @type {((inputs?: Explore_No_Measures_ShownInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_No_Measures_ShownInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_no_measures_shown(inputs)
+	return __es.explore_no_measures_shown(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Only show {tag}" |
+*
+* @param {Explore_Only_Show_TagInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_only_show_tag = /** @type {((inputs: Explore_Only_Show_TagInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Only_Show_TagInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_only_show_tag(inputs)
+	return __es.explore_only_show_tag(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Only show this tag" |
+*
+* @param {Explore_Only_Show_This_TagInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_only_show_this_tag = /** @type {((inputs?: Explore_Only_Show_This_TagInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Only_Show_This_TagInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_only_show_this_tag(inputs)
+	return __es.explore_only_show_this_tag(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Search dimensions" |
+*
+* @param {Explore_Search_DimensionsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_search_dimensions = /** @type {((inputs?: Explore_Search_DimensionsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Search_DimensionsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_search_dimensions(inputs)
+	return __es.explore_search_dimensions(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Search dimensions or tags" |
+*
+* @param {Explore_Search_Dimensions_Or_TagsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_search_dimensions_or_tags = /** @type {((inputs?: Explore_Search_Dimensions_Or_TagsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Search_Dimensions_Or_TagsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_search_dimensions_or_tags(inputs)
+	return __es.explore_search_dimensions_or_tags(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Search list" |
+*
+* @param {Explore_Search_ListInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_search_list = /** @type {((inputs?: Explore_Search_ListInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Search_ListInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_search_list(inputs)
+	return __es.explore_search_list(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Search measures" |
+*
+* @param {Explore_Search_MeasuresInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_search_measures = /** @type {((inputs?: Explore_Search_MeasuresInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Search_MeasuresInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_search_measures(inputs)
+	return __es.explore_search_measures(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Search measures or tags" |
+*
+* @param {Explore_Search_Measures_Or_TagsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_search_measures_or_tags = /** @type {((inputs?: Explore_Search_Measures_Or_TagsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Search_Measures_Or_TagsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_search_measures_or_tags(inputs)
+	return __es.explore_search_measures_or_tags(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Show all" |
+*
+* @param {Explore_Show_AllInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_show_all = /** @type {((inputs?: Explore_Show_AllInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Show_AllInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_show_all(inputs)
+	return __es.explore_show_all(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Show all in {tag}" |
+*
+* @param {Explore_Show_All_In_Named_TagInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_show_all_in_named_tag = /** @type {((inputs: Explore_Show_All_In_Named_TagInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Show_All_In_Named_TagInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_show_all_in_named_tag(inputs)
+	return __es.explore_show_all_in_named_tag(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Show all in tag" |
+*
+* @param {Explore_Show_All_In_TagInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_show_all_in_tag = /** @type {((inputs?: Explore_Show_All_In_TagInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Show_All_In_TagInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_show_all_in_tag(inputs)
+	return __es.explore_show_all_in_tag(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Show context for all measures" |
+*
+* @param {Explore_Show_Context_For_All_MeasuresInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_show_context_for_all_measures = /** @type {((inputs?: Explore_Show_Context_For_All_MeasuresInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Show_Context_For_All_MeasuresInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_show_context_for_all_measures(inputs)
+	return __es.explore_show_context_for_all_measures(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Show {name}" |
+*
+* @param {Explore_Show_ItemInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_show_item = /** @type {((inputs: Explore_Show_ItemInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Show_ItemInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_show_item(inputs)
+	return __es.explore_show_item(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Showing" |
+*
+* @param {Explore_ShowingInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_showing = /** @type {((inputs?: Explore_ShowingInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_ShowingInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_showing(inputs)
+	return __es.explore_showing(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Shown dimensions" |
+*
+* @param {Explore_Shown_DimensionsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_shown_dimensions = /** @type {((inputs?: Explore_Shown_DimensionsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Shown_DimensionsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_shown_dimensions(inputs)
+	return __es.explore_shown_dimensions(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Shown measures" |
+*
+* @param {Explore_Shown_MeasuresInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_shown_measures = /** @type {((inputs?: Explore_Shown_MeasuresInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Shown_MeasuresInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_shown_measures(inputs)
+	return __es.explore_shown_measures(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "{visible} of {total} shown" |
+*
+* @param {Explore_Tag_Shown_CountInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_tag_shown_count = /** @type {((inputs: Explore_Tag_Shown_CountInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Tag_Shown_CountInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_tag_shown_count(inputs)
+	return __es.explore_tag_shown_count(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Tags" |
+*
+* @param {Explore_TagsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_tags = /** @type {((inputs?: Explore_TagsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_TagsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_tags(inputs)
+	return __es.explore_tags(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Unable to open Explore Dashboard" |
 *
 * @param {Explore_Unable_To_OpenInputs} inputs
@@ -8785,6 +9902,34 @@ export const explore_unable_to_open = /** @type {((inputs?: Explore_Unable_To_Op
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.explore_unable_to_open(inputs)
 	return __es.explore_unable_to_open(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Unknown dimension" |
+*
+* @param {Explore_Unknown_DimensionInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_unknown_dimension = /** @type {((inputs?: Explore_Unknown_DimensionInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Unknown_DimensionInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_unknown_dimension(inputs)
+	return __es.explore_unknown_dimension(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Unknown measure" |
+*
+* @param {Explore_Unknown_MeasureInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_unknown_measure = /** @type {((inputs?: Explore_Unknown_MeasureInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Unknown_MeasureInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_unknown_measure(inputs)
+	return __es.explore_unknown_measure(inputs)
 });
 /**
 * | output |
@@ -9391,6 +10536,20 @@ export const footer_view_documentation = /** @type {((inputs?: Footer_View_Docum
 /**
 * | output |
 * | --- |
+* | "(optional)" |
+*
+* @param {Form_OptionalInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const form_optional = /** @type {((inputs?: Form_OptionalInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Form_OptionalInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.form_optional(inputs)
+	return __es.form_optional(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Dashboards" |
 *
 * @param {Home_Dashboards_HeadingInputs} inputs
@@ -9499,6 +10658,62 @@ export const interval_week = /** @type {((inputs?: Interval_WeekInputs, options?
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.interval_week(inputs)
 	return __es.interval_week(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "no change" |
+*
+* @param {Kpi_No_ChangeInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const kpi_no_change = /** @type {((inputs?: Kpi_No_ChangeInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Kpi_No_ChangeInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.kpi_no_change(inputs)
+	return __es.kpi_no_change(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "no data" |
+*
+* @param {Kpi_No_DataInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const kpi_no_data = /** @type {((inputs?: Kpi_No_DataInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Kpi_No_DataInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.kpi_no_data(inputs)
+	return __es.kpi_no_data(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "n/a" |
+*
+* @param {Kpi_Not_AvailableInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const kpi_not_available = /** @type {((inputs?: Kpi_Not_AvailableInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Kpi_Not_AvailableInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.kpi_not_available(inputs)
+	return __es.kpi_not_available(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "vs {comparison}" |
+*
+* @param {Kpi_Vs_ComparisonInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const kpi_vs_comparison = /** @type {((inputs: Kpi_Vs_ComparisonInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Kpi_Vs_ComparisonInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.kpi_vs_comparison(inputs)
+	return __es.kpi_vs_comparison(inputs)
 });
 /**
 * | output |
@@ -10217,6 +11432,20 @@ export const org_check_out_projects = /** @type {((inputs?: Org_Check_Out_Projec
 /**
 * | output |
 * | --- |
+* | "Search to add/remove users" |
+*
+* @param {Org_Search_Add_Remove_UsersInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const org_search_add_remove_users = /** @type {((inputs?: Org_Search_Add_Remove_UsersInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Org_Search_Add_Remove_UsersInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.org_search_add_remove_users(inputs)
+	return __es.org_search_add_remove_users(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Projects" |
 *
 * @param {Org_Tab_ProjectsInputs} inputs
@@ -10525,6 +11754,34 @@ export const project_role_viewer = /** @type {((inputs?: Project_Role_ViewerInpu
 /**
 * | output |
 * | --- |
+* | "Search or invite by email" |
+*
+* @param {Project_Search_Or_InviteInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const project_search_or_invite = /** @type {((inputs?: Project_Search_Or_InviteInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Project_Search_Or_InviteInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.project_search_or_invite(inputs)
+	return __es.project_search_or_invite(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Search for users" |
+*
+* @param {Project_Search_UsersInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const project_search_users = /** @type {((inputs?: Project_Search_UsersInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Project_Search_UsersInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.project_search_users(inputs)
+	return __es.project_search_users(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Share" |
 *
 * @param {Project_ShareInputs} inputs
@@ -10535,6 +11792,34 @@ export const project_share = /** @type {((inputs?: Project_ShareInputs, options?
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.project_share(inputs)
 	return __es.project_share(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Share project: {project}" |
+*
+* @param {Project_Share_HeadingInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const project_share_heading = /** @type {((inputs: Project_Share_HeadingInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Project_Share_HeadingInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.project_share_heading(inputs)
+	return __es.project_share_heading(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Share project" |
+*
+* @param {Project_Share_TooltipInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const project_share_tooltip = /** @type {((inputs?: Project_Share_TooltipInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Project_Share_TooltipInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.project_share_tooltip(inputs)
+	return __es.project_share_tooltip(inputs)
 });
 /**
 * | output |
@@ -11841,6 +13126,90 @@ export const theme_system = /** @type {((inputs?: Theme_SystemInputs, options?: 
 /**
 * | output |
 * | --- |
+* | "1 day ago" |
+*
+* @param {Time_1_Day_AgoInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const time_1_day_ago = /** @type {((inputs?: Time_1_Day_AgoInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Time_1_Day_AgoInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.time_1_day_ago(inputs)
+	return __es.time_1_day_ago(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "1 hour ago" |
+*
+* @param {Time_1_Hour_AgoInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const time_1_hour_ago = /** @type {((inputs?: Time_1_Hour_AgoInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Time_1_Hour_AgoInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.time_1_hour_ago(inputs)
+	return __es.time_1_hour_ago(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "1 minute ago" |
+*
+* @param {Time_1_Minute_AgoInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const time_1_minute_ago = /** @type {((inputs?: Time_1_Minute_AgoInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Time_1_Minute_AgoInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.time_1_minute_ago(inputs)
+	return __es.time_1_minute_ago(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "1 month ago" |
+*
+* @param {Time_1_Month_AgoInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const time_1_month_ago = /** @type {((inputs?: Time_1_Month_AgoInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Time_1_Month_AgoInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.time_1_month_ago(inputs)
+	return __es.time_1_month_ago(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "1 week ago" |
+*
+* @param {Time_1_Week_AgoInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const time_1_week_ago = /** @type {((inputs?: Time_1_Week_AgoInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Time_1_Week_AgoInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.time_1_week_ago(inputs)
+	return __es.time_1_week_ago(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "1 year ago" |
+*
+* @param {Time_1_Year_AgoInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const time_1_year_ago = /** @type {((inputs?: Time_1_Year_AgoInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Time_1_Year_AgoInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.time_1_year_ago(inputs)
+	return __es.time_1_year_ago(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "{duration} ago" |
 *
 * @param {Time_AgoInputs} inputs
@@ -11879,6 +13248,34 @@ export const time_comparing = /** @type {((inputs?: Time_ComparingInputs, option
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.time_comparing(inputs)
 	return __es.time_comparing(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Previous day" |
+*
+* @param {Time_Comparison_Previous_DayInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const time_comparison_previous_day = /** @type {((inputs?: Time_Comparison_Previous_DayInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Time_Comparison_Previous_DayInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.time_comparison_previous_day(inputs)
+	return __es.time_comparison_previous_day(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Previous period" |
+*
+* @param {Time_Comparison_Previous_PeriodInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const time_comparison_previous_period = /** @type {((inputs?: Time_Comparison_Previous_PeriodInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Time_Comparison_Previous_PeriodInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.time_comparison_previous_period(inputs)
+	return __es.time_comparison_previous_period(inputs)
 });
 /**
 * | output |
@@ -11967,6 +13364,146 @@ export const time_grain_complete = /** @type {((inputs?: Time_Grain_CompleteInpu
 /**
 * | output |
 * | --- |
+* | "day" |
+*
+* @param {Time_Grain_DayInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const time_grain_day = /** @type {((inputs?: Time_Grain_DayInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Time_Grain_DayInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.time_grain_day(inputs)
+	return __es.time_grain_day(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "days" |
+*
+* @param {Time_Grain_DaysInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const time_grain_days = /** @type {((inputs?: Time_Grain_DaysInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Time_Grain_DaysInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.time_grain_days(inputs)
+	return __es.time_grain_days(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "hour" |
+*
+* @param {Time_Grain_HourInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const time_grain_hour = /** @type {((inputs?: Time_Grain_HourInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Time_Grain_HourInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.time_grain_hour(inputs)
+	return __es.time_grain_hour(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "hours" |
+*
+* @param {Time_Grain_HoursInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const time_grain_hours = /** @type {((inputs?: Time_Grain_HoursInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Time_Grain_HoursInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.time_grain_hours(inputs)
+	return __es.time_grain_hours(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "minute" |
+*
+* @param {Time_Grain_MinuteInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const time_grain_minute = /** @type {((inputs?: Time_Grain_MinuteInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Time_Grain_MinuteInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.time_grain_minute(inputs)
+	return __es.time_grain_minute(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "minutes" |
+*
+* @param {Time_Grain_MinutesInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const time_grain_minutes = /** @type {((inputs?: Time_Grain_MinutesInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Time_Grain_MinutesInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.time_grain_minutes(inputs)
+	return __es.time_grain_minutes(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "month" |
+*
+* @param {Time_Grain_MonthInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const time_grain_month = /** @type {((inputs?: Time_Grain_MonthInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Time_Grain_MonthInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.time_grain_month(inputs)
+	return __es.time_grain_month(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "months" |
+*
+* @param {Time_Grain_MonthsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const time_grain_months = /** @type {((inputs?: Time_Grain_MonthsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Time_Grain_MonthsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.time_grain_months(inputs)
+	return __es.time_grain_months(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "quarter" |
+*
+* @param {Time_Grain_QuarterInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const time_grain_quarter = /** @type {((inputs?: Time_Grain_QuarterInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Time_Grain_QuarterInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.time_grain_quarter(inputs)
+	return __es.time_grain_quarter(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "quarters" |
+*
+* @param {Time_Grain_QuartersInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const time_grain_quarters = /** @type {((inputs?: Time_Grain_QuartersInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Time_Grain_QuartersInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.time_grain_quarters(inputs)
+	return __es.time_grain_quarters(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Time" |
 *
 * @param {Time_Grain_TimeInputs} inputs
@@ -11977,6 +13514,76 @@ export const time_grain_time = /** @type {((inputs?: Time_Grain_TimeInputs, opti
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.time_grain_time(inputs)
 	return __es.time_grain_time(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "week" |
+*
+* @param {Time_Grain_WeekInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const time_grain_week = /** @type {((inputs?: Time_Grain_WeekInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Time_Grain_WeekInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.time_grain_week(inputs)
+	return __es.time_grain_week(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "weeks" |
+*
+* @param {Time_Grain_WeeksInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const time_grain_weeks = /** @type {((inputs?: Time_Grain_WeeksInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Time_Grain_WeeksInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.time_grain_weeks(inputs)
+	return __es.time_grain_weeks(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "year" |
+*
+* @param {Time_Grain_YearInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const time_grain_year = /** @type {((inputs?: Time_Grain_YearInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Time_Grain_YearInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.time_grain_year(inputs)
+	return __es.time_grain_year(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "years" |
+*
+* @param {Time_Grain_YearsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const time_grain_years = /** @type {((inputs?: Time_Grain_YearsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Time_Grain_YearsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.time_grain_years(inputs)
+	return __es.time_grain_years(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Just now" |
+*
+* @param {Time_Just_NowInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const time_just_now = /** @type {((inputs?: Time_Just_NowInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Time_Just_NowInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.time_just_now(inputs)
+	return __es.time_just_now(inputs)
 });
 /**
 * | output |
@@ -12005,6 +13612,104 @@ export const time_month_to_date = /** @type {((inputs?: Time_Month_To_DateInputs
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.time_month_to_date(inputs)
 	return __es.time_month_to_date(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "{count} days ago" |
+*
+* @param {Time_N_Days_AgoInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const time_n_days_ago = /** @type {((inputs: Time_N_Days_AgoInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Time_N_Days_AgoInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.time_n_days_ago(inputs)
+	return __es.time_n_days_ago(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "{count} hours ago" |
+*
+* @param {Time_N_Hours_AgoInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const time_n_hours_ago = /** @type {((inputs: Time_N_Hours_AgoInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Time_N_Hours_AgoInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.time_n_hours_ago(inputs)
+	return __es.time_n_hours_ago(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "{count} minutes ago" |
+*
+* @param {Time_N_Minutes_AgoInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const time_n_minutes_ago = /** @type {((inputs: Time_N_Minutes_AgoInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Time_N_Minutes_AgoInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.time_n_minutes_ago(inputs)
+	return __es.time_n_minutes_ago(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "{count} months ago" |
+*
+* @param {Time_N_Months_AgoInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const time_n_months_ago = /** @type {((inputs: Time_N_Months_AgoInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Time_N_Months_AgoInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.time_n_months_ago(inputs)
+	return __es.time_n_months_ago(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "{count} weeks ago" |
+*
+* @param {Time_N_Weeks_AgoInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const time_n_weeks_ago = /** @type {((inputs: Time_N_Weeks_AgoInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Time_N_Weeks_AgoInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.time_n_weeks_ago(inputs)
+	return __es.time_n_weeks_ago(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "{count} years ago" |
+*
+* @param {Time_N_Years_AgoInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const time_n_years_ago = /** @type {((inputs: Time_N_Years_AgoInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Time_N_Years_AgoInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.time_n_years_ago(inputs)
+	return __es.time_n_years_ago(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "No comparison dimension" |
+*
+* @param {Time_No_Comparison_DimensionInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const time_no_comparison_dimension = /** @type {((inputs?: Time_No_Comparison_DimensionInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Time_No_Comparison_DimensionInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.time_no_comparison_dimension(inputs)
+	return __es.time_no_comparison_dimension(inputs)
 });
 /**
 * | output |
@@ -12093,6 +13798,90 @@ export const time_quarter_to_date = /** @type {((inputs?: Time_Quarter_To_DateIn
 /**
 * | output |
 * | --- |
+* | "{grain} to date" |
+*
+* @param {Time_Range_Grain_To_DateInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const time_range_grain_to_date = /** @type {((inputs: Time_Range_Grain_To_DateInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Time_Range_Grain_To_DateInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.time_range_grain_to_date(inputs)
+	return __es.time_range_grain_to_date(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "last {count} {grains}" |
+*
+* @param {Time_Range_Last_N_GrainsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const time_range_last_n_grains = /** @type {((inputs: Time_Range_Last_N_GrainsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Time_Range_Last_N_GrainsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.time_range_last_n_grains(inputs)
+	return __es.time_range_last_n_grains(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "next {grain}" |
+*
+* @param {Time_Range_Next_GrainInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const time_range_next_grain = /** @type {((inputs: Time_Range_Next_GrainInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Time_Range_Next_GrainInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.time_range_next_grain(inputs)
+	return __es.time_range_next_grain(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "next {count} {grains}" |
+*
+* @param {Time_Range_Next_N_GrainsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const time_range_next_n_grains = /** @type {((inputs: Time_Range_Next_N_GrainsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Time_Range_Next_N_GrainsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.time_range_next_n_grains(inputs)
+	return __es.time_range_next_n_grains(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "previous {grain}" |
+*
+* @param {Time_Range_Previous_GrainInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const time_range_previous_grain = /** @type {((inputs: Time_Range_Previous_GrainInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Time_Range_Previous_GrainInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.time_range_previous_grain(inputs)
+	return __es.time_range_previous_grain(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "this {grain}" |
+*
+* @param {Time_Range_This_GrainInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const time_range_this_grain = /** @type {((inputs: Time_Range_This_GrainInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Time_Range_This_GrainInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.time_range_this_grain(inputs)
+	return __es.time_range_this_grain(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "complete" |
 *
 * @param {Time_Ref_CompleteInputs} inputs
@@ -12135,6 +13924,20 @@ export const time_ref_current = /** @type {((inputs?: Time_Ref_CurrentInputs, op
 /**
 * | output |
 * | --- |
+* | "earliest" |
+*
+* @param {Time_Ref_EarliestInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const time_ref_earliest = /** @type {((inputs?: Time_Ref_EarliestInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Time_Ref_EarliestInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.time_ref_earliest(inputs)
+	return __es.time_ref_earliest(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "latest" |
 *
 * @param {Time_Ref_LatestInputs} inputs
@@ -12159,6 +13962,48 @@ export const time_ref_now = /** @type {((inputs?: Time_Ref_NowInputs, options?: 
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.time_ref_now(inputs)
 	return __es.time_ref_now(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "{count}h ago" |
+*
+* @param {Time_Relative_Hours_ShortInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const time_relative_hours_short = /** @type {((inputs: Time_Relative_Hours_ShortInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Time_Relative_Hours_ShortInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.time_relative_hours_short(inputs)
+	return __es.time_relative_hours_short(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "{count}m ago" |
+*
+* @param {Time_Relative_Minutes_ShortInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const time_relative_minutes_short = /** @type {((inputs: Time_Relative_Minutes_ShortInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Time_Relative_Minutes_ShortInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.time_relative_minutes_short(inputs)
+	return __es.time_relative_minutes_short(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "now" |
+*
+* @param {Time_Relative_NowInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const time_relative_now = /** @type {((inputs?: Time_Relative_NowInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Time_Relative_NowInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.time_relative_now(inputs)
+	return __es.time_relative_now(inputs)
 });
 /**
 * | output |

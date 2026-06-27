@@ -28,8 +28,10 @@
 /** @typedef {{}} Alert_Form_Data_FiltersInputs */
 /** @typedef {{}} Alert_Form_Data_MeasureInputs */
 /** @typedef {{}} Alert_Form_Data_Measure_PlaceholderInputs */
+/** @typedef {{}} Alert_Form_Data_Measures_DescInputs */
 /** @typedef {{}} Alert_Form_Data_NoneInputs */
 /** @typedef {{}} Alert_Form_Data_PreviewInputs */
+/** @typedef {{}} Alert_Form_Data_Preview_DescInputs */
 /** @typedef {{}} Alert_Form_Data_Split_ByInputs */
 /** @typedef {{}} Alert_Form_Data_Split_PlaceholderInputs */
 /** @typedef {{}} Alert_Form_Data_TitleInputs */
@@ -48,6 +50,7 @@
 /** @typedef {{}} Alert_Form_Preview_Table_AriaInputs */
 /** @typedef {{}} Alert_Form_Select_CriteriaInputs */
 /** @typedef {{}} Alert_Form_Slack_Channels_DescInputs */
+/** @typedef {{ docsUrl: NonNullable<unknown> }} Alert_Form_Slack_Not_ConfiguredInputs */
 /** @typedef {{}} Alert_Form_Slack_PlaceholderInputs */
 /** @typedef {{}} Alert_Form_Slack_TitleInputs */
 /** @typedef {{}} Alert_Form_Slack_Users_DescInputs */
@@ -57,12 +60,16 @@
 /** @typedef {{}} Alert_Form_Tab_DataInputs */
 /** @typedef {{}} Alert_Form_Tab_DeliveryInputs */
 /** @typedef {{}} Alert_Form_TriggerInputs */
+/** @typedef {{}} Alert_Form_Trigger_Data_RefreshInputs */
+/** @typedef {{}} Alert_Form_Trigger_Set_ScheduleInputs */
 /** @typedef {{}} Alert_Form_UpdateInputs */
+/** @typedef {{ time: NonNullable<unknown> }} Alert_Last_CheckedInputs */
 /** @typedef {{}} Alert_Name_LabelInputs */
 /** @typedef {{}} Alert_No_Filters_BodyInputs */
 /** @typedef {{}} Alert_No_Filters_HeadingInputs */
 /** @typedef {{}} Alert_No_Filters_HintInputs */
 /** @typedef {{}} Alert_NoneInputs */
+/** @typedef {{}} Alert_Not_Checked_YetInputs */
 /** @typedef {{}} Alert_ScheduleInputs */
 /** @typedef {{}} Alert_Slack_NotificationsInputs */
 /** @typedef {{}} Alert_SnoozeInputs */
@@ -293,6 +300,7 @@
 /** @typedef {{}} Chart_Stacked_BarInputs */
 /** @typedef {{}} Chart_Undo_ZoomInputs */
 /** @typedef {{}} Chart_Undo_Zoom_LabelInputs */
+/** @typedef {{}} Chart_VsInputs */
 /** @typedef {{}} Chart_ZoomInputs */
 /** @typedef {{}} Chart_Zoom_LabelInputs */
 /** @typedef {{}} Chat_Ai_DisclaimerInputs */
@@ -340,6 +348,7 @@
 /** @typedef {{}} Chat_Upvote_TooltipInputs */
 /** @typedef {{}} Common_ApplyInputs */
 /** @typedef {{}} Common_CancelInputs */
+/** @typedef {{}} Common_Close_SearchInputs */
 /** @typedef {{}} Common_ContinueInputs */
 /** @typedef {{}} Common_Must_Be_NumberInputs */
 /** @typedef {{}} Common_PreviewInputs */
@@ -379,6 +388,7 @@
 /** @typedef {{}} Dashboard_Collapse_AllInputs */
 /** @typedef {{}} Dashboard_ColumnsInputs */
 /** @typedef {{}} Dashboard_Comparison_Column_AriaInputs */
+/** @typedef {{}} Dashboard_Comparison_Select_TooltipInputs */
 /** @typedef {{}} Dashboard_Complete_DataInputs */
 /** @typedef {{}} Dashboard_Complete_Data_DescriptionInputs */
 /** @typedef {{}} Dashboard_Connect_Sparse_DataInputs */
@@ -536,6 +546,10 @@
 /** @typedef {{}} Dashboard_Total_RowInputs */
 /** @typedef {{}} Dashboard_View_AsInputs */
 /** @typedef {{}} Dashboard_Viewing_AsInputs */
+/** @typedef {{}} Dialog_Close_Without_Saving_Alert_DescInputs */
+/** @typedef {{}} Dialog_Close_Without_Saving_CancelInputs */
+/** @typedef {{}} Dialog_Close_Without_Saving_ConfirmInputs */
+/** @typedef {{}} Dialog_Close_Without_Saving_TitleInputs */
 /** @typedef {{}} Error_Access_Denied_BodyInputs */
 /** @typedef {{}} Error_Access_Denied_HeaderInputs */
 /** @typedef {{}} Error_Auth_BodyInputs */
@@ -565,10 +579,69 @@
 /** @typedef {{}} Error_Resource_Not_Found_HeaderInputs */
 /** @typedef {{}} Error_Retry_NowInputs */
 /** @typedef {{}} Error_Show_DetailsInputs */
+/** @typedef {{}} Explore_All_DimensionsInputs */
+/** @typedef {{}} Explore_All_MeasuresInputs */
+/** @typedef {{}} Explore_By_Grain_PrefixInputs */
+/** @typedef {{}} Explore_Choose_DimensionsInputs */
+/** @typedef {{}} Explore_Choose_MeasuresInputs */
+/** @typedef {{}} Explore_Clear_FilterInputs */
+/** @typedef {{ tag: NonNullable<unknown> }} Explore_Clear_Filter_TagInputs */
+/** @typedef {{}} Explore_Clear_Search_To_Reorder_DimensionsInputs */
+/** @typedef {{}} Explore_Clear_Search_To_Reorder_MeasuresInputs */
+/** @typedef {{}} Explore_Clear_Tag_FilterInputs */
+/** @typedef {{}} Explore_Clear_Tag_Filter_To_Reorder_DimensionsInputs */
+/** @typedef {{}} Explore_Clear_Tag_Filter_To_Reorder_MeasuresInputs */
+/** @typedef {{ count: NonNullable<unknown>, total: NonNullable<unknown> }} Explore_Dimensions_CountInputs */
+/** @typedef {{ tag: NonNullable<unknown> }} Explore_Filter_By_TagInputs */
+/** @typedef {{}} Explore_Filter_LabelInputs */
 /** @typedef {{}} Explore_Go_To_DashboardInputs */
 /** @typedef {{}} Explore_Go_To_ExploreInputs */
 /** @typedef {{ name: NonNullable<unknown> }} Explore_Go_To_NamedInputs */
+/** @typedef {{}} Explore_Hidden_DimensionsInputs */
+/** @typedef {{}} Explore_Hidden_MeasuresInputs */
+/** @typedef {{}} Explore_Hide_AllInputs */
+/** @typedef {{ tag: NonNullable<unknown> }} Explore_Hide_All_In_Named_TagInputs */
+/** @typedef {{}} Explore_Hide_All_In_TagInputs */
+/** @typedef {{ name: NonNullable<unknown> }} Explore_Hide_ItemInputs */
+/** @typedef {{ count: NonNullable<unknown>, total: NonNullable<unknown> }} Explore_Measures_CountInputs */
+/** @typedef {{}} Explore_Multi_SelectInputs */
+/** @typedef {{}} Explore_Must_Show_One_DimensionInputs */
+/** @typedef {{}} Explore_Must_Show_One_MeasureInputs */
+/** @typedef {{ count: NonNullable<unknown> }} Explore_N_MeasuresInputs */
+/** @typedef {{}} Explore_No_Dimensions_From_TagInputs */
+/** @typedef {{}} Explore_No_Dimensions_Or_TagsInputs */
+/** @typedef {{}} Explore_No_Dimensions_ShownInputs */
+/** @typedef {{}} Explore_No_Hidden_DimensionsInputs */
+/** @typedef {{}} Explore_No_Hidden_MeasuresInputs */
+/** @typedef {{}} Explore_No_Matching_Dimensions_ShownInputs */
+/** @typedef {{}} Explore_No_Matching_Hidden_DimensionsInputs */
+/** @typedef {{}} Explore_No_Matching_Hidden_MeasuresInputs */
+/** @typedef {{}} Explore_No_Matching_Leaderboard_MeasuresInputs */
+/** @typedef {{}} Explore_No_Matching_Measures_ShownInputs */
+/** @typedef {{}} Explore_No_Matching_TagsInputs */
+/** @typedef {{}} Explore_No_Measures_From_TagInputs */
+/** @typedef {{}} Explore_No_Measures_Or_TagsInputs */
+/** @typedef {{}} Explore_No_Measures_ShownInputs */
+/** @typedef {{ tag: NonNullable<unknown> }} Explore_Only_Show_TagInputs */
+/** @typedef {{}} Explore_Only_Show_This_TagInputs */
+/** @typedef {{}} Explore_Search_DimensionsInputs */
+/** @typedef {{}} Explore_Search_Dimensions_Or_TagsInputs */
+/** @typedef {{}} Explore_Search_ListInputs */
+/** @typedef {{}} Explore_Search_MeasuresInputs */
+/** @typedef {{}} Explore_Search_Measures_Or_TagsInputs */
+/** @typedef {{}} Explore_Show_AllInputs */
+/** @typedef {{ tag: NonNullable<unknown> }} Explore_Show_All_In_Named_TagInputs */
+/** @typedef {{}} Explore_Show_All_In_TagInputs */
+/** @typedef {{}} Explore_Show_Context_For_All_MeasuresInputs */
+/** @typedef {{ name: NonNullable<unknown> }} Explore_Show_ItemInputs */
+/** @typedef {{}} Explore_ShowingInputs */
+/** @typedef {{}} Explore_Shown_DimensionsInputs */
+/** @typedef {{}} Explore_Shown_MeasuresInputs */
+/** @typedef {{ visible: NonNullable<unknown>, total: NonNullable<unknown> }} Explore_Tag_Shown_CountInputs */
+/** @typedef {{}} Explore_TagsInputs */
 /** @typedef {{}} Explore_Unable_To_OpenInputs */
+/** @typedef {{}} Explore_Unknown_DimensionInputs */
+/** @typedef {{}} Explore_Unknown_MeasureInputs */
 /** @typedef {{ label: NonNullable<unknown> }} Field_List_Add_FieldsInputs */
 /** @typedef {{ label: NonNullable<unknown> }} Field_List_AriaInputs */
 /** @typedef {{}} Field_List_DimensionsInputs */
@@ -612,6 +685,7 @@
 /** @typedef {{}} Footer_Unknown_VersionInputs */
 /** @typedef {{}} Footer_VersionInputs */
 /** @typedef {{}} Footer_View_DocumentationInputs */
+/** @typedef {{}} Form_OptionalInputs */
 /** @typedef {{}} Home_Dashboards_HeadingInputs */
 /** @typedef {{}} Home_Subtitle_No_ChatInputs */
 /** @typedef {{}} Home_Subtitle_With_ChatInputs */
@@ -620,6 +694,10 @@
 /** @typedef {{}} Interval_HourInputs */
 /** @typedef {{}} Interval_NoneInputs */
 /** @typedef {{}} Interval_WeekInputs */
+/** @typedef {{}} Kpi_No_ChangeInputs */
+/** @typedef {{}} Kpi_No_DataInputs */
+/** @typedef {{}} Kpi_Not_AvailableInputs */
+/** @typedef {{ comparison: NonNullable<unknown> }} Kpi_Vs_ComparisonInputs */
 /** @typedef {{}} Language_EnInputs */
 /** @typedef {{}} Language_EsInputs */
 /** @typedef {{}} Language_Switcher_LabelInputs */
@@ -671,6 +749,7 @@
 /** @typedef {{}} Nav_Tab_SettingsInputs */
 /** @typedef {{}} Nav_Tab_StatusInputs */
 /** @typedef {{}} Org_Check_Out_ProjectsInputs */
+/** @typedef {{}} Org_Search_Add_Remove_UsersInputs */
 /** @typedef {{}} Org_Tab_ProjectsInputs */
 /** @typedef {{}} Org_Tab_SettingsInputs */
 /** @typedef {{}} Org_Tab_UsersInputs */
@@ -693,7 +772,11 @@
 /** @typedef {{}} Project_EditInputs */
 /** @typedef {{}} Project_RenameInputs */
 /** @typedef {{}} Project_Role_ViewerInputs */
+/** @typedef {{}} Project_Search_Or_InviteInputs */
+/** @typedef {{}} Project_Search_UsersInputs */
 /** @typedef {{}} Project_ShareInputs */
+/** @typedef {{ project: NonNullable<unknown> }} Project_Share_HeadingInputs */
+/** @typedef {{}} Project_Share_TooltipInputs */
 /** @typedef {{}} Report_Context_Menu_AriaInputs */
 /** @typedef {{ name: NonNullable<unknown> }} Report_Created_ByInputs */
 /** @typedef {{}} Report_Created_Through_CodeInputs */
@@ -787,29 +870,69 @@
 /** @typedef {{}} Theme_LabelInputs */
 /** @typedef {{}} Theme_LightInputs */
 /** @typedef {{}} Theme_SystemInputs */
+/** @typedef {{}} Time_1_Day_AgoInputs */
+/** @typedef {{}} Time_1_Hour_AgoInputs */
+/** @typedef {{}} Time_1_Minute_AgoInputs */
+/** @typedef {{}} Time_1_Month_AgoInputs */
+/** @typedef {{}} Time_1_Week_AgoInputs */
+/** @typedef {{}} Time_1_Year_AgoInputs */
 /** @typedef {{ duration: NonNullable<unknown> }} Time_AgoInputs */
 /** @typedef {{}} Time_All_TimeInputs */
 /** @typedef {{}} Time_ComparingInputs */
+/** @typedef {{}} Time_Comparison_Previous_DayInputs */
+/** @typedef {{}} Time_Comparison_Previous_PeriodInputs */
 /** @typedef {{}} Time_CustomInputs */
 /** @typedef {{}} Time_Custom_RangeInputs */
 /** @typedef {{}} Time_Enter_Time_RangeInputs */
 /** @typedef {{ duration: NonNullable<unknown> }} Time_From_NowInputs */
 /** @typedef {{}} Time_Grain_ByInputs */
 /** @typedef {{}} Time_Grain_CompleteInputs */
+/** @typedef {{}} Time_Grain_DayInputs */
+/** @typedef {{}} Time_Grain_DaysInputs */
+/** @typedef {{}} Time_Grain_HourInputs */
+/** @typedef {{}} Time_Grain_HoursInputs */
+/** @typedef {{}} Time_Grain_MinuteInputs */
+/** @typedef {{}} Time_Grain_MinutesInputs */
+/** @typedef {{}} Time_Grain_MonthInputs */
+/** @typedef {{}} Time_Grain_MonthsInputs */
+/** @typedef {{}} Time_Grain_QuarterInputs */
+/** @typedef {{}} Time_Grain_QuartersInputs */
 /** @typedef {{}} Time_Grain_TimeInputs */
+/** @typedef {{}} Time_Grain_WeekInputs */
+/** @typedef {{}} Time_Grain_WeeksInputs */
+/** @typedef {{}} Time_Grain_YearInputs */
+/** @typedef {{}} Time_Grain_YearsInputs */
+/** @typedef {{}} Time_Just_NowInputs */
 /** @typedef {{ duration: NonNullable<unknown> }} Time_Last_DurationInputs */
 /** @typedef {{}} Time_Month_To_DateInputs */
+/** @typedef {{ count: NonNullable<unknown> }} Time_N_Days_AgoInputs */
+/** @typedef {{ count: NonNullable<unknown> }} Time_N_Hours_AgoInputs */
+/** @typedef {{ count: NonNullable<unknown> }} Time_N_Minutes_AgoInputs */
+/** @typedef {{ count: NonNullable<unknown> }} Time_N_Months_AgoInputs */
+/** @typedef {{ count: NonNullable<unknown> }} Time_N_Weeks_AgoInputs */
+/** @typedef {{ count: NonNullable<unknown> }} Time_N_Years_AgoInputs */
+/** @typedef {{}} Time_No_Comparison_DimensionInputs */
 /** @typedef {{}} Time_No_Comparison_PeriodInputs */
 /** @typedef {{}} Time_Previous_MonthInputs */
 /** @typedef {{}} Time_Previous_QuarterInputs */
 /** @typedef {{}} Time_Previous_WeekInputs */
 /** @typedef {{}} Time_Previous_YearInputs */
 /** @typedef {{}} Time_Quarter_To_DateInputs */
+/** @typedef {{ grain: NonNullable<unknown> }} Time_Range_Grain_To_DateInputs */
+/** @typedef {{ count: NonNullable<unknown>, grains: NonNullable<unknown> }} Time_Range_Last_N_GrainsInputs */
+/** @typedef {{ grain: NonNullable<unknown> }} Time_Range_Next_GrainInputs */
+/** @typedef {{ count: NonNullable<unknown>, grains: NonNullable<unknown> }} Time_Range_Next_N_GrainsInputs */
+/** @typedef {{ grain: NonNullable<unknown> }} Time_Range_Previous_GrainInputs */
+/** @typedef {{ grain: NonNullable<unknown> }} Time_Range_This_GrainInputs */
 /** @typedef {{}} Time_Ref_CompleteInputs */
 /** @typedef {{}} Time_Ref_Complete_DataInputs */
 /** @typedef {{}} Time_Ref_CurrentInputs */
+/** @typedef {{}} Time_Ref_EarliestInputs */
 /** @typedef {{}} Time_Ref_LatestInputs */
 /** @typedef {{}} Time_Ref_NowInputs */
+/** @typedef {{ count: NonNullable<unknown> }} Time_Relative_Hours_ShortInputs */
+/** @typedef {{ count: NonNullable<unknown> }} Time_Relative_Minutes_ShortInputs */
+/** @typedef {{}} Time_Relative_NowInputs */
 /** @typedef {{}} Time_TodayInputs */
 /** @typedef {{}} Time_Unable_To_ParseInputs */
 /** @typedef {{}} Time_VsInputs */
@@ -930,12 +1053,20 @@ export const alert_form_data_measure_placeholder = /** @type {(inputs: Alert_For
 	return /** @type {LocalizedString} */ (`Select a measure`)
 };
 
+export const alert_form_data_measures_desc = /** @type {(inputs: Alert_Form_Data_Measures_DescInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Select the measures you want to monitor.`)
+};
+
 export const alert_form_data_none = /** @type {(inputs: Alert_Form_Data_NoneInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`None`)
 };
 
 export const alert_form_data_preview = /** @type {(inputs: Alert_Form_Data_PreviewInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Data preview`)
+};
+
+export const alert_form_data_preview_desc = /** @type {(inputs: Alert_Form_Data_Preview_DescInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Here's a look at the data you've selected above.`)
 };
 
 export const alert_form_data_split_by = /** @type {(inputs: Alert_Form_Data_Split_ByInputs) => LocalizedString} */ () => {
@@ -1010,6 +1141,10 @@ export const alert_form_slack_channels_desc = /** @type {(inputs: Alert_Form_Sla
 	return /** @type {LocalizedString} */ (`We'll send alerts directly to these channels.`)
 };
 
+export const alert_form_slack_not_configured = /** @type {(inputs: Alert_Form_Slack_Not_ConfiguredInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Slack has not been configured for this project. Read the <a href="${i?.docsUrl}" target="_blank">docs</a> to learn more.`)
+};
+
 export const alert_form_slack_placeholder = /** @type {(inputs: Alert_Form_Slack_PlaceholderInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`# Enter a Slack channel name`)
 };
@@ -1046,8 +1181,20 @@ export const alert_form_trigger = /** @type {(inputs: Alert_Form_TriggerInputs) 
 	return /** @type {LocalizedString} */ (`Trigger`)
 };
 
+export const alert_form_trigger_data_refresh = /** @type {(inputs: Alert_Form_Trigger_Data_RefreshInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Whenever data refreshes`)
+};
+
+export const alert_form_trigger_set_schedule = /** @type {(inputs: Alert_Form_Trigger_Set_ScheduleInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Set schedule`)
+};
+
 export const alert_form_update = /** @type {(inputs: Alert_Form_UpdateInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Update`)
+};
+
+export const alert_last_checked = /** @type {(inputs: Alert_Last_CheckedInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Last checked ${i?.time}`)
 };
 
 export const alert_name_label = /** @type {(inputs: Alert_Name_LabelInputs) => LocalizedString} */ () => {
@@ -1068,6 +1215,10 @@ export const alert_no_filters_hint = /** @type {(inputs: Alert_No_Filters_HintIn
 
 export const alert_none = /** @type {(inputs: Alert_NoneInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`None`)
+};
+
+export const alert_not_checked_yet = /** @type {(inputs: Alert_Not_Checked_YetInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Hasn't been checked yet`)
 };
 
 export const alert_schedule = /** @type {(inputs: Alert_ScheduleInputs) => LocalizedString} */ () => {
@@ -1991,6 +2142,10 @@ export const chart_undo_zoom_label = /** @type {(inputs: Chart_Undo_Zoom_LabelIn
 	return /** @type {LocalizedString} */ (`Undo Zoom`)
 };
 
+export const chart_vs = /** @type {(inputs: Chart_VsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`vs`)
+};
+
 export const chart_zoom = /** @type {(inputs: Chart_ZoomInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Zoom`)
 };
@@ -2179,6 +2334,10 @@ export const common_cancel = /** @type {(inputs: Common_CancelInputs) => Localiz
 	return /** @type {LocalizedString} */ (`Cancel`)
 };
 
+export const common_close_search = /** @type {(inputs: Common_Close_SearchInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Close search`)
+};
+
 export const common_continue = /** @type {(inputs: Common_ContinueInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Continue`)
 };
@@ -2333,6 +2492,10 @@ export const dashboard_columns = /** @type {(inputs: Dashboard_ColumnsInputs) =>
 
 export const dashboard_comparison_column_aria = /** @type {(inputs: Dashboard_Comparison_Column_AriaInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Comparison column`)
+};
+
+export const dashboard_comparison_select_tooltip = /** @type {(inputs: Dashboard_Comparison_Select_TooltipInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Select a comparison for the dashboard`)
 };
 
 export const dashboard_complete_data = /** @type {(inputs: Dashboard_Complete_DataInputs) => LocalizedString} */ () => {
@@ -2963,6 +3126,22 @@ export const dashboard_viewing_as = /** @type {(inputs: Dashboard_Viewing_AsInpu
 	return /** @type {LocalizedString} */ (`Viewing as`)
 };
 
+export const dialog_close_without_saving_alert_desc = /** @type {(inputs: Dialog_Close_Without_Saving_Alert_DescInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`You haven't saved changes to this alert yet, so closing this window will lose your work.`)
+};
+
+export const dialog_close_without_saving_cancel = /** @type {(inputs: Dialog_Close_Without_Saving_CancelInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Keep editing`)
+};
+
+export const dialog_close_without_saving_confirm = /** @type {(inputs: Dialog_Close_Without_Saving_ConfirmInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Close`)
+};
+
+export const dialog_close_without_saving_title = /** @type {(inputs: Dialog_Close_Without_Saving_TitleInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Close without saving?`)
+};
+
 export const error_access_denied_body = /** @type {(inputs: Error_Access_Denied_BodyInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`You don't have access to this page. Please check that you have the correct permissions.`)
 };
@@ -3079,6 +3258,66 @@ export const error_show_details = /** @type {(inputs: Error_Show_DetailsInputs) 
 	return /** @type {LocalizedString} */ (`Show details`)
 };
 
+export const explore_all_dimensions = /** @type {(inputs: Explore_All_DimensionsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`All Dimensions`)
+};
+
+export const explore_all_measures = /** @type {(inputs: Explore_All_MeasuresInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`All Measures`)
+};
+
+export const explore_by_grain_prefix = /** @type {(inputs: Explore_By_Grain_PrefixInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`by`)
+};
+
+export const explore_choose_dimensions = /** @type {(inputs: Explore_Choose_DimensionsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Choose dimensions to display`)
+};
+
+export const explore_choose_measures = /** @type {(inputs: Explore_Choose_MeasuresInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Choose measures to display`)
+};
+
+export const explore_clear_filter = /** @type {(inputs: Explore_Clear_FilterInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Clear filter`)
+};
+
+export const explore_clear_filter_tag = /** @type {(inputs: Explore_Clear_Filter_TagInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Clear filter ${i?.tag}`)
+};
+
+export const explore_clear_search_to_reorder_dimensions = /** @type {(inputs: Explore_Clear_Search_To_Reorder_DimensionsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Clear search to reorder dimensions.`)
+};
+
+export const explore_clear_search_to_reorder_measures = /** @type {(inputs: Explore_Clear_Search_To_Reorder_MeasuresInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Clear search to reorder measures.`)
+};
+
+export const explore_clear_tag_filter = /** @type {(inputs: Explore_Clear_Tag_FilterInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Clear tag filter`)
+};
+
+export const explore_clear_tag_filter_to_reorder_dimensions = /** @type {(inputs: Explore_Clear_Tag_Filter_To_Reorder_DimensionsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Clear the tag filter to reorder dimensions.`)
+};
+
+export const explore_clear_tag_filter_to_reorder_measures = /** @type {(inputs: Explore_Clear_Tag_Filter_To_Reorder_MeasuresInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Clear the tag filter to reorder measures.`)
+};
+
+export const explore_dimensions_count = /** @type {(inputs: Explore_Dimensions_CountInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.count} of ${i?.total} Dimensions`)
+};
+
+export const explore_filter_by_tag = /** @type {(inputs: Explore_Filter_By_TagInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Filter by ${i?.tag}`)
+};
+
+export const explore_filter_label = /** @type {(inputs: Explore_Filter_LabelInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Filter`)
+};
+
 export const explore_go_to_dashboard = /** @type {(inputs: Explore_Go_To_DashboardInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Go to Explore Dashboard`)
 };
@@ -3091,8 +3330,184 @@ export const explore_go_to_named = /** @type {(inputs: Explore_Go_To_NamedInputs
 	return /** @type {LocalizedString} */ (`Go to ${i?.name}`)
 };
 
+export const explore_hidden_dimensions = /** @type {(inputs: Explore_Hidden_DimensionsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Hidden dimensions`)
+};
+
+export const explore_hidden_measures = /** @type {(inputs: Explore_Hidden_MeasuresInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Hidden measures`)
+};
+
+export const explore_hide_all = /** @type {(inputs: Explore_Hide_AllInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Hide all`)
+};
+
+export const explore_hide_all_in_named_tag = /** @type {(inputs: Explore_Hide_All_In_Named_TagInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Hide all in ${i?.tag}`)
+};
+
+export const explore_hide_all_in_tag = /** @type {(inputs: Explore_Hide_All_In_TagInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Hide all in tag`)
+};
+
+export const explore_hide_item = /** @type {(inputs: Explore_Hide_ItemInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Hide ${i?.name}`)
+};
+
+export const explore_measures_count = /** @type {(inputs: Explore_Measures_CountInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.count} of ${i?.total} Measures`)
+};
+
+export const explore_multi_select = /** @type {(inputs: Explore_Multi_SelectInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Multi-select`)
+};
+
+export const explore_must_show_one_dimension = /** @type {(inputs: Explore_Must_Show_One_DimensionInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Must show at least one dimension`)
+};
+
+export const explore_must_show_one_measure = /** @type {(inputs: Explore_Must_Show_One_MeasureInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Must show at least one measure`)
+};
+
+export const explore_n_measures = /** @type {(inputs: Explore_N_MeasuresInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.count} measures`)
+};
+
+export const explore_no_dimensions_from_tag = /** @type {(inputs: Explore_No_Dimensions_From_TagInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No dimensions from this tag are shown`)
+};
+
+export const explore_no_dimensions_or_tags = /** @type {(inputs: Explore_No_Dimensions_Or_TagsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No dimensions or tags found`)
+};
+
+export const explore_no_dimensions_shown = /** @type {(inputs: Explore_No_Dimensions_ShownInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No dimensions shown`)
+};
+
+export const explore_no_hidden_dimensions = /** @type {(inputs: Explore_No_Hidden_DimensionsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No hidden dimensions`)
+};
+
+export const explore_no_hidden_measures = /** @type {(inputs: Explore_No_Hidden_MeasuresInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No hidden measures`)
+};
+
+export const explore_no_matching_dimensions_shown = /** @type {(inputs: Explore_No_Matching_Dimensions_ShownInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No matching dimensions shown`)
+};
+
+export const explore_no_matching_hidden_dimensions = /** @type {(inputs: Explore_No_Matching_Hidden_DimensionsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No matching hidden dimensions`)
+};
+
+export const explore_no_matching_hidden_measures = /** @type {(inputs: Explore_No_Matching_Hidden_MeasuresInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No matching hidden measures`)
+};
+
+export const explore_no_matching_leaderboard_measures = /** @type {(inputs: Explore_No_Matching_Leaderboard_MeasuresInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No matching leaderboard measures shown`)
+};
+
+export const explore_no_matching_measures_shown = /** @type {(inputs: Explore_No_Matching_Measures_ShownInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No matching measures shown`)
+};
+
+export const explore_no_matching_tags = /** @type {(inputs: Explore_No_Matching_TagsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No matching tags`)
+};
+
+export const explore_no_measures_from_tag = /** @type {(inputs: Explore_No_Measures_From_TagInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No measures from this tag are shown`)
+};
+
+export const explore_no_measures_or_tags = /** @type {(inputs: Explore_No_Measures_Or_TagsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No measures or tags found`)
+};
+
+export const explore_no_measures_shown = /** @type {(inputs: Explore_No_Measures_ShownInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No measures shown`)
+};
+
+export const explore_only_show_tag = /** @type {(inputs: Explore_Only_Show_TagInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Only show ${i?.tag}`)
+};
+
+export const explore_only_show_this_tag = /** @type {(inputs: Explore_Only_Show_This_TagInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Only show this tag`)
+};
+
+export const explore_search_dimensions = /** @type {(inputs: Explore_Search_DimensionsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Search dimensions`)
+};
+
+export const explore_search_dimensions_or_tags = /** @type {(inputs: Explore_Search_Dimensions_Or_TagsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Search dimensions or tags`)
+};
+
+export const explore_search_list = /** @type {(inputs: Explore_Search_ListInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Search list`)
+};
+
+export const explore_search_measures = /** @type {(inputs: Explore_Search_MeasuresInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Search measures`)
+};
+
+export const explore_search_measures_or_tags = /** @type {(inputs: Explore_Search_Measures_Or_TagsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Search measures or tags`)
+};
+
+export const explore_show_all = /** @type {(inputs: Explore_Show_AllInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Show all`)
+};
+
+export const explore_show_all_in_named_tag = /** @type {(inputs: Explore_Show_All_In_Named_TagInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Show all in ${i?.tag}`)
+};
+
+export const explore_show_all_in_tag = /** @type {(inputs: Explore_Show_All_In_TagInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Show all in tag`)
+};
+
+export const explore_show_context_for_all_measures = /** @type {(inputs: Explore_Show_Context_For_All_MeasuresInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Show context for all measures`)
+};
+
+export const explore_show_item = /** @type {(inputs: Explore_Show_ItemInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Show ${i?.name}`)
+};
+
+export const explore_showing = /** @type {(inputs: Explore_ShowingInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Showing`)
+};
+
+export const explore_shown_dimensions = /** @type {(inputs: Explore_Shown_DimensionsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Shown dimensions`)
+};
+
+export const explore_shown_measures = /** @type {(inputs: Explore_Shown_MeasuresInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Shown measures`)
+};
+
+export const explore_tag_shown_count = /** @type {(inputs: Explore_Tag_Shown_CountInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.visible} of ${i?.total} shown`)
+};
+
+export const explore_tags = /** @type {(inputs: Explore_TagsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Tags`)
+};
+
 export const explore_unable_to_open = /** @type {(inputs: Explore_Unable_To_OpenInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Unable to open Explore Dashboard`)
+};
+
+export const explore_unknown_dimension = /** @type {(inputs: Explore_Unknown_DimensionInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Unknown dimension`)
+};
+
+export const explore_unknown_measure = /** @type {(inputs: Explore_Unknown_MeasureInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Unknown measure`)
 };
 
 export const field_list_add_fields = /** @type {(inputs: Field_List_Add_FieldsInputs) => LocalizedString} */ (i) => {
@@ -3267,6 +3682,10 @@ export const footer_view_documentation = /** @type {(inputs: Footer_View_Documen
 	return /** @type {LocalizedString} */ (`View documentation`)
 };
 
+export const form_optional = /** @type {(inputs: Form_OptionalInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`(optional)`)
+};
+
 export const home_dashboards_heading = /** @type {(inputs: Home_Dashboards_HeadingInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Dashboards`)
 };
@@ -3297,6 +3716,22 @@ export const interval_none = /** @type {(inputs: Interval_NoneInputs) => Localiz
 
 export const interval_week = /** @type {(inputs: Interval_WeekInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Week`)
+};
+
+export const kpi_no_change = /** @type {(inputs: Kpi_No_ChangeInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`no change`)
+};
+
+export const kpi_no_data = /** @type {(inputs: Kpi_No_DataInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`no data`)
+};
+
+export const kpi_not_available = /** @type {(inputs: Kpi_Not_AvailableInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`n/a`)
+};
+
+export const kpi_vs_comparison = /** @type {(inputs: Kpi_Vs_ComparisonInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`vs ${i?.comparison}`)
 };
 
 export const language_en = /** @type {(inputs: Language_EnInputs) => LocalizedString} */ () => {
@@ -3503,6 +3938,10 @@ export const org_check_out_projects = /** @type {(inputs: Org_Check_Out_Projects
 	return /** @type {LocalizedString} */ (`Check out your projects below.`)
 };
 
+export const org_search_add_remove_users = /** @type {(inputs: Org_Search_Add_Remove_UsersInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Search to add/remove users`)
+};
+
 export const org_tab_projects = /** @type {(inputs: Org_Tab_ProjectsInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Projects`)
 };
@@ -3591,8 +4030,24 @@ export const project_role_viewer = /** @type {(inputs: Project_Role_ViewerInputs
 	return /** @type {LocalizedString} */ (`Viewer`)
 };
 
+export const project_search_or_invite = /** @type {(inputs: Project_Search_Or_InviteInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Search or invite by email`)
+};
+
+export const project_search_users = /** @type {(inputs: Project_Search_UsersInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Search for users`)
+};
+
 export const project_share = /** @type {(inputs: Project_ShareInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Share`)
+};
+
+export const project_share_heading = /** @type {(inputs: Project_Share_HeadingInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Share project: ${i?.project}`)
+};
+
+export const project_share_tooltip = /** @type {(inputs: Project_Share_TooltipInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Share project`)
 };
 
 export const report_context_menu_aria = /** @type {(inputs: Report_Context_Menu_AriaInputs) => LocalizedString} */ () => {
@@ -3967,6 +4422,30 @@ export const theme_system = /** @type {(inputs: Theme_SystemInputs) => Localized
 	return /** @type {LocalizedString} */ (`System`)
 };
 
+export const time_1_day_ago = /** @type {(inputs: Time_1_Day_AgoInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`1 day ago`)
+};
+
+export const time_1_hour_ago = /** @type {(inputs: Time_1_Hour_AgoInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`1 hour ago`)
+};
+
+export const time_1_minute_ago = /** @type {(inputs: Time_1_Minute_AgoInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`1 minute ago`)
+};
+
+export const time_1_month_ago = /** @type {(inputs: Time_1_Month_AgoInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`1 month ago`)
+};
+
+export const time_1_week_ago = /** @type {(inputs: Time_1_Week_AgoInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`1 week ago`)
+};
+
+export const time_1_year_ago = /** @type {(inputs: Time_1_Year_AgoInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`1 year ago`)
+};
+
 export const time_ago = /** @type {(inputs: Time_AgoInputs) => LocalizedString} */ (i) => {
 	return /** @type {LocalizedString} */ (`${i?.duration} ago`)
 };
@@ -3977,6 +4456,14 @@ export const time_all_time = /** @type {(inputs: Time_All_TimeInputs) => Localiz
 
 export const time_comparing = /** @type {(inputs: Time_ComparingInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Comparing`)
+};
+
+export const time_comparison_previous_day = /** @type {(inputs: Time_Comparison_Previous_DayInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Previous day`)
+};
+
+export const time_comparison_previous_period = /** @type {(inputs: Time_Comparison_Previous_PeriodInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Previous period`)
 };
 
 export const time_custom = /** @type {(inputs: Time_CustomInputs) => LocalizedString} */ () => {
@@ -4003,8 +4490,68 @@ export const time_grain_complete = /** @type {(inputs: Time_Grain_CompleteInputs
 	return /** @type {LocalizedString} */ (`complete`)
 };
 
+export const time_grain_day = /** @type {(inputs: Time_Grain_DayInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`day`)
+};
+
+export const time_grain_days = /** @type {(inputs: Time_Grain_DaysInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`days`)
+};
+
+export const time_grain_hour = /** @type {(inputs: Time_Grain_HourInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`hour`)
+};
+
+export const time_grain_hours = /** @type {(inputs: Time_Grain_HoursInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`hours`)
+};
+
+export const time_grain_minute = /** @type {(inputs: Time_Grain_MinuteInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`minute`)
+};
+
+export const time_grain_minutes = /** @type {(inputs: Time_Grain_MinutesInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`minutes`)
+};
+
+export const time_grain_month = /** @type {(inputs: Time_Grain_MonthInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`month`)
+};
+
+export const time_grain_months = /** @type {(inputs: Time_Grain_MonthsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`months`)
+};
+
+export const time_grain_quarter = /** @type {(inputs: Time_Grain_QuarterInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`quarter`)
+};
+
+export const time_grain_quarters = /** @type {(inputs: Time_Grain_QuartersInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`quarters`)
+};
+
 export const time_grain_time = /** @type {(inputs: Time_Grain_TimeInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Time`)
+};
+
+export const time_grain_week = /** @type {(inputs: Time_Grain_WeekInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`week`)
+};
+
+export const time_grain_weeks = /** @type {(inputs: Time_Grain_WeeksInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`weeks`)
+};
+
+export const time_grain_year = /** @type {(inputs: Time_Grain_YearInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`year`)
+};
+
+export const time_grain_years = /** @type {(inputs: Time_Grain_YearsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`years`)
+};
+
+export const time_just_now = /** @type {(inputs: Time_Just_NowInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Just now`)
 };
 
 export const time_last_duration = /** @type {(inputs: Time_Last_DurationInputs) => LocalizedString} */ (i) => {
@@ -4013,6 +4560,34 @@ export const time_last_duration = /** @type {(inputs: Time_Last_DurationInputs) 
 
 export const time_month_to_date = /** @type {(inputs: Time_Month_To_DateInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Month to Date`)
+};
+
+export const time_n_days_ago = /** @type {(inputs: Time_N_Days_AgoInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.count} days ago`)
+};
+
+export const time_n_hours_ago = /** @type {(inputs: Time_N_Hours_AgoInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.count} hours ago`)
+};
+
+export const time_n_minutes_ago = /** @type {(inputs: Time_N_Minutes_AgoInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.count} minutes ago`)
+};
+
+export const time_n_months_ago = /** @type {(inputs: Time_N_Months_AgoInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.count} months ago`)
+};
+
+export const time_n_weeks_ago = /** @type {(inputs: Time_N_Weeks_AgoInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.count} weeks ago`)
+};
+
+export const time_n_years_ago = /** @type {(inputs: Time_N_Years_AgoInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.count} years ago`)
+};
+
+export const time_no_comparison_dimension = /** @type {(inputs: Time_No_Comparison_DimensionInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No comparison dimension`)
 };
 
 export const time_no_comparison_period = /** @type {(inputs: Time_No_Comparison_PeriodInputs) => LocalizedString} */ () => {
@@ -4039,6 +4614,30 @@ export const time_quarter_to_date = /** @type {(inputs: Time_Quarter_To_DateInpu
 	return /** @type {LocalizedString} */ (`Quarter to Date`)
 };
 
+export const time_range_grain_to_date = /** @type {(inputs: Time_Range_Grain_To_DateInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.grain} to date`)
+};
+
+export const time_range_last_n_grains = /** @type {(inputs: Time_Range_Last_N_GrainsInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`last ${i?.count} ${i?.grains}`)
+};
+
+export const time_range_next_grain = /** @type {(inputs: Time_Range_Next_GrainInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`next ${i?.grain}`)
+};
+
+export const time_range_next_n_grains = /** @type {(inputs: Time_Range_Next_N_GrainsInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`next ${i?.count} ${i?.grains}`)
+};
+
+export const time_range_previous_grain = /** @type {(inputs: Time_Range_Previous_GrainInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`previous ${i?.grain}`)
+};
+
+export const time_range_this_grain = /** @type {(inputs: Time_Range_This_GrainInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`this ${i?.grain}`)
+};
+
 export const time_ref_complete = /** @type {(inputs: Time_Ref_CompleteInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`complete`)
 };
@@ -4051,11 +4650,27 @@ export const time_ref_current = /** @type {(inputs: Time_Ref_CurrentInputs) => L
 	return /** @type {LocalizedString} */ (`current`)
 };
 
+export const time_ref_earliest = /** @type {(inputs: Time_Ref_EarliestInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`earliest`)
+};
+
 export const time_ref_latest = /** @type {(inputs: Time_Ref_LatestInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`latest`)
 };
 
 export const time_ref_now = /** @type {(inputs: Time_Ref_NowInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`now`)
+};
+
+export const time_relative_hours_short = /** @type {(inputs: Time_Relative_Hours_ShortInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.count}h ago`)
+};
+
+export const time_relative_minutes_short = /** @type {(inputs: Time_Relative_Minutes_ShortInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.count}m ago`)
+};
+
+export const time_relative_now = /** @type {(inputs: Time_Relative_NowInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`now`)
 };
 

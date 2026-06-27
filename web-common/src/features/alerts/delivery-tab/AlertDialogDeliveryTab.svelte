@@ -40,13 +40,13 @@
         onClick={() => ($form["refreshWhenDataRefreshes"] = true)}
         active={$form["refreshWhenDataRefreshes"]}
       >
-        Whenever data refreshes
+        {m.alert_form_trigger_data_refresh()}
       </Button>
       <Button
         onClick={() => ($form["refreshWhenDataRefreshes"] = false)}
         active={!$form["refreshWhenDataRefreshes"]}
       >
-        Set schedule
+        {m.alert_form_trigger_set_schedule()}
       </Button>
     </div>
     {#if !$form["refreshWhenDataRefreshes"]}
@@ -98,12 +98,7 @@
     <FormSection title={m.alert_form_slack_title()}>
       <svelte:fragment slot="description">
         <span class="text-sm text-fg-secondary">
-          Slack has not been configured for this project. Read the <a
-            href="https://docs.rilldata.com/guide/alerts#configuring-slack-targets"
-            target="_blank"
-          >
-            docs
-          </a> to learn more.
+          {@html m.alert_form_slack_not_configured({ docsUrl: "https://docs.rilldata.com/guide/alerts#configuring-slack-targets" })}
         </span>
       </svelte:fragment>
     </FormSection>
