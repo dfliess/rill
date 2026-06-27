@@ -2,6 +2,18 @@
 import { getLocale, experimentalStaticLocale } from "../runtime.js"
 
 /** @typedef {import('../runtime.js').LocalizedString} LocalizedString */
+/** @typedef {{}} Avatar_Contact_SupportInputs */
+/** @typedef {{}} Avatar_Copied_UrlInputs */
+/** @typedef {{}} Avatar_Copy_UrlInputs */
+/** @typedef {{}} Avatar_Copy_Url_For_ViewInputs */
+/** @typedef {{}} Avatar_Create_Public_UrlInputs */
+/** @typedef {{}} Avatar_DocumentationInputs */
+/** @typedef {{}} Avatar_Join_DiscordInputs */
+/** @typedef {{}} Avatar_LogoutInputs */
+/** @typedef {{}} Avatar_ShareInputs */
+/** @typedef {{}} Avatar_Share_DashboardInputs */
+/** @typedef {{}} Avatar_Share_DescriptionInputs */
+/** @typedef {{}} Avatar_View_AsInputs */
 /** @typedef {{}} Bignumber_Copy_ValueInputs */
 /** @typedef {{}} Bignumber_Shift_ClickInputs */
 /** @typedef {{}} Calendar_ApplyInputs */
@@ -159,6 +171,7 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Chart_LineInputs */
 /** @typedef {{}} Chart_Stacked_AreaInputs */
 /** @typedef {{}} Chart_Stacked_BarInputs */
+/** @typedef {{}} Chat_Empty_LabelInputs */
 /** @typedef {{}} Chat_Happy_To_ExploreInputs */
 /** @typedef {{}} Chat_Placeholder_AnalystInputs */
 /** @typedef {{}} Common_ApplyInputs */
@@ -232,6 +245,12 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Dashboard_Error_OccurredInputs */
 /** @typedef {{}} Dashboard_Error_Occurred_HoverInputs */
 /** @typedef {{}} Dashboard_Error_TagInputs */
+/** @typedef {{}} Dashboard_Errored_Contact_AdminInputs */
+/** @typedef {{ link: NonNullable<unknown> }} Dashboard_Errored_Need_HelpInputs */
+/** @typedef {{}} Dashboard_Errored_TitleInputs */
+/** @typedef {{}} Dashboard_Errored_View_ProjectInputs */
+/** @typedef {{}} Dashboard_Errored_View_StatusInputs */
+/** @typedef {{}} Dashboard_Errored_View_Status_ButtonInputs */
 /** @typedef {{}} Dashboard_ExcludeInputs */
 /** @typedef {{}} Dashboard_ExploreInputs */
 /** @typedef {{}} Dashboard_Export_ChartInputs */
@@ -254,6 +273,10 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Dashboard_Latest_DataInputs */
 /** @typedef {{}} Dashboard_Latest_Data_DescriptionInputs */
 /** @typedef {{}} Dashboard_Leaderboards_AriaInputs */
+/** @typedef {{}} Dashboard_List_CreateInputs */
+/** @typedef {{ link: NonNullable<unknown> }} Dashboard_List_Create_To_StartInputs */
+/** @typedef {{}} Dashboard_List_EmptyInputs */
+/** @typedef {{}} Dashboard_List_See_AllInputs */
 /** @typedef {{ name: NonNullable<unknown> }} Dashboard_Measure_Chart_AriaInputs */
 /** @typedef {{}} Dashboard_MeasuresInputs */
 /** @typedef {{ count: NonNullable<unknown> }} Dashboard_Measures_CountInputs */
@@ -381,6 +404,10 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Footer_Unknown_VersionInputs */
 /** @typedef {{}} Footer_VersionInputs */
 /** @typedef {{}} Footer_View_DocumentationInputs */
+/** @typedef {{}} Home_Dashboards_HeadingInputs */
+/** @typedef {{}} Home_Subtitle_No_ChatInputs */
+/** @typedef {{}} Home_Subtitle_With_ChatInputs */
+/** @typedef {{ projectName: NonNullable<unknown> }} Home_Welcome_ToInputs */
 /** @typedef {{}} Language_EnInputs */
 /** @typedef {{}} Language_EsInputs */
 /** @typedef {{}} Language_Switcher_LabelInputs */
@@ -400,8 +427,21 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Nav_Close_SidebarInputs */
 /** @typedef {{}} Nav_Data_ExplorerInputs */
 /** @typedef {{}} Nav_Show_SidebarInputs */
+/** @typedef {{}} Nav_Tab_AiInputs */
+/** @typedef {{}} Nav_Tab_AlertsInputs */
+/** @typedef {{}} Nav_Tab_DashboardsInputs */
+/** @typedef {{}} Nav_Tab_HomeInputs */
+/** @typedef {{}} Nav_Tab_QueryInputs */
+/** @typedef {{}} Nav_Tab_ReportsInputs */
+/** @typedef {{}} Nav_Tab_SettingsInputs */
+/** @typedef {{}} Nav_Tab_StatusInputs */
 /** @typedef {{ grain: NonNullable<unknown> }} Pivot_Time_Dimension_HeaderInputs */
 /** @typedef {{}} Pivot_Time_PrefixInputs */
+/** @typedef {{}} Project_Dashboards_TitleInputs */
+/** @typedef {{}} Theme_DarkInputs */
+/** @typedef {{}} Theme_LabelInputs */
+/** @typedef {{}} Theme_LightInputs */
+/** @typedef {{}} Theme_SystemInputs */
 /** @typedef {{ duration: NonNullable<unknown> }} Time_AgoInputs */
 /** @typedef {{}} Time_All_TimeInputs */
 /** @typedef {{}} Time_ComparingInputs */
@@ -432,6 +472,174 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Time_YesterdayInputs */
 import * as __en from "./en.js"
 import * as __es from "./es.js"
+/**
+* | output |
+* | --- |
+* | "Contact Rill support" |
+*
+* @param {Avatar_Contact_SupportInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const avatar_contact_support = /** @type {((inputs?: Avatar_Contact_SupportInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Avatar_Contact_SupportInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.avatar_contact_support(inputs)
+	return __es.avatar_contact_support(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Copied URL" |
+*
+* @param {Avatar_Copied_UrlInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const avatar_copied_url = /** @type {((inputs?: Avatar_Copied_UrlInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Avatar_Copied_UrlInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.avatar_copied_url(inputs)
+	return __es.avatar_copied_url(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Copy URL" |
+*
+* @param {Avatar_Copy_UrlInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const avatar_copy_url = /** @type {((inputs?: Avatar_Copy_UrlInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Avatar_Copy_UrlInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.avatar_copy_url(inputs)
+	return __es.avatar_copy_url(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Copy URL for this view" |
+*
+* @param {Avatar_Copy_Url_For_ViewInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const avatar_copy_url_for_view = /** @type {((inputs?: Avatar_Copy_Url_For_ViewInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Avatar_Copy_Url_For_ViewInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.avatar_copy_url_for_view(inputs)
+	return __es.avatar_copy_url_for_view(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Create public URL" |
+*
+* @param {Avatar_Create_Public_UrlInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const avatar_create_public_url = /** @type {((inputs?: Avatar_Create_Public_UrlInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Avatar_Create_Public_UrlInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.avatar_create_public_url(inputs)
+	return __es.avatar_create_public_url(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Documentation" |
+*
+* @param {Avatar_DocumentationInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const avatar_documentation = /** @type {((inputs?: Avatar_DocumentationInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Avatar_DocumentationInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.avatar_documentation(inputs)
+	return __es.avatar_documentation(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Join us on Discord" |
+*
+* @param {Avatar_Join_DiscordInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const avatar_join_discord = /** @type {((inputs?: Avatar_Join_DiscordInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Avatar_Join_DiscordInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.avatar_join_discord(inputs)
+	return __es.avatar_join_discord(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Logout" |
+*
+* @param {Avatar_LogoutInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const avatar_logout = /** @type {((inputs?: Avatar_LogoutInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Avatar_LogoutInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.avatar_logout(inputs)
+	return __es.avatar_logout(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Share" |
+*
+* @param {Avatar_ShareInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const avatar_share = /** @type {((inputs?: Avatar_ShareInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Avatar_ShareInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.avatar_share(inputs)
+	return __es.avatar_share(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Share dashboard" |
+*
+* @param {Avatar_Share_DashboardInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const avatar_share_dashboard = /** @type {((inputs?: Avatar_Share_DashboardInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Avatar_Share_DashboardInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.avatar_share_dashboard(inputs)
+	return __es.avatar_share_dashboard(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Share your current view with another project member." |
+*
+* @param {Avatar_Share_DescriptionInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const avatar_share_description = /** @type {((inputs?: Avatar_Share_DescriptionInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Avatar_Share_DescriptionInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.avatar_share_description(inputs)
+	return __es.avatar_share_description(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "View as" |
+*
+* @param {Avatar_View_AsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const avatar_view_as = /** @type {((inputs?: Avatar_View_AsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Avatar_View_AsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.avatar_view_as(inputs)
+	return __es.avatar_view_as(inputs)
+});
 /**
 * | output |
 * | --- |
@@ -2635,6 +2843,20 @@ export const chart_stacked_bar = /** @type {((inputs?: Chart_Stacked_BarInputs, 
 * | --- |
 * | "Happy to help explore your data" |
 *
+* @param {Chat_Empty_LabelInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const chat_empty_label = /** @type {((inputs?: Chat_Empty_LabelInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Chat_Empty_LabelInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.chat_empty_label(inputs)
+	return __es.chat_empty_label(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Happy to help explore your data" |
+*
 * @param {Chat_Happy_To_ExploreInputs} inputs
 * @param {{ locale?: "en" | "es" }} options
 * @returns {LocalizedString}
@@ -3655,6 +3877,90 @@ export const dashboard_error_tag = /** @type {((inputs?: Dashboard_Error_TagInpu
 /**
 * | output |
 * | --- |
+* | "Contact your project's admin for help." |
+*
+* @param {Dashboard_Errored_Contact_AdminInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const dashboard_errored_contact_admin = /** @type {((inputs?: Dashboard_Errored_Contact_AdminInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Dashboard_Errored_Contact_AdminInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.dashboard_errored_contact_admin(inputs)
+	return __es.dashboard_errored_contact_admin(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Need help? Reach out to us on {link}" |
+*
+* @param {Dashboard_Errored_Need_HelpInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const dashboard_errored_need_help = /** @type {((inputs: Dashboard_Errored_Need_HelpInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Dashboard_Errored_Need_HelpInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.dashboard_errored_need_help(inputs)
+	return __es.dashboard_errored_need_help(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Sorry, your dashboard isn't working right now!" |
+*
+* @param {Dashboard_Errored_TitleInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const dashboard_errored_title = /** @type {((inputs?: Dashboard_Errored_TitleInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Dashboard_Errored_TitleInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.dashboard_errored_title(inputs)
+	return __es.dashboard_errored_title(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "View project" |
+*
+* @param {Dashboard_Errored_View_ProjectInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const dashboard_errored_view_project = /** @type {((inputs?: Dashboard_Errored_View_ProjectInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Dashboard_Errored_View_ProjectInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.dashboard_errored_view_project(inputs)
+	return __es.dashboard_errored_view_project(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "View project status for errors that may help you find a fix." |
+*
+* @param {Dashboard_Errored_View_StatusInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const dashboard_errored_view_status = /** @type {((inputs?: Dashboard_Errored_View_StatusInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Dashboard_Errored_View_StatusInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.dashboard_errored_view_status(inputs)
+	return __es.dashboard_errored_view_status(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "View project status" |
+*
+* @param {Dashboard_Errored_View_Status_ButtonInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const dashboard_errored_view_status_button = /** @type {((inputs?: Dashboard_Errored_View_Status_ButtonInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Dashboard_Errored_View_Status_ButtonInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.dashboard_errored_view_status_button(inputs)
+	return __es.dashboard_errored_view_status_button(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Exclude" |
 *
 * @param {Dashboard_ExcludeInputs} inputs
@@ -3959,6 +4265,62 @@ export const dashboard_leaderboards_aria = /** @type {((inputs?: Dashboard_Leade
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.dashboard_leaderboards_aria(inputs)
 	return __es.dashboard_leaderboards_aria(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Create a dashboard" |
+*
+* @param {Dashboard_List_CreateInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const dashboard_list_create = /** @type {((inputs?: Dashboard_List_CreateInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Dashboard_List_CreateInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.dashboard_list_create(inputs)
+	return __es.dashboard_list_create(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "{link} to get started" |
+*
+* @param {Dashboard_List_Create_To_StartInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const dashboard_list_create_to_start = /** @type {((inputs: Dashboard_List_Create_To_StartInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Dashboard_List_Create_To_StartInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.dashboard_list_create_to_start(inputs)
+	return __es.dashboard_list_create_to_start(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "You don't have any dashboards yet" |
+*
+* @param {Dashboard_List_EmptyInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const dashboard_list_empty = /** @type {((inputs?: Dashboard_List_EmptyInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Dashboard_List_EmptyInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.dashboard_list_empty(inputs)
+	return __es.dashboard_list_empty(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "See all dashboards" |
+*
+* @param {Dashboard_List_See_AllInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const dashboard_list_see_all = /** @type {((inputs?: Dashboard_List_See_AllInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Dashboard_List_See_AllInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.dashboard_list_see_all(inputs)
+	return __es.dashboard_list_see_all(inputs)
 });
 /**
 * | output |
@@ -5741,6 +6103,62 @@ export const footer_view_documentation = /** @type {((inputs?: Footer_View_Docum
 /**
 * | output |
 * | --- |
+* | "Dashboards" |
+*
+* @param {Home_Dashboards_HeadingInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const home_dashboards_heading = /** @type {((inputs?: Home_Dashboards_HeadingInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Home_Dashboards_HeadingInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.home_dashboards_heading(inputs)
+	return __es.home_dashboards_heading(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Explore your dashboards below" |
+*
+* @param {Home_Subtitle_No_ChatInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const home_subtitle_no_chat = /** @type {((inputs?: Home_Subtitle_No_ChatInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Home_Subtitle_No_ChatInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.home_subtitle_no_chat(inputs)
+	return __es.home_subtitle_no_chat(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Ask questions about your data, or explore your dashboards below" |
+*
+* @param {Home_Subtitle_With_ChatInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const home_subtitle_with_chat = /** @type {((inputs?: Home_Subtitle_With_ChatInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Home_Subtitle_With_ChatInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.home_subtitle_with_chat(inputs)
+	return __es.home_subtitle_with_chat(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Welcome to {projectName}" |
+*
+* @param {Home_Welcome_ToInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const home_welcome_to = /** @type {((inputs: Home_Welcome_ToInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Home_Welcome_ToInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.home_welcome_to(inputs)
+	return __es.home_welcome_to(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "English" |
 *
 * @param {Language_EnInputs} inputs
@@ -6007,6 +6425,118 @@ export const nav_show_sidebar = /** @type {((inputs?: Nav_Show_SidebarInputs, op
 /**
 * | output |
 * | --- |
+* | "AI" |
+*
+* @param {Nav_Tab_AiInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const nav_tab_ai = /** @type {((inputs?: Nav_Tab_AiInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Nav_Tab_AiInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.nav_tab_ai(inputs)
+	return __es.nav_tab_ai(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Alerts" |
+*
+* @param {Nav_Tab_AlertsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const nav_tab_alerts = /** @type {((inputs?: Nav_Tab_AlertsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Nav_Tab_AlertsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.nav_tab_alerts(inputs)
+	return __es.nav_tab_alerts(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Dashboards" |
+*
+* @param {Nav_Tab_DashboardsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const nav_tab_dashboards = /** @type {((inputs?: Nav_Tab_DashboardsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Nav_Tab_DashboardsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.nav_tab_dashboards(inputs)
+	return __es.nav_tab_dashboards(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Home" |
+*
+* @param {Nav_Tab_HomeInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const nav_tab_home = /** @type {((inputs?: Nav_Tab_HomeInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Nav_Tab_HomeInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.nav_tab_home(inputs)
+	return __es.nav_tab_home(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Query" |
+*
+* @param {Nav_Tab_QueryInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const nav_tab_query = /** @type {((inputs?: Nav_Tab_QueryInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Nav_Tab_QueryInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.nav_tab_query(inputs)
+	return __es.nav_tab_query(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Reports" |
+*
+* @param {Nav_Tab_ReportsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const nav_tab_reports = /** @type {((inputs?: Nav_Tab_ReportsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Nav_Tab_ReportsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.nav_tab_reports(inputs)
+	return __es.nav_tab_reports(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Settings" |
+*
+* @param {Nav_Tab_SettingsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const nav_tab_settings = /** @type {((inputs?: Nav_Tab_SettingsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Nav_Tab_SettingsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.nav_tab_settings(inputs)
+	return __es.nav_tab_settings(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Status" |
+*
+* @param {Nav_Tab_StatusInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const nav_tab_status = /** @type {((inputs?: Nav_Tab_StatusInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Nav_Tab_StatusInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.nav_tab_status(inputs)
+	return __es.nav_tab_status(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Time {grain}" |
 *
 * @param {Pivot_Time_Dimension_HeaderInputs} inputs
@@ -6031,6 +6561,76 @@ export const pivot_time_prefix = /** @type {((inputs?: Pivot_Time_PrefixInputs, 
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.pivot_time_prefix(inputs)
 	return __es.pivot_time_prefix(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Project dashboards" |
+*
+* @param {Project_Dashboards_TitleInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const project_dashboards_title = /** @type {((inputs?: Project_Dashboards_TitleInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Project_Dashboards_TitleInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.project_dashboards_title(inputs)
+	return __es.project_dashboards_title(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Dark" |
+*
+* @param {Theme_DarkInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const theme_dark = /** @type {((inputs?: Theme_DarkInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Theme_DarkInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.theme_dark(inputs)
+	return __es.theme_dark(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Theme" |
+*
+* @param {Theme_LabelInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const theme_label = /** @type {((inputs?: Theme_LabelInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Theme_LabelInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.theme_label(inputs)
+	return __es.theme_label(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Light" |
+*
+* @param {Theme_LightInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const theme_light = /** @type {((inputs?: Theme_LightInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Theme_LightInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.theme_light(inputs)
+	return __es.theme_light(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "System" |
+*
+* @param {Theme_SystemInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const theme_system = /** @type {((inputs?: Theme_SystemInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Theme_SystemInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.theme_system(inputs)
+	return __es.theme_system(inputs)
 });
 /**
 * | output |

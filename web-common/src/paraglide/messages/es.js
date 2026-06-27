@@ -1,5 +1,17 @@
 /* eslint-disable */
 /** @typedef {import('../runtime.js').LocalizedString} LocalizedString */
+/** @typedef {{}} Avatar_Contact_SupportInputs */
+/** @typedef {{}} Avatar_Copied_UrlInputs */
+/** @typedef {{}} Avatar_Copy_UrlInputs */
+/** @typedef {{}} Avatar_Copy_Url_For_ViewInputs */
+/** @typedef {{}} Avatar_Create_Public_UrlInputs */
+/** @typedef {{}} Avatar_DocumentationInputs */
+/** @typedef {{}} Avatar_Join_DiscordInputs */
+/** @typedef {{}} Avatar_LogoutInputs */
+/** @typedef {{}} Avatar_ShareInputs */
+/** @typedef {{}} Avatar_Share_DashboardInputs */
+/** @typedef {{}} Avatar_Share_DescriptionInputs */
+/** @typedef {{}} Avatar_View_AsInputs */
 /** @typedef {{}} Bignumber_Copy_ValueInputs */
 /** @typedef {{}} Bignumber_Shift_ClickInputs */
 /** @typedef {{}} Calendar_ApplyInputs */
@@ -157,6 +169,7 @@
 /** @typedef {{}} Chart_LineInputs */
 /** @typedef {{}} Chart_Stacked_AreaInputs */
 /** @typedef {{}} Chart_Stacked_BarInputs */
+/** @typedef {{}} Chat_Empty_LabelInputs */
 /** @typedef {{}} Chat_Happy_To_ExploreInputs */
 /** @typedef {{}} Chat_Placeholder_AnalystInputs */
 /** @typedef {{}} Common_ApplyInputs */
@@ -230,6 +243,12 @@
 /** @typedef {{}} Dashboard_Error_OccurredInputs */
 /** @typedef {{}} Dashboard_Error_Occurred_HoverInputs */
 /** @typedef {{}} Dashboard_Error_TagInputs */
+/** @typedef {{}} Dashboard_Errored_Contact_AdminInputs */
+/** @typedef {{ link: NonNullable<unknown> }} Dashboard_Errored_Need_HelpInputs */
+/** @typedef {{}} Dashboard_Errored_TitleInputs */
+/** @typedef {{}} Dashboard_Errored_View_ProjectInputs */
+/** @typedef {{}} Dashboard_Errored_View_StatusInputs */
+/** @typedef {{}} Dashboard_Errored_View_Status_ButtonInputs */
 /** @typedef {{}} Dashboard_ExcludeInputs */
 /** @typedef {{}} Dashboard_ExploreInputs */
 /** @typedef {{}} Dashboard_Export_ChartInputs */
@@ -252,6 +271,10 @@
 /** @typedef {{}} Dashboard_Latest_DataInputs */
 /** @typedef {{}} Dashboard_Latest_Data_DescriptionInputs */
 /** @typedef {{}} Dashboard_Leaderboards_AriaInputs */
+/** @typedef {{}} Dashboard_List_CreateInputs */
+/** @typedef {{ link: NonNullable<unknown> }} Dashboard_List_Create_To_StartInputs */
+/** @typedef {{}} Dashboard_List_EmptyInputs */
+/** @typedef {{}} Dashboard_List_See_AllInputs */
 /** @typedef {{ name: NonNullable<unknown> }} Dashboard_Measure_Chart_AriaInputs */
 /** @typedef {{}} Dashboard_MeasuresInputs */
 /** @typedef {{ count: NonNullable<unknown> }} Dashboard_Measures_CountInputs */
@@ -379,6 +402,10 @@
 /** @typedef {{}} Footer_Unknown_VersionInputs */
 /** @typedef {{}} Footer_VersionInputs */
 /** @typedef {{}} Footer_View_DocumentationInputs */
+/** @typedef {{}} Home_Dashboards_HeadingInputs */
+/** @typedef {{}} Home_Subtitle_No_ChatInputs */
+/** @typedef {{}} Home_Subtitle_With_ChatInputs */
+/** @typedef {{ projectName: NonNullable<unknown> }} Home_Welcome_ToInputs */
 /** @typedef {{}} Language_EnInputs */
 /** @typedef {{}} Language_EsInputs */
 /** @typedef {{}} Language_Switcher_LabelInputs */
@@ -398,8 +425,21 @@
 /** @typedef {{}} Nav_Close_SidebarInputs */
 /** @typedef {{}} Nav_Data_ExplorerInputs */
 /** @typedef {{}} Nav_Show_SidebarInputs */
+/** @typedef {{}} Nav_Tab_AiInputs */
+/** @typedef {{}} Nav_Tab_AlertsInputs */
+/** @typedef {{}} Nav_Tab_DashboardsInputs */
+/** @typedef {{}} Nav_Tab_HomeInputs */
+/** @typedef {{}} Nav_Tab_QueryInputs */
+/** @typedef {{}} Nav_Tab_ReportsInputs */
+/** @typedef {{}} Nav_Tab_SettingsInputs */
+/** @typedef {{}} Nav_Tab_StatusInputs */
 /** @typedef {{ grain: NonNullable<unknown> }} Pivot_Time_Dimension_HeaderInputs */
 /** @typedef {{}} Pivot_Time_PrefixInputs */
+/** @typedef {{}} Project_Dashboards_TitleInputs */
+/** @typedef {{}} Theme_DarkInputs */
+/** @typedef {{}} Theme_LabelInputs */
+/** @typedef {{}} Theme_LightInputs */
+/** @typedef {{}} Theme_SystemInputs */
 /** @typedef {{ duration: NonNullable<unknown> }} Time_AgoInputs */
 /** @typedef {{}} Time_All_TimeInputs */
 /** @typedef {{}} Time_ComparingInputs */
@@ -429,6 +469,54 @@
 /** @typedef {{}} Time_Year_To_DateInputs */
 /** @typedef {{}} Time_YesterdayInputs */
 
+
+export const avatar_contact_support = /** @type {(inputs: Avatar_Contact_SupportInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Contactar soporte de Rill`)
+};
+
+export const avatar_copied_url = /** @type {(inputs: Avatar_Copied_UrlInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`URL copiada`)
+};
+
+export const avatar_copy_url = /** @type {(inputs: Avatar_Copy_UrlInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Copiar URL`)
+};
+
+export const avatar_copy_url_for_view = /** @type {(inputs: Avatar_Copy_Url_For_ViewInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Copiar URL de esta vista`)
+};
+
+export const avatar_create_public_url = /** @type {(inputs: Avatar_Create_Public_UrlInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Crear URL pública`)
+};
+
+export const avatar_documentation = /** @type {(inputs: Avatar_DocumentationInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Documentación`)
+};
+
+export const avatar_join_discord = /** @type {(inputs: Avatar_Join_DiscordInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Únete a nosotros en Discord`)
+};
+
+export const avatar_logout = /** @type {(inputs: Avatar_LogoutInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Cerrar sesión`)
+};
+
+export const avatar_share = /** @type {(inputs: Avatar_ShareInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Compartir`)
+};
+
+export const avatar_share_dashboard = /** @type {(inputs: Avatar_Share_DashboardInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Compartir dashboard`)
+};
+
+export const avatar_share_description = /** @type {(inputs: Avatar_Share_DescriptionInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Comparte tu vista actual con otro miembro del proyecto.`)
+};
+
+export const avatar_view_as = /** @type {(inputs: Avatar_View_AsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Ver como`)
+};
 
 export const bignumber_copy_value = /** @type {(inputs: Bignumber_Copy_ValueInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Copiar este valor al portapapeles`)
@@ -1058,6 +1146,10 @@ export const chart_stacked_bar = /** @type {(inputs: Chart_Stacked_BarInputs) =>
 	return /** @type {LocalizedString} */ (`Barras apiladas`)
 };
 
+export const chat_empty_label = /** @type {(inputs: Chat_Empty_LabelInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Encantado de ayudarte a explorar tus datos`)
+};
+
 export const chat_happy_to_explore = /** @type {(inputs: Chat_Happy_To_ExploreInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Encantado de ayudarte a explorar tus datos`)
 };
@@ -1350,6 +1442,30 @@ export const dashboard_error_tag = /** @type {(inputs: Dashboard_Error_TagInputs
 	return /** @type {LocalizedString} */ (`Error`)
 };
 
+export const dashboard_errored_contact_admin = /** @type {(inputs: Dashboard_Errored_Contact_AdminInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Contacta al administrador de tu proyecto para obtener ayuda.`)
+};
+
+export const dashboard_errored_need_help = /** @type {(inputs: Dashboard_Errored_Need_HelpInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`¿Necesitas ayuda? Escríbenos en ${i?.link}`)
+};
+
+export const dashboard_errored_title = /** @type {(inputs: Dashboard_Errored_TitleInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Lo sentimos, tu dashboard no está funcionando en este momento.`)
+};
+
+export const dashboard_errored_view_project = /** @type {(inputs: Dashboard_Errored_View_ProjectInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Ver proyecto`)
+};
+
+export const dashboard_errored_view_status = /** @type {(inputs: Dashboard_Errored_View_StatusInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Revisa el estado del proyecto para encontrar errores que puedan ayudarte a solucionarlo.`)
+};
+
+export const dashboard_errored_view_status_button = /** @type {(inputs: Dashboard_Errored_View_Status_ButtonInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Ver estado del proyecto`)
+};
+
 export const dashboard_exclude = /** @type {(inputs: Dashboard_ExcludeInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Excluir`)
 };
@@ -1436,6 +1552,22 @@ export const dashboard_latest_data_description = /** @type {(inputs: Dashboard_L
 
 export const dashboard_leaderboards_aria = /** @type {(inputs: Dashboard_Leaderboards_AriaInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Tablas de clasificación`)
+};
+
+export const dashboard_list_create = /** @type {(inputs: Dashboard_List_CreateInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Crea un dashboard`)
+};
+
+export const dashboard_list_create_to_start = /** @type {(inputs: Dashboard_List_Create_To_StartInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.link} para comenzar`)
+};
+
+export const dashboard_list_empty = /** @type {(inputs: Dashboard_List_EmptyInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Aún no tienes ningún dashboard`)
+};
+
+export const dashboard_list_see_all = /** @type {(inputs: Dashboard_List_See_AllInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Ver todos los dashboards`)
 };
 
 export const dashboard_measure_chart_aria = /** @type {(inputs: Dashboard_Measure_Chart_AriaInputs) => LocalizedString} */ (i) => {
@@ -1946,6 +2078,22 @@ export const footer_view_documentation = /** @type {(inputs: Footer_View_Documen
 	return /** @type {LocalizedString} */ (`Ver documentación`)
 };
 
+export const home_dashboards_heading = /** @type {(inputs: Home_Dashboards_HeadingInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Dashboards`)
+};
+
+export const home_subtitle_no_chat = /** @type {(inputs: Home_Subtitle_No_ChatInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Explora tus dashboards a continuación`)
+};
+
+export const home_subtitle_with_chat = /** @type {(inputs: Home_Subtitle_With_ChatInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Haz preguntas sobre tus datos o explora tus dashboards a continuación`)
+};
+
+export const home_welcome_to = /** @type {(inputs: Home_Welcome_ToInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Bienvenido a ${i?.projectName}`)
+};
+
 export const language_en = /** @type {(inputs: Language_EnInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`English`)
 };
@@ -2022,12 +2170,64 @@ export const nav_show_sidebar = /** @type {(inputs: Nav_Show_SidebarInputs) => L
 	return /** @type {LocalizedString} */ (`Mostrar barra lateral`)
 };
 
+export const nav_tab_ai = /** @type {(inputs: Nav_Tab_AiInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`IA`)
+};
+
+export const nav_tab_alerts = /** @type {(inputs: Nav_Tab_AlertsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Alertas`)
+};
+
+export const nav_tab_dashboards = /** @type {(inputs: Nav_Tab_DashboardsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Dashboards`)
+};
+
+export const nav_tab_home = /** @type {(inputs: Nav_Tab_HomeInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Inicio`)
+};
+
+export const nav_tab_query = /** @type {(inputs: Nav_Tab_QueryInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Consulta`)
+};
+
+export const nav_tab_reports = /** @type {(inputs: Nav_Tab_ReportsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Informes`)
+};
+
+export const nav_tab_settings = /** @type {(inputs: Nav_Tab_SettingsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Configuración`)
+};
+
+export const nav_tab_status = /** @type {(inputs: Nav_Tab_StatusInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Estado`)
+};
+
 export const pivot_time_dimension_header = /** @type {(inputs: Pivot_Time_Dimension_HeaderInputs) => LocalizedString} */ (i) => {
 	return /** @type {LocalizedString} */ (`Tiempo ${i?.grain}`)
 };
 
 export const pivot_time_prefix = /** @type {(inputs: Pivot_Time_PrefixInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Tiempo`)
+};
+
+export const project_dashboards_title = /** @type {(inputs: Project_Dashboards_TitleInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Dashboards del proyecto`)
+};
+
+export const theme_dark = /** @type {(inputs: Theme_DarkInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Oscuro`)
+};
+
+export const theme_label = /** @type {(inputs: Theme_LabelInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Tema`)
+};
+
+export const theme_light = /** @type {(inputs: Theme_LightInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Claro`)
+};
+
+export const theme_system = /** @type {(inputs: Theme_SystemInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Sistema`)
 };
 
 export const time_ago = /** @type {(inputs: Time_AgoInputs) => LocalizedString} */ (i) => {

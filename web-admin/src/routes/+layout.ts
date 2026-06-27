@@ -24,10 +24,7 @@ import { getOrgWithBearerToken } from "@rilldata/web-admin/features/public-urls/
 import { queryClient } from "@rilldata/web-common/lib/svelte-query/globalQueryClient.js";
 import { error, type Page } from "@sveltejs/kit";
 import { isAxiosError } from "axios";
-import { Settings } from "luxon";
 import { maybeRedirectToWelcomePage } from "@rilldata/web-admin/features/welcome/utils.ts";
-
-Settings.defaultLocale = "en";
 
 export const load = async ({ params, url, route, depends }) => {
   depends("app:root");

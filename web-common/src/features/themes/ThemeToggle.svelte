@@ -1,5 +1,6 @@
 <script lang="ts">
   import Tag from "@rilldata/web-common/components/tag/Tag.svelte";
+  import * as m from "@rilldata/web-common/paraglide/messages.js";
   import { themeControl } from "./theme-control";
   import * as DropdownMenu from "@rilldata/web-common/components/dropdown-menu";
 
@@ -9,14 +10,14 @@
 </script>
 
 <DropdownMenu.Sub>
-  <DropdownMenu.SubTrigger class="">Theme</DropdownMenu.SubTrigger>
+  <DropdownMenu.SubTrigger class="">{m.theme_label()}</DropdownMenu.SubTrigger>
   <DropdownMenu.SubContent>
     <DropdownMenu.CheckboxItem
       checkRight
       checked={preferenceValue === "light"}
       onclick={themeControl.set.light}
     >
-      Light
+      {m.theme_light()}
     </DropdownMenu.CheckboxItem>
     <DropdownMenu.CheckboxItem
       checkRight
@@ -24,14 +25,14 @@
       onclick={themeControl.set.dark}
     >
       <Tag text="Beta" height={16} />
-      Dark
+      {m.theme_dark()}
     </DropdownMenu.CheckboxItem>
     <DropdownMenu.CheckboxItem
       checkRight
       checked={preferenceValue === "system"}
       onclick={themeControl.set.system}
     >
-      System
+      {m.theme_system()}
     </DropdownMenu.CheckboxItem>
   </DropdownMenu.SubContent>
 </DropdownMenu.Sub>
