@@ -250,6 +250,11 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Chat_Conversation_HistoryInputs */
 /** @typedef {{}} Chat_Downvote_AriaInputs */
 /** @typedef {{}} Chat_Downvote_TooltipInputs */
+/** @typedef {{}} Chat_Duration_Less_Than_SecondInputs */
+/** @typedef {{ count: NonNullable<unknown> }} Chat_Duration_MinutesInputs */
+/** @typedef {{}} Chat_Duration_One_MinuteInputs */
+/** @typedef {{}} Chat_Duration_One_SecondInputs */
+/** @typedef {{ count: NonNullable<unknown> }} Chat_Duration_SecondsInputs */
 /** @typedef {{}} Chat_Empty_LabelInputs */
 /** @typedef {{}} Chat_Feedback_AnalyzingInputs */
 /** @typedef {{}} Chat_Feedback_CommentsInputs */
@@ -264,6 +269,14 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Chat_No_ConversationsInputs */
 /** @typedef {{}} Chat_Placeholder_AnalystInputs */
 /** @typedef {{}} Chat_Send_MessageInputs */
+/** @typedef {{}} Chat_Share_ConversationInputs */
+/** @typedef {{}} Chat_Share_CopiedInputs */
+/** @typedef {{}} Chat_Share_Create_LinkInputs */
+/** @typedef {{}} Chat_Share_CreatingInputs */
+/** @typedef {{}} Chat_Share_DescriptionInputs */
+/** @typedef {{}} Chat_Share_Start_FirstInputs */
+/** @typedef {{}} Chat_ThinkingInputs */
+/** @typedef {{ duration: NonNullable<unknown> }} Chat_Thought_ForInputs */
 /** @typedef {{}} Chat_Upvote_AriaInputs */
 /** @typedef {{}} Chat_Upvote_TooltipInputs */
 /** @typedef {{}} Common_ApplyInputs */
@@ -547,14 +560,24 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Leaderboard_Expand_TooltipInputs */
 /** @typedef {{}} Leaderboard_No_Available_ValuesInputs */
 /** @typedef {{}} Leaderboard_Shift_ClickInputs */
+/** @typedef {{}} Mcp_Add_To_ConfigInputs */
 /** @typedef {{}} Mcp_Add_UrlInputs */
+/** @typedef {{}} Mcp_ConfigurationInputs */
+/** @typedef {{}} Mcp_Create_TokenInputs */
+/** @typedef {{ privateLabel: NonNullable<unknown>, tokenLabel: NonNullable<unknown> }} Mcp_Create_Token_DescInputs */
+/** @typedef {{}} Mcp_Create_Token_TitleInputs */
 /** @typedef {{}} Mcp_Dialog_DescriptionInputs */
 /** @typedef {{}} Mcp_Dialog_TitleInputs */
+/** @typedef {{}} Mcp_IssuingInputs */
 /** @typedef {{}} Mcp_Learn_MoreInputs */
 /** @typedef {{}} Mcp_Manual_TabInputs */
 /** @typedef {{}} Mcp_Oauth_AutoInputs */
 /** @typedef {{}} Mcp_Oauth_TabInputs */
+/** @typedef {{}} Mcp_Personal_Access_TokenInputs */
+/** @typedef {{}} Mcp_PrivateInputs */
 /** @typedef {{}} Mcp_RecommendedInputs */
+/** @typedef {{}} Mcp_Token_CreatedInputs */
+/** @typedef {{}} Mcp_Token_FailedInputs */
 /** @typedef {{}} Measure_Filter_ApplyInputs */
 /** @typedef {{}} Measure_Filter_By_DimensionInputs */
 /** @typedef {{}} Measure_Filter_Enter_NumberInputs */
@@ -4187,6 +4210,76 @@ export const chat_downvote_tooltip = /** @type {((inputs?: Chat_Downvote_Tooltip
 /**
 * | output |
 * | --- |
+* | "less than a second" |
+*
+* @param {Chat_Duration_Less_Than_SecondInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const chat_duration_less_than_second = /** @type {((inputs?: Chat_Duration_Less_Than_SecondInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Chat_Duration_Less_Than_SecondInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.chat_duration_less_than_second(inputs)
+	return __es.chat_duration_less_than_second(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "{count} minutes" |
+*
+* @param {Chat_Duration_MinutesInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const chat_duration_minutes = /** @type {((inputs: Chat_Duration_MinutesInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Chat_Duration_MinutesInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.chat_duration_minutes(inputs)
+	return __es.chat_duration_minutes(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "1 minute" |
+*
+* @param {Chat_Duration_One_MinuteInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const chat_duration_one_minute = /** @type {((inputs?: Chat_Duration_One_MinuteInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Chat_Duration_One_MinuteInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.chat_duration_one_minute(inputs)
+	return __es.chat_duration_one_minute(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "1 second" |
+*
+* @param {Chat_Duration_One_SecondInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const chat_duration_one_second = /** @type {((inputs?: Chat_Duration_One_SecondInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Chat_Duration_One_SecondInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.chat_duration_one_second(inputs)
+	return __es.chat_duration_one_second(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "{count} seconds" |
+*
+* @param {Chat_Duration_SecondsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const chat_duration_seconds = /** @type {((inputs: Chat_Duration_SecondsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Chat_Duration_SecondsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.chat_duration_seconds(inputs)
+	return __es.chat_duration_seconds(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Happy to help explore your data" |
 *
 * @param {Chat_Empty_LabelInputs} inputs
@@ -4379,6 +4472,118 @@ export const chat_send_message = /** @type {((inputs?: Chat_Send_MessageInputs, 
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.chat_send_message(inputs)
 	return __es.chat_send_message(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Share conversation" |
+*
+* @param {Chat_Share_ConversationInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const chat_share_conversation = /** @type {((inputs?: Chat_Share_ConversationInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Chat_Share_ConversationInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.chat_share_conversation(inputs)
+	return __es.chat_share_conversation(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Copied!" |
+*
+* @param {Chat_Share_CopiedInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const chat_share_copied = /** @type {((inputs?: Chat_Share_CopiedInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Chat_Share_CopiedInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.chat_share_copied(inputs)
+	return __es.chat_share_copied(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Create link" |
+*
+* @param {Chat_Share_Create_LinkInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const chat_share_create_link = /** @type {((inputs?: Chat_Share_Create_LinkInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Chat_Share_Create_LinkInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.chat_share_create_link(inputs)
+	return __es.chat_share_create_link(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Creating link..." |
+*
+* @param {Chat_Share_CreatingInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const chat_share_creating = /** @type {((inputs?: Chat_Share_CreatingInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Chat_Share_CreatingInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.chat_share_creating(inputs)
+	return __es.chat_share_creating(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Share this conversation with other project members. They can view and continue the conversation." |
+*
+* @param {Chat_Share_DescriptionInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const chat_share_description = /** @type {((inputs?: Chat_Share_DescriptionInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Chat_Share_DescriptionInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.chat_share_description(inputs)
+	return __es.chat_share_description(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Start a conversation to share" |
+*
+* @param {Chat_Share_Start_FirstInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const chat_share_start_first = /** @type {((inputs?: Chat_Share_Start_FirstInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Chat_Share_Start_FirstInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.chat_share_start_first(inputs)
+	return __es.chat_share_start_first(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Thinking" |
+*
+* @param {Chat_ThinkingInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const chat_thinking = /** @type {((inputs?: Chat_ThinkingInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Chat_ThinkingInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.chat_thinking(inputs)
+	return __es.chat_thinking(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Thought for {duration}" |
+*
+* @param {Chat_Thought_ForInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const chat_thought_for = /** @type {((inputs: Chat_Thought_ForInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Chat_Thought_ForInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.chat_thought_for(inputs)
+	return __es.chat_thought_for(inputs)
 });
 /**
 * | output |
@@ -8345,6 +8550,20 @@ export const leaderboard_shift_click = /** @type {((inputs?: Leaderboard_Shift_C
 /**
 * | output |
 * | --- |
+* | "Add this to your MCP client's configuration file." |
+*
+* @param {Mcp_Add_To_ConfigInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const mcp_add_to_config = /** @type {((inputs?: Mcp_Add_To_ConfigInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcp_Add_To_ConfigInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.mcp_add_to_config(inputs)
+	return __es.mcp_add_to_config(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Add this URL to your AI client's MCP server settings:" |
 *
 * @param {Mcp_Add_UrlInputs} inputs
@@ -8355,6 +8574,62 @@ export const mcp_add_url = /** @type {((inputs?: Mcp_Add_UrlInputs, options?: { 
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.mcp_add_url(inputs)
 	return __es.mcp_add_url(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Configuration" |
+*
+* @param {Mcp_ConfigurationInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const mcp_configuration = /** @type {((inputs?: Mcp_ConfigurationInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcp_ConfigurationInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.mcp_configuration(inputs)
+	return __es.mcp_configuration(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Create token" |
+*
+* @param {Mcp_Create_TokenInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const mcp_create_token = /** @type {((inputs?: Mcp_Create_TokenInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcp_Create_TokenInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.mcp_create_token(inputs)
+	return __es.mcp_create_token(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Because this project is {privateLabel}, you need a {tokenLabel} to use in your MCP configuration. This token authenticates your requests." |
+*
+* @param {Mcp_Create_Token_DescInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const mcp_create_token_desc = /** @type {((inputs: Mcp_Create_Token_DescInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcp_Create_Token_DescInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.mcp_create_token_desc(inputs)
+	return __es.mcp_create_token_desc(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Create a personal access token" |
+*
+* @param {Mcp_Create_Token_TitleInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const mcp_create_token_title = /** @type {((inputs?: Mcp_Create_Token_TitleInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcp_Create_Token_TitleInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.mcp_create_token_title(inputs)
+	return __es.mcp_create_token_title(inputs)
 });
 /**
 * | output |
@@ -8383,6 +8658,20 @@ export const mcp_dialog_title = /** @type {((inputs?: Mcp_Dialog_TitleInputs, op
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.mcp_dialog_title(inputs)
 	return __es.mcp_dialog_title(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Issuing..." |
+*
+* @param {Mcp_IssuingInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const mcp_issuing = /** @type {((inputs?: Mcp_IssuingInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcp_IssuingInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.mcp_issuing(inputs)
+	return __es.mcp_issuing(inputs)
 });
 /**
 * | output |
@@ -8443,6 +8732,34 @@ export const mcp_oauth_tab = /** @type {((inputs?: Mcp_Oauth_TabInputs, options?
 /**
 * | output |
 * | --- |
+* | "personal access token" |
+*
+* @param {Mcp_Personal_Access_TokenInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const mcp_personal_access_token = /** @type {((inputs?: Mcp_Personal_Access_TokenInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcp_Personal_Access_TokenInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.mcp_personal_access_token(inputs)
+	return __es.mcp_personal_access_token(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "private" |
+*
+* @param {Mcp_PrivateInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const mcp_private = /** @type {((inputs?: Mcp_PrivateInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcp_PrivateInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.mcp_private(inputs)
+	return __es.mcp_private(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Recommended" |
 *
 * @param {Mcp_RecommendedInputs} inputs
@@ -8453,6 +8770,34 @@ export const mcp_recommended = /** @type {((inputs?: Mcp_RecommendedInputs, opti
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.mcp_recommended(inputs)
 	return __es.mcp_recommended(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Token created! Your new token is now included in the configuration snippet below." |
+*
+* @param {Mcp_Token_CreatedInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const mcp_token_created = /** @type {((inputs?: Mcp_Token_CreatedInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcp_Token_CreatedInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.mcp_token_created(inputs)
+	return __es.mcp_token_created(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Failed to issue token. Please try again." |
+*
+* @param {Mcp_Token_FailedInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const mcp_token_failed = /** @type {((inputs?: Mcp_Token_FailedInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcp_Token_FailedInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.mcp_token_failed(inputs)
+	return __es.mcp_token_failed(inputs)
 });
 /**
 * | output |

@@ -248,6 +248,11 @@
 /** @typedef {{}} Chat_Conversation_HistoryInputs */
 /** @typedef {{}} Chat_Downvote_AriaInputs */
 /** @typedef {{}} Chat_Downvote_TooltipInputs */
+/** @typedef {{}} Chat_Duration_Less_Than_SecondInputs */
+/** @typedef {{ count: NonNullable<unknown> }} Chat_Duration_MinutesInputs */
+/** @typedef {{}} Chat_Duration_One_MinuteInputs */
+/** @typedef {{}} Chat_Duration_One_SecondInputs */
+/** @typedef {{ count: NonNullable<unknown> }} Chat_Duration_SecondsInputs */
 /** @typedef {{}} Chat_Empty_LabelInputs */
 /** @typedef {{}} Chat_Feedback_AnalyzingInputs */
 /** @typedef {{}} Chat_Feedback_CommentsInputs */
@@ -262,6 +267,14 @@
 /** @typedef {{}} Chat_No_ConversationsInputs */
 /** @typedef {{}} Chat_Placeholder_AnalystInputs */
 /** @typedef {{}} Chat_Send_MessageInputs */
+/** @typedef {{}} Chat_Share_ConversationInputs */
+/** @typedef {{}} Chat_Share_CopiedInputs */
+/** @typedef {{}} Chat_Share_Create_LinkInputs */
+/** @typedef {{}} Chat_Share_CreatingInputs */
+/** @typedef {{}} Chat_Share_DescriptionInputs */
+/** @typedef {{}} Chat_Share_Start_FirstInputs */
+/** @typedef {{}} Chat_ThinkingInputs */
+/** @typedef {{ duration: NonNullable<unknown> }} Chat_Thought_ForInputs */
 /** @typedef {{}} Chat_Upvote_AriaInputs */
 /** @typedef {{}} Chat_Upvote_TooltipInputs */
 /** @typedef {{}} Common_ApplyInputs */
@@ -545,14 +558,24 @@
 /** @typedef {{}} Leaderboard_Expand_TooltipInputs */
 /** @typedef {{}} Leaderboard_No_Available_ValuesInputs */
 /** @typedef {{}} Leaderboard_Shift_ClickInputs */
+/** @typedef {{}} Mcp_Add_To_ConfigInputs */
 /** @typedef {{}} Mcp_Add_UrlInputs */
+/** @typedef {{}} Mcp_ConfigurationInputs */
+/** @typedef {{}} Mcp_Create_TokenInputs */
+/** @typedef {{ privateLabel: NonNullable<unknown>, tokenLabel: NonNullable<unknown> }} Mcp_Create_Token_DescInputs */
+/** @typedef {{}} Mcp_Create_Token_TitleInputs */
 /** @typedef {{}} Mcp_Dialog_DescriptionInputs */
 /** @typedef {{}} Mcp_Dialog_TitleInputs */
+/** @typedef {{}} Mcp_IssuingInputs */
 /** @typedef {{}} Mcp_Learn_MoreInputs */
 /** @typedef {{}} Mcp_Manual_TabInputs */
 /** @typedef {{}} Mcp_Oauth_AutoInputs */
 /** @typedef {{}} Mcp_Oauth_TabInputs */
+/** @typedef {{}} Mcp_Personal_Access_TokenInputs */
+/** @typedef {{}} Mcp_PrivateInputs */
 /** @typedef {{}} Mcp_RecommendedInputs */
+/** @typedef {{}} Mcp_Token_CreatedInputs */
+/** @typedef {{}} Mcp_Token_FailedInputs */
 /** @typedef {{}} Measure_Filter_ApplyInputs */
 /** @typedef {{}} Measure_Filter_By_DimensionInputs */
 /** @typedef {{}} Measure_Filter_Enter_NumberInputs */
@@ -1702,6 +1725,26 @@ export const chat_downvote_tooltip = /** @type {(inputs: Chat_Downvote_TooltipIn
 	return /** @type {LocalizedString} */ (`Esta respuesta necesita mejora`)
 };
 
+export const chat_duration_less_than_second = /** @type {(inputs: Chat_Duration_Less_Than_SecondInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`menos de un segundo`)
+};
+
+export const chat_duration_minutes = /** @type {(inputs: Chat_Duration_MinutesInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.count} minutos`)
+};
+
+export const chat_duration_one_minute = /** @type {(inputs: Chat_Duration_One_MinuteInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`1 minuto`)
+};
+
+export const chat_duration_one_second = /** @type {(inputs: Chat_Duration_One_SecondInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`1 segundo`)
+};
+
+export const chat_duration_seconds = /** @type {(inputs: Chat_Duration_SecondsInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.count} segundos`)
+};
+
 export const chat_empty_label = /** @type {(inputs: Chat_Empty_LabelInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Encantado de ayudarte a explorar tus datos`)
 };
@@ -1756,6 +1799,38 @@ export const chat_placeholder_analyst = /** @type {(inputs: Chat_Placeholder_Ana
 
 export const chat_send_message = /** @type {(inputs: Chat_Send_MessageInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Enviar mensaje`)
+};
+
+export const chat_share_conversation = /** @type {(inputs: Chat_Share_ConversationInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Compartir conversación`)
+};
+
+export const chat_share_copied = /** @type {(inputs: Chat_Share_CopiedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`¡Copiado!`)
+};
+
+export const chat_share_create_link = /** @type {(inputs: Chat_Share_Create_LinkInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Crear enlace`)
+};
+
+export const chat_share_creating = /** @type {(inputs: Chat_Share_CreatingInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Creando enlace...`)
+};
+
+export const chat_share_description = /** @type {(inputs: Chat_Share_DescriptionInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Comparte esta conversación con otros miembros del proyecto. Pueden ver y continuar la conversación.`)
+};
+
+export const chat_share_start_first = /** @type {(inputs: Chat_Share_Start_FirstInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Inicia una conversación para compartir`)
+};
+
+export const chat_thinking = /** @type {(inputs: Chat_ThinkingInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Pensando`)
+};
+
+export const chat_thought_for = /** @type {(inputs: Chat_Thought_ForInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Pensó durante ${i?.duration}`)
 };
 
 export const chat_upvote_aria = /** @type {(inputs: Chat_Upvote_AriaInputs) => LocalizedString} */ () => {
@@ -2890,8 +2965,28 @@ export const leaderboard_shift_click = /** @type {(inputs: Leaderboard_Shift_Cli
 	return /** @type {LocalizedString} */ (`+ Clic`)
 };
 
+export const mcp_add_to_config = /** @type {(inputs: Mcp_Add_To_ConfigInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Agrega esto al archivo de configuración de tu cliente MCP.`)
+};
+
 export const mcp_add_url = /** @type {(inputs: Mcp_Add_UrlInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Agrega esta URL a la configuración del servidor MCP de tu cliente de IA:`)
+};
+
+export const mcp_configuration = /** @type {(inputs: Mcp_ConfigurationInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Configuración`)
+};
+
+export const mcp_create_token = /** @type {(inputs: Mcp_Create_TokenInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Crear token`)
+};
+
+export const mcp_create_token_desc = /** @type {(inputs: Mcp_Create_Token_DescInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Porque este proyecto es ${i?.privateLabel}, necesitas un ${i?.tokenLabel} para usar en tu configuración MCP. Este token autentica tus solicitudes.`)
+};
+
+export const mcp_create_token_title = /** @type {(inputs: Mcp_Create_Token_TitleInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Crea un token de acceso personal`)
 };
 
 export const mcp_dialog_description = /** @type {(inputs: Mcp_Dialog_DescriptionInputs) => LocalizedString} */ () => {
@@ -2900,6 +2995,10 @@ export const mcp_dialog_description = /** @type {(inputs: Mcp_Dialog_Description
 
 export const mcp_dialog_title = /** @type {(inputs: Mcp_Dialog_TitleInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Conecta tu propio cliente de IA`)
+};
+
+export const mcp_issuing = /** @type {(inputs: Mcp_IssuingInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Generando...`)
 };
 
 export const mcp_learn_more = /** @type {(inputs: Mcp_Learn_MoreInputs) => LocalizedString} */ () => {
@@ -2918,8 +3017,24 @@ export const mcp_oauth_tab = /** @type {(inputs: Mcp_Oauth_TabInputs) => Localiz
 	return /** @type {LocalizedString} */ (`OAuth`)
 };
 
+export const mcp_personal_access_token = /** @type {(inputs: Mcp_Personal_Access_TokenInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`token de acceso personal`)
+};
+
+export const mcp_private = /** @type {(inputs: Mcp_PrivateInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`privado`)
+};
+
 export const mcp_recommended = /** @type {(inputs: Mcp_RecommendedInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Recomendado`)
+};
+
+export const mcp_token_created = /** @type {(inputs: Mcp_Token_CreatedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Token creado. Tu nuevo token ya está incluido en el fragmento de configuración a continuación.`)
+};
+
+export const mcp_token_failed = /** @type {(inputs: Mcp_Token_FailedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Error al generar el token. Intenta de nuevo.`)
 };
 
 export const measure_filter_apply = /** @type {(inputs: Measure_Filter_ApplyInputs) => LocalizedString} */ () => {
