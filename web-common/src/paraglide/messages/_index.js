@@ -71,6 +71,10 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Alert_UnsubscribedInputs */
 /** @typedef {{}} Alert_UnsubscribingInputs */
 /** @typedef {{}} Alert_Whenever_Data_RefreshesInputs */
+/** @typedef {{ alertsLink: NonNullable<unknown>, codeLink: NonNullable<unknown> }} Alerts_Empty_ActionInputs */
+/** @typedef {{}} Alerts_Empty_MessageInputs */
+/** @typedef {{}} Alerts_Link_TextInputs */
+/** @typedef {{}} Alerts_Via_CodeInputs */
 /** @typedef {{}} Avatar_Contact_SupportInputs */
 /** @typedef {{}} Avatar_Copied_UrlInputs */
 /** @typedef {{}} Avatar_Copy_UrlInputs */
@@ -242,6 +246,7 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Chart_Stacked_BarInputs */
 /** @typedef {{}} Chat_Cancel_StreamingInputs */
 /** @typedef {{}} Chat_CloseInputs */
+/** @typedef {{}} Chat_Connect_ClientInputs */
 /** @typedef {{}} Chat_Conversation_HistoryInputs */
 /** @typedef {{}} Chat_Downvote_AriaInputs */
 /** @typedef {{}} Chat_Downvote_TooltipInputs */
@@ -254,7 +259,9 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Chat_Feedback_SubmitInputs */
 /** @typedef {{}} Chat_Feedback_TitleInputs */
 /** @typedef {{}} Chat_Happy_To_ExploreInputs */
+/** @typedef {{}} Chat_How_Can_I_HelpInputs */
 /** @typedef {{}} Chat_New_ConversationInputs */
+/** @typedef {{}} Chat_No_ConversationsInputs */
 /** @typedef {{}} Chat_Placeholder_AnalystInputs */
 /** @typedef {{}} Chat_Send_MessageInputs */
 /** @typedef {{}} Chat_Upvote_AriaInputs */
@@ -540,6 +547,14 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Leaderboard_Expand_TooltipInputs */
 /** @typedef {{}} Leaderboard_No_Available_ValuesInputs */
 /** @typedef {{}} Leaderboard_Shift_ClickInputs */
+/** @typedef {{}} Mcp_Add_UrlInputs */
+/** @typedef {{}} Mcp_Dialog_DescriptionInputs */
+/** @typedef {{}} Mcp_Dialog_TitleInputs */
+/** @typedef {{}} Mcp_Learn_MoreInputs */
+/** @typedef {{}} Mcp_Manual_TabInputs */
+/** @typedef {{}} Mcp_Oauth_AutoInputs */
+/** @typedef {{}} Mcp_Oauth_TabInputs */
+/** @typedef {{}} Mcp_RecommendedInputs */
 /** @typedef {{}} Measure_Filter_ApplyInputs */
 /** @typedef {{}} Measure_Filter_By_DimensionInputs */
 /** @typedef {{}} Measure_Filter_Enter_NumberInputs */
@@ -558,6 +573,7 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Nav_Tab_ReportsInputs */
 /** @typedef {{}} Nav_Tab_SettingsInputs */
 /** @typedef {{}} Nav_Tab_StatusInputs */
+/** @typedef {{}} Org_Check_Out_ProjectsInputs */
 /** @typedef {{}} Org_Tab_ProjectsInputs */
 /** @typedef {{}} Org_Tab_SettingsInputs */
 /** @typedef {{}} Org_Tab_UsersInputs */
@@ -573,6 +589,7 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{ grain: NonNullable<unknown> }} Pivot_Time_Dimension_HeaderInputs */
 /** @typedef {{}} Pivot_Time_PrefixInputs */
 /** @typedef {{}} Project_Dashboards_TitleInputs */
+/** @typedef {{}} Project_Role_ViewerInputs */
 /** @typedef {{}} Report_Context_Menu_AriaInputs */
 /** @typedef {{ name: NonNullable<unknown> }} Report_Created_ByInputs */
 /** @typedef {{}} Report_Created_Through_CodeInputs */
@@ -652,6 +669,9 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Report_Unsubscribe_FailedInputs */
 /** @typedef {{}} Report_UnsubscribedInputs */
 /** @typedef {{}} Report_UnsubscribingInputs */
+/** @typedef {{ reportsLink: NonNullable<unknown> }} Reports_Empty_ActionInputs */
+/** @typedef {{}} Reports_Empty_MessageInputs */
+/** @typedef {{}} Reports_Link_TextInputs */
 /** @typedef {{}} Resource_Error_Contact_SupportInputs */
 /** @typedef {{ kind: NonNullable<unknown> }} Resource_Error_LoadingInputs */
 /** @typedef {{}} Resource_Search_PlaceholderInputs */
@@ -1657,6 +1677,62 @@ export const alert_whenever_data_refreshes = /** @type {((inputs?: Alert_Wheneve
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.alert_whenever_data_refreshes(inputs)
 	return __es.alert_whenever_data_refreshes(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Create {alertsLink} from any dashboard or {codeLink}." |
+*
+* @param {Alerts_Empty_ActionInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alerts_empty_action = /** @type {((inputs: Alerts_Empty_ActionInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alerts_Empty_ActionInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alerts_empty_action(inputs)
+	return __es.alerts_empty_action(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "You don't have any alerts yet" |
+*
+* @param {Alerts_Empty_MessageInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alerts_empty_message = /** @type {((inputs?: Alerts_Empty_MessageInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alerts_Empty_MessageInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alerts_empty_message(inputs)
+	return __es.alerts_empty_message(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "alerts" |
+*
+* @param {Alerts_Link_TextInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alerts_link_text = /** @type {((inputs?: Alerts_Link_TextInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alerts_Link_TextInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alerts_link_text(inputs)
+	return __es.alerts_link_text(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "via code" |
+*
+* @param {Alerts_Via_CodeInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alerts_via_code = /** @type {((inputs?: Alerts_Via_CodeInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alerts_Via_CodeInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alerts_via_code(inputs)
+	return __es.alerts_via_code(inputs)
 });
 /**
 * | output |
@@ -4055,6 +4131,20 @@ export const chat_close = /** @type {((inputs?: Chat_CloseInputs, options?: { lo
 /**
 * | output |
 * | --- |
+* | "Connect your own client" |
+*
+* @param {Chat_Connect_ClientInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const chat_connect_client = /** @type {((inputs?: Chat_Connect_ClientInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Chat_Connect_ClientInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.chat_connect_client(inputs)
+	return __es.chat_connect_client(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Conversation history" |
 *
 * @param {Chat_Conversation_HistoryInputs} inputs
@@ -4223,6 +4313,20 @@ export const chat_happy_to_explore = /** @type {((inputs?: Chat_Happy_To_Explore
 /**
 * | output |
 * | --- |
+* | "How can I help you today?" |
+*
+* @param {Chat_How_Can_I_HelpInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const chat_how_can_i_help = /** @type {((inputs?: Chat_How_Can_I_HelpInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Chat_How_Can_I_HelpInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.chat_how_can_i_help(inputs)
+	return __es.chat_how_can_i_help(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "New conversation" |
 *
 * @param {Chat_New_ConversationInputs} inputs
@@ -4233,6 +4337,20 @@ export const chat_new_conversation = /** @type {((inputs?: Chat_New_Conversation
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.chat_new_conversation(inputs)
 	return __es.chat_new_conversation(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "No conversations yet." |
+*
+* @param {Chat_No_ConversationsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const chat_no_conversations = /** @type {((inputs?: Chat_No_ConversationsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Chat_No_ConversationsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.chat_no_conversations(inputs)
+	return __es.chat_no_conversations(inputs)
 });
 /**
 * | output |
@@ -8227,6 +8345,118 @@ export const leaderboard_shift_click = /** @type {((inputs?: Leaderboard_Shift_C
 /**
 * | output |
 * | --- |
+* | "Add this URL to your AI client's MCP server settings:" |
+*
+* @param {Mcp_Add_UrlInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const mcp_add_url = /** @type {((inputs?: Mcp_Add_UrlInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcp_Add_UrlInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.mcp_add_url(inputs)
+	return __es.mcp_add_url(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Ask questions of your Rill project using natural language in any AI client that supports the Model Context Protocol (MCP)." |
+*
+* @param {Mcp_Dialog_DescriptionInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const mcp_dialog_description = /** @type {((inputs?: Mcp_Dialog_DescriptionInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcp_Dialog_DescriptionInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.mcp_dialog_description(inputs)
+	return __es.mcp_dialog_description(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Connect your own AI client" |
+*
+* @param {Mcp_Dialog_TitleInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const mcp_dialog_title = /** @type {((inputs?: Mcp_Dialog_TitleInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcp_Dialog_TitleInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.mcp_dialog_title(inputs)
+	return __es.mcp_dialog_title(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Learn more" |
+*
+* @param {Mcp_Learn_MoreInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const mcp_learn_more = /** @type {((inputs?: Mcp_Learn_MoreInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcp_Learn_MoreInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.mcp_learn_more(inputs)
+	return __es.mcp_learn_more(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Manual" |
+*
+* @param {Mcp_Manual_TabInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const mcp_manual_tab = /** @type {((inputs?: Mcp_Manual_TabInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcp_Manual_TabInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.mcp_manual_tab(inputs)
+	return __es.mcp_manual_tab(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "The OAuth flow will start automatically in your browser." |
+*
+* @param {Mcp_Oauth_AutoInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const mcp_oauth_auto = /** @type {((inputs?: Mcp_Oauth_AutoInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcp_Oauth_AutoInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.mcp_oauth_auto(inputs)
+	return __es.mcp_oauth_auto(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "OAuth" |
+*
+* @param {Mcp_Oauth_TabInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const mcp_oauth_tab = /** @type {((inputs?: Mcp_Oauth_TabInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcp_Oauth_TabInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.mcp_oauth_tab(inputs)
+	return __es.mcp_oauth_tab(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Recommended" |
+*
+* @param {Mcp_RecommendedInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const mcp_recommended = /** @type {((inputs?: Mcp_RecommendedInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcp_RecommendedInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.mcp_recommended(inputs)
+	return __es.mcp_recommended(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Apply" |
 *
 * @param {Measure_Filter_ApplyInputs} inputs
@@ -8479,6 +8709,20 @@ export const nav_tab_status = /** @type {((inputs?: Nav_Tab_StatusInputs, option
 /**
 * | output |
 * | --- |
+* | "Check out your projects below." |
+*
+* @param {Org_Check_Out_ProjectsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const org_check_out_projects = /** @type {((inputs?: Org_Check_Out_ProjectsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Org_Check_Out_ProjectsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.org_check_out_projects(inputs)
+	return __es.org_check_out_projects(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Projects" |
 *
 * @param {Org_Tab_ProjectsInputs} inputs
@@ -8685,6 +8929,20 @@ export const project_dashboards_title = /** @type {((inputs?: Project_Dashboards
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.project_dashboards_title(inputs)
 	return __es.project_dashboards_title(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Viewer" |
+*
+* @param {Project_Role_ViewerInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const project_role_viewer = /** @type {((inputs?: Project_Role_ViewerInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Project_Role_ViewerInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.project_role_viewer(inputs)
+	return __es.project_role_viewer(inputs)
 });
 /**
 * | output |
@@ -9791,6 +10049,48 @@ export const report_unsubscribing = /** @type {((inputs?: Report_UnsubscribingIn
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.report_unsubscribing(inputs)
 	return __es.report_unsubscribing(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Schedule {reportsLink} from any dashboard" |
+*
+* @param {Reports_Empty_ActionInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const reports_empty_action = /** @type {((inputs: Reports_Empty_ActionInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Reports_Empty_ActionInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.reports_empty_action(inputs)
+	return __es.reports_empty_action(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "You don't have any reports yet" |
+*
+* @param {Reports_Empty_MessageInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const reports_empty_message = /** @type {((inputs?: Reports_Empty_MessageInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Reports_Empty_MessageInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.reports_empty_message(inputs)
+	return __es.reports_empty_message(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "reports" |
+*
+* @param {Reports_Link_TextInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const reports_link_text = /** @type {((inputs?: Reports_Link_TextInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Reports_Link_TextInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.reports_link_text(inputs)
+	return __es.reports_link_text(inputs)
 });
 /**
 * | output |

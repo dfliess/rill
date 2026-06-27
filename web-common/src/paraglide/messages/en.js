@@ -69,6 +69,10 @@
 /** @typedef {{}} Alert_UnsubscribedInputs */
 /** @typedef {{}} Alert_UnsubscribingInputs */
 /** @typedef {{}} Alert_Whenever_Data_RefreshesInputs */
+/** @typedef {{ alertsLink: NonNullable<unknown>, codeLink: NonNullable<unknown> }} Alerts_Empty_ActionInputs */
+/** @typedef {{}} Alerts_Empty_MessageInputs */
+/** @typedef {{}} Alerts_Link_TextInputs */
+/** @typedef {{}} Alerts_Via_CodeInputs */
 /** @typedef {{}} Avatar_Contact_SupportInputs */
 /** @typedef {{}} Avatar_Copied_UrlInputs */
 /** @typedef {{}} Avatar_Copy_UrlInputs */
@@ -240,6 +244,7 @@
 /** @typedef {{}} Chart_Stacked_BarInputs */
 /** @typedef {{}} Chat_Cancel_StreamingInputs */
 /** @typedef {{}} Chat_CloseInputs */
+/** @typedef {{}} Chat_Connect_ClientInputs */
 /** @typedef {{}} Chat_Conversation_HistoryInputs */
 /** @typedef {{}} Chat_Downvote_AriaInputs */
 /** @typedef {{}} Chat_Downvote_TooltipInputs */
@@ -252,7 +257,9 @@
 /** @typedef {{}} Chat_Feedback_SubmitInputs */
 /** @typedef {{}} Chat_Feedback_TitleInputs */
 /** @typedef {{}} Chat_Happy_To_ExploreInputs */
+/** @typedef {{}} Chat_How_Can_I_HelpInputs */
 /** @typedef {{}} Chat_New_ConversationInputs */
+/** @typedef {{}} Chat_No_ConversationsInputs */
 /** @typedef {{}} Chat_Placeholder_AnalystInputs */
 /** @typedef {{}} Chat_Send_MessageInputs */
 /** @typedef {{}} Chat_Upvote_AriaInputs */
@@ -538,6 +545,14 @@
 /** @typedef {{}} Leaderboard_Expand_TooltipInputs */
 /** @typedef {{}} Leaderboard_No_Available_ValuesInputs */
 /** @typedef {{}} Leaderboard_Shift_ClickInputs */
+/** @typedef {{}} Mcp_Add_UrlInputs */
+/** @typedef {{}} Mcp_Dialog_DescriptionInputs */
+/** @typedef {{}} Mcp_Dialog_TitleInputs */
+/** @typedef {{}} Mcp_Learn_MoreInputs */
+/** @typedef {{}} Mcp_Manual_TabInputs */
+/** @typedef {{}} Mcp_Oauth_AutoInputs */
+/** @typedef {{}} Mcp_Oauth_TabInputs */
+/** @typedef {{}} Mcp_RecommendedInputs */
 /** @typedef {{}} Measure_Filter_ApplyInputs */
 /** @typedef {{}} Measure_Filter_By_DimensionInputs */
 /** @typedef {{}} Measure_Filter_Enter_NumberInputs */
@@ -556,6 +571,7 @@
 /** @typedef {{}} Nav_Tab_ReportsInputs */
 /** @typedef {{}} Nav_Tab_SettingsInputs */
 /** @typedef {{}} Nav_Tab_StatusInputs */
+/** @typedef {{}} Org_Check_Out_ProjectsInputs */
 /** @typedef {{}} Org_Tab_ProjectsInputs */
 /** @typedef {{}} Org_Tab_SettingsInputs */
 /** @typedef {{}} Org_Tab_UsersInputs */
@@ -571,6 +587,7 @@
 /** @typedef {{ grain: NonNullable<unknown> }} Pivot_Time_Dimension_HeaderInputs */
 /** @typedef {{}} Pivot_Time_PrefixInputs */
 /** @typedef {{}} Project_Dashboards_TitleInputs */
+/** @typedef {{}} Project_Role_ViewerInputs */
 /** @typedef {{}} Report_Context_Menu_AriaInputs */
 /** @typedef {{ name: NonNullable<unknown> }} Report_Created_ByInputs */
 /** @typedef {{}} Report_Created_Through_CodeInputs */
@@ -650,6 +667,9 @@
 /** @typedef {{}} Report_Unsubscribe_FailedInputs */
 /** @typedef {{}} Report_UnsubscribedInputs */
 /** @typedef {{}} Report_UnsubscribingInputs */
+/** @typedef {{ reportsLink: NonNullable<unknown> }} Reports_Empty_ActionInputs */
+/** @typedef {{}} Reports_Empty_MessageInputs */
+/** @typedef {{}} Reports_Link_TextInputs */
 /** @typedef {{}} Resource_Error_Contact_SupportInputs */
 /** @typedef {{ kind: NonNullable<unknown> }} Resource_Error_LoadingInputs */
 /** @typedef {{}} Resource_Search_PlaceholderInputs */
@@ -964,6 +984,22 @@ export const alert_unsubscribing = /** @type {(inputs: Alert_UnsubscribingInputs
 
 export const alert_whenever_data_refreshes = /** @type {(inputs: Alert_Whenever_Data_RefreshesInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Whenever your data refreshes`)
+};
+
+export const alerts_empty_action = /** @type {(inputs: Alerts_Empty_ActionInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Create ${i?.alertsLink} from any dashboard or ${i?.codeLink}.`)
+};
+
+export const alerts_empty_message = /** @type {(inputs: Alerts_Empty_MessageInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`You don't have any alerts yet`)
+};
+
+export const alerts_link_text = /** @type {(inputs: Alerts_Link_TextInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`alerts`)
+};
+
+export const alerts_via_code = /** @type {(inputs: Alerts_Via_CodeInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`via code`)
 };
 
 export const avatar_contact_support = /** @type {(inputs: Avatar_Contact_SupportInputs) => LocalizedString} */ () => {
@@ -1650,6 +1686,10 @@ export const chat_close = /** @type {(inputs: Chat_CloseInputs) => LocalizedStri
 	return /** @type {LocalizedString} */ (`Close chat`)
 };
 
+export const chat_connect_client = /** @type {(inputs: Chat_Connect_ClientInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Connect your own client`)
+};
+
 export const chat_conversation_history = /** @type {(inputs: Chat_Conversation_HistoryInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Conversation history`)
 };
@@ -1698,8 +1738,16 @@ export const chat_happy_to_explore = /** @type {(inputs: Chat_Happy_To_ExploreIn
 	return /** @type {LocalizedString} */ (`Happy to help explore your data`)
 };
 
+export const chat_how_can_i_help = /** @type {(inputs: Chat_How_Can_I_HelpInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`How can I help you today?`)
+};
+
 export const chat_new_conversation = /** @type {(inputs: Chat_New_ConversationInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`New conversation`)
+};
+
+export const chat_no_conversations = /** @type {(inputs: Chat_No_ConversationsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No conversations yet.`)
 };
 
 export const chat_placeholder_analyst = /** @type {(inputs: Chat_Placeholder_AnalystInputs) => LocalizedString} */ () => {
@@ -2842,6 +2890,38 @@ export const leaderboard_shift_click = /** @type {(inputs: Leaderboard_Shift_Cli
 	return /** @type {LocalizedString} */ (`+ Click`)
 };
 
+export const mcp_add_url = /** @type {(inputs: Mcp_Add_UrlInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Add this URL to your AI client's MCP server settings:`)
+};
+
+export const mcp_dialog_description = /** @type {(inputs: Mcp_Dialog_DescriptionInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Ask questions of your Rill project using natural language in any AI client that supports the Model Context Protocol (MCP).`)
+};
+
+export const mcp_dialog_title = /** @type {(inputs: Mcp_Dialog_TitleInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Connect your own AI client`)
+};
+
+export const mcp_learn_more = /** @type {(inputs: Mcp_Learn_MoreInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Learn more`)
+};
+
+export const mcp_manual_tab = /** @type {(inputs: Mcp_Manual_TabInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Manual`)
+};
+
+export const mcp_oauth_auto = /** @type {(inputs: Mcp_Oauth_AutoInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`The OAuth flow will start automatically in your browser.`)
+};
+
+export const mcp_oauth_tab = /** @type {(inputs: Mcp_Oauth_TabInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`OAuth`)
+};
+
+export const mcp_recommended = /** @type {(inputs: Mcp_RecommendedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Recommended`)
+};
+
 export const measure_filter_apply = /** @type {(inputs: Measure_Filter_ApplyInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Apply`)
 };
@@ -2914,6 +2994,10 @@ export const nav_tab_status = /** @type {(inputs: Nav_Tab_StatusInputs) => Local
 	return /** @type {LocalizedString} */ (`Status`)
 };
 
+export const org_check_out_projects = /** @type {(inputs: Org_Check_Out_ProjectsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Check out your projects below.`)
+};
+
 export const org_tab_projects = /** @type {(inputs: Org_Tab_ProjectsInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Projects`)
 };
@@ -2972,6 +3056,10 @@ export const pivot_time_prefix = /** @type {(inputs: Pivot_Time_PrefixInputs) =>
 
 export const project_dashboards_title = /** @type {(inputs: Project_Dashboards_TitleInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Project dashboards`)
+};
+
+export const project_role_viewer = /** @type {(inputs: Project_Role_ViewerInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Viewer`)
 };
 
 export const report_context_menu_aria = /** @type {(inputs: Report_Context_Menu_AriaInputs) => LocalizedString} */ () => {
@@ -3288,6 +3376,18 @@ export const report_unsubscribed = /** @type {(inputs: Report_UnsubscribedInputs
 
 export const report_unsubscribing = /** @type {(inputs: Report_UnsubscribingInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Unsubscribing...`)
+};
+
+export const reports_empty_action = /** @type {(inputs: Reports_Empty_ActionInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Schedule ${i?.reportsLink} from any dashboard`)
+};
+
+export const reports_empty_message = /** @type {(inputs: Reports_Empty_MessageInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`You don't have any reports yet`)
+};
+
+export const reports_link_text = /** @type {(inputs: Reports_Link_TextInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`reports`)
 };
 
 export const resource_error_contact_support = /** @type {(inputs: Resource_Error_Contact_SupportInputs) => LocalizedString} */ () => {

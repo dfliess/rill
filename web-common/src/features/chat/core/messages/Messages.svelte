@@ -16,6 +16,7 @@
   import WorkingBlock from "./working/WorkingBlock.svelte";
   import SimpleToolCallBlock from "@rilldata/web-common/features/chat/core/messages/simple-tool-call/SimpleToolCallBlock.svelte";
   import ErrorMessage from "@rilldata/web-common/features/chat/core/messages/error/ErrorMessage.svelte";
+  import * as m from "@rilldata/web-common/paraglide/messages.js";
 
   export let conversationManager: ConversationManager;
   export let layout: "sidebar" | "fullpage";
@@ -123,7 +124,7 @@
   {:else if isConversationEmpty}
     <div class="chat-empty">
       <!-- <div class="chat-empty-icon">💬</div> -->
-      <div class="chat-empty-title">How can I help you today?</div>
+      <div class="chat-empty-title">{m.chat_how_can_i_help()}</div>
       <div class="chat-empty-subtitle">
         {config.emptyChatLabel}
       </div>

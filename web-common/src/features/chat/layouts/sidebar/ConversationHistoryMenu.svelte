@@ -49,7 +49,7 @@
   >
     {#if conversations.length === 0}
       <div class="px-3 py-4 text-center text-fg-secondary text-sm">
-        No conversations yet.
+        {m.chat_no_conversations()}
       </div>
     {:else}
       {#each GROUP_ORDER as groupKey}
