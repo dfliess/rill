@@ -6,6 +6,46 @@
 /** @typedef {{}} Alert_CriteriaInputs */
 /** @typedef {{}} Alert_DashboardInputs */
 /** @typedef {{}} Alert_Email_NotificationsInputs */
+/** @typedef {{}} Alert_Form_BackInputs */
+/** @typedef {{}} Alert_Form_CancelInputs */
+/** @typedef {{}} Alert_Form_CreateInputs */
+/** @typedef {{}} Alert_Form_CreatedInputs */
+/** @typedef {{}} Alert_Form_Criteria_DescriptionInputs */
+/** @typedef {{}} Alert_Form_Criteria_Group_AriaInputs */
+/** @typedef {{}} Alert_Form_Criteria_Measure_AriaInputs */
+/** @typedef {{}} Alert_Form_Criteria_Measure_PlaceholderInputs */
+/** @typedef {{}} Alert_Form_Criteria_Operator_AriaInputs */
+/** @typedef {{}} Alert_Form_Criteria_Operator_PlaceholderInputs */
+/** @typedef {{}} Alert_Form_Criteria_Preview_TitleInputs */
+/** @typedef {{}} Alert_Form_Criteria_TitleInputs */
+/** @typedef {{}} Alert_Form_Criteria_Type_AriaInputs */
+/** @typedef {{}} Alert_Form_Criteria_Type_PlaceholderInputs */
+/** @typedef {{}} Alert_Form_Criteria_Value_TitleInputs */
+/** @typedef {{}} Alert_Form_Data_FiltersInputs */
+/** @typedef {{}} Alert_Form_Data_MeasureInputs */
+/** @typedef {{}} Alert_Form_Data_Measure_PlaceholderInputs */
+/** @typedef {{}} Alert_Form_Data_NoneInputs */
+/** @typedef {{}} Alert_Form_Data_PreviewInputs */
+/** @typedef {{}} Alert_Form_Data_Split_ByInputs */
+/** @typedef {{}} Alert_Form_Data_Split_PlaceholderInputs */
+/** @typedef {{}} Alert_Form_Data_TitleInputs */
+/** @typedef {{}} Alert_Form_EditedInputs */
+/** @typedef {{}} Alert_Form_Email_PlaceholderInputs */
+/** @typedef {{}} Alert_Form_Email_TitleInputs */
+/** @typedef {{}} Alert_Form_Go_To_AlertsInputs */
+/** @typedef {{}} Alert_Form_Name_PlaceholderInputs */
+/** @typedef {{}} Alert_Form_Name_TitleInputs */
+/** @typedef {{}} Alert_Form_NextInputs */
+/** @typedef {{}} Alert_Form_No_CriteriaInputs */
+/** @typedef {{}} Alert_Form_No_DataInputs */
+/** @typedef {{}} Alert_Form_Preview_CellInputs */
+/** @typedef {{}} Alert_Form_Preview_Table_AriaInputs */
+/** @typedef {{}} Alert_Form_Select_CriteriaInputs */
+/** @typedef {{}} Alert_Form_Slack_PlaceholderInputs */
+/** @typedef {{}} Alert_Form_Slack_TitleInputs */
+/** @typedef {{}} Alert_Form_Snooze_TitleInputs */
+/** @typedef {{}} Alert_Form_TriggerInputs */
+/** @typedef {{}} Alert_Form_UpdateInputs */
 /** @typedef {{}} Alert_Name_LabelInputs */
 /** @typedef {{}} Alert_NoneInputs */
 /** @typedef {{}} Alert_ScheduleInputs */
@@ -192,9 +232,25 @@
 /** @typedef {{}} Chart_LineInputs */
 /** @typedef {{}} Chart_Stacked_AreaInputs */
 /** @typedef {{}} Chart_Stacked_BarInputs */
+/** @typedef {{}} Chat_Cancel_StreamingInputs */
+/** @typedef {{}} Chat_CloseInputs */
+/** @typedef {{}} Chat_Conversation_HistoryInputs */
+/** @typedef {{}} Chat_Downvote_AriaInputs */
+/** @typedef {{}} Chat_Downvote_TooltipInputs */
 /** @typedef {{}} Chat_Empty_LabelInputs */
+/** @typedef {{}} Chat_Feedback_AnalyzingInputs */
+/** @typedef {{}} Chat_Feedback_CommentsInputs */
+/** @typedef {{}} Chat_Feedback_PlaceholderInputs */
+/** @typedef {{}} Chat_Feedback_Select_AllInputs */
+/** @typedef {{}} Chat_Feedback_SkipInputs */
+/** @typedef {{}} Chat_Feedback_SubmitInputs */
+/** @typedef {{}} Chat_Feedback_TitleInputs */
 /** @typedef {{}} Chat_Happy_To_ExploreInputs */
+/** @typedef {{}} Chat_New_ConversationInputs */
 /** @typedef {{}} Chat_Placeholder_AnalystInputs */
+/** @typedef {{}} Chat_Send_MessageInputs */
+/** @typedef {{}} Chat_Upvote_AriaInputs */
+/** @typedef {{}} Chat_Upvote_TooltipInputs */
 /** @typedef {{}} Common_ApplyInputs */
 /** @typedef {{}} Common_CancelInputs */
 /** @typedef {{}} Common_ContinueInputs */
@@ -458,6 +514,10 @@
 /** @typedef {{}} Home_Subtitle_No_ChatInputs */
 /** @typedef {{}} Home_Subtitle_With_ChatInputs */
 /** @typedef {{ projectName: NonNullable<unknown> }} Home_Welcome_ToInputs */
+/** @typedef {{}} Interval_DayInputs */
+/** @typedef {{}} Interval_HourInputs */
+/** @typedef {{}} Interval_NoneInputs */
+/** @typedef {{}} Interval_WeekInputs */
 /** @typedef {{}} Language_EnInputs */
 /** @typedef {{}} Language_EsInputs */
 /** @typedef {{}} Language_Switcher_LabelInputs */
@@ -496,6 +556,51 @@
 /** @typedef {{}} Report_Created_Through_CodeInputs */
 /** @typedef {{}} Report_DashboardInputs */
 /** @typedef {{}} Report_Email_RecipientsInputs */
+/** @typedef {{}} Report_Form_CancelInputs */
+/** @typedef {{}} Report_Form_ChannelsInputs */
+/** @typedef {{}} Report_Form_Clear_FiltersInputs */
+/** @typedef {{}} Report_Form_ColumnsInputs */
+/** @typedef {{}} Report_Form_CreateInputs */
+/** @typedef {{}} Report_Form_Create_ButtonInputs */
+/** @typedef {{}} Report_Form_DayInputs */
+/** @typedef {{}} Report_Form_Day_FirstInputs */
+/** @typedef {{}} Report_Form_Day_FridayInputs */
+/** @typedef {{}} Report_Form_Day_MondayInputs */
+/** @typedef {{}} Report_Form_Day_SaturdayInputs */
+/** @typedef {{}} Report_Form_Day_SundayInputs */
+/** @typedef {{}} Report_Form_Day_ThursdayInputs */
+/** @typedef {{}} Report_Form_Day_TuesdayInputs */
+/** @typedef {{}} Report_Form_Day_WednesdayInputs */
+/** @typedef {{}} Report_Form_Email_PlaceholderInputs */
+/** @typedef {{}} Report_Form_Email_RecipientsInputs */
+/** @typedef {{}} Report_Form_FiltersInputs */
+/** @typedef {{}} Report_Form_Filters_AriaInputs */
+/** @typedef {{}} Report_Form_FormatInputs */
+/** @typedef {{}} Report_Form_Format_ParquetInputs */
+/** @typedef {{}} Report_Form_Freq_DailyInputs */
+/** @typedef {{}} Report_Form_Freq_MonthlyInputs */
+/** @typedef {{}} Report_Form_Freq_WeekdaysInputs */
+/** @typedef {{}} Report_Form_Freq_WeeklyInputs */
+/** @typedef {{}} Report_Form_FrequencyInputs */
+/** @typedef {{}} Report_Form_Go_To_ReportsInputs */
+/** @typedef {{}} Report_Form_Include_MetadataInputs */
+/** @typedef {{}} Report_Form_Invalid_EmailInputs */
+/** @typedef {{}} Report_Form_Recipients_Must_Be_ProjectInputs */
+/** @typedef {{}} Report_Form_RequiredInputs */
+/** @typedef {{}} Report_Form_Row_LimitInputs */
+/** @typedef {{}} Report_Form_Row_Limit_PlaceholderInputs */
+/** @typedef {{}} Report_Form_RowsInputs */
+/** @typedef {{}} Report_Form_Run_AsInputs */
+/** @typedef {{}} Report_Form_Run_As_CreatorInputs */
+/** @typedef {{}} Report_Form_Run_As_RecipientInputs */
+/** @typedef {{}} Report_Form_SaveInputs */
+/** @typedef {{}} Report_Form_Save_ButtonInputs */
+/** @typedef {{}} Report_Form_ScheduleInputs */
+/** @typedef {{}} Report_Form_Slack_TitleInputs */
+/** @typedef {{}} Report_Form_TimeInputs */
+/** @typedef {{}} Report_Form_TimezoneInputs */
+/** @typedef {{}} Report_Form_Title_LabelInputs */
+/** @typedef {{}} Report_Form_Title_PlaceholderInputs */
 /** @typedef {{}} Report_Name_LabelInputs */
 /** @typedef {{}} Report_Next_RunInputs */
 /** @typedef {{}} Report_No_Row_LimitInputs */
@@ -503,11 +608,16 @@
 /** @typedef {{}} Report_Slack_RecipientsInputs */
 /** @typedef {{}} Report_Status_FailedInputs */
 /** @typedef {{}} Report_Status_SentInputs */
+/** @typedef {{}} Report_Triggered_AdhocInputs */
 /** @typedef {{}} Report_Unsubscribe_FailedInputs */
 /** @typedef {{}} Report_UnsubscribedInputs */
 /** @typedef {{}} Report_UnsubscribingInputs */
+/** @typedef {{}} Resource_Error_Contact_SupportInputs */
+/** @typedef {{ kind: NonNullable<unknown> }} Resource_Error_LoadingInputs */
+/** @typedef {{}} Resource_Search_PlaceholderInputs */
 /** @typedef {{ link: NonNullable<unknown> }} Share_Limited_ViewInputs */
 /** @typedef {{}} Share_Original_DashboardInputs */
+/** @typedef {{}} Snooze_OffInputs */
 /** @typedef {{}} Theme_DarkInputs */
 /** @typedef {{}} Theme_LabelInputs */
 /** @typedef {{}} Theme_LightInputs */
@@ -564,6 +674,166 @@ export const alert_dashboard = /** @type {(inputs: Alert_DashboardInputs) => Loc
 
 export const alert_email_notifications = /** @type {(inputs: Alert_Email_NotificationsInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Email notifications`)
+};
+
+export const alert_form_back = /** @type {(inputs: Alert_Form_BackInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Back`)
+};
+
+export const alert_form_cancel = /** @type {(inputs: Alert_Form_CancelInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Cancel`)
+};
+
+export const alert_form_create = /** @type {(inputs: Alert_Form_CreateInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Create`)
+};
+
+export const alert_form_created = /** @type {(inputs: Alert_Form_CreatedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Alert created`)
+};
+
+export const alert_form_criteria_description = /** @type {(inputs: Alert_Form_Criteria_DescriptionInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Trigger alert when these conditions are met`)
+};
+
+export const alert_form_criteria_group_aria = /** @type {(inputs: Alert_Form_Criteria_Group_AriaInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Criteria group operation`)
+};
+
+export const alert_form_criteria_measure_aria = /** @type {(inputs: Alert_Form_Criteria_Measure_AriaInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Criteria measure`)
+};
+
+export const alert_form_criteria_measure_placeholder = /** @type {(inputs: Alert_Form_Criteria_Measure_PlaceholderInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Measure`)
+};
+
+export const alert_form_criteria_operator_aria = /** @type {(inputs: Alert_Form_Criteria_Operator_AriaInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Criteria operator`)
+};
+
+export const alert_form_criteria_operator_placeholder = /** @type {(inputs: Alert_Form_Criteria_Operator_PlaceholderInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Operator`)
+};
+
+export const alert_form_criteria_preview_title = /** @type {(inputs: Alert_Form_Criteria_Preview_TitleInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Alert Preview`)
+};
+
+export const alert_form_criteria_title = /** @type {(inputs: Alert_Form_Criteria_TitleInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Criteria`)
+};
+
+export const alert_form_criteria_type_aria = /** @type {(inputs: Alert_Form_Criteria_Type_AriaInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Criteria type`)
+};
+
+export const alert_form_criteria_type_placeholder = /** @type {(inputs: Alert_Form_Criteria_Type_PlaceholderInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`type`)
+};
+
+export const alert_form_criteria_value_title = /** @type {(inputs: Alert_Form_Criteria_Value_TitleInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Criteria value`)
+};
+
+export const alert_form_data_filters = /** @type {(inputs: Alert_Form_Data_FiltersInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Filters`)
+};
+
+export const alert_form_data_measure = /** @type {(inputs: Alert_Form_Data_MeasureInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Measure`)
+};
+
+export const alert_form_data_measure_placeholder = /** @type {(inputs: Alert_Form_Data_Measure_PlaceholderInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Select a measure`)
+};
+
+export const alert_form_data_none = /** @type {(inputs: Alert_Form_Data_NoneInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`None`)
+};
+
+export const alert_form_data_preview = /** @type {(inputs: Alert_Form_Data_PreviewInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Data preview`)
+};
+
+export const alert_form_data_split_by = /** @type {(inputs: Alert_Form_Data_Split_ByInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Split by dimension`)
+};
+
+export const alert_form_data_split_placeholder = /** @type {(inputs: Alert_Form_Data_Split_PlaceholderInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Select a dimension`)
+};
+
+export const alert_form_data_title = /** @type {(inputs: Alert_Form_Data_TitleInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Alert data`)
+};
+
+export const alert_form_edited = /** @type {(inputs: Alert_Form_EditedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Alert edited`)
+};
+
+export const alert_form_email_placeholder = /** @type {(inputs: Alert_Form_Email_PlaceholderInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Enter an email address`)
+};
+
+export const alert_form_email_title = /** @type {(inputs: Alert_Form_Email_TitleInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Email notifications`)
+};
+
+export const alert_form_go_to_alerts = /** @type {(inputs: Alert_Form_Go_To_AlertsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Go to alerts`)
+};
+
+export const alert_form_name_placeholder = /** @type {(inputs: Alert_Form_Name_PlaceholderInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`My alert`)
+};
+
+export const alert_form_name_title = /** @type {(inputs: Alert_Form_Name_TitleInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Alert name`)
+};
+
+export const alert_form_next = /** @type {(inputs: Alert_Form_NextInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Next`)
+};
+
+export const alert_form_no_criteria = /** @type {(inputs: Alert_Form_No_CriteriaInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No criteria selected`)
+};
+
+export const alert_form_no_data = /** @type {(inputs: Alert_Form_No_DataInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No data to preview`)
+};
+
+export const alert_form_preview_cell = /** @type {(inputs: Alert_Form_Preview_CellInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Preview cell`)
+};
+
+export const alert_form_preview_table_aria = /** @type {(inputs: Alert_Form_Preview_Table_AriaInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`alert preview table`)
+};
+
+export const alert_form_select_criteria = /** @type {(inputs: Alert_Form_Select_CriteriaInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Select criteria to see a preview`)
+};
+
+export const alert_form_slack_placeholder = /** @type {(inputs: Alert_Form_Slack_PlaceholderInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`# Enter a Slack channel name`)
+};
+
+export const alert_form_slack_title = /** @type {(inputs: Alert_Form_Slack_TitleInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Slack notifications`)
+};
+
+export const alert_form_snooze_title = /** @type {(inputs: Alert_Form_Snooze_TitleInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Snooze`)
+};
+
+export const alert_form_trigger = /** @type {(inputs: Alert_Form_TriggerInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Trigger`)
+};
+
+export const alert_form_update = /** @type {(inputs: Alert_Form_UpdateInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Update`)
 };
 
 export const alert_name_label = /** @type {(inputs: Alert_Name_LabelInputs) => LocalizedString} */ () => {
@@ -1310,16 +1580,80 @@ export const chart_stacked_bar = /** @type {(inputs: Chart_Stacked_BarInputs) =>
 	return /** @type {LocalizedString} */ (`Stacked bar`)
 };
 
+export const chat_cancel_streaming = /** @type {(inputs: Chat_Cancel_StreamingInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Cancel streaming`)
+};
+
+export const chat_close = /** @type {(inputs: Chat_CloseInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Close chat`)
+};
+
+export const chat_conversation_history = /** @type {(inputs: Chat_Conversation_HistoryInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Conversation history`)
+};
+
+export const chat_downvote_aria = /** @type {(inputs: Chat_Downvote_AriaInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Downvote response`)
+};
+
+export const chat_downvote_tooltip = /** @type {(inputs: Chat_Downvote_TooltipInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`This response needs improvement`)
+};
+
 export const chat_empty_label = /** @type {(inputs: Chat_Empty_LabelInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Happy to help explore your data`)
+};
+
+export const chat_feedback_analyzing = /** @type {(inputs: Chat_Feedback_AnalyzingInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Analyzing feedback...`)
+};
+
+export const chat_feedback_comments = /** @type {(inputs: Chat_Feedback_CommentsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Comments`)
+};
+
+export const chat_feedback_placeholder = /** @type {(inputs: Chat_Feedback_PlaceholderInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Type here...`)
+};
+
+export const chat_feedback_select_all = /** @type {(inputs: Chat_Feedback_Select_AllInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Select all that apply.`)
+};
+
+export const chat_feedback_skip = /** @type {(inputs: Chat_Feedback_SkipInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Skip`)
+};
+
+export const chat_feedback_submit = /** @type {(inputs: Chat_Feedback_SubmitInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Submit`)
+};
+
+export const chat_feedback_title = /** @type {(inputs: Chat_Feedback_TitleInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Give feedback`)
 };
 
 export const chat_happy_to_explore = /** @type {(inputs: Chat_Happy_To_ExploreInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Happy to help explore your data`)
 };
 
+export const chat_new_conversation = /** @type {(inputs: Chat_New_ConversationInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`New conversation`)
+};
+
 export const chat_placeholder_analyst = /** @type {(inputs: Chat_Placeholder_AnalystInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Type a question, or press @ to insert a metric, dimension, or measure.`)
+};
+
+export const chat_send_message = /** @type {(inputs: Chat_Send_MessageInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Send message`)
+};
+
+export const chat_upvote_aria = /** @type {(inputs: Chat_Upvote_AriaInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Upvote response`)
+};
+
+export const chat_upvote_tooltip = /** @type {(inputs: Chat_Upvote_TooltipInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`This response was helpful`)
 };
 
 export const common_apply = /** @type {(inputs: Common_ApplyInputs) => LocalizedString} */ () => {
@@ -2374,6 +2708,22 @@ export const home_welcome_to = /** @type {(inputs: Home_Welcome_ToInputs) => Loc
 	return /** @type {LocalizedString} */ (`Welcome to ${i?.projectName}`)
 };
 
+export const interval_day = /** @type {(inputs: Interval_DayInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Day`)
+};
+
+export const interval_hour = /** @type {(inputs: Interval_HourInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Hour`)
+};
+
+export const interval_none = /** @type {(inputs: Interval_NoneInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`None`)
+};
+
+export const interval_week = /** @type {(inputs: Interval_WeekInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Week`)
+};
+
 export const language_en = /** @type {(inputs: Language_EnInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`English`)
 };
@@ -2526,6 +2876,186 @@ export const report_email_recipients = /** @type {(inputs: Report_Email_Recipien
 	return /** @type {LocalizedString} */ (`Email recipients`)
 };
 
+export const report_form_cancel = /** @type {(inputs: Report_Form_CancelInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Cancel`)
+};
+
+export const report_form_channels = /** @type {(inputs: Report_Form_ChannelsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Channels`)
+};
+
+export const report_form_clear_filters = /** @type {(inputs: Report_Form_Clear_FiltersInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Clear filters`)
+};
+
+export const report_form_columns = /** @type {(inputs: Report_Form_ColumnsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Columns`)
+};
+
+export const report_form_create = /** @type {(inputs: Report_Form_CreateInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Create report`)
+};
+
+export const report_form_create_button = /** @type {(inputs: Report_Form_Create_ButtonInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Create`)
+};
+
+export const report_form_day = /** @type {(inputs: Report_Form_DayInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Day`)
+};
+
+export const report_form_day_first = /** @type {(inputs: Report_Form_Day_FirstInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`First day`)
+};
+
+export const report_form_day_friday = /** @type {(inputs: Report_Form_Day_FridayInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Friday`)
+};
+
+export const report_form_day_monday = /** @type {(inputs: Report_Form_Day_MondayInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Monday`)
+};
+
+export const report_form_day_saturday = /** @type {(inputs: Report_Form_Day_SaturdayInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Saturday`)
+};
+
+export const report_form_day_sunday = /** @type {(inputs: Report_Form_Day_SundayInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Sunday`)
+};
+
+export const report_form_day_thursday = /** @type {(inputs: Report_Form_Day_ThursdayInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Thursday`)
+};
+
+export const report_form_day_tuesday = /** @type {(inputs: Report_Form_Day_TuesdayInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Tuesday`)
+};
+
+export const report_form_day_wednesday = /** @type {(inputs: Report_Form_Day_WednesdayInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Wednesday`)
+};
+
+export const report_form_email_placeholder = /** @type {(inputs: Report_Form_Email_PlaceholderInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Enter an email address`)
+};
+
+export const report_form_email_recipients = /** @type {(inputs: Report_Form_Email_RecipientsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Email Recipients`)
+};
+
+export const report_form_filters = /** @type {(inputs: Report_Form_FiltersInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Filters`)
+};
+
+export const report_form_filters_aria = /** @type {(inputs: Report_Form_Filters_AriaInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Filters form`)
+};
+
+export const report_form_format = /** @type {(inputs: Report_Form_FormatInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Format`)
+};
+
+export const report_form_format_parquet = /** @type {(inputs: Report_Form_Format_ParquetInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Parquet`)
+};
+
+export const report_form_freq_daily = /** @type {(inputs: Report_Form_Freq_DailyInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Daily`)
+};
+
+export const report_form_freq_monthly = /** @type {(inputs: Report_Form_Freq_MonthlyInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Monthly`)
+};
+
+export const report_form_freq_weekdays = /** @type {(inputs: Report_Form_Freq_WeekdaysInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Weekdays`)
+};
+
+export const report_form_freq_weekly = /** @type {(inputs: Report_Form_Freq_WeeklyInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Weekly`)
+};
+
+export const report_form_frequency = /** @type {(inputs: Report_Form_FrequencyInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Frequency`)
+};
+
+export const report_form_go_to_reports = /** @type {(inputs: Report_Form_Go_To_ReportsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Go to scheduled reports`)
+};
+
+export const report_form_include_metadata = /** @type {(inputs: Report_Form_Include_MetadataInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Include metadata`)
+};
+
+export const report_form_invalid_email = /** @type {(inputs: Report_Form_Invalid_EmailInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Invalid email`)
+};
+
+export const report_form_recipients_must_be_project = /** @type {(inputs: Report_Form_Recipients_Must_Be_ProjectInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Recipients must be part of the project when running as recipient`)
+};
+
+export const report_form_required = /** @type {(inputs: Report_Form_RequiredInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Required`)
+};
+
+export const report_form_row_limit = /** @type {(inputs: Report_Form_Row_LimitInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Row limit`)
+};
+
+export const report_form_row_limit_placeholder = /** @type {(inputs: Report_Form_Row_Limit_PlaceholderInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`1000`)
+};
+
+export const report_form_rows = /** @type {(inputs: Report_Form_RowsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Rows`)
+};
+
+export const report_form_run_as = /** @type {(inputs: Report_Form_Run_AsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Run as`)
+};
+
+export const report_form_run_as_creator = /** @type {(inputs: Report_Form_Run_As_CreatorInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Creator`)
+};
+
+export const report_form_run_as_recipient = /** @type {(inputs: Report_Form_Run_As_RecipientInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Recipient`)
+};
+
+export const report_form_save = /** @type {(inputs: Report_Form_SaveInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Save report`)
+};
+
+export const report_form_save_button = /** @type {(inputs: Report_Form_Save_ButtonInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Save`)
+};
+
+export const report_form_schedule = /** @type {(inputs: Report_Form_ScheduleInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Schedule report`)
+};
+
+export const report_form_slack_title = /** @type {(inputs: Report_Form_Slack_TitleInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Slack notifications`)
+};
+
+export const report_form_time = /** @type {(inputs: Report_Form_TimeInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Time`)
+};
+
+export const report_form_timezone = /** @type {(inputs: Report_Form_TimezoneInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Time zone`)
+};
+
+export const report_form_title_label = /** @type {(inputs: Report_Form_Title_LabelInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Report title`)
+};
+
+export const report_form_title_placeholder = /** @type {(inputs: Report_Form_Title_PlaceholderInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`My report`)
+};
+
 export const report_name_label = /** @type {(inputs: Report_Name_LabelInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Name`)
 };
@@ -2554,6 +3084,10 @@ export const report_status_sent = /** @type {(inputs: Report_Status_SentInputs) 
 	return /** @type {LocalizedString} */ (`Report sent`)
 };
 
+export const report_triggered_adhoc = /** @type {(inputs: Report_Triggered_AdhocInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Triggered an ad-hoc run of this report.`)
+};
+
 export const report_unsubscribe_failed = /** @type {(inputs: Report_Unsubscribe_FailedInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Failed to unsubscribe.`)
 };
@@ -2566,12 +3100,28 @@ export const report_unsubscribing = /** @type {(inputs: Report_UnsubscribingInpu
 	return /** @type {LocalizedString} */ (`Unsubscribing...`)
 };
 
+export const resource_error_contact_support = /** @type {(inputs: Resource_Error_Contact_SupportInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`If this error persists, please contact support.`)
+};
+
+export const resource_error_loading = /** @type {(inputs: Resource_Error_LoadingInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Error loading ${i?.kind}s`)
+};
+
+export const resource_search_placeholder = /** @type {(inputs: Resource_Search_PlaceholderInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Search`)
+};
+
 export const share_limited_view = /** @type {(inputs: Share_Limited_ViewInputs) => LocalizedString} */ (i) => {
 	return /** @type {LocalizedString} */ (`Limited view. For full access and features, visit the ${i?.link}.`)
 };
 
 export const share_original_dashboard = /** @type {(inputs: Share_Original_DashboardInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`original dashboard`)
+};
+
+export const snooze_off = /** @type {(inputs: Snooze_OffInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Off`)
 };
 
 export const theme_dark = /** @type {(inputs: Theme_DarkInputs) => LocalizedString} */ () => {

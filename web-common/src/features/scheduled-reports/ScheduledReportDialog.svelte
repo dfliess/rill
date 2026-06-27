@@ -12,6 +12,7 @@
 </script>
 
 <script lang="ts">
+  import * as m from "@rilldata/web-common/paraglide/messages.js";
   import { page } from "$app/stores";
   import {
     createAdminServiceCreateReport,
@@ -134,12 +135,14 @@
 
   const schema = yup(
     object({
-      title: string().required("Required"),
-      webOpenMode: string().required("Required"),
-      emailRecipients: array().of(string().email("Invalid email")),
+      title: string().required(m.report_form_required()),
+      webOpenMode: string().required(m.report_form_required()),
+      emailRecipients: array().of(
+        string().email(m.report_form_invalid_email()),
+      ),
       enableSlackNotification: boolean(), // Needed to get the type for validation
       slackChannels: array().of(string()),
-      slackUsers: array().of(string().email("Invalid email")),
+      slackUsers: array().of(string().email(m.report_form_invalid_email())),
       columns: array().of(string()).min(1),
     })
       .test(
@@ -164,7 +167,7 @@
       )
       .test(
         "as-recipients-in-project",
-        "Recipients must be part of the project when running as recipient",
+        m.report_form_recipients_must_be_project(),
         function (values) {
           if (values.webOpenMode !== ReportRunAs.Recipient) return true;
 
@@ -291,7 +294,7 @@
           props.mode === "create"
             ? {
                 href: `/${organization}/${project}/-/reports`,
-                text: "Go to scheduled reports",
+                text: m.report_form_go_to_reports(),
               }
             : undefined,
         type: "success",
@@ -304,7 +307,7 @@
 
 <Dialog.Root bind:open>
   <Dialog.Content class="min-w-[900px]" escapeKeydownBehavior="ignore">
-    <Dialog.Title>Schedule report</Dialog.Title>
+    <Dialog.Title>{m.report_form_schedule()}</Dialog.Title>
 
     <BaseScheduledReportForm
       formId={FORM_ID}
@@ -322,15 +325,21 @@
     {/if}
     <div class="flex items-center gap-x-2 mt-5">
       <div class="grow"></div>
-      <Button onClick={() => (open = false)} type="secondary">Cancel</Button>
+      <Button onClick={() => (open = false)} type="secondary"
+        >{m.report_form_cancel()}</Button
+      >
       <Button
         disabled={$submitting}
         form={FORM_ID}
         submitForm
         type="primary"
-        label={props.mode === "create" ? "Create report" : "Save report"}
+        label={props.mode === "create"
+          ? m.report_form_create()
+          : m.report_form_save()}
       >
-        {props.mode === "create" ? "Create" : "Save"}
+        {props.mode === "create"
+          ? m.report_form_create_button()
+          : m.report_form_save_button()}
       </Button>
     </div>
   </Dialog.Content>

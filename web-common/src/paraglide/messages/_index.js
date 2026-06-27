@@ -8,6 +8,46 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Alert_CriteriaInputs */
 /** @typedef {{}} Alert_DashboardInputs */
 /** @typedef {{}} Alert_Email_NotificationsInputs */
+/** @typedef {{}} Alert_Form_BackInputs */
+/** @typedef {{}} Alert_Form_CancelInputs */
+/** @typedef {{}} Alert_Form_CreateInputs */
+/** @typedef {{}} Alert_Form_CreatedInputs */
+/** @typedef {{}} Alert_Form_Criteria_DescriptionInputs */
+/** @typedef {{}} Alert_Form_Criteria_Group_AriaInputs */
+/** @typedef {{}} Alert_Form_Criteria_Measure_AriaInputs */
+/** @typedef {{}} Alert_Form_Criteria_Measure_PlaceholderInputs */
+/** @typedef {{}} Alert_Form_Criteria_Operator_AriaInputs */
+/** @typedef {{}} Alert_Form_Criteria_Operator_PlaceholderInputs */
+/** @typedef {{}} Alert_Form_Criteria_Preview_TitleInputs */
+/** @typedef {{}} Alert_Form_Criteria_TitleInputs */
+/** @typedef {{}} Alert_Form_Criteria_Type_AriaInputs */
+/** @typedef {{}} Alert_Form_Criteria_Type_PlaceholderInputs */
+/** @typedef {{}} Alert_Form_Criteria_Value_TitleInputs */
+/** @typedef {{}} Alert_Form_Data_FiltersInputs */
+/** @typedef {{}} Alert_Form_Data_MeasureInputs */
+/** @typedef {{}} Alert_Form_Data_Measure_PlaceholderInputs */
+/** @typedef {{}} Alert_Form_Data_NoneInputs */
+/** @typedef {{}} Alert_Form_Data_PreviewInputs */
+/** @typedef {{}} Alert_Form_Data_Split_ByInputs */
+/** @typedef {{}} Alert_Form_Data_Split_PlaceholderInputs */
+/** @typedef {{}} Alert_Form_Data_TitleInputs */
+/** @typedef {{}} Alert_Form_EditedInputs */
+/** @typedef {{}} Alert_Form_Email_PlaceholderInputs */
+/** @typedef {{}} Alert_Form_Email_TitleInputs */
+/** @typedef {{}} Alert_Form_Go_To_AlertsInputs */
+/** @typedef {{}} Alert_Form_Name_PlaceholderInputs */
+/** @typedef {{}} Alert_Form_Name_TitleInputs */
+/** @typedef {{}} Alert_Form_NextInputs */
+/** @typedef {{}} Alert_Form_No_CriteriaInputs */
+/** @typedef {{}} Alert_Form_No_DataInputs */
+/** @typedef {{}} Alert_Form_Preview_CellInputs */
+/** @typedef {{}} Alert_Form_Preview_Table_AriaInputs */
+/** @typedef {{}} Alert_Form_Select_CriteriaInputs */
+/** @typedef {{}} Alert_Form_Slack_PlaceholderInputs */
+/** @typedef {{}} Alert_Form_Slack_TitleInputs */
+/** @typedef {{}} Alert_Form_Snooze_TitleInputs */
+/** @typedef {{}} Alert_Form_TriggerInputs */
+/** @typedef {{}} Alert_Form_UpdateInputs */
 /** @typedef {{}} Alert_Name_LabelInputs */
 /** @typedef {{}} Alert_NoneInputs */
 /** @typedef {{}} Alert_ScheduleInputs */
@@ -194,9 +234,25 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Chart_LineInputs */
 /** @typedef {{}} Chart_Stacked_AreaInputs */
 /** @typedef {{}} Chart_Stacked_BarInputs */
+/** @typedef {{}} Chat_Cancel_StreamingInputs */
+/** @typedef {{}} Chat_CloseInputs */
+/** @typedef {{}} Chat_Conversation_HistoryInputs */
+/** @typedef {{}} Chat_Downvote_AriaInputs */
+/** @typedef {{}} Chat_Downvote_TooltipInputs */
 /** @typedef {{}} Chat_Empty_LabelInputs */
+/** @typedef {{}} Chat_Feedback_AnalyzingInputs */
+/** @typedef {{}} Chat_Feedback_CommentsInputs */
+/** @typedef {{}} Chat_Feedback_PlaceholderInputs */
+/** @typedef {{}} Chat_Feedback_Select_AllInputs */
+/** @typedef {{}} Chat_Feedback_SkipInputs */
+/** @typedef {{}} Chat_Feedback_SubmitInputs */
+/** @typedef {{}} Chat_Feedback_TitleInputs */
 /** @typedef {{}} Chat_Happy_To_ExploreInputs */
+/** @typedef {{}} Chat_New_ConversationInputs */
 /** @typedef {{}} Chat_Placeholder_AnalystInputs */
+/** @typedef {{}} Chat_Send_MessageInputs */
+/** @typedef {{}} Chat_Upvote_AriaInputs */
+/** @typedef {{}} Chat_Upvote_TooltipInputs */
 /** @typedef {{}} Common_ApplyInputs */
 /** @typedef {{}} Common_CancelInputs */
 /** @typedef {{}} Common_ContinueInputs */
@@ -460,6 +516,10 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Home_Subtitle_No_ChatInputs */
 /** @typedef {{}} Home_Subtitle_With_ChatInputs */
 /** @typedef {{ projectName: NonNullable<unknown> }} Home_Welcome_ToInputs */
+/** @typedef {{}} Interval_DayInputs */
+/** @typedef {{}} Interval_HourInputs */
+/** @typedef {{}} Interval_NoneInputs */
+/** @typedef {{}} Interval_WeekInputs */
 /** @typedef {{}} Language_EnInputs */
 /** @typedef {{}} Language_EsInputs */
 /** @typedef {{}} Language_Switcher_LabelInputs */
@@ -498,6 +558,51 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Report_Created_Through_CodeInputs */
 /** @typedef {{}} Report_DashboardInputs */
 /** @typedef {{}} Report_Email_RecipientsInputs */
+/** @typedef {{}} Report_Form_CancelInputs */
+/** @typedef {{}} Report_Form_ChannelsInputs */
+/** @typedef {{}} Report_Form_Clear_FiltersInputs */
+/** @typedef {{}} Report_Form_ColumnsInputs */
+/** @typedef {{}} Report_Form_CreateInputs */
+/** @typedef {{}} Report_Form_Create_ButtonInputs */
+/** @typedef {{}} Report_Form_DayInputs */
+/** @typedef {{}} Report_Form_Day_FirstInputs */
+/** @typedef {{}} Report_Form_Day_FridayInputs */
+/** @typedef {{}} Report_Form_Day_MondayInputs */
+/** @typedef {{}} Report_Form_Day_SaturdayInputs */
+/** @typedef {{}} Report_Form_Day_SundayInputs */
+/** @typedef {{}} Report_Form_Day_ThursdayInputs */
+/** @typedef {{}} Report_Form_Day_TuesdayInputs */
+/** @typedef {{}} Report_Form_Day_WednesdayInputs */
+/** @typedef {{}} Report_Form_Email_PlaceholderInputs */
+/** @typedef {{}} Report_Form_Email_RecipientsInputs */
+/** @typedef {{}} Report_Form_FiltersInputs */
+/** @typedef {{}} Report_Form_Filters_AriaInputs */
+/** @typedef {{}} Report_Form_FormatInputs */
+/** @typedef {{}} Report_Form_Format_ParquetInputs */
+/** @typedef {{}} Report_Form_Freq_DailyInputs */
+/** @typedef {{}} Report_Form_Freq_MonthlyInputs */
+/** @typedef {{}} Report_Form_Freq_WeekdaysInputs */
+/** @typedef {{}} Report_Form_Freq_WeeklyInputs */
+/** @typedef {{}} Report_Form_FrequencyInputs */
+/** @typedef {{}} Report_Form_Go_To_ReportsInputs */
+/** @typedef {{}} Report_Form_Include_MetadataInputs */
+/** @typedef {{}} Report_Form_Invalid_EmailInputs */
+/** @typedef {{}} Report_Form_Recipients_Must_Be_ProjectInputs */
+/** @typedef {{}} Report_Form_RequiredInputs */
+/** @typedef {{}} Report_Form_Row_LimitInputs */
+/** @typedef {{}} Report_Form_Row_Limit_PlaceholderInputs */
+/** @typedef {{}} Report_Form_RowsInputs */
+/** @typedef {{}} Report_Form_Run_AsInputs */
+/** @typedef {{}} Report_Form_Run_As_CreatorInputs */
+/** @typedef {{}} Report_Form_Run_As_RecipientInputs */
+/** @typedef {{}} Report_Form_SaveInputs */
+/** @typedef {{}} Report_Form_Save_ButtonInputs */
+/** @typedef {{}} Report_Form_ScheduleInputs */
+/** @typedef {{}} Report_Form_Slack_TitleInputs */
+/** @typedef {{}} Report_Form_TimeInputs */
+/** @typedef {{}} Report_Form_TimezoneInputs */
+/** @typedef {{}} Report_Form_Title_LabelInputs */
+/** @typedef {{}} Report_Form_Title_PlaceholderInputs */
 /** @typedef {{}} Report_Name_LabelInputs */
 /** @typedef {{}} Report_Next_RunInputs */
 /** @typedef {{}} Report_No_Row_LimitInputs */
@@ -505,11 +610,16 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Report_Slack_RecipientsInputs */
 /** @typedef {{}} Report_Status_FailedInputs */
 /** @typedef {{}} Report_Status_SentInputs */
+/** @typedef {{}} Report_Triggered_AdhocInputs */
 /** @typedef {{}} Report_Unsubscribe_FailedInputs */
 /** @typedef {{}} Report_UnsubscribedInputs */
 /** @typedef {{}} Report_UnsubscribingInputs */
+/** @typedef {{}} Resource_Error_Contact_SupportInputs */
+/** @typedef {{ kind: NonNullable<unknown> }} Resource_Error_LoadingInputs */
+/** @typedef {{}} Resource_Search_PlaceholderInputs */
 /** @typedef {{ link: NonNullable<unknown> }} Share_Limited_ViewInputs */
 /** @typedef {{}} Share_Original_DashboardInputs */
+/** @typedef {{}} Snooze_OffInputs */
 /** @typedef {{}} Theme_DarkInputs */
 /** @typedef {{}} Theme_LabelInputs */
 /** @typedef {{}} Theme_LightInputs */
@@ -627,6 +737,566 @@ export const alert_email_notifications = /** @type {((inputs?: Alert_Email_Notif
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.alert_email_notifications(inputs)
 	return __es.alert_email_notifications(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Back" |
+*
+* @param {Alert_Form_BackInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_back = /** @type {((inputs?: Alert_Form_BackInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_BackInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_back(inputs)
+	return __es.alert_form_back(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Cancel" |
+*
+* @param {Alert_Form_CancelInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_cancel = /** @type {((inputs?: Alert_Form_CancelInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_CancelInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_cancel(inputs)
+	return __es.alert_form_cancel(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Create" |
+*
+* @param {Alert_Form_CreateInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_create = /** @type {((inputs?: Alert_Form_CreateInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_CreateInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_create(inputs)
+	return __es.alert_form_create(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Alert created" |
+*
+* @param {Alert_Form_CreatedInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_created = /** @type {((inputs?: Alert_Form_CreatedInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_CreatedInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_created(inputs)
+	return __es.alert_form_created(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Trigger alert when these conditions are met" |
+*
+* @param {Alert_Form_Criteria_DescriptionInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_criteria_description = /** @type {((inputs?: Alert_Form_Criteria_DescriptionInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_Criteria_DescriptionInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_criteria_description(inputs)
+	return __es.alert_form_criteria_description(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Criteria group operation" |
+*
+* @param {Alert_Form_Criteria_Group_AriaInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_criteria_group_aria = /** @type {((inputs?: Alert_Form_Criteria_Group_AriaInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_Criteria_Group_AriaInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_criteria_group_aria(inputs)
+	return __es.alert_form_criteria_group_aria(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Criteria measure" |
+*
+* @param {Alert_Form_Criteria_Measure_AriaInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_criteria_measure_aria = /** @type {((inputs?: Alert_Form_Criteria_Measure_AriaInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_Criteria_Measure_AriaInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_criteria_measure_aria(inputs)
+	return __es.alert_form_criteria_measure_aria(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Measure" |
+*
+* @param {Alert_Form_Criteria_Measure_PlaceholderInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_criteria_measure_placeholder = /** @type {((inputs?: Alert_Form_Criteria_Measure_PlaceholderInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_Criteria_Measure_PlaceholderInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_criteria_measure_placeholder(inputs)
+	return __es.alert_form_criteria_measure_placeholder(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Criteria operator" |
+*
+* @param {Alert_Form_Criteria_Operator_AriaInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_criteria_operator_aria = /** @type {((inputs?: Alert_Form_Criteria_Operator_AriaInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_Criteria_Operator_AriaInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_criteria_operator_aria(inputs)
+	return __es.alert_form_criteria_operator_aria(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Operator" |
+*
+* @param {Alert_Form_Criteria_Operator_PlaceholderInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_criteria_operator_placeholder = /** @type {((inputs?: Alert_Form_Criteria_Operator_PlaceholderInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_Criteria_Operator_PlaceholderInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_criteria_operator_placeholder(inputs)
+	return __es.alert_form_criteria_operator_placeholder(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Alert Preview" |
+*
+* @param {Alert_Form_Criteria_Preview_TitleInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_criteria_preview_title = /** @type {((inputs?: Alert_Form_Criteria_Preview_TitleInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_Criteria_Preview_TitleInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_criteria_preview_title(inputs)
+	return __es.alert_form_criteria_preview_title(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Criteria" |
+*
+* @param {Alert_Form_Criteria_TitleInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_criteria_title = /** @type {((inputs?: Alert_Form_Criteria_TitleInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_Criteria_TitleInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_criteria_title(inputs)
+	return __es.alert_form_criteria_title(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Criteria type" |
+*
+* @param {Alert_Form_Criteria_Type_AriaInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_criteria_type_aria = /** @type {((inputs?: Alert_Form_Criteria_Type_AriaInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_Criteria_Type_AriaInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_criteria_type_aria(inputs)
+	return __es.alert_form_criteria_type_aria(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "type" |
+*
+* @param {Alert_Form_Criteria_Type_PlaceholderInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_criteria_type_placeholder = /** @type {((inputs?: Alert_Form_Criteria_Type_PlaceholderInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_Criteria_Type_PlaceholderInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_criteria_type_placeholder(inputs)
+	return __es.alert_form_criteria_type_placeholder(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Criteria value" |
+*
+* @param {Alert_Form_Criteria_Value_TitleInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_criteria_value_title = /** @type {((inputs?: Alert_Form_Criteria_Value_TitleInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_Criteria_Value_TitleInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_criteria_value_title(inputs)
+	return __es.alert_form_criteria_value_title(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Filters" |
+*
+* @param {Alert_Form_Data_FiltersInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_data_filters = /** @type {((inputs?: Alert_Form_Data_FiltersInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_Data_FiltersInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_data_filters(inputs)
+	return __es.alert_form_data_filters(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Measure" |
+*
+* @param {Alert_Form_Data_MeasureInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_data_measure = /** @type {((inputs?: Alert_Form_Data_MeasureInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_Data_MeasureInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_data_measure(inputs)
+	return __es.alert_form_data_measure(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Select a measure" |
+*
+* @param {Alert_Form_Data_Measure_PlaceholderInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_data_measure_placeholder = /** @type {((inputs?: Alert_Form_Data_Measure_PlaceholderInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_Data_Measure_PlaceholderInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_data_measure_placeholder(inputs)
+	return __es.alert_form_data_measure_placeholder(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "None" |
+*
+* @param {Alert_Form_Data_NoneInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_data_none = /** @type {((inputs?: Alert_Form_Data_NoneInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_Data_NoneInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_data_none(inputs)
+	return __es.alert_form_data_none(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Data preview" |
+*
+* @param {Alert_Form_Data_PreviewInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_data_preview = /** @type {((inputs?: Alert_Form_Data_PreviewInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_Data_PreviewInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_data_preview(inputs)
+	return __es.alert_form_data_preview(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Split by dimension" |
+*
+* @param {Alert_Form_Data_Split_ByInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_data_split_by = /** @type {((inputs?: Alert_Form_Data_Split_ByInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_Data_Split_ByInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_data_split_by(inputs)
+	return __es.alert_form_data_split_by(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Select a dimension" |
+*
+* @param {Alert_Form_Data_Split_PlaceholderInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_data_split_placeholder = /** @type {((inputs?: Alert_Form_Data_Split_PlaceholderInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_Data_Split_PlaceholderInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_data_split_placeholder(inputs)
+	return __es.alert_form_data_split_placeholder(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Alert data" |
+*
+* @param {Alert_Form_Data_TitleInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_data_title = /** @type {((inputs?: Alert_Form_Data_TitleInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_Data_TitleInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_data_title(inputs)
+	return __es.alert_form_data_title(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Alert edited" |
+*
+* @param {Alert_Form_EditedInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_edited = /** @type {((inputs?: Alert_Form_EditedInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_EditedInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_edited(inputs)
+	return __es.alert_form_edited(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Enter an email address" |
+*
+* @param {Alert_Form_Email_PlaceholderInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_email_placeholder = /** @type {((inputs?: Alert_Form_Email_PlaceholderInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_Email_PlaceholderInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_email_placeholder(inputs)
+	return __es.alert_form_email_placeholder(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Email notifications" |
+*
+* @param {Alert_Form_Email_TitleInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_email_title = /** @type {((inputs?: Alert_Form_Email_TitleInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_Email_TitleInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_email_title(inputs)
+	return __es.alert_form_email_title(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Go to alerts" |
+*
+* @param {Alert_Form_Go_To_AlertsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_go_to_alerts = /** @type {((inputs?: Alert_Form_Go_To_AlertsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_Go_To_AlertsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_go_to_alerts(inputs)
+	return __es.alert_form_go_to_alerts(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "My alert" |
+*
+* @param {Alert_Form_Name_PlaceholderInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_name_placeholder = /** @type {((inputs?: Alert_Form_Name_PlaceholderInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_Name_PlaceholderInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_name_placeholder(inputs)
+	return __es.alert_form_name_placeholder(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Alert name" |
+*
+* @param {Alert_Form_Name_TitleInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_name_title = /** @type {((inputs?: Alert_Form_Name_TitleInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_Name_TitleInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_name_title(inputs)
+	return __es.alert_form_name_title(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Next" |
+*
+* @param {Alert_Form_NextInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_next = /** @type {((inputs?: Alert_Form_NextInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_NextInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_next(inputs)
+	return __es.alert_form_next(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "No criteria selected" |
+*
+* @param {Alert_Form_No_CriteriaInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_no_criteria = /** @type {((inputs?: Alert_Form_No_CriteriaInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_No_CriteriaInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_no_criteria(inputs)
+	return __es.alert_form_no_criteria(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "No data to preview" |
+*
+* @param {Alert_Form_No_DataInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_no_data = /** @type {((inputs?: Alert_Form_No_DataInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_No_DataInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_no_data(inputs)
+	return __es.alert_form_no_data(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Preview cell" |
+*
+* @param {Alert_Form_Preview_CellInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_preview_cell = /** @type {((inputs?: Alert_Form_Preview_CellInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_Preview_CellInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_preview_cell(inputs)
+	return __es.alert_form_preview_cell(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "alert preview table" |
+*
+* @param {Alert_Form_Preview_Table_AriaInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_preview_table_aria = /** @type {((inputs?: Alert_Form_Preview_Table_AriaInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_Preview_Table_AriaInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_preview_table_aria(inputs)
+	return __es.alert_form_preview_table_aria(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Select criteria to see a preview" |
+*
+* @param {Alert_Form_Select_CriteriaInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_select_criteria = /** @type {((inputs?: Alert_Form_Select_CriteriaInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_Select_CriteriaInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_select_criteria(inputs)
+	return __es.alert_form_select_criteria(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "# Enter a Slack channel name" |
+*
+* @param {Alert_Form_Slack_PlaceholderInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_slack_placeholder = /** @type {((inputs?: Alert_Form_Slack_PlaceholderInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_Slack_PlaceholderInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_slack_placeholder(inputs)
+	return __es.alert_form_slack_placeholder(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Slack notifications" |
+*
+* @param {Alert_Form_Slack_TitleInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_slack_title = /** @type {((inputs?: Alert_Form_Slack_TitleInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_Slack_TitleInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_slack_title(inputs)
+	return __es.alert_form_slack_title(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Snooze" |
+*
+* @param {Alert_Form_Snooze_TitleInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_snooze_title = /** @type {((inputs?: Alert_Form_Snooze_TitleInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_Snooze_TitleInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_snooze_title(inputs)
+	return __es.alert_form_snooze_title(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Trigger" |
+*
+* @param {Alert_Form_TriggerInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_trigger = /** @type {((inputs?: Alert_Form_TriggerInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_TriggerInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_trigger(inputs)
+	return __es.alert_form_trigger(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Update" |
+*
+* @param {Alert_Form_UpdateInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_form_update = /** @type {((inputs?: Alert_Form_UpdateInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Form_UpdateInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_form_update(inputs)
+	return __es.alert_form_update(inputs)
 });
 /**
 * | output |
@@ -3235,6 +3905,76 @@ export const chart_stacked_bar = /** @type {((inputs?: Chart_Stacked_BarInputs, 
 /**
 * | output |
 * | --- |
+* | "Cancel streaming" |
+*
+* @param {Chat_Cancel_StreamingInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const chat_cancel_streaming = /** @type {((inputs?: Chat_Cancel_StreamingInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Chat_Cancel_StreamingInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.chat_cancel_streaming(inputs)
+	return __es.chat_cancel_streaming(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Close chat" |
+*
+* @param {Chat_CloseInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const chat_close = /** @type {((inputs?: Chat_CloseInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Chat_CloseInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.chat_close(inputs)
+	return __es.chat_close(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Conversation history" |
+*
+* @param {Chat_Conversation_HistoryInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const chat_conversation_history = /** @type {((inputs?: Chat_Conversation_HistoryInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Chat_Conversation_HistoryInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.chat_conversation_history(inputs)
+	return __es.chat_conversation_history(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Downvote response" |
+*
+* @param {Chat_Downvote_AriaInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const chat_downvote_aria = /** @type {((inputs?: Chat_Downvote_AriaInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Chat_Downvote_AriaInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.chat_downvote_aria(inputs)
+	return __es.chat_downvote_aria(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "This response needs improvement" |
+*
+* @param {Chat_Downvote_TooltipInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const chat_downvote_tooltip = /** @type {((inputs?: Chat_Downvote_TooltipInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Chat_Downvote_TooltipInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.chat_downvote_tooltip(inputs)
+	return __es.chat_downvote_tooltip(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Happy to help explore your data" |
 *
 * @param {Chat_Empty_LabelInputs} inputs
@@ -3245,6 +3985,104 @@ export const chat_empty_label = /** @type {((inputs?: Chat_Empty_LabelInputs, op
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.chat_empty_label(inputs)
 	return __es.chat_empty_label(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Analyzing feedback..." |
+*
+* @param {Chat_Feedback_AnalyzingInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const chat_feedback_analyzing = /** @type {((inputs?: Chat_Feedback_AnalyzingInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Chat_Feedback_AnalyzingInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.chat_feedback_analyzing(inputs)
+	return __es.chat_feedback_analyzing(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Comments" |
+*
+* @param {Chat_Feedback_CommentsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const chat_feedback_comments = /** @type {((inputs?: Chat_Feedback_CommentsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Chat_Feedback_CommentsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.chat_feedback_comments(inputs)
+	return __es.chat_feedback_comments(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Type here..." |
+*
+* @param {Chat_Feedback_PlaceholderInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const chat_feedback_placeholder = /** @type {((inputs?: Chat_Feedback_PlaceholderInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Chat_Feedback_PlaceholderInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.chat_feedback_placeholder(inputs)
+	return __es.chat_feedback_placeholder(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Select all that apply." |
+*
+* @param {Chat_Feedback_Select_AllInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const chat_feedback_select_all = /** @type {((inputs?: Chat_Feedback_Select_AllInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Chat_Feedback_Select_AllInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.chat_feedback_select_all(inputs)
+	return __es.chat_feedback_select_all(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Skip" |
+*
+* @param {Chat_Feedback_SkipInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const chat_feedback_skip = /** @type {((inputs?: Chat_Feedback_SkipInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Chat_Feedback_SkipInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.chat_feedback_skip(inputs)
+	return __es.chat_feedback_skip(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Submit" |
+*
+* @param {Chat_Feedback_SubmitInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const chat_feedback_submit = /** @type {((inputs?: Chat_Feedback_SubmitInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Chat_Feedback_SubmitInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.chat_feedback_submit(inputs)
+	return __es.chat_feedback_submit(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Give feedback" |
+*
+* @param {Chat_Feedback_TitleInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const chat_feedback_title = /** @type {((inputs?: Chat_Feedback_TitleInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Chat_Feedback_TitleInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.chat_feedback_title(inputs)
+	return __es.chat_feedback_title(inputs)
 });
 /**
 * | output |
@@ -3263,6 +4101,20 @@ export const chat_happy_to_explore = /** @type {((inputs?: Chat_Happy_To_Explore
 /**
 * | output |
 * | --- |
+* | "New conversation" |
+*
+* @param {Chat_New_ConversationInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const chat_new_conversation = /** @type {((inputs?: Chat_New_ConversationInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Chat_New_ConversationInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.chat_new_conversation(inputs)
+	return __es.chat_new_conversation(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Type a question, or press @ to insert a metric, dimension, or measure." |
 *
 * @param {Chat_Placeholder_AnalystInputs} inputs
@@ -3273,6 +4125,48 @@ export const chat_placeholder_analyst = /** @type {((inputs?: Chat_Placeholder_A
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.chat_placeholder_analyst(inputs)
 	return __es.chat_placeholder_analyst(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Send message" |
+*
+* @param {Chat_Send_MessageInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const chat_send_message = /** @type {((inputs?: Chat_Send_MessageInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Chat_Send_MessageInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.chat_send_message(inputs)
+	return __es.chat_send_message(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Upvote response" |
+*
+* @param {Chat_Upvote_AriaInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const chat_upvote_aria = /** @type {((inputs?: Chat_Upvote_AriaInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Chat_Upvote_AriaInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.chat_upvote_aria(inputs)
+	return __es.chat_upvote_aria(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "This response was helpful" |
+*
+* @param {Chat_Upvote_TooltipInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const chat_upvote_tooltip = /** @type {((inputs?: Chat_Upvote_TooltipInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Chat_Upvote_TooltipInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.chat_upvote_tooltip(inputs)
+	return __es.chat_upvote_tooltip(inputs)
 });
 /**
 * | output |
@@ -6959,6 +7853,62 @@ export const home_welcome_to = /** @type {((inputs: Home_Welcome_ToInputs, optio
 /**
 * | output |
 * | --- |
+* | "Day" |
+*
+* @param {Interval_DayInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const interval_day = /** @type {((inputs?: Interval_DayInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Interval_DayInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.interval_day(inputs)
+	return __es.interval_day(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Hour" |
+*
+* @param {Interval_HourInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const interval_hour = /** @type {((inputs?: Interval_HourInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Interval_HourInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.interval_hour(inputs)
+	return __es.interval_hour(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "None" |
+*
+* @param {Interval_NoneInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const interval_none = /** @type {((inputs?: Interval_NoneInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Interval_NoneInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.interval_none(inputs)
+	return __es.interval_none(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Week" |
+*
+* @param {Interval_WeekInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const interval_week = /** @type {((inputs?: Interval_WeekInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Interval_WeekInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.interval_week(inputs)
+	return __es.interval_week(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "English" |
 *
 * @param {Language_EnInputs} inputs
@@ -7491,6 +8441,636 @@ export const report_email_recipients = /** @type {((inputs?: Report_Email_Recipi
 /**
 * | output |
 * | --- |
+* | "Cancel" |
+*
+* @param {Report_Form_CancelInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_cancel = /** @type {((inputs?: Report_Form_CancelInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_CancelInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_cancel(inputs)
+	return __es.report_form_cancel(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Channels" |
+*
+* @param {Report_Form_ChannelsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_channels = /** @type {((inputs?: Report_Form_ChannelsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_ChannelsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_channels(inputs)
+	return __es.report_form_channels(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Clear filters" |
+*
+* @param {Report_Form_Clear_FiltersInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_clear_filters = /** @type {((inputs?: Report_Form_Clear_FiltersInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_Clear_FiltersInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_clear_filters(inputs)
+	return __es.report_form_clear_filters(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Columns" |
+*
+* @param {Report_Form_ColumnsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_columns = /** @type {((inputs?: Report_Form_ColumnsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_ColumnsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_columns(inputs)
+	return __es.report_form_columns(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Create report" |
+*
+* @param {Report_Form_CreateInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_create = /** @type {((inputs?: Report_Form_CreateInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_CreateInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_create(inputs)
+	return __es.report_form_create(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Create" |
+*
+* @param {Report_Form_Create_ButtonInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_create_button = /** @type {((inputs?: Report_Form_Create_ButtonInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_Create_ButtonInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_create_button(inputs)
+	return __es.report_form_create_button(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Day" |
+*
+* @param {Report_Form_DayInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_day = /** @type {((inputs?: Report_Form_DayInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_DayInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_day(inputs)
+	return __es.report_form_day(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "First day" |
+*
+* @param {Report_Form_Day_FirstInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_day_first = /** @type {((inputs?: Report_Form_Day_FirstInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_Day_FirstInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_day_first(inputs)
+	return __es.report_form_day_first(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Friday" |
+*
+* @param {Report_Form_Day_FridayInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_day_friday = /** @type {((inputs?: Report_Form_Day_FridayInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_Day_FridayInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_day_friday(inputs)
+	return __es.report_form_day_friday(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Monday" |
+*
+* @param {Report_Form_Day_MondayInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_day_monday = /** @type {((inputs?: Report_Form_Day_MondayInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_Day_MondayInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_day_monday(inputs)
+	return __es.report_form_day_monday(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Saturday" |
+*
+* @param {Report_Form_Day_SaturdayInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_day_saturday = /** @type {((inputs?: Report_Form_Day_SaturdayInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_Day_SaturdayInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_day_saturday(inputs)
+	return __es.report_form_day_saturday(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Sunday" |
+*
+* @param {Report_Form_Day_SundayInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_day_sunday = /** @type {((inputs?: Report_Form_Day_SundayInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_Day_SundayInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_day_sunday(inputs)
+	return __es.report_form_day_sunday(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Thursday" |
+*
+* @param {Report_Form_Day_ThursdayInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_day_thursday = /** @type {((inputs?: Report_Form_Day_ThursdayInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_Day_ThursdayInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_day_thursday(inputs)
+	return __es.report_form_day_thursday(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Tuesday" |
+*
+* @param {Report_Form_Day_TuesdayInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_day_tuesday = /** @type {((inputs?: Report_Form_Day_TuesdayInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_Day_TuesdayInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_day_tuesday(inputs)
+	return __es.report_form_day_tuesday(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Wednesday" |
+*
+* @param {Report_Form_Day_WednesdayInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_day_wednesday = /** @type {((inputs?: Report_Form_Day_WednesdayInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_Day_WednesdayInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_day_wednesday(inputs)
+	return __es.report_form_day_wednesday(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Enter an email address" |
+*
+* @param {Report_Form_Email_PlaceholderInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_email_placeholder = /** @type {((inputs?: Report_Form_Email_PlaceholderInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_Email_PlaceholderInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_email_placeholder(inputs)
+	return __es.report_form_email_placeholder(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Email Recipients" |
+*
+* @param {Report_Form_Email_RecipientsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_email_recipients = /** @type {((inputs?: Report_Form_Email_RecipientsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_Email_RecipientsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_email_recipients(inputs)
+	return __es.report_form_email_recipients(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Filters" |
+*
+* @param {Report_Form_FiltersInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_filters = /** @type {((inputs?: Report_Form_FiltersInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_FiltersInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_filters(inputs)
+	return __es.report_form_filters(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Filters form" |
+*
+* @param {Report_Form_Filters_AriaInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_filters_aria = /** @type {((inputs?: Report_Form_Filters_AriaInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_Filters_AriaInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_filters_aria(inputs)
+	return __es.report_form_filters_aria(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Format" |
+*
+* @param {Report_Form_FormatInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_format = /** @type {((inputs?: Report_Form_FormatInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_FormatInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_format(inputs)
+	return __es.report_form_format(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Parquet" |
+*
+* @param {Report_Form_Format_ParquetInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_format_parquet = /** @type {((inputs?: Report_Form_Format_ParquetInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_Format_ParquetInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_format_parquet(inputs)
+	return __es.report_form_format_parquet(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Daily" |
+*
+* @param {Report_Form_Freq_DailyInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_freq_daily = /** @type {((inputs?: Report_Form_Freq_DailyInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_Freq_DailyInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_freq_daily(inputs)
+	return __es.report_form_freq_daily(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Monthly" |
+*
+* @param {Report_Form_Freq_MonthlyInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_freq_monthly = /** @type {((inputs?: Report_Form_Freq_MonthlyInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_Freq_MonthlyInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_freq_monthly(inputs)
+	return __es.report_form_freq_monthly(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Weekdays" |
+*
+* @param {Report_Form_Freq_WeekdaysInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_freq_weekdays = /** @type {((inputs?: Report_Form_Freq_WeekdaysInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_Freq_WeekdaysInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_freq_weekdays(inputs)
+	return __es.report_form_freq_weekdays(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Weekly" |
+*
+* @param {Report_Form_Freq_WeeklyInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_freq_weekly = /** @type {((inputs?: Report_Form_Freq_WeeklyInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_Freq_WeeklyInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_freq_weekly(inputs)
+	return __es.report_form_freq_weekly(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Frequency" |
+*
+* @param {Report_Form_FrequencyInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_frequency = /** @type {((inputs?: Report_Form_FrequencyInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_FrequencyInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_frequency(inputs)
+	return __es.report_form_frequency(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Go to scheduled reports" |
+*
+* @param {Report_Form_Go_To_ReportsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_go_to_reports = /** @type {((inputs?: Report_Form_Go_To_ReportsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_Go_To_ReportsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_go_to_reports(inputs)
+	return __es.report_form_go_to_reports(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Include metadata" |
+*
+* @param {Report_Form_Include_MetadataInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_include_metadata = /** @type {((inputs?: Report_Form_Include_MetadataInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_Include_MetadataInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_include_metadata(inputs)
+	return __es.report_form_include_metadata(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Invalid email" |
+*
+* @param {Report_Form_Invalid_EmailInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_invalid_email = /** @type {((inputs?: Report_Form_Invalid_EmailInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_Invalid_EmailInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_invalid_email(inputs)
+	return __es.report_form_invalid_email(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Recipients must be part of the project when running as recipient" |
+*
+* @param {Report_Form_Recipients_Must_Be_ProjectInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_recipients_must_be_project = /** @type {((inputs?: Report_Form_Recipients_Must_Be_ProjectInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_Recipients_Must_Be_ProjectInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_recipients_must_be_project(inputs)
+	return __es.report_form_recipients_must_be_project(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Required" |
+*
+* @param {Report_Form_RequiredInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_required = /** @type {((inputs?: Report_Form_RequiredInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_RequiredInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_required(inputs)
+	return __es.report_form_required(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Row limit" |
+*
+* @param {Report_Form_Row_LimitInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_row_limit = /** @type {((inputs?: Report_Form_Row_LimitInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_Row_LimitInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_row_limit(inputs)
+	return __es.report_form_row_limit(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "1000" |
+*
+* @param {Report_Form_Row_Limit_PlaceholderInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_row_limit_placeholder = /** @type {((inputs?: Report_Form_Row_Limit_PlaceholderInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_Row_Limit_PlaceholderInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_row_limit_placeholder(inputs)
+	return __es.report_form_row_limit_placeholder(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Rows" |
+*
+* @param {Report_Form_RowsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_rows = /** @type {((inputs?: Report_Form_RowsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_RowsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_rows(inputs)
+	return __es.report_form_rows(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Run as" |
+*
+* @param {Report_Form_Run_AsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_run_as = /** @type {((inputs?: Report_Form_Run_AsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_Run_AsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_run_as(inputs)
+	return __es.report_form_run_as(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Creator" |
+*
+* @param {Report_Form_Run_As_CreatorInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_run_as_creator = /** @type {((inputs?: Report_Form_Run_As_CreatorInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_Run_As_CreatorInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_run_as_creator(inputs)
+	return __es.report_form_run_as_creator(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Recipient" |
+*
+* @param {Report_Form_Run_As_RecipientInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_run_as_recipient = /** @type {((inputs?: Report_Form_Run_As_RecipientInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_Run_As_RecipientInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_run_as_recipient(inputs)
+	return __es.report_form_run_as_recipient(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Save report" |
+*
+* @param {Report_Form_SaveInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_save = /** @type {((inputs?: Report_Form_SaveInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_SaveInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_save(inputs)
+	return __es.report_form_save(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Save" |
+*
+* @param {Report_Form_Save_ButtonInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_save_button = /** @type {((inputs?: Report_Form_Save_ButtonInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_Save_ButtonInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_save_button(inputs)
+	return __es.report_form_save_button(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Schedule report" |
+*
+* @param {Report_Form_ScheduleInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_schedule = /** @type {((inputs?: Report_Form_ScheduleInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_ScheduleInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_schedule(inputs)
+	return __es.report_form_schedule(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Slack notifications" |
+*
+* @param {Report_Form_Slack_TitleInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_slack_title = /** @type {((inputs?: Report_Form_Slack_TitleInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_Slack_TitleInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_slack_title(inputs)
+	return __es.report_form_slack_title(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Time" |
+*
+* @param {Report_Form_TimeInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_time = /** @type {((inputs?: Report_Form_TimeInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_TimeInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_time(inputs)
+	return __es.report_form_time(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Time zone" |
+*
+* @param {Report_Form_TimezoneInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_timezone = /** @type {((inputs?: Report_Form_TimezoneInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_TimezoneInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_timezone(inputs)
+	return __es.report_form_timezone(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Report title" |
+*
+* @param {Report_Form_Title_LabelInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_title_label = /** @type {((inputs?: Report_Form_Title_LabelInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_Title_LabelInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_title_label(inputs)
+	return __es.report_form_title_label(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "My report" |
+*
+* @param {Report_Form_Title_PlaceholderInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_form_title_placeholder = /** @type {((inputs?: Report_Form_Title_PlaceholderInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Form_Title_PlaceholderInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_form_title_placeholder(inputs)
+	return __es.report_form_title_placeholder(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Name" |
 *
 * @param {Report_Name_LabelInputs} inputs
@@ -7589,6 +9169,20 @@ export const report_status_sent = /** @type {((inputs?: Report_Status_SentInputs
 /**
 * | output |
 * | --- |
+* | "Triggered an ad-hoc run of this report." |
+*
+* @param {Report_Triggered_AdhocInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_triggered_adhoc = /** @type {((inputs?: Report_Triggered_AdhocInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Triggered_AdhocInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_triggered_adhoc(inputs)
+	return __es.report_triggered_adhoc(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Failed to unsubscribe." |
 *
 * @param {Report_Unsubscribe_FailedInputs} inputs
@@ -7631,6 +9225,48 @@ export const report_unsubscribing = /** @type {((inputs?: Report_UnsubscribingIn
 /**
 * | output |
 * | --- |
+* | "If this error persists, please contact support." |
+*
+* @param {Resource_Error_Contact_SupportInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const resource_error_contact_support = /** @type {((inputs?: Resource_Error_Contact_SupportInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Resource_Error_Contact_SupportInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.resource_error_contact_support(inputs)
+	return __es.resource_error_contact_support(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Error loading {kind}s" |
+*
+* @param {Resource_Error_LoadingInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const resource_error_loading = /** @type {((inputs: Resource_Error_LoadingInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Resource_Error_LoadingInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.resource_error_loading(inputs)
+	return __es.resource_error_loading(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Search" |
+*
+* @param {Resource_Search_PlaceholderInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const resource_search_placeholder = /** @type {((inputs?: Resource_Search_PlaceholderInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Resource_Search_PlaceholderInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.resource_search_placeholder(inputs)
+	return __es.resource_search_placeholder(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Limited view. For full access and features, visit the {link}." |
 *
 * @param {Share_Limited_ViewInputs} inputs
@@ -7655,6 +9291,20 @@ export const share_original_dashboard = /** @type {((inputs?: Share_Original_Das
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.share_original_dashboard(inputs)
 	return __es.share_original_dashboard(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Off" |
+*
+* @param {Snooze_OffInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const snooze_off = /** @type {((inputs?: Snooze_OffInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Snooze_OffInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.snooze_off(inputs)
+	return __es.snooze_off(inputs)
 });
 /**
 * | output |

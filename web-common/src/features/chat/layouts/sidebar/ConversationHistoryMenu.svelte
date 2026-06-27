@@ -1,5 +1,6 @@
 <script lang="ts">
   import { HistoryIcon } from "lucide-svelte";
+  import * as m from "@rilldata/web-common/paraglide/messages.js";
   import IconButton from "../../../../components/button/IconButton.svelte";
   import * as DropdownMenu from "../../../../components/dropdown-menu";
   import type { V1Conversation } from "../../../../runtime-client";
@@ -30,14 +31,14 @@
 <DropdownMenu.Root onOpenChange={handleOpenChange}>
   <DropdownMenu.Trigger>
     <IconButton
-      ariaLabel="Conversation history"
+      ariaLabel={m.chat_conversation_history()}
       bgGray
       active={isOpen}
       disableTooltip={isOpen}
     >
       <HistoryIcon size="16px" class="text-fg-muted" />
       <svelte:fragment slot="tooltip-content"
-        >Conversation history</svelte:fragment
+        >{m.chat_conversation_history()}</svelte:fragment
       >
     </IconButton>
   </DropdownMenu.Trigger>

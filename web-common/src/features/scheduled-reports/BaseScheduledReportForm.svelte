@@ -1,4 +1,5 @@
 <script lang="ts">
+  import * as m from "@rilldata/web-common/paraglide/messages.js";
   import InputLabel from "@rilldata/web-common/components/forms/InputLabel.svelte";
   import MultiInput from "@rilldata/web-common/components/forms/MultiInput.svelte";
   import FormSection from "@rilldata/web-common/components/forms/FormSection.svelte";
@@ -35,13 +36,13 @@
   const RUN_AS_OPTIONS = [
     {
       value: ReportRunAs.Creator,
-      label: "Creator",
+      label: m.report_form_run_as_creator(),
       description:
         "Works for any recipient, including external recipient. It does NOT grant access beyond the report’s filters and dashboard.",
     },
     {
       value: ReportRunAs.Recipient,
-      label: "Recipient",
+      label: m.report_form_run_as_recipient(),
       description: "Does NOT work for non-project members.",
     },
   ];
@@ -70,13 +71,13 @@
       bind:value={$data["title"]}
       errors={$errors["title"]}
       id="title"
-      label="Report title"
-      placeholder="My report"
+      label={m.report_form_title_label()}
+      placeholder={m.report_form_title_placeholder()}
     />
     <Select
       bind:value={$data["webOpenMode"]}
       id="webOpenMode"
-      label="Run as"
+      label={m.report_form_run_as()}
       options={RUN_AS_OPTIONS}
       dropdownWidth="w-[400px]"
     />
@@ -89,10 +90,13 @@
     <Select
       bind:value={$data["exportFormat"]}
       id="exportFormat"
-      label="Format"
+      label={m.report_form_format()}
       options={[
         { value: V1ExportFormat.EXPORT_FORMAT_CSV, label: "CSV" },
-        { value: V1ExportFormat.EXPORT_FORMAT_PARQUET, label: "Parquet" },
+        {
+          value: V1ExportFormat.EXPORT_FORMAT_PARQUET,
+          label: m.report_form_format_parquet(),
+        },
         { value: V1ExportFormat.EXPORT_FORMAT_XLSX, label: "XLSX" },
       ]}
     />
@@ -100,9 +104,9 @@
       bind:value={$data["exportLimit"]}
       errors={$errors["exportLimit"]}
       id="exportLimit"
-      label="Row limit"
+      label={m.report_form_row_limit()}
       optional
-      placeholder="1000"
+      placeholder={m.report_form_row_limit_placeholder()}
     />
     <div class="flex items-center gap-x-1">
       <Checkbox
@@ -114,7 +118,7 @@
         inverse
         disabled={$data["exportFormat"] ===
           V1ExportFormat.EXPORT_FORMAT_PARQUET}
-        label="Include metadata"
+        label={m.report_form_include_metadata()}
       />
       <Tooltip location="right" alignment="middle" distance={8}>
         <div class="text-fg-secondary" style="transform:translateY(-.5px)">
@@ -128,7 +132,11 @@
     </div>
 
     <div class="flex flex-col gap-y-3">
-      <InputLabel label="Filters" id="filters" capitalize={false} />
+      <InputLabel
+        label={m.report_form_filters()}
+        id="filters"
+        capitalize={false}
+      />
       <FiltersForm {filters} {timeControls} side="top" />
     </div>
 
@@ -141,25 +149,25 @@
 
     <MultiInput
       id="emailRecipients"
-      label="Email Recipients"
+      label={m.report_form_email_recipients()}
       hint="Recipients will receive different views based on their security policy.
         Recipients without project access can only download the report."
       bind:values={$data["emailRecipients"]}
       errors={$errors["emailRecipients"]}
       singular="email"
       plural="emails"
-      placeholder="Enter an email address"
+      placeholder={m.report_form_email_placeholder()}
     />
     {#if $hasSlackNotifier.data}
       <FormSection
         bind:enabled={$data["enableSlackNotification"]}
         showSectionToggle
-        title="Slack notifications"
+        title={m.report_form_slack_title()}
         padding=""
       >
         <MultiInput
           id="slackChannels"
-          label="Channels"
+          label={m.report_form_channels()}
           hint="We’ll send alerts directly to these channels."
           bind:values={$data["slackChannels"]}
           errors={$errors["slackChannels"]}
