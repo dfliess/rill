@@ -561,6 +561,15 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Org_Tab_ProjectsInputs */
 /** @typedef {{}} Org_Tab_SettingsInputs */
 /** @typedef {{}} Org_Tab_UsersInputs */
+/** @typedef {{}} Pivot_Dim_OneInputs */
+/** @typedef {{}} Pivot_Dim_OtherInputs */
+/** @typedef {{}} Pivot_Drop_Arrange_AriaInputs */
+/** @typedef {{}} Pivot_Drop_Replace_AriaInputs */
+/** @typedef {{ dimCount: NonNullable<unknown>, dimLabel: NonNullable<unknown>, measureCount: NonNullable<unknown>, measureLabel: NonNullable<unknown> }} Pivot_Drop_Replace_TextInputs */
+/** @typedef {{}} Pivot_Drop_Split_HintInputs */
+/** @typedef {{ dimCount: NonNullable<unknown>, dimLabel: NonNullable<unknown>, measureCount: NonNullable<unknown>, measureLabel: NonNullable<unknown> }} Pivot_Drop_Split_TextInputs */
+/** @typedef {{}} Pivot_Measure_OneInputs */
+/** @typedef {{}} Pivot_Measure_OtherInputs */
 /** @typedef {{ grain: NonNullable<unknown> }} Pivot_Time_Dimension_HeaderInputs */
 /** @typedef {{}} Pivot_Time_PrefixInputs */
 /** @typedef {{}} Project_Dashboards_TitleInputs */
@@ -8508,6 +8517,132 @@ export const org_tab_users = /** @type {((inputs?: Org_Tab_UsersInputs, options?
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.org_tab_users(inputs)
 	return __es.org_tab_users(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "dim" |
+*
+* @param {Pivot_Dim_OneInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const pivot_dim_one = /** @type {((inputs?: Pivot_Dim_OneInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Pivot_Dim_OneInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.pivot_dim_one(inputs)
+	return __es.pivot_dim_one(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "dims" |
+*
+* @param {Pivot_Dim_OtherInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const pivot_dim_other = /** @type {((inputs?: Pivot_Dim_OtherInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Pivot_Dim_OtherInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.pivot_dim_other(inputs)
+	return __es.pivot_dim_other(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Drop here to auto-arrange tag" |
+*
+* @param {Pivot_Drop_Arrange_AriaInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const pivot_drop_arrange_aria = /** @type {((inputs?: Pivot_Drop_Arrange_AriaInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Pivot_Drop_Arrange_AriaInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.pivot_drop_arrange_aria(inputs)
+	return __es.pivot_drop_arrange_aria(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Drop here to replace rows and columns with this tag" |
+*
+* @param {Pivot_Drop_Replace_AriaInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const pivot_drop_replace_aria = /** @type {((inputs?: Pivot_Drop_Replace_AriaInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Pivot_Drop_Replace_AriaInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.pivot_drop_replace_aria(inputs)
+	return __es.pivot_drop_replace_aria(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Drop to <strong>replace</strong>: <strong>{dimCount}</strong> {dimLabel} → rows, <strong>{measureCount}</strong> {measureLabel} → columns" |
+*
+* @param {Pivot_Drop_Replace_TextInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const pivot_drop_replace_text = /** @type {((inputs: Pivot_Drop_Replace_TextInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Pivot_Drop_Replace_TextInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.pivot_drop_replace_text(inputs)
+	return __es.pivot_drop_replace_text(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Drop to replace" |
+*
+* @param {Pivot_Drop_Split_HintInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const pivot_drop_split_hint = /** @type {((inputs?: Pivot_Drop_Split_HintInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Pivot_Drop_Split_HintInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.pivot_drop_split_hint(inputs)
+	return __es.pivot_drop_split_hint(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Drop here to split: <strong>{dimCount}</strong> {dimLabel} → rows, <strong>{measureCount}</strong> {measureLabel} → columns" |
+*
+* @param {Pivot_Drop_Split_TextInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const pivot_drop_split_text = /** @type {((inputs: Pivot_Drop_Split_TextInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Pivot_Drop_Split_TextInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.pivot_drop_split_text(inputs)
+	return __es.pivot_drop_split_text(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "measure" |
+*
+* @param {Pivot_Measure_OneInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const pivot_measure_one = /** @type {((inputs?: Pivot_Measure_OneInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Pivot_Measure_OneInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.pivot_measure_one(inputs)
+	return __es.pivot_measure_one(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "measures" |
+*
+* @param {Pivot_Measure_OtherInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const pivot_measure_other = /** @type {((inputs?: Pivot_Measure_OtherInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Pivot_Measure_OtherInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.pivot_measure_other(inputs)
+	return __es.pivot_measure_other(inputs)
 });
 /**
 * | output |

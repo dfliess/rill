@@ -559,6 +559,15 @@
 /** @typedef {{}} Org_Tab_ProjectsInputs */
 /** @typedef {{}} Org_Tab_SettingsInputs */
 /** @typedef {{}} Org_Tab_UsersInputs */
+/** @typedef {{}} Pivot_Dim_OneInputs */
+/** @typedef {{}} Pivot_Dim_OtherInputs */
+/** @typedef {{}} Pivot_Drop_Arrange_AriaInputs */
+/** @typedef {{}} Pivot_Drop_Replace_AriaInputs */
+/** @typedef {{ dimCount: NonNullable<unknown>, dimLabel: NonNullable<unknown>, measureCount: NonNullable<unknown>, measureLabel: NonNullable<unknown> }} Pivot_Drop_Replace_TextInputs */
+/** @typedef {{}} Pivot_Drop_Split_HintInputs */
+/** @typedef {{ dimCount: NonNullable<unknown>, dimLabel: NonNullable<unknown>, measureCount: NonNullable<unknown>, measureLabel: NonNullable<unknown> }} Pivot_Drop_Split_TextInputs */
+/** @typedef {{}} Pivot_Measure_OneInputs */
+/** @typedef {{}} Pivot_Measure_OtherInputs */
 /** @typedef {{ grain: NonNullable<unknown> }} Pivot_Time_Dimension_HeaderInputs */
 /** @typedef {{}} Pivot_Time_PrefixInputs */
 /** @typedef {{}} Project_Dashboards_TitleInputs */
@@ -2915,6 +2924,42 @@ export const org_tab_settings = /** @type {(inputs: Org_Tab_SettingsInputs) => L
 
 export const org_tab_users = /** @type {(inputs: Org_Tab_UsersInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Usuarios`)
+};
+
+export const pivot_dim_one = /** @type {(inputs: Pivot_Dim_OneInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`dim`)
+};
+
+export const pivot_dim_other = /** @type {(inputs: Pivot_Dim_OtherInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`dims`)
+};
+
+export const pivot_drop_arrange_aria = /** @type {(inputs: Pivot_Drop_Arrange_AriaInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Soltar aquí para organizar automáticamente`)
+};
+
+export const pivot_drop_replace_aria = /** @type {(inputs: Pivot_Drop_Replace_AriaInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Soltar aquí para reemplazar filas y columnas con esta etiqueta`)
+};
+
+export const pivot_drop_replace_text = /** @type {(inputs: Pivot_Drop_Replace_TextInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Soltar para <strong>reemplazar</strong>: <strong>${i?.dimCount}</strong> ${i?.dimLabel} → filas, <strong>${i?.measureCount}</strong> ${i?.measureLabel} → columnas`)
+};
+
+export const pivot_drop_split_hint = /** @type {(inputs: Pivot_Drop_Split_HintInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Soltar para reemplazar`)
+};
+
+export const pivot_drop_split_text = /** @type {(inputs: Pivot_Drop_Split_TextInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Soltar aquí para dividir: <strong>${i?.dimCount}</strong> ${i?.dimLabel} → filas, <strong>${i?.measureCount}</strong> ${i?.measureLabel} → columnas`)
+};
+
+export const pivot_measure_one = /** @type {(inputs: Pivot_Measure_OneInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`medida`)
+};
+
+export const pivot_measure_other = /** @type {(inputs: Pivot_Measure_OtherInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`medidas`)
 };
 
 export const pivot_time_dimension_header = /** @type {(inputs: Pivot_Time_Dimension_HeaderInputs) => LocalizedString} */ (i) => {
