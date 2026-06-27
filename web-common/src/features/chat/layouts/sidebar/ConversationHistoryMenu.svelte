@@ -7,6 +7,7 @@
   import ConversationHistoryItem from "./ConversationHistoryItem.svelte";
   import {
     GROUP_ORDER,
+    getGroupLabel,
     groupConversationsByDate,
   } from "./conversation-grouping";
 
@@ -56,7 +57,7 @@
         {#if groupedConversations[groupKey] && groupedConversations[groupKey].length > 0}
           <DropdownMenu.Group>
             <DropdownMenu.Label class="px-1 text-xs text-fg-secondary">
-              {groupKey}
+              {getGroupLabel(groupKey)}
             </DropdownMenu.Label>
             {#each groupedConversations[groupKey] as conv}
               <ConversationHistoryItem

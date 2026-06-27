@@ -118,7 +118,7 @@
     </div>
   {:else if hasConversationLoadError}
     <Error
-      headline="Unable to load conversation"
+      headline={m.chat_unable_to_load()}
       error={$conversationQueryError}
     />
   {:else if isConversationEmpty}
@@ -157,7 +157,7 @@
     {/each}
   {/if}
   {#if hasStreamError}
-    <Error headline="Failed to generate response" error={$streamErrorStore} />
+    <Error headline={m.chat_failed_to_generate()} error={$streamErrorStore} />
   {/if}
 </div>
 

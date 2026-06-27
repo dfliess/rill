@@ -81,7 +81,7 @@
     ...(tagGroupItems.length > 0
       ? [
           <SearchableFilterSelectableGroup>{
-            name: "TAGS",
+            name: m.pivot_tags(),
             items: tagGroupItems,
           },
         ]

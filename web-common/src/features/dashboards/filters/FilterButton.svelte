@@ -25,7 +25,7 @@
 
   $: selectableGroups = [
     <SearchableFilterSelectableGroup>{
-      name: "DIMENSIONS",
+      name: m.filter_dimensions(),
       items:
         allDimensions
           ?.map((d) => ({
@@ -35,7 +35,7 @@
           .filter((d) => !dimensionHasFilter(d.name)) ?? [],
     },
     <SearchableFilterSelectableGroup>{
-      name: "MEASURES",
+      name: m.filter_measures(),
       items:
         filteredSimpleMeasures
           ?.map((m) => ({

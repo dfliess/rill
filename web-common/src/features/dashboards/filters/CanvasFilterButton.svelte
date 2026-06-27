@@ -52,11 +52,11 @@
 
   $: selectableGroups = [
     <SearchableFilterSelectableGroup>{
-      name: "DIMENSIONS",
+      name: m.filter_dimensions(),
       items: dimensionEntries,
     },
     <SearchableFilterSelectableGroup>{
-      name: "MEASURES",
+      name: m.filter_measures(),
       items: measureEntries,
     },
   ];

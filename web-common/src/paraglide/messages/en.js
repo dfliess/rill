@@ -8,9 +8,11 @@
 /** @typedef {{}} Alert_DeleteInputs */
 /** @typedef {{}} Alert_EditInputs */
 /** @typedef {{}} Alert_Email_NotificationsInputs */
+/** @typedef {{ count: NonNullable<unknown> }} Alert_Filters_LabelInputs */
 /** @typedef {{}} Alert_Form_BackInputs */
 /** @typedef {{}} Alert_Form_CancelInputs */
 /** @typedef {{}} Alert_Form_CreateInputs */
+/** @typedef {{}} Alert_Form_Create_TitleInputs */
 /** @typedef {{}} Alert_Form_CreatedInputs */
 /** @typedef {{}} Alert_Form_Criteria_DescriptionInputs */
 /** @typedef {{}} Alert_Form_Criteria_Group_AriaInputs */
@@ -31,6 +33,7 @@
 /** @typedef {{}} Alert_Form_Data_Split_ByInputs */
 /** @typedef {{}} Alert_Form_Data_Split_PlaceholderInputs */
 /** @typedef {{}} Alert_Form_Data_TitleInputs */
+/** @typedef {{}} Alert_Form_Edit_TitleInputs */
 /** @typedef {{}} Alert_Form_EditedInputs */
 /** @typedef {{}} Alert_Form_Email_DescInputs */
 /** @typedef {{}} Alert_Form_Email_PlaceholderInputs */
@@ -50,9 +53,15 @@
 /** @typedef {{}} Alert_Form_Slack_Users_DescInputs */
 /** @typedef {{}} Alert_Form_Snooze_DescInputs */
 /** @typedef {{}} Alert_Form_Snooze_TitleInputs */
+/** @typedef {{}} Alert_Form_Tab_CriteriaInputs */
+/** @typedef {{}} Alert_Form_Tab_DataInputs */
+/** @typedef {{}} Alert_Form_Tab_DeliveryInputs */
 /** @typedef {{}} Alert_Form_TriggerInputs */
 /** @typedef {{}} Alert_Form_UpdateInputs */
 /** @typedef {{}} Alert_Name_LabelInputs */
+/** @typedef {{}} Alert_No_Filters_BodyInputs */
+/** @typedef {{}} Alert_No_Filters_HeadingInputs */
+/** @typedef {{}} Alert_No_Filters_HintInputs */
 /** @typedef {{}} Alert_NoneInputs */
 /** @typedef {{}} Alert_ScheduleInputs */
 /** @typedef {{}} Alert_Slack_NotificationsInputs */
@@ -87,6 +96,35 @@
 /** @typedef {{}} Avatar_View_AsInputs */
 /** @typedef {{}} Bignumber_Copy_ValueInputs */
 /** @typedef {{}} Bignumber_Shift_ClickInputs */
+/** @typedef {{}} Bookmark_Absolute_Time_RangeInputs */
+/** @typedef {{}} Bookmark_Absolute_Time_TooltipInputs */
+/** @typedef {{}} Bookmark_CategoryInputs */
+/** @typedef {{}} Bookmark_Category_TooltipInputs */
+/** @typedef {{}} Bookmark_CreatedInputs */
+/** @typedef {{}} Bookmark_Created_By_AdminInputs */
+/** @typedef {{}} Bookmark_Current_ViewInputs */
+/** @typedef {{}} Bookmark_Current_View_As_HomeInputs */
+/** @typedef {{}} Bookmark_Default_LabelInputs */
+/** @typedef {{}} Bookmark_Delete_BookmarkInputs */
+/** @typedef {{}} Bookmark_Delete_Home_BookmarkInputs */
+/** @typedef {{ name: NonNullable<unknown> }} Bookmark_DeletedInputs */
+/** @typedef {{}} Bookmark_DescriptionInputs */
+/** @typedef {{}} Bookmark_EditInputs */
+/** @typedef {{}} Bookmark_FiltersInputs */
+/** @typedef {{}} Bookmark_Filters_InheritedInputs */
+/** @typedef {{}} Bookmark_Filters_Only_TooltipInputs */
+/** @typedef {{}} Bookmark_Go_To_HomeInputs */
+/** @typedef {{}} Bookmark_Home_CreatedInputs */
+/** @typedef {{}} Bookmark_Home_DescriptionInputs */
+/** @typedef {{}} Bookmark_LabelInputs */
+/** @typedef {{}} Bookmark_Managed_BookmarksInputs */
+/** @typedef {{}} Bookmark_No_BookmarksInputs */
+/** @typedef {{}} Bookmark_No_SharedInputs */
+/** @typedef {{}} Bookmark_Return_To_HomeInputs */
+/** @typedef {{}} Bookmark_SaveInputs */
+/** @typedef {{}} Bookmark_Save_Filters_OnlyInputs */
+/** @typedef {{}} Bookmark_UpdatedInputs */
+/** @typedef {{}} Bookmark_Your_BookmarksInputs */
 /** @typedef {{}} Calendar_ApplyInputs */
 /** @typedef {{ capLabel: NonNullable<unknown> }} Calendar_Range_Exceeds_LimitInputs */
 /** @typedef {{}} Canvas_Add_WidgetInputs */
@@ -95,6 +133,12 @@
 /** @typedef {{}} Canvas_Ai_Is_EditingInputs */
 /** @typedef {{}} Canvas_Ai_Manual_HintInputs */
 /** @typedef {{}} Canvas_Ai_Write_ManuallyInputs */
+/** @typedef {{}} Canvas_Align_BottomInputs */
+/** @typedef {{}} Canvas_Align_CenterInputs */
+/** @typedef {{}} Canvas_Align_LeftInputs */
+/** @typedef {{}} Canvas_Align_MiddleInputs */
+/** @typedef {{}} Canvas_Align_RightInputs */
+/** @typedef {{}} Canvas_Align_TopInputs */
 /** @typedef {{}} Canvas_Alignment_LabelInputs */
 /** @typedef {{}} Canvas_Apply_Measure_Formatting_LabelInputs */
 /** @typedef {{}} Canvas_Back_To_PromptInputs */
@@ -176,7 +220,9 @@
 /** @typedef {{}} Canvas_No_Color_Values_FoundInputs */
 /** @typedef {{}} Canvas_No_Components_AddedInputs */
 /** @typedef {{}} Canvas_No_Filters_SelectedInputs */
+/** @typedef {{ id: NonNullable<unknown> }} Canvas_No_Valid_ComponentInputs */
 /** @typedef {{}} Canvas_No_Valid_Metrics_ViewInputs */
+/** @typedef {{}} Canvas_Not_FoundInputs */
 /** @typedef {{}} Canvas_Number_Of_Rows_LabelInputs */
 /** @typedef {{}} Canvas_OrangesInputs */
 /** @typedef {{}} Canvas_Order_OptionInputs */
@@ -206,7 +252,9 @@
 /** @typedef {{}} Canvas_Show_Totals_ValueInputs */
 /** @typedef {{}} Canvas_Size_LabelInputs */
 /** @typedef {{}} Canvas_SortInputs */
+/** @typedef {{}} Canvas_Sparkline_BelowInputs */
 /** @typedef {{}} Canvas_Sparkline_LabelInputs */
+/** @typedef {{}} Canvas_Sparkline_RightInputs */
 /** @typedef {{}} Canvas_SpectralInputs */
 /** @typedef {{}} Canvas_Stage_LabelInputs */
 /** @typedef {{}} Canvas_Start_ColorInputs */
@@ -224,6 +272,7 @@
 /** @typedef {{}} Canvas_Tooltip_LabelInputs */
 /** @typedef {{}} Canvas_Top_OptionInputs */
 /** @typedef {{}} Canvas_TurboInputs */
+/** @typedef {{}} Canvas_Unknown_ErrorInputs */
 /** @typedef {{}} Canvas_Url_LabelInputs */
 /** @typedef {{}} Canvas_Value_OptionInputs */
 /** @typedef {{}} Canvas_Vega_Lite_Spec_LabelInputs */
@@ -242,6 +291,11 @@
 /** @typedef {{}} Chart_LineInputs */
 /** @typedef {{}} Chart_Stacked_AreaInputs */
 /** @typedef {{}} Chart_Stacked_BarInputs */
+/** @typedef {{}} Chart_Undo_ZoomInputs */
+/** @typedef {{}} Chart_Undo_Zoom_LabelInputs */
+/** @typedef {{}} Chart_ZoomInputs */
+/** @typedef {{}} Chart_Zoom_LabelInputs */
+/** @typedef {{}} Chat_Ai_DisclaimerInputs */
 /** @typedef {{}} Chat_Cancel_StreamingInputs */
 /** @typedef {{}} Chat_CloseInputs */
 /** @typedef {{}} Chat_Connect_ClientInputs */
@@ -254,6 +308,7 @@
 /** @typedef {{}} Chat_Duration_One_SecondInputs */
 /** @typedef {{ count: NonNullable<unknown> }} Chat_Duration_SecondsInputs */
 /** @typedef {{}} Chat_Empty_LabelInputs */
+/** @typedef {{}} Chat_Failed_To_GenerateInputs */
 /** @typedef {{}} Chat_Feedback_AnalyzingInputs */
 /** @typedef {{}} Chat_Feedback_CommentsInputs */
 /** @typedef {{}} Chat_Feedback_PlaceholderInputs */
@@ -261,6 +316,10 @@
 /** @typedef {{}} Chat_Feedback_SkipInputs */
 /** @typedef {{}} Chat_Feedback_SubmitInputs */
 /** @typedef {{}} Chat_Feedback_TitleInputs */
+/** @typedef {{ days: NonNullable<unknown> }} Chat_Group_Days_AgoInputs */
+/** @typedef {{}} Chat_Group_OlderInputs */
+/** @typedef {{}} Chat_Group_TodayInputs */
+/** @typedef {{}} Chat_Group_YesterdayInputs */
 /** @typedef {{}} Chat_Happy_To_ExploreInputs */
 /** @typedef {{}} Chat_How_Can_I_HelpInputs */
 /** @typedef {{}} Chat_New_ConversationInputs */
@@ -273,8 +332,10 @@
 /** @typedef {{}} Chat_Share_CreatingInputs */
 /** @typedef {{}} Chat_Share_DescriptionInputs */
 /** @typedef {{}} Chat_Share_Start_FirstInputs */
+/** @typedef {{}} Chat_Show_DetailsInputs */
 /** @typedef {{}} Chat_ThinkingInputs */
 /** @typedef {{ duration: NonNullable<unknown> }} Chat_Thought_ForInputs */
+/** @typedef {{}} Chat_Unable_To_LoadInputs */
 /** @typedef {{}} Chat_Upvote_AriaInputs */
 /** @typedef {{}} Chat_Upvote_TooltipInputs */
 /** @typedef {{}} Common_ApplyInputs */
@@ -513,7 +574,12 @@
 /** @typedef {{}} Field_List_DimensionsInputs */
 /** @typedef {{}} Field_List_MeasuresInputs */
 /** @typedef {{}} Field_List_TimeInputs */
+/** @typedef {{}} Filter_Advanced_BetaInputs */
+/** @typedef {{}} Filter_Advanced_WarningInputs */
+/** @typedef {{}} Filter_DimensionsInputs */
 /** @typedef {{}} Filter_Enter_Search_TermInputs */
+/** @typedef {{}} Filter_Make_OptionalInputs */
+/** @typedef {{}} Filter_Make_RequiredInputs */
 /** @typedef {{ dimension: NonNullable<unknown> }} Filter_Measure_For_DimensionInputs */
 /** @typedef {{ comparison: NonNullable<unknown> }} Filter_Measure_From_ComparisonInputs */
 /** @typedef {{}} Filter_Measure_Op_BetweenInputs */
@@ -528,6 +594,7 @@
 /** @typedef {{}} Filter_Measure_Type_Percent_Change_FromInputs */
 /** @typedef {{}} Filter_Measure_Type_Percent_Of_TotalInputs */
 /** @typedef {{}} Filter_Measure_Type_ValueInputs */
+/** @typedef {{}} Filter_MeasuresInputs */
 /** @typedef {{}} Filter_Mode_ContainsInputs */
 /** @typedef {{}} Filter_Mode_Contains_DescriptionInputs */
 /** @typedef {{}} Filter_Mode_In_ListInputs */
@@ -535,6 +602,10 @@
 /** @typedef {{}} Filter_Mode_SelectInputs */
 /** @typedef {{}} Filter_Mode_Select_DescriptionInputs */
 /** @typedef {{}} Filter_Paste_List_HintInputs */
+/** @typedef {{}} Filter_PinInputs */
+/** @typedef {{}} Filter_Pin_TooltipInputs */
+/** @typedef {{}} Filter_Required_TooltipInputs */
+/** @typedef {{}} Filter_UnpinInputs */
 /** @typedef {{}} Footer_Report_IssueInputs */
 /** @typedef {{}} Footer_Rill_DeveloperInputs */
 /** @typedef {{}} Footer_Shortcut_ClickInputs */
@@ -553,11 +624,14 @@
 /** @typedef {{}} Language_EsInputs */
 /** @typedef {{}} Language_Switcher_LabelInputs */
 /** @typedef {{}} Layout_Inspector_Panel_AriaInputs */
+/** @typedef {{}} Leaderboard_CompareInputs */
 /** @typedef {{}} Leaderboard_Copy_ValueInputs */
 /** @typedef {{}} Leaderboard_Expand_TableInputs */
 /** @typedef {{}} Leaderboard_Expand_TooltipInputs */
 /** @typedef {{}} Leaderboard_No_Available_ValuesInputs */
+/** @typedef {{}} Leaderboard_Remove_ComparisonInputs */
 /** @typedef {{}} Leaderboard_Shift_ClickInputs */
+/** @typedef {{ name: NonNullable<unknown> }} Leaderboard_Toggle_BreakdownInputs */
 /** @typedef {{}} Mcp_Add_To_ConfigInputs */
 /** @typedef {{}} Mcp_Add_UrlInputs */
 /** @typedef {{}} Mcp_ConfigurationInputs */
@@ -583,6 +657,8 @@
 /** @typedef {{}} Measure_Filter_Lower_ValueInputs */
 /** @typedef {{}} Measure_Filter_Select_DimensionInputs */
 /** @typedef {{}} Measure_Filter_ThresholdInputs */
+/** @typedef {{}} Measures_Choose_TooltipInputs */
+/** @typedef {{}} Measures_LabelInputs */
 /** @typedef {{}} Nav_Close_SidebarInputs */
 /** @typedef {{}} Nav_Data_ExplorerInputs */
 /** @typedef {{}} Nav_Show_SidebarInputs */
@@ -598,6 +674,7 @@
 /** @typedef {{}} Org_Tab_ProjectsInputs */
 /** @typedef {{}} Org_Tab_SettingsInputs */
 /** @typedef {{}} Org_Tab_UsersInputs */
+/** @typedef {{}} Pivot_Collapse_RowInputs */
 /** @typedef {{}} Pivot_Dim_OneInputs */
 /** @typedef {{}} Pivot_Dim_OtherInputs */
 /** @typedef {{}} Pivot_Drop_Arrange_AriaInputs */
@@ -605,12 +682,18 @@
 /** @typedef {{ dimCount: NonNullable<unknown>, dimLabel: NonNullable<unknown>, measureCount: NonNullable<unknown>, measureLabel: NonNullable<unknown> }} Pivot_Drop_Replace_TextInputs */
 /** @typedef {{}} Pivot_Drop_Split_HintInputs */
 /** @typedef {{ dimCount: NonNullable<unknown>, dimLabel: NonNullable<unknown>, measureCount: NonNullable<unknown>, measureLabel: NonNullable<unknown> }} Pivot_Drop_Split_TextInputs */
+/** @typedef {{}} Pivot_Expand_RowInputs */
 /** @typedef {{}} Pivot_Measure_OneInputs */
 /** @typedef {{}} Pivot_Measure_OtherInputs */
+/** @typedef {{}} Pivot_TagsInputs */
 /** @typedef {{ grain: NonNullable<unknown> }} Pivot_Time_Dimension_HeaderInputs */
 /** @typedef {{}} Pivot_Time_PrefixInputs */
 /** @typedef {{}} Project_Dashboards_TitleInputs */
+/** @typedef {{}} Project_DeleteInputs */
+/** @typedef {{}} Project_EditInputs */
+/** @typedef {{}} Project_RenameInputs */
 /** @typedef {{}} Project_Role_ViewerInputs */
+/** @typedef {{}} Project_ShareInputs */
 /** @typedef {{}} Report_Context_Menu_AriaInputs */
 /** @typedef {{ name: NonNullable<unknown> }} Report_Created_ByInputs */
 /** @typedef {{}} Report_Created_Through_CodeInputs */
@@ -618,6 +701,7 @@
 /** @typedef {{}} Report_DeleteInputs */
 /** @typedef {{}} Report_EditInputs */
 /** @typedef {{}} Report_Email_RecipientsInputs */
+/** @typedef {{}} Report_Email_ValidationInputs */
 /** @typedef {{}} Report_Form_CancelInputs */
 /** @typedef {{}} Report_Form_ChannelsInputs */
 /** @typedef {{}} Report_Form_Clear_FiltersInputs */
@@ -728,6 +812,7 @@
 /** @typedef {{}} Time_Ref_NowInputs */
 /** @typedef {{}} Time_TodayInputs */
 /** @typedef {{}} Time_Unable_To_ParseInputs */
+/** @typedef {{}} Time_VsInputs */
 /** @typedef {{}} Time_Week_To_DateInputs */
 /** @typedef {{}} Time_Year_To_DateInputs */
 /** @typedef {{}} Time_YesterdayInputs */
@@ -765,6 +850,10 @@ export const alert_email_notifications = /** @type {(inputs: Alert_Email_Notific
 	return /** @type {LocalizedString} */ (`Email notifications`)
 };
 
+export const alert_filters_label = /** @type {(inputs: Alert_Filters_LabelInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Filters (${i?.count})`)
+};
+
 export const alert_form_back = /** @type {(inputs: Alert_Form_BackInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Back`)
 };
@@ -775,6 +864,10 @@ export const alert_form_cancel = /** @type {(inputs: Alert_Form_CancelInputs) =>
 
 export const alert_form_create = /** @type {(inputs: Alert_Form_CreateInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Create`)
+};
+
+export const alert_form_create_title = /** @type {(inputs: Alert_Form_Create_TitleInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Create Alert`)
 };
 
 export const alert_form_created = /** @type {(inputs: Alert_Form_CreatedInputs) => LocalizedString} */ () => {
@@ -857,6 +950,10 @@ export const alert_form_data_title = /** @type {(inputs: Alert_Form_Data_TitleIn
 	return /** @type {LocalizedString} */ (`Alert data`)
 };
 
+export const alert_form_edit_title = /** @type {(inputs: Alert_Form_Edit_TitleInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Edit Alert`)
+};
+
 export const alert_form_edited = /** @type {(inputs: Alert_Form_EditedInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Alert edited`)
 };
@@ -933,6 +1030,18 @@ export const alert_form_snooze_title = /** @type {(inputs: Alert_Form_Snooze_Tit
 	return /** @type {LocalizedString} */ (`Snooze`)
 };
 
+export const alert_form_tab_criteria = /** @type {(inputs: Alert_Form_Tab_CriteriaInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Criteria`)
+};
+
+export const alert_form_tab_data = /** @type {(inputs: Alert_Form_Tab_DataInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Data`)
+};
+
+export const alert_form_tab_delivery = /** @type {(inputs: Alert_Form_Tab_DeliveryInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Delivery`)
+};
+
 export const alert_form_trigger = /** @type {(inputs: Alert_Form_TriggerInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Trigger`)
 };
@@ -943,6 +1052,18 @@ export const alert_form_update = /** @type {(inputs: Alert_Form_UpdateInputs) =>
 
 export const alert_name_label = /** @type {(inputs: Alert_Name_LabelInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Name`)
+};
+
+export const alert_no_filters_body = /** @type {(inputs: Alert_No_Filters_BodyInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No filters were applied to the dashboard that this alert was created from.`)
+};
+
+export const alert_no_filters_heading = /** @type {(inputs: Alert_No_Filters_HeadingInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No filters selected`)
+};
+
+export const alert_no_filters_hint = /** @type {(inputs: Alert_No_Filters_HintInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`To apply filters, close this window and filter your dashboard.`)
 };
 
 export const alert_none = /** @type {(inputs: Alert_NoneInputs) => LocalizedString} */ () => {
@@ -1081,6 +1202,123 @@ export const bignumber_shift_click = /** @type {(inputs: Bignumber_Shift_ClickIn
 	return /** @type {LocalizedString} */ (`+ Click`)
 };
 
+export const bookmark_absolute_time_range = /** @type {(inputs: Bookmark_Absolute_Time_RangeInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Absolute time range`)
+};
+
+export const bookmark_absolute_time_tooltip = /** @type {(inputs: Bookmark_Absolute_Time_TooltipInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`The bookmark will use the dashboard's relative time if this toggle is off.`)
+};
+
+export const bookmark_category = /** @type {(inputs: Bookmark_CategoryInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Category`)
+};
+
+export const bookmark_category_tooltip = /** @type {(inputs: Bookmark_Category_TooltipInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Your bookmarks can only be viewed by you.
+Managed bookmarks will be available to all viewers of this dashboard.`)
+};
+
+export const bookmark_created = /** @type {(inputs: Bookmark_CreatedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Bookmark created`)
+};
+
+export const bookmark_created_by_admin = /** @type {(inputs: Bookmark_Created_By_AdminInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Created by project admin`)
+};
+
+export const bookmark_current_view = /** @type {(inputs: Bookmark_Current_ViewInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Bookmark current view`)
+};
+
+export const bookmark_current_view_as_home = /** @type {(inputs: Bookmark_Current_View_As_HomeInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Bookmark current view as Home.`)
+};
+
+export const bookmark_default_label = /** @type {(inputs: Bookmark_Default_LabelInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Default Label`)
+};
+
+export const bookmark_delete_bookmark = /** @type {(inputs: Bookmark_Delete_BookmarkInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Delete bookmark`)
+};
+
+export const bookmark_delete_home_bookmark = /** @type {(inputs: Bookmark_Delete_Home_BookmarkInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Delete Home bookmark`)
+};
+
+export const bookmark_deleted = /** @type {(inputs: Bookmark_DeletedInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Bookmark ${i?.name} deleted`)
+};
+
+export const bookmark_description = /** @type {(inputs: Bookmark_DescriptionInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Description`)
+};
+
+export const bookmark_edit = /** @type {(inputs: Bookmark_EditInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Edit bookmark`)
+};
+
+export const bookmark_filters = /** @type {(inputs: Bookmark_FiltersInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Filters`)
+};
+
+export const bookmark_filters_inherited = /** @type {(inputs: Bookmark_Filters_InheritedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Inherited from underlying dashboard view.`)
+};
+
+export const bookmark_filters_only_tooltip = /** @type {(inputs: Bookmark_Filters_Only_TooltipInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Toggling this on will only save the filter set above, not the full dashboard layout and state.`)
+};
+
+export const bookmark_go_to_home = /** @type {(inputs: Bookmark_Go_To_HomeInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Go to Home`)
+};
+
+export const bookmark_home_created = /** @type {(inputs: Bookmark_Home_CreatedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Home bookmark created`)
+};
+
+export const bookmark_home_description = /** @type {(inputs: Bookmark_Home_DescriptionInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`This will be everyone's main view for this dashboard.`)
+};
+
+export const bookmark_label = /** @type {(inputs: Bookmark_LabelInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Label`)
+};
+
+export const bookmark_managed_bookmarks = /** @type {(inputs: Bookmark_Managed_BookmarksInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Managed bookmarks`)
+};
+
+export const bookmark_no_bookmarks = /** @type {(inputs: Bookmark_No_BookmarksInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`You have no bookmarks for this dashboard.`)
+};
+
+export const bookmark_no_shared = /** @type {(inputs: Bookmark_No_SharedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`There are no shared bookmarks for this dashboard.`)
+};
+
+export const bookmark_return_to_home = /** @type {(inputs: Bookmark_Return_To_HomeInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Return to dashboard home`)
+};
+
+export const bookmark_save = /** @type {(inputs: Bookmark_SaveInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Save`)
+};
+
+export const bookmark_save_filters_only = /** @type {(inputs: Bookmark_Save_Filters_OnlyInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Save filters only`)
+};
+
+export const bookmark_updated = /** @type {(inputs: Bookmark_UpdatedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Bookmark updated`)
+};
+
+export const bookmark_your_bookmarks = /** @type {(inputs: Bookmark_Your_BookmarksInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Your bookmarks`)
+};
+
 export const calendar_apply = /** @type {(inputs: Calendar_ApplyInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Apply`)
 };
@@ -1111,6 +1349,30 @@ export const canvas_ai_manual_hint = /** @type {(inputs: Canvas_Ai_Manual_HintIn
 
 export const canvas_ai_write_manually = /** @type {(inputs: Canvas_Ai_Write_ManuallyInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Write SQL & Vega-Lite manually`)
+};
+
+export const canvas_align_bottom = /** @type {(inputs: Canvas_Align_BottomInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Align bottom`)
+};
+
+export const canvas_align_center = /** @type {(inputs: Canvas_Align_CenterInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Align center`)
+};
+
+export const canvas_align_left = /** @type {(inputs: Canvas_Align_LeftInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Align left`)
+};
+
+export const canvas_align_middle = /** @type {(inputs: Canvas_Align_MiddleInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Align middle`)
+};
+
+export const canvas_align_right = /** @type {(inputs: Canvas_Align_RightInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Align right`)
+};
+
+export const canvas_align_top = /** @type {(inputs: Canvas_Align_TopInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Align top`)
 };
 
 export const canvas_alignment_label = /** @type {(inputs: Canvas_Alignment_LabelInputs) => LocalizedString} */ () => {
@@ -1437,8 +1699,16 @@ export const canvas_no_filters_selected = /** @type {(inputs: Canvas_No_Filters_
 	return /** @type {LocalizedString} */ (`No filters selected`)
 };
 
+export const canvas_no_valid_component = /** @type {(inputs: Canvas_No_Valid_ComponentInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`No valid component ${i?.id} in project`)
+};
+
 export const canvas_no_valid_metrics_view = /** @type {(inputs: Canvas_No_Valid_Metrics_ViewInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`No valid metrics view in project`)
+};
+
+export const canvas_not_found = /** @type {(inputs: Canvas_Not_FoundInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Canvas not found`)
 };
 
 export const canvas_number_of_rows_label = /** @type {(inputs: Canvas_Number_Of_Rows_LabelInputs) => LocalizedString} */ () => {
@@ -1557,8 +1827,16 @@ export const canvas_sort = /** @type {(inputs: Canvas_SortInputs) => LocalizedSt
 	return /** @type {LocalizedString} */ (`Sort`)
 };
 
+export const canvas_sparkline_below = /** @type {(inputs: Canvas_Sparkline_BelowInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Show sparkline below the value`)
+};
+
 export const canvas_sparkline_label = /** @type {(inputs: Canvas_Sparkline_LabelInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Sparkline`)
+};
+
+export const canvas_sparkline_right = /** @type {(inputs: Canvas_Sparkline_RightInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Show sparkline to the right of the value`)
 };
 
 export const canvas_spectral = /** @type {(inputs: Canvas_SpectralInputs) => LocalizedString} */ () => {
@@ -1627,6 +1905,10 @@ export const canvas_top_option = /** @type {(inputs: Canvas_Top_OptionInputs) =>
 
 export const canvas_turbo = /** @type {(inputs: Canvas_TurboInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Turbo`)
+};
+
+export const canvas_unknown_error = /** @type {(inputs: Canvas_Unknown_ErrorInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`An unknown error occurred.`)
 };
 
 export const canvas_url_label = /** @type {(inputs: Canvas_Url_LabelInputs) => LocalizedString} */ () => {
@@ -1701,6 +1983,26 @@ export const chart_stacked_bar = /** @type {(inputs: Chart_Stacked_BarInputs) =>
 	return /** @type {LocalizedString} */ (`Stacked bar`)
 };
 
+export const chart_undo_zoom = /** @type {(inputs: Chart_Undo_ZoomInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Undo zoom`)
+};
+
+export const chart_undo_zoom_label = /** @type {(inputs: Chart_Undo_Zoom_LabelInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Undo Zoom`)
+};
+
+export const chart_zoom = /** @type {(inputs: Chart_ZoomInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Zoom`)
+};
+
+export const chart_zoom_label = /** @type {(inputs: Chart_Zoom_LabelInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Zoom`)
+};
+
+export const chat_ai_disclaimer = /** @type {(inputs: Chat_Ai_DisclaimerInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`AI can make mistakes. Consider your dashboard the source of truth.`)
+};
+
 export const chat_cancel_streaming = /** @type {(inputs: Chat_Cancel_StreamingInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Cancel streaming`)
 };
@@ -1749,6 +2051,10 @@ export const chat_empty_label = /** @type {(inputs: Chat_Empty_LabelInputs) => L
 	return /** @type {LocalizedString} */ (`Happy to help explore your data`)
 };
 
+export const chat_failed_to_generate = /** @type {(inputs: Chat_Failed_To_GenerateInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Failed to generate response`)
+};
+
 export const chat_feedback_analyzing = /** @type {(inputs: Chat_Feedback_AnalyzingInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Analyzing feedback...`)
 };
@@ -1775,6 +2081,22 @@ export const chat_feedback_submit = /** @type {(inputs: Chat_Feedback_SubmitInpu
 
 export const chat_feedback_title = /** @type {(inputs: Chat_Feedback_TitleInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Give feedback`)
+};
+
+export const chat_group_days_ago = /** @type {(inputs: Chat_Group_Days_AgoInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.days}d ago`)
+};
+
+export const chat_group_older = /** @type {(inputs: Chat_Group_OlderInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Older`)
+};
+
+export const chat_group_today = /** @type {(inputs: Chat_Group_TodayInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Today`)
+};
+
+export const chat_group_yesterday = /** @type {(inputs: Chat_Group_YesterdayInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Yesterday`)
 };
 
 export const chat_happy_to_explore = /** @type {(inputs: Chat_Happy_To_ExploreInputs) => LocalizedString} */ () => {
@@ -1825,12 +2147,20 @@ export const chat_share_start_first = /** @type {(inputs: Chat_Share_Start_First
 	return /** @type {LocalizedString} */ (`Start a conversation to share`)
 };
 
+export const chat_show_details = /** @type {(inputs: Chat_Show_DetailsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Show details`)
+};
+
 export const chat_thinking = /** @type {(inputs: Chat_ThinkingInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Thinking`)
 };
 
 export const chat_thought_for = /** @type {(inputs: Chat_Thought_ForInputs) => LocalizedString} */ (i) => {
 	return /** @type {LocalizedString} */ (`Thought for ${i?.duration}`)
+};
+
+export const chat_unable_to_load = /** @type {(inputs: Chat_Unable_To_LoadInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Unable to load conversation`)
 };
 
 export const chat_upvote_aria = /** @type {(inputs: Chat_Upvote_AriaInputs) => LocalizedString} */ () => {
@@ -2785,8 +3115,28 @@ export const field_list_time = /** @type {(inputs: Field_List_TimeInputs) => Loc
 	return /** @type {LocalizedString} */ (`TIME`)
 };
 
+export const filter_advanced_beta = /** @type {(inputs: Filter_Advanced_BetaInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Advanced (BETA)`)
+};
+
+export const filter_advanced_warning = /** @type {(inputs: Filter_Advanced_WarningInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Advanced filters are a bleeding edge feature! There may be bugs.`)
+};
+
+export const filter_dimensions = /** @type {(inputs: Filter_DimensionsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`DIMENSIONS`)
+};
+
 export const filter_enter_search_term = /** @type {(inputs: Filter_Enter_Search_TermInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Enter search term`)
+};
+
+export const filter_make_optional = /** @type {(inputs: Filter_Make_OptionalInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Make filter optional`)
+};
+
+export const filter_make_required = /** @type {(inputs: Filter_Make_RequiredInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Make filter required`)
 };
 
 export const filter_measure_for_dimension = /** @type {(inputs: Filter_Measure_For_DimensionInputs) => LocalizedString} */ (i) => {
@@ -2845,6 +3195,10 @@ export const filter_measure_type_value = /** @type {(inputs: Filter_Measure_Type
 	return /** @type {LocalizedString} */ (`value`)
 };
 
+export const filter_measures = /** @type {(inputs: Filter_MeasuresInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`MEASURES`)
+};
+
 export const filter_mode_contains = /** @type {(inputs: Filter_Mode_ContainsInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Contains`)
 };
@@ -2871,6 +3225,22 @@ export const filter_mode_select_description = /** @type {(inputs: Filter_Mode_Se
 
 export const filter_paste_list_hint = /** @type {(inputs: Filter_Paste_List_HintInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Paste a list separated by commas or \\n`)
+};
+
+export const filter_pin = /** @type {(inputs: Filter_PinInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Pin filter`)
+};
+
+export const filter_pin_tooltip = /** @type {(inputs: Filter_Pin_TooltipInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Click to pin or unpin : Keep this filter visible at the top so it can't be removed by other users.`)
+};
+
+export const filter_required_tooltip = /** @type {(inputs: Filter_Required_TooltipInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Click to mark this filter as required. Viewers must set a value for the dashboard to load.`)
+};
+
+export const filter_unpin = /** @type {(inputs: Filter_UnpinInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Unpin filter`)
 };
 
 export const footer_report_issue = /** @type {(inputs: Footer_Report_IssueInputs) => LocalizedString} */ () => {
@@ -2945,6 +3315,10 @@ export const layout_inspector_panel_aria = /** @type {(inputs: Layout_Inspector_
 	return /** @type {LocalizedString} */ (`Inspector Panel`)
 };
 
+export const leaderboard_compare = /** @type {(inputs: Leaderboard_CompareInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Compare`)
+};
+
 export const leaderboard_copy_value = /** @type {(inputs: Leaderboard_Copy_ValueInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Copy this value to clipboard`)
 };
@@ -2961,8 +3335,16 @@ export const leaderboard_no_available_values = /** @type {(inputs: Leaderboard_N
 	return /** @type {LocalizedString} */ (`(No available values)`)
 };
 
+export const leaderboard_remove_comparison = /** @type {(inputs: Leaderboard_Remove_ComparisonInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Remove comparison`)
+};
+
 export const leaderboard_shift_click = /** @type {(inputs: Leaderboard_Shift_ClickInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`+ Click`)
+};
+
+export const leaderboard_toggle_breakdown = /** @type {(inputs: Leaderboard_Toggle_BreakdownInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Toggle breakdown for ${i?.name} dimension`)
 };
 
 export const mcp_add_to_config = /** @type {(inputs: Mcp_Add_To_ConfigInputs) => LocalizedString} */ () => {
@@ -3065,6 +3447,14 @@ export const measure_filter_threshold = /** @type {(inputs: Measure_Filter_Thres
 	return /** @type {LocalizedString} */ (`Threshold`)
 };
 
+export const measures_choose_tooltip = /** @type {(inputs: Measures_Choose_TooltipInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Choose measures to display`)
+};
+
+export const measures_label = /** @type {(inputs: Measures_LabelInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Measures`)
+};
+
 export const nav_close_sidebar = /** @type {(inputs: Nav_Close_SidebarInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Close sidebar`)
 };
@@ -3125,6 +3515,10 @@ export const org_tab_users = /** @type {(inputs: Org_Tab_UsersInputs) => Localiz
 	return /** @type {LocalizedString} */ (`Users`)
 };
 
+export const pivot_collapse_row = /** @type {(inputs: Pivot_Collapse_RowInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Collapse row`)
+};
+
 export const pivot_dim_one = /** @type {(inputs: Pivot_Dim_OneInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`dim`)
 };
@@ -3153,12 +3547,20 @@ export const pivot_drop_split_text = /** @type {(inputs: Pivot_Drop_Split_TextIn
 	return /** @type {LocalizedString} */ (`Drop here to split: <strong>${i?.dimCount}</strong> ${i?.dimLabel} → rows, <strong>${i?.measureCount}</strong> ${i?.measureLabel} → columns`)
 };
 
+export const pivot_expand_row = /** @type {(inputs: Pivot_Expand_RowInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Expand row`)
+};
+
 export const pivot_measure_one = /** @type {(inputs: Pivot_Measure_OneInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`measure`)
 };
 
 export const pivot_measure_other = /** @type {(inputs: Pivot_Measure_OtherInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`measures`)
+};
+
+export const pivot_tags = /** @type {(inputs: Pivot_TagsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`TAGS`)
 };
 
 export const pivot_time_dimension_header = /** @type {(inputs: Pivot_Time_Dimension_HeaderInputs) => LocalizedString} */ (i) => {
@@ -3173,8 +3575,24 @@ export const project_dashboards_title = /** @type {(inputs: Project_Dashboards_T
 	return /** @type {LocalizedString} */ (`Project dashboards`)
 };
 
+export const project_delete = /** @type {(inputs: Project_DeleteInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Delete`)
+};
+
+export const project_edit = /** @type {(inputs: Project_EditInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Edit`)
+};
+
+export const project_rename = /** @type {(inputs: Project_RenameInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Rename`)
+};
+
 export const project_role_viewer = /** @type {(inputs: Project_Role_ViewerInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Viewer`)
+};
+
+export const project_share = /** @type {(inputs: Project_ShareInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Share`)
 };
 
 export const report_context_menu_aria = /** @type {(inputs: Report_Context_Menu_AriaInputs) => LocalizedString} */ () => {
@@ -3203,6 +3621,10 @@ export const report_edit = /** @type {(inputs: Report_EditInputs) => LocalizedSt
 
 export const report_email_recipients = /** @type {(inputs: Report_Email_RecipientsInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Email recipients`)
+};
+
+export const report_email_validation = /** @type {(inputs: Report_Email_ValidationInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`At least one email recipient, slack user, or slack channel is required`)
 };
 
 export const report_form_cancel = /** @type {(inputs: Report_Form_CancelInputs) => LocalizedString} */ () => {
@@ -3643,6 +4065,10 @@ export const time_today = /** @type {(inputs: Time_TodayInputs) => LocalizedStri
 
 export const time_unable_to_parse = /** @type {(inputs: Time_Unable_To_ParseInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Unable to parse time string`)
+};
+
+export const time_vs = /** @type {(inputs: Time_VsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`vs`)
 };
 
 export const time_week_to_date = /** @type {(inputs: Time_Week_To_DateInputs) => LocalizedString} */ () => {

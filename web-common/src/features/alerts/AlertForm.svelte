@@ -146,9 +146,9 @@
     superFormInstance;
 
   const formId = isCreateForm ? "create-alert-form" : "edit-alert-form";
-  const dialogTitle = isCreateForm ? "Create Alert" : "Edit Alert";
+  $: dialogTitle = isCreateForm ? m.alert_form_create_title() : m.alert_form_edit_title();
 
-  const tabs = ["Data", "Criteria", "Delivery"];
+  $: tabs = [m.alert_form_tab_data(), m.alert_form_tab_criteria(), m.alert_form_tab_delivery()];
 
   /**
    * Because this form's fields are spread over multiple tabs, we implement our own `isValid` logic for each tab.

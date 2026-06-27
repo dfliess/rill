@@ -147,7 +147,7 @@
     })
       .test(
         "at-least-one-recipient",
-        "At least one email recipient, slack user, or slack channel is required",
+        m.report_email_validation(),
         function (value) {
           // Check if at least one array has non-empty values
           const hasEmailRecipients = value.emailRecipients
