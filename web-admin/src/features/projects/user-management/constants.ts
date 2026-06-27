@@ -1,26 +1,32 @@
+import * as m from "@rilldata/web-common/paraglide/messages.js";
 import { ProjectUserRoles } from "@rilldata/web-common/features/users/roles.ts";
 
-export const PROJECT_ROLES_OPTIONS = [
-  {
-    value: ProjectUserRoles.Admin,
-    label: "Admin",
-    description: "Full control of project settings and members",
-  },
-  {
-    value: ProjectUserRoles.Editor,
-    label: "Editor",
-    description: "Can create and edit dashboards; manage non-admin access",
-  },
-  {
-    value: ProjectUserRoles.Viewer,
-    label: "Viewer",
-    description: "Read-only access to all project resources",
-  },
-];
+export function getProjectRolesOptions() {
+  return [
+    {
+      value: ProjectUserRoles.Admin,
+      label: m.role_admin(),
+      description: m.role_project_admin_desc(),
+    },
+    {
+      value: ProjectUserRoles.Editor,
+      label: m.role_editor(),
+      description: m.role_project_editor_desc(),
+    },
+    {
+      value: ProjectUserRoles.Viewer,
+      label: m.role_viewer(),
+      description: m.role_project_viewer_desc(),
+    },
+  ];
+}
 
-export const PROJECT_ROLES_DESCRIPTION_MAP = {
-  admin: "Full control of project settings and members",
-  editor: "Can create and edit dashboards; manage non-admin access",
-  viewer: "Read-only access to all project resources",
-  guest: "Access to invited projects only",
-};
+export function getProjectRoleDescription(role: string): string {
+  switch (role) {
+    case "admin": return m.role_project_admin_desc();
+    case "editor": return m.role_project_editor_desc();
+    case "viewer": return m.role_project_viewer_desc();
+    case "guest": return m.role_guest_desc();
+    default: return "";
+  }
+}

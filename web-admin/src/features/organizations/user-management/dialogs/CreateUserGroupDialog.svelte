@@ -129,7 +129,7 @@
       pendingRemovals = [];
       open = false;
 
-      eventBus.emit("notification", { message: "User group created" });
+      eventBus.emit("notification", { message: m.groups_created() });
     } catch (error) {
       eventBus.emit("notification", {
         message: `Error: ${error.response.data.message}`,
@@ -163,7 +163,7 @@
       });
 
       eventBus.emit("notification", {
-        message: "User group changes saved successfully",
+        message: m.groups_changes_saved(),
       });
     } catch (error) {
       eventBus.emit("notification", {
@@ -272,7 +272,7 @@
   </DialogTrigger>
   <DialogContent class="translate-y-[-200px]" interactOutsideBehavior="ignore">
     <DialogHeader>
-      <DialogTitle>Create a group</DialogTitle>
+      <DialogTitle>{m.groups_create_a_group()}</DialogTitle>
     </DialogHeader>
     <form
       id={formId}
@@ -287,8 +287,8 @@
         <Input
           bind:value={$form.name}
           id="create-user-group-name"
-          label="Name"
-          placeholder="Untitled"
+          label={m.users_form_name()}
+          placeholder={m.users_form_untitled()}
           errors={$errors.name}
           alwaysShowError={true}
         />
@@ -298,7 +298,7 @@
             for="user-group-users"
             class="line-clamp-1 text-sm font-medium text-fg-primary"
           >
-            Users
+            {m.users_form_users()}
           </label>
           <Combobox
             bind:searchValue={searchInput}
@@ -342,7 +342,7 @@
       {#if selectedUsers.length > 0}
         <div class="flex flex-row items-center gap-x-1">
           <div class="text-xs font-semibold uppercase text-fg-secondary">
-            {selectedUsers.length} User{selectedUsers.length === 1 ? "" : "s"}
+            {m.users_user_count({ count: selectedUsers.length })}
           </div>
         </div>
       {/if}
@@ -361,7 +361,7 @@
                 type="destructive"
                 onClick={() => handleRemove(user.userEmail)}
               >
-                Remove
+                {m.users_remove()}
               </Button>
             </div>
           {/each}
@@ -370,14 +370,14 @@
     </div>
 
     <DialogFooter>
-      <Button type="tertiary" onClick={handleClose}>Cancel</Button>
+      <Button type="tertiary" onClick={handleClose}>{m.users_cancel()}</Button>
       <Button
         type="primary"
         disabled={$submitting || $form.name.trim() === "" || !!$errors.name}
         form={formId}
         submitForm
       >
-        Create
+        {m.users_create()}
       </Button>
     </DialogFooter>
   </DialogContent>

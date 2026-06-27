@@ -25,7 +25,7 @@
     <span class="grow">{m.org_check_out_projects()}</span>
     {#if showNewProject}
       <Button type="secondary" href="/{organization}/-/create-project">
-        + New project
+        {m.org_new_project()}
       </Button>
     {/if}
   </span>

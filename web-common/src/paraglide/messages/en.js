@@ -686,6 +686,30 @@
 /** @typedef {{}} Footer_VersionInputs */
 /** @typedef {{}} Footer_View_DocumentationInputs */
 /** @typedef {{}} Form_OptionalInputs */
+/** @typedef {{}} Groups_Changes_SavedInputs */
+/** @typedef {{}} Groups_Create_A_GroupInputs */
+/** @typedef {{}} Groups_Create_GroupInputs */
+/** @typedef {{}} Groups_CreatedInputs */
+/** @typedef {{}} Groups_DeleteInputs */
+/** @typedef {{}} Groups_Delete_Confirm_DescInputs */
+/** @typedef {{}} Groups_Delete_Confirm_TitleInputs */
+/** @typedef {{}} Groups_DeletedInputs */
+/** @typedef {{}} Groups_EditInputs */
+/** @typedef {{}} Groups_Edit_GroupInputs */
+/** @typedef {{}} Groups_Error_Adding_RoleInputs */
+/** @typedef {{}} Groups_Error_DeletingInputs */
+/** @typedef {{}} Groups_Error_LoadingInputs */
+/** @typedef {{}} Groups_Error_Revoking_RoleInputs */
+/** @typedef {{}} Groups_Error_Updating_RoleInputs */
+/** @typedef {{}} Groups_RemovedInputs */
+/** @typedef {{}} Groups_RenamedInputs */
+/** @typedef {{}} Groups_Role_AddedInputs */
+/** @typedef {{}} Groups_Role_RevokedInputs */
+/** @typedef {{}} Groups_Role_UpdatedInputs */
+/** @typedef {{}} Groups_Table_EmptyInputs */
+/** @typedef {{}} Groups_Table_Header_GroupInputs */
+/** @typedef {{ count: NonNullable<unknown> }} Groups_Total_CountInputs */
+/** @typedef {{}} Groups_Yes_DeleteInputs */
 /** @typedef {{}} Home_Dashboards_HeadingInputs */
 /** @typedef {{}} Home_Subtitle_No_ChatInputs */
 /** @typedef {{}} Home_Subtitle_With_ChatInputs */
@@ -749,6 +773,7 @@
 /** @typedef {{}} Nav_Tab_SettingsInputs */
 /** @typedef {{}} Nav_Tab_StatusInputs */
 /** @typedef {{}} Org_Check_Out_ProjectsInputs */
+/** @typedef {{}} Org_New_ProjectInputs */
 /** @typedef {{}} Org_Search_Add_Remove_UsersInputs */
 /** @typedef {{}} Org_Tab_ProjectsInputs */
 /** @typedef {{}} Org_Tab_SettingsInputs */
@@ -771,6 +796,7 @@
 /** @typedef {{}} Project_DeleteInputs */
 /** @typedef {{}} Project_EditInputs */
 /** @typedef {{}} Project_RenameInputs */
+/** @typedef {{}} Project_Role_AdminInputs */
 /** @typedef {{}} Project_Role_ViewerInputs */
 /** @typedef {{}} Project_Search_Or_InviteInputs */
 /** @typedef {{}} Project_Search_UsersInputs */
@@ -863,9 +889,140 @@
 /** @typedef {{}} Resource_Error_Contact_SupportInputs */
 /** @typedef {{ kind: NonNullable<unknown> }} Resource_Error_LoadingInputs */
 /** @typedef {{}} Resource_Search_PlaceholderInputs */
+/** @typedef {{}} Resource_Type_CanvasInputs */
+/** @typedef {{}} Resource_Type_ExploreInputs */
+/** @typedef {{}} Role_AdminInputs */
+/** @typedef {{}} Role_EditorInputs */
+/** @typedef {{}} Role_GuestInputs */
+/** @typedef {{}} Role_Guest_DescInputs */
+/** @typedef {{}} Role_Org_Admin_DescInputs */
+/** @typedef {{}} Role_Org_Admin_DetailInputs */
+/** @typedef {{}} Role_Org_Editor_DescInputs */
+/** @typedef {{}} Role_Org_Editor_DetailInputs */
+/** @typedef {{}} Role_Org_Viewer_DescInputs */
+/** @typedef {{}} Role_Org_Viewer_DetailInputs */
+/** @typedef {{}} Role_Project_Admin_DescInputs */
+/** @typedef {{}} Role_Project_Editor_DescInputs */
+/** @typedef {{}} Role_Project_Viewer_DescInputs */
+/** @typedef {{}} Role_ViewerInputs */
 /** @typedef {{ link: NonNullable<unknown> }} Share_Limited_ViewInputs */
 /** @typedef {{}} Share_Original_DashboardInputs */
 /** @typedef {{}} Snooze_OffInputs */
+/** @typedef {{}} Status_Action_DescribeInputs */
+/** @typedef {{}} Status_Action_Full_RefreshInputs */
+/** @typedef {{}} Status_Action_Incremental_RefreshInputs */
+/** @typedef {{}} Status_Action_Refresh_Errored_PartitionsInputs */
+/** @typedef {{}} Status_Action_View_LogsInputs */
+/** @typedef {{}} Status_Action_View_PartitionsInputs */
+/** @typedef {{}} Status_CancelInputs */
+/** @typedef {{}} Status_Checking_ErrorsInputs */
+/** @typedef {{}} Status_ClearInputs */
+/** @typedef {{}} Status_Clone_DescriptionInputs */
+/** @typedef {{}} Status_Column_Database_SizeInputs */
+/** @typedef {{}} Status_Column_Last_RefreshInputs */
+/** @typedef {{}} Status_Column_Model_NameInputs */
+/** @typedef {{}} Status_Column_NameInputs */
+/** @typedef {{}} Status_Column_Next_RefreshInputs */
+/** @typedef {{}} Status_Column_Table_NameInputs */
+/** @typedef {{}} Status_Column_TypeInputs */
+/** @typedef {{}} Status_CompleteInputs */
+/** @typedef {{}} Status_Compute_UnitInputs */
+/** @typedef {{}} Status_Compute_UnitsInputs */
+/** @typedef {{}} Status_Data_AccessibleInputs */
+/** @typedef {{}} Status_Data_SizeInputs */
+/** @typedef {{}} Status_Deploy_DeletedInputs */
+/** @typedef {{}} Status_Deploy_DeletingInputs */
+/** @typedef {{}} Status_Deploy_ErrorInputs */
+/** @typedef {{}} Status_Deploy_Not_DeployedInputs */
+/** @typedef {{}} Status_Deploy_PendingInputs */
+/** @typedef {{}} Status_Deploy_ReadyInputs */
+/** @typedef {{}} Status_Deploy_StoppedInputs */
+/** @typedef {{}} Status_Deploy_StoppingInputs */
+/** @typedef {{}} Status_Deploy_UpdatingInputs */
+/** @typedef {{}} Status_DeploymentInputs */
+/** @typedef {{}} Status_Download_ProjectInputs */
+/** @typedef {{}} Status_Error_Loading_ResourcesInputs */
+/** @typedef {{}} Status_Error_Loading_TablesInputs */
+/** @typedef {{}} Status_ErrorsInputs */
+/** @typedef {{}} Status_External_Tables_SectionInputs */
+/** @typedef {{}} Status_Filter_ErrorInputs */
+/** @typedef {{}} Status_Filter_OkInputs */
+/** @typedef {{}} Status_Filter_WarnInputs */
+/** @typedef {{}} Status_Full_Refresh_WarningInputs */
+/** @typedef {{}} Status_Incremental_Refresh_DescriptionInputs */
+/** @typedef {{}} Status_Label_Ai_ConnectorInputs */
+/** @typedef {{}} Status_Label_BranchInputs */
+/** @typedef {{}} Status_Label_Cluster_SizeInputs */
+/** @typedef {{}} Status_Label_EnvironmentInputs */
+/** @typedef {{}} Status_Label_Last_SyncedInputs */
+/** @typedef {{}} Status_Label_Olap_EngineInputs */
+/** @typedef {{}} Status_Label_RepoInputs */
+/** @typedef {{}} Status_Label_RuntimeInputs */
+/** @typedef {{}} Status_Label_StatusInputs */
+/** @typedef {{}} Status_Learn_About_External_OlapInputs */
+/** @typedef {{}} Status_Learn_MoreInputs */
+/** @typedef {{}} Status_Load_More_TablesInputs */
+/** @typedef {{}} Status_LoadingInputs */
+/** @typedef {{}} Status_Loading_ModelsInputs */
+/** @typedef {{}} Status_Loading_ResourcesInputs */
+/** @typedef {{}} Status_Loading_TablesInputs */
+/** @typedef {{}} Status_Logs_All_LevelsInputs */
+/** @typedef {{}} Status_Logs_ConnectingInputs */
+/** @typedef {{}} Status_Logs_Connection_FailedInputs */
+/** @typedef {{}} Status_Logs_DisconnectedInputs */
+/** @typedef {{}} Status_Logs_IdleInputs */
+/** @typedef {{}} Status_Logs_Level_DebugInputs */
+/** @typedef {{}} Status_Logs_Level_ErrorInputs */
+/** @typedef {{}} Status_Logs_Level_InfoInputs */
+/** @typedef {{}} Status_Logs_Level_WarnInputs */
+/** @typedef {{}} Status_Logs_LiveInputs */
+/** @typedef {{}} Status_Logs_No_MatchInputs */
+/** @typedef {{}} Status_Logs_RetryInputs */
+/** @typedef {{}} Status_Logs_WaitingInputs */
+/** @typedef {{}} Status_Model_PartitionsInputs */
+/** @typedef {{}} Status_Models_Created_In_DeveloperInputs */
+/** @typedef {{}} Status_Models_SectionInputs */
+/** @typedef {{}} Status_Nav_AnalyticsInputs */
+/** @typedef {{}} Status_Nav_BranchesInputs */
+/** @typedef {{}} Status_Nav_LogsInputs */
+/** @typedef {{}} Status_Nav_OverviewInputs */
+/** @typedef {{}} Status_Nav_ResourcesInputs */
+/** @typedef {{}} Status_Nav_TablesInputs */
+/** @typedef {{}} Status_No_ErrorsInputs */
+/** @typedef {{}} Status_No_External_TablesInputs */
+/** @typedef {{}} Status_No_External_Tables_Match_FiltersInputs */
+/** @typedef {{}} Status_No_ModelsInputs */
+/** @typedef {{}} Status_No_Models_Match_FiltersInputs */
+/** @typedef {{}} Status_No_Parse_ErrorsInputs */
+/** @typedef {{}} Status_No_Resource_DataInputs */
+/** @typedef {{}} Status_No_ResourcesInputs */
+/** @typedef {{}} Status_No_Resources_Match_FiltersInputs */
+/** @typedef {{}} Status_No_TablesInputs */
+/** @typedef {{}} Status_NoteInputs */
+/** @typedef {{}} Status_Owned_By_OtherInputs */
+/** @typedef {{}} Status_Owned_By_YouInputs */
+/** @typedef {{}} Status_Page_TitleInputs */
+/** @typedef {{}} Status_Parse_ErrorInputs */
+/** @typedef {{}} Status_Parse_ErrorsInputs */
+/** @typedef {{}} Status_Parse_Errors_TitleInputs */
+/** @typedef {{}} Status_ReconcilingInputs */
+/** @typedef {{}} Status_Refresh_AllInputs */
+/** @typedef {{}} Status_Refresh_All_Confirm_BodyInputs */
+/** @typedef {{}} Status_Refresh_All_Confirm_TipInputs */
+/** @typedef {{}} Status_Refresh_All_Confirm_TitleInputs */
+/** @typedef {{}} Status_Refresh_All_Sources_ModelsInputs */
+/** @typedef {{}} Status_Refresh_Errored_Confirm_BodyInputs */
+/** @typedef {{ modelName: NonNullable<unknown> }} Status_Refresh_Errored_Confirm_TitleInputs */
+/** @typedef {{}} Status_RefreshingInputs */
+/** @typedef {{}} Status_Resource_ReconcilingInputs */
+/** @typedef {{}} Status_Rill_ManagedInputs */
+/** @typedef {{}} Status_Table_PluralInputs */
+/** @typedef {{}} Status_Table_SingularInputs */
+/** @typedef {{}} Status_Unable_To_Check_ErrorsInputs */
+/** @typedef {{}} Status_View_AllInputs */
+/** @typedef {{}} Status_View_PluralInputs */
+/** @typedef {{}} Status_View_SingularInputs */
+/** @typedef {{}} Status_Yes_RefreshInputs */
 /** @typedef {{}} Theme_DarkInputs */
 /** @typedef {{}} Theme_LabelInputs */
 /** @typedef {{}} Theme_LightInputs */
@@ -939,6 +1096,103 @@
 /** @typedef {{}} Time_Week_To_DateInputs */
 /** @typedef {{}} Time_Year_To_DateInputs */
 /** @typedef {{}} Time_YesterdayInputs */
+/** @typedef {{}} Users_Access_Changed_EveryoneInputs */
+/** @typedef {{}} Users_Access_Changed_Invite_OnlyInputs */
+/** @typedef {{}} Users_Access_LevelInputs */
+/** @typedef {{}} Users_Add_GuestInputs */
+/** @typedef {{}} Users_Add_Guests_ButtonInputs */
+/** @typedef {{}} Users_Add_Guests_DescriptionInputs */
+/** @typedef {{}} Users_Add_Guests_TitleInputs */
+/** @typedef {{}} Users_Add_UsersInputs */
+/** @typedef {{ count: NonNullable<unknown> }} Users_Added_Groups_CountInputs */
+/** @typedef {{ emails: NonNullable<unknown> }} Users_Already_MemberInputs */
+/** @typedef {{ count: NonNullable<unknown> }} Users_And_MoreInputs */
+/** @typedef {{}} Users_Billing_Change_Role_DescInputs */
+/** @typedef {{}} Users_Billing_Change_Role_TitleInputs */
+/** @typedef {{}} Users_Billing_Remove_DescInputs */
+/** @typedef {{}} Users_Billing_Remove_TitleInputs */
+/** @typedef {{}} Users_CancelInputs */
+/** @typedef {{}} Users_Change_Billing_ContactInputs */
+/** @typedef {{}} Users_ConvertInputs */
+/** @typedef {{}} Users_Convert_To_MemberInputs */
+/** @typedef {{ user: NonNullable<unknown>, role: NonNullable<unknown> }} Users_Convert_User_To_RoleInputs */
+/** @typedef {{}} Users_Copy_UrlInputs */
+/** @typedef {{}} Users_CreateInputs */
+/** @typedef {{}} Users_Email_Or_Group_PlaceholderInputs */
+/** @typedef {{}} Users_Email_PlaceholderInputs */
+/** @typedef {{}} Users_ErrorInputs */
+/** @typedef {{}} Users_Error_Loading_MembersInputs */
+/** @typedef {{}} Users_Error_RemovingInputs */
+/** @typedef {{}} Users_Error_Removing_UserInputs */
+/** @typedef {{}} Users_Error_Updating_RoleInputs */
+/** @typedef {{}} Users_Error_Upgrading_RoleInputs */
+/** @typedef {{ organization: NonNullable<unknown> }} Users_Everyone_At_OrgInputs */
+/** @typedef {{ groups: NonNullable<unknown> }} Users_Failed_Add_GroupsInputs */
+/** @typedef {{ emails: NonNullable<unknown> }} Users_Failed_InviteInputs */
+/** @typedef {{ emails: NonNullable<unknown> }} Users_Failed_Invite_UsersInputs */
+/** @typedef {{}} Users_Failed_Load_ProjectsInputs */
+/** @typedef {{}} Users_Failed_Load_UsersInputs */
+/** @typedef {{}} Users_Filter_AdminsInputs */
+/** @typedef {{}} Users_Filter_AllInputs */
+/** @typedef {{}} Users_Filter_All_RolesInputs */
+/** @typedef {{}} Users_Filter_All_UsersInputs */
+/** @typedef {{}} Users_Filter_EditorsInputs */
+/** @typedef {{}} Users_Filter_MembersInputs */
+/** @typedef {{}} Users_Filter_Pending_InvitesInputs */
+/** @typedef {{}} Users_Filter_ViewersInputs */
+/** @typedef {{}} Users_Form_NameInputs */
+/** @typedef {{}} Users_Form_UntitledInputs */
+/** @typedef {{}} Users_Form_UsersInputs */
+/** @typedef {{}} Users_General_AccessInputs */
+/** @typedef {{ count: NonNullable<unknown> }} Users_Group_CountInputs */
+/** @typedef {{ role: NonNullable<unknown> }} Users_Guest_UpgradedInputs */
+/** @typedef {{ role: NonNullable<unknown> }} Users_Guest_Upgraded_ToInputs */
+/** @typedef {{ count: NonNullable<unknown>, role: NonNullable<unknown> }} Users_Guests_Invited_SuccessInputs */
+/** @typedef {{}} Users_InviteInputs */
+/** @typedef {{}} Users_Invite_OnlyInputs */
+/** @typedef {{ count: NonNullable<unknown> }} Users_Invited_CountInputs */
+/** @typedef {{ count: NonNullable<unknown>, role: NonNullable<unknown> }} Users_Invited_SuccessInputs */
+/** @typedef {{}} Users_Learn_More_SharingInputs */
+/** @typedef {{}} Users_LoadingInputs */
+/** @typedef {{}} Users_Loading_MoreInputs */
+/** @typedef {{ count: NonNullable<unknown> }} Users_Member_CountInputs */
+/** @typedef {{}} Users_No_GroupsInputs */
+/** @typedef {{}} Users_No_ProjectsInputs */
+/** @typedef {{}} Users_No_UsersInputs */
+/** @typedef {{}} Users_Only_Admins_AccessInputs */
+/** @typedef {{}} Users_Org_Members_AccessInputs */
+/** @typedef {{}} Users_Page_TitleInputs */
+/** @typedef {{}} Users_Pending_InvitationInputs */
+/** @typedef {{}} Users_Project_AccessInputs */
+/** @typedef {{ count: NonNullable<unknown> }} Users_Project_CountInputs */
+/** @typedef {{ count: NonNullable<unknown> }} Users_Projects_CountInputs */
+/** @typedef {{}} Users_RemoveInputs */
+/** @typedef {{}} Users_Remove_Confirm_DescInputs */
+/** @typedef {{}} Users_Remove_Confirm_TitleInputs */
+/** @typedef {{}} Users_RemovedInputs */
+/** @typedef {{}} Users_Removed_From_OrgInputs */
+/** @typedef {{}} Users_RetryInputs */
+/** @typedef {{}} Users_Role_UpdatedInputs */
+/** @typedef {{}} Users_SaveInputs */
+/** @typedef {{}} Users_SearchingInputs */
+/** @typedef {{}} Users_Section_GroupsInputs */
+/** @typedef {{}} Users_Section_GuestsInputs */
+/** @typedef {{}} Users_Section_MembersInputs */
+/** @typedef {{}} Users_Select_ProjectsInputs */
+/** @typedef {{ count: NonNullable<unknown> }} Users_Tab_GroupsInputs */
+/** @typedef {{ count: NonNullable<unknown> }} Users_Tab_GuestsInputs */
+/** @typedef {{ count: NonNullable<unknown> }} Users_Tab_MembersInputs */
+/** @typedef {{}} Users_Table_EmptyInputs */
+/** @typedef {{}} Users_Table_Header_GroupsInputs */
+/** @typedef {{}} Users_Table_Header_Org_RoleInputs */
+/** @typedef {{}} Users_Table_Header_ProjectsInputs */
+/** @typedef {{}} Users_Table_Header_UserInputs */
+/** @typedef {{ role: NonNullable<unknown> }} Users_Upgrade_Confirm_DescInputs */
+/** @typedef {{ role: NonNullable<unknown> }} Users_Upgrade_Confirm_TitleInputs */
+/** @typedef {{}} Users_Url_CopiedInputs */
+/** @typedef {{ count: NonNullable<unknown> }} Users_User_CountInputs */
+/** @typedef {{}} Users_Yes_RemoveInputs */
+/** @typedef {{}} Users_Yes_UpgradeInputs */
 
 
 export const alert_context_menu_aria = /** @type {(inputs: Alert_Context_Menu_AriaInputs) => LocalizedString} */ () => {
@@ -3686,6 +3940,102 @@ export const form_optional = /** @type {(inputs: Form_OptionalInputs) => Localiz
 	return /** @type {LocalizedString} */ (`(optional)`)
 };
 
+export const groups_changes_saved = /** @type {(inputs: Groups_Changes_SavedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`User group changes saved successfully`)
+};
+
+export const groups_create_a_group = /** @type {(inputs: Groups_Create_A_GroupInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Create a group`)
+};
+
+export const groups_create_group = /** @type {(inputs: Groups_Create_GroupInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Create group`)
+};
+
+export const groups_created = /** @type {(inputs: Groups_CreatedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`User group created`)
+};
+
+export const groups_delete = /** @type {(inputs: Groups_DeleteInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Delete`)
+};
+
+export const groups_delete_confirm_desc = /** @type {(inputs: Groups_Delete_Confirm_DescInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`This user group will no longer be able to access the organization.`)
+};
+
+export const groups_delete_confirm_title = /** @type {(inputs: Groups_Delete_Confirm_TitleInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Delete this user group?`)
+};
+
+export const groups_deleted = /** @type {(inputs: Groups_DeletedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`User group deleted`)
+};
+
+export const groups_edit = /** @type {(inputs: Groups_EditInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Edit`)
+};
+
+export const groups_edit_group = /** @type {(inputs: Groups_Edit_GroupInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Edit group`)
+};
+
+export const groups_error_adding_role = /** @type {(inputs: Groups_Error_Adding_RoleInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Error adding role to user group`)
+};
+
+export const groups_error_deleting = /** @type {(inputs: Groups_Error_DeletingInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Error deleting user group`)
+};
+
+export const groups_error_loading = /** @type {(inputs: Groups_Error_LoadingInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Error loading organization user groups:`)
+};
+
+export const groups_error_revoking_role = /** @type {(inputs: Groups_Error_Revoking_RoleInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Error revoking user group role`)
+};
+
+export const groups_error_updating_role = /** @type {(inputs: Groups_Error_Updating_RoleInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Error updating user group role`)
+};
+
+export const groups_removed = /** @type {(inputs: Groups_RemovedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`User group removed`)
+};
+
+export const groups_renamed = /** @type {(inputs: Groups_RenamedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`User group renamed`)
+};
+
+export const groups_role_added = /** @type {(inputs: Groups_Role_AddedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`User group role added`)
+};
+
+export const groups_role_revoked = /** @type {(inputs: Groups_Role_RevokedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`User group role revoked`)
+};
+
+export const groups_role_updated = /** @type {(inputs: Groups_Role_UpdatedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`User group role updated`)
+};
+
+export const groups_table_empty = /** @type {(inputs: Groups_Table_EmptyInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No groups found`)
+};
+
+export const groups_table_header_group = /** @type {(inputs: Groups_Table_Header_GroupInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Group`)
+};
+
+export const groups_total_count = /** @type {(inputs: Groups_Total_CountInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.count} total groups`)
+};
+
+export const groups_yes_delete = /** @type {(inputs: Groups_Yes_DeleteInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Yes, delete`)
+};
+
 export const home_dashboards_heading = /** @type {(inputs: Home_Dashboards_HeadingInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Dashboards`)
 };
@@ -3938,6 +4288,10 @@ export const org_check_out_projects = /** @type {(inputs: Org_Check_Out_Projects
 	return /** @type {LocalizedString} */ (`Check out your projects below.`)
 };
 
+export const org_new_project = /** @type {(inputs: Org_New_ProjectInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`+ New project`)
+};
+
 export const org_search_add_remove_users = /** @type {(inputs: Org_Search_Add_Remove_UsersInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Search to add/remove users`)
 };
@@ -4024,6 +4378,10 @@ export const project_edit = /** @type {(inputs: Project_EditInputs) => Localized
 
 export const project_rename = /** @type {(inputs: Project_RenameInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Rename`)
+};
+
+export const project_role_admin = /** @type {(inputs: Project_Role_AdminInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Admin`)
 };
 
 export const project_role_viewer = /** @type {(inputs: Project_Role_ViewerInputs) => LocalizedString} */ () => {
@@ -4394,6 +4752,70 @@ export const resource_search_placeholder = /** @type {(inputs: Resource_Search_P
 	return /** @type {LocalizedString} */ (`Search`)
 };
 
+export const resource_type_canvas = /** @type {(inputs: Resource_Type_CanvasInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Canvas`)
+};
+
+export const resource_type_explore = /** @type {(inputs: Resource_Type_ExploreInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Explore`)
+};
+
+export const role_admin = /** @type {(inputs: Role_AdminInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Admin`)
+};
+
+export const role_editor = /** @type {(inputs: Role_EditorInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Editor`)
+};
+
+export const role_guest = /** @type {(inputs: Role_GuestInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Guest`)
+};
+
+export const role_guest_desc = /** @type {(inputs: Role_Guest_DescInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Access to invited projects only`)
+};
+
+export const role_org_admin_desc = /** @type {(inputs: Role_Org_Admin_DescInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Full control over organization settings and members`)
+};
+
+export const role_org_admin_detail = /** @type {(inputs: Role_Org_Admin_DetailInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Full access to org settings, members, and all projects`)
+};
+
+export const role_org_editor_desc = /** @type {(inputs: Role_Org_Editor_DescInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Can manage projects and most org resources`)
+};
+
+export const role_org_editor_detail = /** @type {(inputs: Role_Org_Editor_DetailInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Can create/manage projects and non-admin members`)
+};
+
+export const role_org_viewer_desc = /** @type {(inputs: Role_Org_Viewer_DescInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Read-only access to organization and projects`)
+};
+
+export const role_org_viewer_detail = /** @type {(inputs: Role_Org_Viewer_DetailInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Read-only access to all org projects`)
+};
+
+export const role_project_admin_desc = /** @type {(inputs: Role_Project_Admin_DescInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Full control of project settings and members`)
+};
+
+export const role_project_editor_desc = /** @type {(inputs: Role_Project_Editor_DescInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Can create and edit dashboards; manage non-admin access`)
+};
+
+export const role_project_viewer_desc = /** @type {(inputs: Role_Project_Viewer_DescInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Read-only access to all project resources`)
+};
+
+export const role_viewer = /** @type {(inputs: Role_ViewerInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Viewer`)
+};
+
 export const share_limited_view = /** @type {(inputs: Share_Limited_ViewInputs) => LocalizedString} */ (i) => {
 	return /** @type {LocalizedString} */ (`Limited view. For full access and features, visit the ${i?.link}.`)
 };
@@ -4404,6 +4826,466 @@ export const share_original_dashboard = /** @type {(inputs: Share_Original_Dashb
 
 export const snooze_off = /** @type {(inputs: Snooze_OffInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Off`)
+};
+
+export const status_action_describe = /** @type {(inputs: Status_Action_DescribeInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Describe`)
+};
+
+export const status_action_full_refresh = /** @type {(inputs: Status_Action_Full_RefreshInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Full Refresh`)
+};
+
+export const status_action_incremental_refresh = /** @type {(inputs: Status_Action_Incremental_RefreshInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Incremental Refresh`)
+};
+
+export const status_action_refresh_errored_partitions = /** @type {(inputs: Status_Action_Refresh_Errored_PartitionsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Refresh Errored Partitions`)
+};
+
+export const status_action_view_logs = /** @type {(inputs: Status_Action_View_LogsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`View Logs`)
+};
+
+export const status_action_view_partitions = /** @type {(inputs: Status_Action_View_PartitionsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`View Partitions`)
+};
+
+export const status_cancel = /** @type {(inputs: Status_CancelInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Cancel`)
+};
+
+export const status_checking_errors = /** @type {(inputs: Status_Checking_ErrorsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Checking for errors...`)
+};
+
+export const status_clear = /** @type {(inputs: Status_ClearInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Clear`)
+};
+
+export const status_clone_description = /** @type {(inputs: Status_Clone_DescriptionInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Clone this project to develop locally.`)
+};
+
+export const status_column_database_size = /** @type {(inputs: Status_Column_Database_SizeInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Database Size`)
+};
+
+export const status_column_last_refresh = /** @type {(inputs: Status_Column_Last_RefreshInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Last refresh`)
+};
+
+export const status_column_model_name = /** @type {(inputs: Status_Column_Model_NameInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Model Name`)
+};
+
+export const status_column_name = /** @type {(inputs: Status_Column_NameInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Name`)
+};
+
+export const status_column_next_refresh = /** @type {(inputs: Status_Column_Next_RefreshInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Next refresh`)
+};
+
+export const status_column_table_name = /** @type {(inputs: Status_Column_Table_NameInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Table Name`)
+};
+
+export const status_column_type = /** @type {(inputs: Status_Column_TypeInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Type`)
+};
+
+export const status_complete = /** @type {(inputs: Status_CompleteInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Complete`)
+};
+
+export const status_compute_unit = /** @type {(inputs: Status_Compute_UnitInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Compute unit`)
+};
+
+export const status_compute_units = /** @type {(inputs: Status_Compute_UnitsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Compute units`)
+};
+
+export const status_data_accessible = /** @type {(inputs: Status_Data_AccessibleInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Data accessible`)
+};
+
+export const status_data_size = /** @type {(inputs: Status_Data_SizeInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Data size`)
+};
+
+export const status_deploy_deleted = /** @type {(inputs: Status_Deploy_DeletedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Deleted`)
+};
+
+export const status_deploy_deleting = /** @type {(inputs: Status_Deploy_DeletingInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Deleting`)
+};
+
+export const status_deploy_error = /** @type {(inputs: Status_Deploy_ErrorInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Error`)
+};
+
+export const status_deploy_not_deployed = /** @type {(inputs: Status_Deploy_Not_DeployedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Not deployed`)
+};
+
+export const status_deploy_pending = /** @type {(inputs: Status_Deploy_PendingInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Pending`)
+};
+
+export const status_deploy_ready = /** @type {(inputs: Status_Deploy_ReadyInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Ready`)
+};
+
+export const status_deploy_stopped = /** @type {(inputs: Status_Deploy_StoppedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Stopped`)
+};
+
+export const status_deploy_stopping = /** @type {(inputs: Status_Deploy_StoppingInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Stopping`)
+};
+
+export const status_deploy_updating = /** @type {(inputs: Status_Deploy_UpdatingInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Updating`)
+};
+
+export const status_deployment = /** @type {(inputs: Status_DeploymentInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Deployment`)
+};
+
+export const status_download_project = /** @type {(inputs: Status_Download_ProjectInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Download Project`)
+};
+
+export const status_error_loading_resources = /** @type {(inputs: Status_Error_Loading_ResourcesInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Error loading resources`)
+};
+
+export const status_error_loading_tables = /** @type {(inputs: Status_Error_Loading_TablesInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Error loading tables`)
+};
+
+export const status_errors = /** @type {(inputs: Status_ErrorsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Errors`)
+};
+
+export const status_external_tables_section = /** @type {(inputs: Status_External_Tables_SectionInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`External Tables`)
+};
+
+export const status_filter_error = /** @type {(inputs: Status_Filter_ErrorInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Error`)
+};
+
+export const status_filter_ok = /** @type {(inputs: Status_Filter_OkInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`OK`)
+};
+
+export const status_filter_warn = /** @type {(inputs: Status_Filter_WarnInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Warn`)
+};
+
+export const status_full_refresh_warning = /** @type {(inputs: Status_Full_Refresh_WarningInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`⚠️ Warning: A full refresh will re-ingest ALL data from scratch. This operation can take a significant amount of time and will update all dependent resources. Only proceed if you're certain this is necessary.`)
+};
+
+export const status_incremental_refresh_description = /** @type {(inputs: Status_Incremental_Refresh_DescriptionInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Refreshing this resource will update all dependent resources.`)
+};
+
+export const status_label_ai_connector = /** @type {(inputs: Status_Label_Ai_ConnectorInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`AI Connector`)
+};
+
+export const status_label_branch = /** @type {(inputs: Status_Label_BranchInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Branch`)
+};
+
+export const status_label_cluster_size = /** @type {(inputs: Status_Label_Cluster_SizeInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Cluster Size`)
+};
+
+export const status_label_environment = /** @type {(inputs: Status_Label_EnvironmentInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Environment`)
+};
+
+export const status_label_last_synced = /** @type {(inputs: Status_Label_Last_SyncedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Last synced`)
+};
+
+export const status_label_olap_engine = /** @type {(inputs: Status_Label_Olap_EngineInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`OLAP Engine`)
+};
+
+export const status_label_repo = /** @type {(inputs: Status_Label_RepoInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Repo`)
+};
+
+export const status_label_runtime = /** @type {(inputs: Status_Label_RuntimeInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Runtime`)
+};
+
+export const status_label_status = /** @type {(inputs: Status_Label_StatusInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Status`)
+};
+
+export const status_learn_about_external_olap = /** @type {(inputs: Status_Learn_About_External_OlapInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Learn about connecting external OLAP engines`)
+};
+
+export const status_learn_more = /** @type {(inputs: Status_Learn_MoreInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Learn more ->`)
+};
+
+export const status_load_more_tables = /** @type {(inputs: Status_Load_More_TablesInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Load more tables`)
+};
+
+export const status_loading = /** @type {(inputs: Status_LoadingInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Loading...`)
+};
+
+export const status_loading_models = /** @type {(inputs: Status_Loading_ModelsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Loading models`)
+};
+
+export const status_loading_resources = /** @type {(inputs: Status_Loading_ResourcesInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Loading resources...`)
+};
+
+export const status_loading_tables = /** @type {(inputs: Status_Loading_TablesInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Loading tables...`)
+};
+
+export const status_logs_all_levels = /** @type {(inputs: Status_Logs_All_LevelsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`All levels`)
+};
+
+export const status_logs_connecting = /** @type {(inputs: Status_Logs_ConnectingInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Connecting`)
+};
+
+export const status_logs_connection_failed = /** @type {(inputs: Status_Logs_Connection_FailedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Connection failed`)
+};
+
+export const status_logs_disconnected = /** @type {(inputs: Status_Logs_DisconnectedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Disconnected`)
+};
+
+export const status_logs_idle = /** @type {(inputs: Status_Logs_IdleInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Idle`)
+};
+
+export const status_logs_level_debug = /** @type {(inputs: Status_Logs_Level_DebugInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Debug`)
+};
+
+export const status_logs_level_error = /** @type {(inputs: Status_Logs_Level_ErrorInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Error`)
+};
+
+export const status_logs_level_info = /** @type {(inputs: Status_Logs_Level_InfoInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Info`)
+};
+
+export const status_logs_level_warn = /** @type {(inputs: Status_Logs_Level_WarnInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Warn`)
+};
+
+export const status_logs_live = /** @type {(inputs: Status_Logs_LiveInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Live`)
+};
+
+export const status_logs_no_match = /** @type {(inputs: Status_Logs_No_MatchInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No logs match the current filters`)
+};
+
+export const status_logs_retry = /** @type {(inputs: Status_Logs_RetryInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Retry`)
+};
+
+export const status_logs_waiting = /** @type {(inputs: Status_Logs_WaitingInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Waiting for logs...`)
+};
+
+export const status_model_partitions = /** @type {(inputs: Status_Model_PartitionsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Model Partitions`)
+};
+
+export const status_models_created_in_developer = /** @type {(inputs: Status_Models_Created_In_DeveloperInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Models are created in Rill Developer.`)
+};
+
+export const status_models_section = /** @type {(inputs: Status_Models_SectionInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Models`)
+};
+
+export const status_nav_analytics = /** @type {(inputs: Status_Nav_AnalyticsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Analytics`)
+};
+
+export const status_nav_branches = /** @type {(inputs: Status_Nav_BranchesInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Branches`)
+};
+
+export const status_nav_logs = /** @type {(inputs: Status_Nav_LogsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Logs`)
+};
+
+export const status_nav_overview = /** @type {(inputs: Status_Nav_OverviewInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Overview`)
+};
+
+export const status_nav_resources = /** @type {(inputs: Status_Nav_ResourcesInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Resources`)
+};
+
+export const status_nav_tables = /** @type {(inputs: Status_Nav_TablesInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Tables`)
+};
+
+export const status_no_errors = /** @type {(inputs: Status_No_ErrorsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No errors detected.`)
+};
+
+export const status_no_external_tables = /** @type {(inputs: Status_No_External_TablesInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No external tables`)
+};
+
+export const status_no_external_tables_match_filters = /** @type {(inputs: Status_No_External_Tables_Match_FiltersInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No external tables match the current filters`)
+};
+
+export const status_no_models = /** @type {(inputs: Status_No_ModelsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No models`)
+};
+
+export const status_no_models_match_filters = /** @type {(inputs: Status_No_Models_Match_FiltersInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No models match the current filters`)
+};
+
+export const status_no_parse_errors = /** @type {(inputs: Status_No_Parse_ErrorsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No parse errors`)
+};
+
+export const status_no_resource_data = /** @type {(inputs: Status_No_Resource_DataInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No resource data available`)
+};
+
+export const status_no_resources = /** @type {(inputs: Status_No_ResourcesInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No resources found.`)
+};
+
+export const status_no_resources_match_filters = /** @type {(inputs: Status_No_Resources_Match_FiltersInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No resources match the current filters`)
+};
+
+export const status_no_tables = /** @type {(inputs: Status_No_TablesInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No tables found.`)
+};
+
+export const status_note = /** @type {(inputs: Status_NoteInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Note:`)
+};
+
+export const status_owned_by_other = /** @type {(inputs: Status_Owned_By_OtherInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Owned by another user`)
+};
+
+export const status_owned_by_you = /** @type {(inputs: Status_Owned_By_YouInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Owned by you`)
+};
+
+export const status_page_title = /** @type {(inputs: Status_Page_TitleInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Project Status`)
+};
+
+export const status_parse_error = /** @type {(inputs: Status_Parse_ErrorInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Parse error`)
+};
+
+export const status_parse_errors = /** @type {(inputs: Status_Parse_ErrorsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Parse errors`)
+};
+
+export const status_parse_errors_title = /** @type {(inputs: Status_Parse_Errors_TitleInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Parse Errors`)
+};
+
+export const status_reconciling = /** @type {(inputs: Status_ReconcilingInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Reconciling`)
+};
+
+export const status_refresh_all = /** @type {(inputs: Status_Refresh_AllInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Refresh all`)
+};
+
+export const status_refresh_all_confirm_body = /** @type {(inputs: Status_Refresh_All_Confirm_BodyInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`This will refresh all project sources and models.`)
+};
+
+export const status_refresh_all_confirm_tip = /** @type {(inputs: Status_Refresh_All_Confirm_TipInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`To refresh a single resource, scroll to the source or model, click the '...' button, and select the refresh option.`)
+};
+
+export const status_refresh_all_confirm_title = /** @type {(inputs: Status_Refresh_All_Confirm_TitleInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Refresh all sources and models?`)
+};
+
+export const status_refresh_all_sources_models = /** @type {(inputs: Status_Refresh_All_Sources_ModelsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Refresh all sources and models`)
+};
+
+export const status_refresh_errored_confirm_body = /** @type {(inputs: Status_Refresh_Errored_Confirm_BodyInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`This will re-execute all partitions that failed during their last run. The refresh will happen in the background.`)
+};
+
+export const status_refresh_errored_confirm_title = /** @type {(inputs: Status_Refresh_Errored_Confirm_TitleInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Refresh Errored Partitions for ${i?.modelName}?`)
+};
+
+export const status_refreshing = /** @type {(inputs: Status_RefreshingInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Refreshing...`)
+};
+
+export const status_resource_reconciling = /** @type {(inputs: Status_Resource_ReconcilingInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Resource is currently being reconciled`)
+};
+
+export const status_rill_managed = /** @type {(inputs: Status_Rill_ManagedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Rill Managed`)
+};
+
+export const status_table_plural = /** @type {(inputs: Status_Table_PluralInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Tables`)
+};
+
+export const status_table_singular = /** @type {(inputs: Status_Table_SingularInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Table`)
+};
+
+export const status_unable_to_check_errors = /** @type {(inputs: Status_Unable_To_Check_ErrorsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Unable to check for errors.`)
+};
+
+export const status_view_all = /** @type {(inputs: Status_View_AllInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`View all`)
+};
+
+export const status_view_plural = /** @type {(inputs: Status_View_PluralInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Views`)
+};
+
+export const status_view_singular = /** @type {(inputs: Status_View_SingularInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`View`)
+};
+
+export const status_yes_refresh = /** @type {(inputs: Status_Yes_RefreshInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Yes, refresh`)
 };
 
 export const theme_dark = /** @type {(inputs: Theme_DarkInputs) => LocalizedString} */ () => {
@@ -4696,4 +5578,392 @@ export const time_year_to_date = /** @type {(inputs: Time_Year_To_DateInputs) =>
 
 export const time_yesterday = /** @type {(inputs: Time_YesterdayInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Yesterday`)
+};
+
+export const users_access_changed_everyone = /** @type {(inputs: Users_Access_Changed_EveryoneInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Project access changed to everyone`)
+};
+
+export const users_access_changed_invite_only = /** @type {(inputs: Users_Access_Changed_Invite_OnlyInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Project access changed to invite-only`)
+};
+
+export const users_access_level = /** @type {(inputs: Users_Access_LevelInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Access level`)
+};
+
+export const users_add_guest = /** @type {(inputs: Users_Add_GuestInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Add guest`)
+};
+
+export const users_add_guests_button = /** @type {(inputs: Users_Add_Guests_ButtonInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Add guests`)
+};
+
+export const users_add_guests_description = /** @type {(inputs: Users_Add_Guests_DescriptionInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Guests can only access provisioned projects with assigned roles. They do not have organization-wide access.`)
+};
+
+export const users_add_guests_title = /** @type {(inputs: Users_Add_Guests_TitleInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Add guest users`)
+};
+
+export const users_add_users = /** @type {(inputs: Users_Add_UsersInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Add users`)
+};
+
+export const users_added_groups_count = /** @type {(inputs: Users_Added_Groups_CountInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Added ${i?.count} groups`)
+};
+
+export const users_already_member = /** @type {(inputs: Users_Already_MemberInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.emails} already a member of this organization`)
+};
+
+export const users_and_more = /** @type {(inputs: Users_And_MoreInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`and ${i?.count} more`)
+};
+
+export const users_billing_change_role_desc = /** @type {(inputs: Users_Billing_Change_Role_DescInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`This user is currently the billing contact. To change their role, assign another admin as the billing contact first.`)
+};
+
+export const users_billing_change_role_title = /** @type {(inputs: Users_Billing_Change_Role_TitleInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Assign a new billing contact first to change this user's role`)
+};
+
+export const users_billing_remove_desc = /** @type {(inputs: Users_Billing_Remove_DescInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`This user is the current billing contact and can't be removed. To proceed, assign another admin as the billing contact.`)
+};
+
+export const users_billing_remove_title = /** @type {(inputs: Users_Billing_Remove_TitleInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Assign a new billing contact first to remove this user`)
+};
+
+export const users_cancel = /** @type {(inputs: Users_CancelInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Cancel`)
+};
+
+export const users_change_billing_contact = /** @type {(inputs: Users_Change_Billing_ContactInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Change billing contact`)
+};
+
+export const users_convert = /** @type {(inputs: Users_ConvertInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Convert`)
+};
+
+export const users_convert_to_member = /** @type {(inputs: Users_Convert_To_MemberInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Convert to member`)
+};
+
+export const users_convert_user_to_role = /** @type {(inputs: Users_Convert_User_To_RoleInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Convert ${i?.user} to ${i?.role}`)
+};
+
+export const users_copy_url = /** @type {(inputs: Users_Copy_UrlInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Copy URL`)
+};
+
+export const users_create = /** @type {(inputs: Users_CreateInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Create`)
+};
+
+export const users_email_or_group_placeholder = /** @type {(inputs: Users_Email_Or_Group_PlaceholderInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Email or group, separated by commas`)
+};
+
+export const users_email_placeholder = /** @type {(inputs: Users_Email_PlaceholderInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Add emails, separated by commas`)
+};
+
+export const users_error = /** @type {(inputs: Users_ErrorInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Error`)
+};
+
+export const users_error_loading_members = /** @type {(inputs: Users_Error_Loading_MembersInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Error loading organization members:`)
+};
+
+export const users_error_removing = /** @type {(inputs: Users_Error_RemovingInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Error removing user from organization`)
+};
+
+export const users_error_removing_user = /** @type {(inputs: Users_Error_Removing_UserInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Error removing user`)
+};
+
+export const users_error_updating_role = /** @type {(inputs: Users_Error_Updating_RoleInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Error updating user role`)
+};
+
+export const users_error_upgrading_role = /** @type {(inputs: Users_Error_Upgrading_RoleInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Error upgrading user role`)
+};
+
+export const users_everyone_at_org = /** @type {(inputs: Users_Everyone_At_OrgInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Everyone at ${i?.organization}`)
+};
+
+export const users_failed_add_groups = /** @type {(inputs: Users_Failed_Add_GroupsInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Failed to add groups: ${i?.groups}`)
+};
+
+export const users_failed_invite = /** @type {(inputs: Users_Failed_InviteInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Failed to invite ${i?.emails}`)
+};
+
+export const users_failed_invite_users = /** @type {(inputs: Users_Failed_Invite_UsersInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Failed to invite users: ${i?.emails}`)
+};
+
+export const users_failed_load_projects = /** @type {(inputs: Users_Failed_Load_ProjectsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Failed to load projects`)
+};
+
+export const users_failed_load_users = /** @type {(inputs: Users_Failed_Load_UsersInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Failed to load users`)
+};
+
+export const users_filter_admins = /** @type {(inputs: Users_Filter_AdminsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Admins`)
+};
+
+export const users_filter_all = /** @type {(inputs: Users_Filter_AllInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`All`)
+};
+
+export const users_filter_all_roles = /** @type {(inputs: Users_Filter_All_RolesInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`All Roles`)
+};
+
+export const users_filter_all_users = /** @type {(inputs: Users_Filter_All_UsersInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`All users`)
+};
+
+export const users_filter_editors = /** @type {(inputs: Users_Filter_EditorsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Editors`)
+};
+
+export const users_filter_members = /** @type {(inputs: Users_Filter_MembersInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Members`)
+};
+
+export const users_filter_pending_invites = /** @type {(inputs: Users_Filter_Pending_InvitesInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Pending invites`)
+};
+
+export const users_filter_viewers = /** @type {(inputs: Users_Filter_ViewersInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Viewers`)
+};
+
+export const users_form_name = /** @type {(inputs: Users_Form_NameInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Name`)
+};
+
+export const users_form_untitled = /** @type {(inputs: Users_Form_UntitledInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Untitled`)
+};
+
+export const users_form_users = /** @type {(inputs: Users_Form_UsersInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Users`)
+};
+
+export const users_general_access = /** @type {(inputs: Users_General_AccessInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`General Access`)
+};
+
+export const users_group_count = /** @type {(inputs: Users_Group_CountInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.count} Groups`)
+};
+
+export const users_guest_upgraded = /** @type {(inputs: Users_Guest_UpgradedInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Guest upgraded to member and assigned ${i?.role} role`)
+};
+
+export const users_guest_upgraded_to = /** @type {(inputs: Users_Guest_Upgraded_ToInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Guest upgraded to ${i?.role}`)
+};
+
+export const users_guests_invited_success = /** @type {(inputs: Users_Guests_Invited_SuccessInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Invited ${i?.count} guests as ${i?.role}`)
+};
+
+export const users_invite = /** @type {(inputs: Users_InviteInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Invite`)
+};
+
+export const users_invite_only = /** @type {(inputs: Users_Invite_OnlyInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Invite only`)
+};
+
+export const users_invited_count = /** @type {(inputs: Users_Invited_CountInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Invited ${i?.count} people`)
+};
+
+export const users_invited_success = /** @type {(inputs: Users_Invited_SuccessInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Successfully invited ${i?.count} people as ${i?.role}`)
+};
+
+export const users_learn_more_sharing = /** @type {(inputs: Users_Learn_More_SharingInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Learn more about sharing`)
+};
+
+export const users_loading = /** @type {(inputs: Users_LoadingInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Loading...`)
+};
+
+export const users_loading_more = /** @type {(inputs: Users_Loading_MoreInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Loading more...`)
+};
+
+export const users_member_count = /** @type {(inputs: Users_Member_CountInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.count} members`)
+};
+
+export const users_no_groups = /** @type {(inputs: Users_No_GroupsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No groups`)
+};
+
+export const users_no_projects = /** @type {(inputs: Users_No_ProjectsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No projects`)
+};
+
+export const users_no_users = /** @type {(inputs: Users_No_UsersInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No users`)
+};
+
+export const users_only_admins_access = /** @type {(inputs: Users_Only_Admins_AccessInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Only admins and invited users can access`)
+};
+
+export const users_org_members_access = /** @type {(inputs: Users_Org_Members_AccessInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Org members can access`)
+};
+
+export const users_page_title = /** @type {(inputs: Users_Page_TitleInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Manage users`)
+};
+
+export const users_pending_invitation = /** @type {(inputs: Users_Pending_InvitationInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Pending invitation`)
+};
+
+export const users_project_access = /** @type {(inputs: Users_Project_AccessInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Project access`)
+};
+
+export const users_project_count = /** @type {(inputs: Users_Project_CountInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.count} Projects`)
+};
+
+export const users_projects_count = /** @type {(inputs: Users_Projects_CountInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.count} Projects`)
+};
+
+export const users_remove = /** @type {(inputs: Users_RemoveInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Remove`)
+};
+
+export const users_remove_confirm_desc = /** @type {(inputs: Users_Remove_Confirm_DescInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`This user will no longer be able to access the organization.`)
+};
+
+export const users_remove_confirm_title = /** @type {(inputs: Users_Remove_Confirm_TitleInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Remove user from organization?`)
+};
+
+export const users_removed = /** @type {(inputs: Users_RemovedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`User removed`)
+};
+
+export const users_removed_from_org = /** @type {(inputs: Users_Removed_From_OrgInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`User removed from organization`)
+};
+
+export const users_retry = /** @type {(inputs: Users_RetryInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Retry`)
+};
+
+export const users_role_updated = /** @type {(inputs: Users_Role_UpdatedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`User role updated`)
+};
+
+export const users_save = /** @type {(inputs: Users_SaveInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Save`)
+};
+
+export const users_searching = /** @type {(inputs: Users_SearchingInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Searching...`)
+};
+
+export const users_section_groups = /** @type {(inputs: Users_Section_GroupsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`GROUPS`)
+};
+
+export const users_section_guests = /** @type {(inputs: Users_Section_GuestsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`GUESTS`)
+};
+
+export const users_section_members = /** @type {(inputs: Users_Section_MembersInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`MEMBERS`)
+};
+
+export const users_select_projects = /** @type {(inputs: Users_Select_ProjectsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Select projects`)
+};
+
+export const users_tab_groups = /** @type {(inputs: Users_Tab_GroupsInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Groups (${i?.count})`)
+};
+
+export const users_tab_guests = /** @type {(inputs: Users_Tab_GuestsInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Guests (${i?.count})`)
+};
+
+export const users_tab_members = /** @type {(inputs: Users_Tab_MembersInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Members (${i?.count})`)
+};
+
+export const users_table_empty = /** @type {(inputs: Users_Table_EmptyInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No users found`)
+};
+
+export const users_table_header_groups = /** @type {(inputs: Users_Table_Header_GroupsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Groups`)
+};
+
+export const users_table_header_org_role = /** @type {(inputs: Users_Table_Header_Org_RoleInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Organization Role`)
+};
+
+export const users_table_header_projects = /** @type {(inputs: Users_Table_Header_ProjectsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Projects`)
+};
+
+export const users_table_header_user = /** @type {(inputs: Users_Table_Header_UserInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`User`)
+};
+
+export const users_upgrade_confirm_desc = /** @type {(inputs: Users_Upgrade_Confirm_DescInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Upgrading a guest to ${i?.role} will grant this user access to all open projects in the organization. Would you like to upgrade this guest user to ${i?.role}?`)
+};
+
+export const users_upgrade_confirm_title = /** @type {(inputs: Users_Upgrade_Confirm_TitleInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Upgrade guest to ${i?.role}?`)
+};
+
+export const users_url_copied = /** @type {(inputs: Users_Url_CopiedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`URL copied`)
+};
+
+export const users_user_count = /** @type {(inputs: Users_User_CountInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.count} Users`)
+};
+
+export const users_yes_remove = /** @type {(inputs: Users_Yes_RemoveInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Yes, remove`)
+};
+
+export const users_yes_upgrade = /** @type {(inputs: Users_Yes_UpgradeInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Yes, upgrade`)
 };

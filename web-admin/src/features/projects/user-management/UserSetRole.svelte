@@ -14,9 +14,10 @@
   import { ProjectUserRoles } from "@rilldata/web-common/features/users/roles.ts";
   import { eventBus } from "@rilldata/web-common/lib/event-bus/event-bus";
   import { useQueryClient } from "@tanstack/svelte-query";
+  import * as m from "@rilldata/web-common/paraglide/messages.js";
   import CaretUpIcon from "@rilldata/web-common/components/icons/CaretUpIcon.svelte";
   import CaretDownIcon from "@rilldata/web-common/components/icons/CaretDownIcon.svelte";
-  import { PROJECT_ROLES_DESCRIPTION_MAP } from "./constants";
+  import { getProjectRoleDescription } from "./constants";
 
   type User = V1ProjectMemberUser | V1ProjectInvite;
 
@@ -70,11 +71,11 @@
       });
 
       eventBus.emit("notification", {
-        message: "User role updated",
+        message: m.users_role_updated(),
       });
     } catch {
       eventBus.emit("notification", {
-        message: "Error updating user role",
+        message: m.users_error_updating_role(),
         type: "error",
       });
     }
@@ -103,11 +104,11 @@
       });
 
       eventBus.emit("notification", {
-        message: "User removed",
+        message: m.users_removed(),
       });
     } catch {
       eventBus.emit("notification", {
-        message: "Error removing user",
+        message: m.users_error_removing_user(),
         type: "error",
       });
     }
@@ -141,9 +142,9 @@
           onclick={() =>
             handleSetRole(getUserEmail(user), ProjectUserRoles.Admin)}
         >
-          <span class="font-medium">Admin</span>
+          <span class="font-medium">{m.role_admin()}</span>
           <span class="text-xs text-fg-secondary"
-            >{PROJECT_ROLES_DESCRIPTION_MAP.admin}</span
+            >{getProjectRoleDescription("admin")}</span
           >
         </DropdownMenu.Item>
       {/if}
@@ -156,9 +157,9 @@
         onclick={() =>
           handleSetRole(getUserEmail(user), ProjectUserRoles.Editor)}
       >
-        <span class="font-medium">Editor</span>
+        <span class="font-medium">{m.role_editor()}</span>
         <span class="text-xs text-fg-secondary"
-          >{PROJECT_ROLES_DESCRIPTION_MAP.editor}</span
+          >{getProjectRoleDescription("editor")}</span
         >
       </DropdownMenu.Item>
 
@@ -170,9 +171,9 @@
         onclick={() =>
           handleSetRole(getUserEmail(user), ProjectUserRoles.Viewer)}
       >
-        <span class="font-medium">Viewer</span>
+        <span class="font-medium">{m.role_viewer()}</span>
         <span class="text-xs text-fg-secondary"
-          >{PROJECT_ROLES_DESCRIPTION_MAP.viewer}</span
+          >{getProjectRoleDescription("viewer")}</span
         >
       </DropdownMenu.Item>
 
@@ -182,7 +183,7 @@
           class="font-normal flex items-center py-2"
           onclick={() => handleRemove(getUserEmail(user))}
         >
-          <span class="text-red-600">Remove</span>
+          <span class="text-red-600">{m.users_remove()}</span>
         </DropdownMenu.Item>
       {/if}
     </DropdownMenu.Content>

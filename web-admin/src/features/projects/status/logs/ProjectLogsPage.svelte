@@ -20,6 +20,7 @@
     parseStringParam,
   } from "@rilldata/web-common/lib/url-filter-sync";
   import { ProjectLogsStore, type LogEntry } from "./project-logs-store";
+  import * as m from "@rilldata/web-common/paraglide/messages.js";
 
   const runtimeClient = useRuntimeClient();
 
@@ -27,10 +28,10 @@
   const REPLAY_LIMIT = 100;
 
   const filterableLevels = [
-    { value: V1LogLevel.LOG_LEVEL_DEBUG, label: "Debug" },
-    { value: V1LogLevel.LOG_LEVEL_INFO, label: "Info" },
-    { value: V1LogLevel.LOG_LEVEL_WARN, label: "Warn" },
-    { value: V1LogLevel.LOG_LEVEL_ERROR, label: "Error" },
+    { value: V1LogLevel.LOG_LEVEL_DEBUG, label: m.status_logs_level_debug() },
+    { value: V1LogLevel.LOG_LEVEL_INFO, label: m.status_logs_level_info() },
+    { value: V1LogLevel.LOG_LEVEL_WARN, label: m.status_logs_level_warn() },
+    { value: V1LogLevel.LOG_LEVEL_ERROR, label: m.status_logs_level_error() },
   ];
 
   const logStore = new ProjectLogsStore(MAX_LOGS);
@@ -104,7 +105,7 @@
   }
 
   $: selectedLevelLabel = (() => {
-    if (selectedLevels.length === 0) return "All levels";
+    if (selectedLevels.length === 0) return m.status_logs_all_levels();
     if (selectedLevels.length === 1) {
       return (
         filterableLevels.find((l) => l.value === selectedLevels[0])?.label ??
@@ -242,7 +243,7 @@
 <section class="flex flex-col gap-y-4 size-full">
   <div class="flex items-center justify-between">
     <div class="flex items-center gap-x-2">
-      <h2 class="text-lg font-medium">Logs</h2>
+      <h2 class="text-lg font-medium">{m.status_nav_logs()}</h2>
       <span
         class="status-badge"
         class:status-live={isConnected}
@@ -251,13 +252,13 @@
       >
         <span class="status-dot"></span>
         {#if isConnected}
-          Live
+          {m.status_logs_live()}
         {:else if isConnecting}
-          Connecting
+          {m.status_logs_connecting()}
         {:else if hasConnectionError}
-          Disconnected
+          {m.status_logs_disconnected()}
         {:else}
-          Idle
+          {m.status_logs_idle()}
         {/if}
       </span>
     </div>
@@ -307,7 +308,7 @@
         class="shrink-0 text-sm text-primary-500 hover:text-primary-600 whitespace-nowrap"
         onclick={clearFilters}
       >
-        Clear
+        {m.status_clear()}
       </button>
     {/if}
   </div>
@@ -315,13 +316,13 @@
   <div class="logs-container" bind:this={logsContainer}>
     {#if hasConnectionError}
       <div class="error-state">
-        <span class="text-red-600">Connection failed: {connectionError}</span>
-        <button class="retry-button" onclick={retryConnection}> Retry </button>
+        <span class="text-red-600">{m.status_logs_connection_failed()}: {connectionError}</span>
+        <button class="retry-button" onclick={retryConnection}> {m.status_logs_retry()} </button>
       </div>
     {:else if totalLogs === 0}
-      <div class="empty-state">Waiting for logs...</div>
+      <div class="empty-state">{m.status_logs_waiting()}</div>
     {:else if filteredLogs.length === 0}
-      <div class="empty-state">No logs match the current filters</div>
+      <div class="empty-state">{m.status_logs_no_match()}</div>
     {:else}
       {#each filteredLogs as log (log._id)}
         <div class="log-entry {getLevelClass(log.level)}">

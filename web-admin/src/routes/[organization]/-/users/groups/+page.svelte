@@ -1,4 +1,5 @@
 <script lang="ts">
+  import * as m from "@rilldata/web-common/paraglide/messages.js";
   import { page } from "$app/stores";
   import {
     createAdminServiceGetCurrentUser,
@@ -71,7 +72,7 @@
     />
   {:else if $listOrganizationMemberUsergroups.isError}
     <div class="text-red-500">
-      Error loading organization user groups: {$listOrganizationMemberUsergroups.error}
+      {m.groups_error_loading()} {$listOrganizationMemberUsergroups.error}
     </div>
   {:else if $listOrganizationMemberUsergroups.isSuccess}
     <div class="flex flex-col">
@@ -88,7 +89,7 @@
           onClick={() => (isCreateUserGroupDialogOpen = true)}
         >
           <Plus size="16px" />
-          <span>Create group</span>
+          <span>{m.groups_create_group()}</span>
         </Button>
       </div>
       <div class="mt-6">
@@ -103,9 +104,7 @@
       {#if filteredGroups.length > 0}
         <div class="px-2 py-3">
           <span class="font-medium text-sm text-fg-secondary">
-            {filteredGroups.length} total group{filteredGroups.length === 1
-              ? ""
-              : "s"}
+            {m.groups_total_count({ count: filteredGroups.length })}
           </span>
         </div>
       {/if}

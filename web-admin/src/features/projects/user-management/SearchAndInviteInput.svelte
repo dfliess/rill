@@ -399,7 +399,7 @@
       disabled={selected.length === 0 && !input.trim()}
       forcedStyle="height: 32px !important; padding-left: 20px; padding-right: 20px;"
     >
-      Invite
+      {m.users_invite()}
     </Button>
   </div>
 
@@ -419,7 +419,7 @@
       }}
     >
       {#if categorizedResults.groups.length > 0}
-        <div class="section-header">GROUPS</div>
+        <div class="section-header">{m.users_section_groups()}</div>
         {#each categorizedResults.groups as result, i (i)}
           {@const resultIndex = getResultIndex(result, categorizedResults)}
           {@const isSelected = selectedSet.has(result.identifier)}
@@ -445,7 +445,7 @@
       {/if}
 
       {#if categorizedResults.members.length > 0}
-        <div class="section-header">MEMBERS</div>
+        <div class="section-header">{m.users_section_members()}</div>
         {#each categorizedResults.members as result, i (i)}
           {@const resultIndex = getResultIndex(result, categorizedResults)}
           {@const isSelected = selectedSet.has(result.identifier)}
@@ -471,7 +471,7 @@
       {/if}
 
       {#if categorizedResults.guests.length > 0}
-        <div class="section-header">GUESTS</div>
+        <div class="section-header">{m.users_section_guests()}</div>
         {#each categorizedResults.guests as result, i (i)}
           {@const resultIndex = getResultIndex(result, categorizedResults)}
           {@const isSelected = selectedSet.has(result.identifier)}
@@ -498,7 +498,7 @@
       style="width: {dropdownPosition.width}px; top: {dropdownPosition.top}px; left: {dropdownPosition.left}px;"
     >
       <div class="loading-spinner"></div>
-      <span>Searching...</span>
+      <span>{m.users_searching()}</span>
     </div>
   {/if}
 </div>
