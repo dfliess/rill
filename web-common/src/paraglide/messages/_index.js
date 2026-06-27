@@ -2,6 +2,29 @@
 import { getLocale, experimentalStaticLocale } from "../runtime.js"
 
 /** @typedef {import('../runtime.js').LocalizedString} LocalizedString */
+/** @typedef {{}} Alert_Context_Menu_AriaInputs */
+/** @typedef {{ name: NonNullable<unknown> }} Alert_Created_ByInputs */
+/** @typedef {{}} Alert_Created_Through_CodeInputs */
+/** @typedef {{}} Alert_CriteriaInputs */
+/** @typedef {{}} Alert_DashboardInputs */
+/** @typedef {{}} Alert_Email_NotificationsInputs */
+/** @typedef {{}} Alert_Name_LabelInputs */
+/** @typedef {{}} Alert_NoneInputs */
+/** @typedef {{}} Alert_ScheduleInputs */
+/** @typedef {{}} Alert_Slack_NotificationsInputs */
+/** @typedef {{}} Alert_SnoozeInputs */
+/** @typedef {{}} Alert_Split_By_DimensionInputs */
+/** @typedef {{}} Alert_Status_CheckedInputs */
+/** @typedef {{}} Alert_Status_CheckingInputs */
+/** @typedef {{}} Alert_Status_FailedInputs */
+/** @typedef {{}} Alert_Status_Not_TriggeredInputs */
+/** @typedef {{}} Alert_Status_RunningInputs */
+/** @typedef {{}} Alert_Status_TriggeredInputs */
+/** @typedef {{}} Alert_Status_UnknownInputs */
+/** @typedef {{}} Alert_Unsubscribe_FailedInputs */
+/** @typedef {{}} Alert_UnsubscribedInputs */
+/** @typedef {{}} Alert_UnsubscribingInputs */
+/** @typedef {{}} Alert_Whenever_Data_RefreshesInputs */
 /** @typedef {{}} Avatar_Contact_SupportInputs */
 /** @typedef {{}} Avatar_Copied_UrlInputs */
 /** @typedef {{}} Avatar_Copy_UrlInputs */
@@ -372,6 +395,35 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Dashboard_Total_RowInputs */
 /** @typedef {{}} Dashboard_View_AsInputs */
 /** @typedef {{}} Dashboard_Viewing_AsInputs */
+/** @typedef {{}} Error_Access_Denied_BodyInputs */
+/** @typedef {{}} Error_Access_Denied_HeaderInputs */
+/** @typedef {{}} Error_Auth_BodyInputs */
+/** @typedef {{}} Error_Auth_HeaderInputs */
+/** @typedef {{}} Error_Back_To_HomeInputs */
+/** @typedef {{}} Error_Conversation_Not_Found_BodyInputs */
+/** @typedef {{}} Error_Conversation_Not_Found_HeaderInputs */
+/** @typedef {{}} Error_Deploying_ProjectInputs */
+/** @typedef {{}} Error_Deployment_ErrorInputs */
+/** @typedef {{}} Error_Deployment_Not_Found_BodyInputs */
+/** @typedef {{}} Error_Deployment_Not_Found_HeaderInputs */
+/** @typedef {{}} Error_Fetching_DeploymentInputs */
+/** @typedef {{}} Error_Generic_BodyInputs */
+/** @typedef {{}} Error_Generic_HeaderInputs */
+/** @typedef {{}} Error_Hide_DetailsInputs */
+/** @typedef {{}} Error_Link_Expired_BodyInputs */
+/** @typedef {{}} Error_Link_Expired_HeaderInputs */
+/** @typedef {{}} Error_Network_BodyInputs */
+/** @typedef {{}} Error_Network_HeaderInputs */
+/** @typedef {{}} Error_Org_Not_Found_BodyInputs */
+/** @typedef {{}} Error_Org_Not_Found_HeaderInputs */
+/** @typedef {{}} Error_Page_Not_Found_BodyInputs */
+/** @typedef {{}} Error_Page_Not_Found_HeaderInputs */
+/** @typedef {{}} Error_Project_Not_Found_BodyInputs */
+/** @typedef {{}} Error_Project_Not_Found_HeaderInputs */
+/** @typedef {{}} Error_Resource_Not_Found_BodyInputs */
+/** @typedef {{}} Error_Resource_Not_Found_HeaderInputs */
+/** @typedef {{}} Error_Retry_NowInputs */
+/** @typedef {{}} Error_Show_DetailsInputs */
 /** @typedef {{}} Explore_Go_To_DashboardInputs */
 /** @typedef {{}} Explore_Go_To_ExploreInputs */
 /** @typedef {{ name: NonNullable<unknown> }} Explore_Go_To_NamedInputs */
@@ -435,9 +487,29 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Nav_Tab_ReportsInputs */
 /** @typedef {{}} Nav_Tab_SettingsInputs */
 /** @typedef {{}} Nav_Tab_StatusInputs */
+/** @typedef {{}} Org_Tab_ProjectsInputs */
+/** @typedef {{}} Org_Tab_SettingsInputs */
+/** @typedef {{}} Org_Tab_UsersInputs */
 /** @typedef {{ grain: NonNullable<unknown> }} Pivot_Time_Dimension_HeaderInputs */
 /** @typedef {{}} Pivot_Time_PrefixInputs */
 /** @typedef {{}} Project_Dashboards_TitleInputs */
+/** @typedef {{}} Report_Context_Menu_AriaInputs */
+/** @typedef {{ name: NonNullable<unknown> }} Report_Created_ByInputs */
+/** @typedef {{}} Report_Created_Through_CodeInputs */
+/** @typedef {{}} Report_DashboardInputs */
+/** @typedef {{}} Report_Email_RecipientsInputs */
+/** @typedef {{}} Report_Name_LabelInputs */
+/** @typedef {{}} Report_Next_RunInputs */
+/** @typedef {{}} Report_No_Row_LimitInputs */
+/** @typedef {{}} Report_RepeatsInputs */
+/** @typedef {{}} Report_Slack_RecipientsInputs */
+/** @typedef {{}} Report_Status_FailedInputs */
+/** @typedef {{}} Report_Status_SentInputs */
+/** @typedef {{}} Report_Unsubscribe_FailedInputs */
+/** @typedef {{}} Report_UnsubscribedInputs */
+/** @typedef {{}} Report_UnsubscribingInputs */
+/** @typedef {{ link: NonNullable<unknown> }} Share_Limited_ViewInputs */
+/** @typedef {{}} Share_Original_DashboardInputs */
 /** @typedef {{}} Theme_DarkInputs */
 /** @typedef {{}} Theme_LabelInputs */
 /** @typedef {{}} Theme_LightInputs */
@@ -472,6 +544,328 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Time_YesterdayInputs */
 import * as __en from "./en.js"
 import * as __es from "./es.js"
+/**
+* | output |
+* | --- |
+* | "Alert context menu" |
+*
+* @param {Alert_Context_Menu_AriaInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_context_menu_aria = /** @type {((inputs?: Alert_Context_Menu_AriaInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Context_Menu_AriaInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_context_menu_aria(inputs)
+	return __es.alert_context_menu_aria(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Created by {name}" |
+*
+* @param {Alert_Created_ByInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_created_by = /** @type {((inputs: Alert_Created_ByInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Created_ByInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_created_by(inputs)
+	return __es.alert_created_by(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Created through code" |
+*
+* @param {Alert_Created_Through_CodeInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_created_through_code = /** @type {((inputs?: Alert_Created_Through_CodeInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Created_Through_CodeInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_created_through_code(inputs)
+	return __es.alert_created_through_code(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Criteria" |
+*
+* @param {Alert_CriteriaInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_criteria = /** @type {((inputs?: Alert_CriteriaInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_CriteriaInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_criteria(inputs)
+	return __es.alert_criteria(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Dashboard" |
+*
+* @param {Alert_DashboardInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_dashboard = /** @type {((inputs?: Alert_DashboardInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_DashboardInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_dashboard(inputs)
+	return __es.alert_dashboard(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Email notifications" |
+*
+* @param {Alert_Email_NotificationsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_email_notifications = /** @type {((inputs?: Alert_Email_NotificationsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Email_NotificationsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_email_notifications(inputs)
+	return __es.alert_email_notifications(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Name" |
+*
+* @param {Alert_Name_LabelInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_name_label = /** @type {((inputs?: Alert_Name_LabelInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Name_LabelInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_name_label(inputs)
+	return __es.alert_name_label(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "None" |
+*
+* @param {Alert_NoneInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_none = /** @type {((inputs?: Alert_NoneInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_NoneInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_none(inputs)
+	return __es.alert_none(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Schedule" |
+*
+* @param {Alert_ScheduleInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_schedule = /** @type {((inputs?: Alert_ScheduleInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_ScheduleInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_schedule(inputs)
+	return __es.alert_schedule(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Slack notifications" |
+*
+* @param {Alert_Slack_NotificationsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_slack_notifications = /** @type {((inputs?: Alert_Slack_NotificationsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Slack_NotificationsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_slack_notifications(inputs)
+	return __es.alert_slack_notifications(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Snooze" |
+*
+* @param {Alert_SnoozeInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_snooze = /** @type {((inputs?: Alert_SnoozeInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_SnoozeInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_snooze(inputs)
+	return __es.alert_snooze(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Split by dimension" |
+*
+* @param {Alert_Split_By_DimensionInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_split_by_dimension = /** @type {((inputs?: Alert_Split_By_DimensionInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Split_By_DimensionInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_split_by_dimension(inputs)
+	return __es.alert_split_by_dimension(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Checked" |
+*
+* @param {Alert_Status_CheckedInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_status_checked = /** @type {((inputs?: Alert_Status_CheckedInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Status_CheckedInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_status_checked(inputs)
+	return __es.alert_status_checked(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Checking" |
+*
+* @param {Alert_Status_CheckingInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_status_checking = /** @type {((inputs?: Alert_Status_CheckingInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Status_CheckingInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_status_checking(inputs)
+	return __es.alert_status_checking(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Failed" |
+*
+* @param {Alert_Status_FailedInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_status_failed = /** @type {((inputs?: Alert_Status_FailedInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Status_FailedInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_status_failed(inputs)
+	return __es.alert_status_failed(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Not triggered" |
+*
+* @param {Alert_Status_Not_TriggeredInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_status_not_triggered = /** @type {((inputs?: Alert_Status_Not_TriggeredInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Status_Not_TriggeredInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_status_not_triggered(inputs)
+	return __es.alert_status_not_triggered(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Running" |
+*
+* @param {Alert_Status_RunningInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_status_running = /** @type {((inputs?: Alert_Status_RunningInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Status_RunningInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_status_running(inputs)
+	return __es.alert_status_running(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Triggered" |
+*
+* @param {Alert_Status_TriggeredInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_status_triggered = /** @type {((inputs?: Alert_Status_TriggeredInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Status_TriggeredInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_status_triggered(inputs)
+	return __es.alert_status_triggered(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Status unknown" |
+*
+* @param {Alert_Status_UnknownInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_status_unknown = /** @type {((inputs?: Alert_Status_UnknownInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Status_UnknownInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_status_unknown(inputs)
+	return __es.alert_status_unknown(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Failed to unsubscribe." |
+*
+* @param {Alert_Unsubscribe_FailedInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_unsubscribe_failed = /** @type {((inputs?: Alert_Unsubscribe_FailedInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Unsubscribe_FailedInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_unsubscribe_failed(inputs)
+	return __es.alert_unsubscribe_failed(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Unsubscribed from alert." |
+*
+* @param {Alert_UnsubscribedInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_unsubscribed = /** @type {((inputs?: Alert_UnsubscribedInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_UnsubscribedInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_unsubscribed(inputs)
+	return __es.alert_unsubscribed(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Unsubscribing..." |
+*
+* @param {Alert_UnsubscribingInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_unsubscribing = /** @type {((inputs?: Alert_UnsubscribingInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_UnsubscribingInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_unsubscribing(inputs)
+	return __es.alert_unsubscribing(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Whenever your data refreshes" |
+*
+* @param {Alert_Whenever_Data_RefreshesInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_whenever_data_refreshes = /** @type {((inputs?: Alert_Whenever_Data_RefreshesInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Whenever_Data_RefreshesInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_whenever_data_refreshes(inputs)
+	return __es.alert_whenever_data_refreshes(inputs)
+});
 /**
 * | output |
 * | --- |
@@ -5655,6 +6049,412 @@ export const dashboard_viewing_as = /** @type {((inputs?: Dashboard_Viewing_AsIn
 /**
 * | output |
 * | --- |
+* | "You don't have access to this page. Please check that you have the correct permissions." |
+*
+* @param {Error_Access_Denied_BodyInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const error_access_denied_body = /** @type {((inputs?: Error_Access_Denied_BodyInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Error_Access_Denied_BodyInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.error_access_denied_body(inputs)
+	return __es.error_access_denied_body(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Access denied" |
+*
+* @param {Error_Access_Denied_HeaderInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const error_access_denied_header = /** @type {((inputs?: Error_Access_Denied_HeaderInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Error_Access_Denied_HeaderInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.error_access_denied_header(inputs)
+	return __es.error_access_denied_header(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Try refreshing the page. If the problem persists, try signing out and back in." |
+*
+* @param {Error_Auth_BodyInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const error_auth_body = /** @type {((inputs?: Error_Auth_BodyInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Error_Auth_BodyInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.error_auth_body(inputs)
+	return __es.error_auth_body(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Authentication error" |
+*
+* @param {Error_Auth_HeaderInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const error_auth_header = /** @type {((inputs?: Error_Auth_HeaderInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Error_Auth_HeaderInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.error_auth_header(inputs)
+	return __es.error_auth_header(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Back to home" |
+*
+* @param {Error_Back_To_HomeInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const error_back_to_home = /** @type {((inputs?: Error_Back_To_HomeInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Error_Back_To_HomeInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.error_back_to_home(inputs)
+	return __es.error_back_to_home(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Please check that you have the correct link or if you have access to it." |
+*
+* @param {Error_Conversation_Not_Found_BodyInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const error_conversation_not_found_body = /** @type {((inputs?: Error_Conversation_Not_Found_BodyInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Error_Conversation_Not_Found_BodyInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.error_conversation_not_found_body(inputs)
+	return __es.error_conversation_not_found_body(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Conversation not found" |
+*
+* @param {Error_Conversation_Not_Found_HeaderInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const error_conversation_not_found_header = /** @type {((inputs?: Error_Conversation_Not_Found_HeaderInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Error_Conversation_Not_Found_HeaderInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.error_conversation_not_found_header(inputs)
+	return __es.error_conversation_not_found_header(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "There was an error deploying your project. Please contact support." |
+*
+* @param {Error_Deploying_ProjectInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const error_deploying_project = /** @type {((inputs?: Error_Deploying_ProjectInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Error_Deploying_ProjectInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.error_deploying_project(inputs)
+	return __es.error_deploying_project(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Deployment Error" |
+*
+* @param {Error_Deployment_ErrorInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const error_deployment_error = /** @type {((inputs?: Error_Deployment_ErrorInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Error_Deployment_ErrorInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.error_deployment_error(inputs)
+	return __es.error_deployment_error(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "This is potentially a temporary state if the project has just been reset." |
+*
+* @param {Error_Deployment_Not_Found_BodyInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const error_deployment_not_found_body = /** @type {((inputs?: Error_Deployment_Not_Found_BodyInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Error_Deployment_Not_Found_BodyInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.error_deployment_not_found_body(inputs)
+	return __es.error_deployment_not_found_body(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Project deployment not found" |
+*
+* @param {Error_Deployment_Not_Found_HeaderInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const error_deployment_not_found_header = /** @type {((inputs?: Error_Deployment_Not_Found_HeaderInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Error_Deployment_Not_Found_HeaderInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.error_deployment_not_found_header(inputs)
+	return __es.error_deployment_not_found_header(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Error fetching deployment" |
+*
+* @param {Error_Fetching_DeploymentInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const error_fetching_deployment = /** @type {((inputs?: Error_Fetching_DeploymentInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Error_Fetching_DeploymentInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.error_fetching_deployment(inputs)
+	return __es.error_fetching_deployment(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Try refreshing the page, and reach out to us if the problem persists." |
+*
+* @param {Error_Generic_BodyInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const error_generic_body = /** @type {((inputs?: Error_Generic_BodyInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Error_Generic_BodyInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.error_generic_body(inputs)
+	return __es.error_generic_body(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Sorry, something went wrong!" |
+*
+* @param {Error_Generic_HeaderInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const error_generic_header = /** @type {((inputs?: Error_Generic_HeaderInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Error_Generic_HeaderInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.error_generic_header(inputs)
+	return __es.error_generic_header(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Hide details" |
+*
+* @param {Error_Hide_DetailsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const error_hide_details = /** @type {((inputs?: Error_Hide_DetailsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Error_Hide_DetailsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.error_hide_details(inputs)
+	return __es.error_hide_details(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "It looks like this link is no longer active. Please reach out to the sender to request a new link." |
+*
+* @param {Error_Link_Expired_BodyInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const error_link_expired_body = /** @type {((inputs?: Error_Link_Expired_BodyInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Error_Link_Expired_BodyInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.error_link_expired_body(inputs)
+	return __es.error_link_expired_body(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Oops! This link has expired" |
+*
+* @param {Error_Link_Expired_HeaderInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const error_link_expired_header = /** @type {((inputs?: Error_Link_Expired_HeaderInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Error_Link_Expired_HeaderInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.error_link_expired_header(inputs)
+	return __es.error_link_expired_header(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "It seems we're having trouble reaching our servers. Check your connection or try again later." |
+*
+* @param {Error_Network_BodyInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const error_network_body = /** @type {((inputs?: Error_Network_BodyInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Error_Network_BodyInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.error_network_body(inputs)
+	return __es.error_network_body(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Network Error" |
+*
+* @param {Error_Network_HeaderInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const error_network_header = /** @type {((inputs?: Error_Network_HeaderInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Error_Network_HeaderInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.error_network_header(inputs)
+	return __es.error_network_header(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "The organization you requested could not be found. Please check that you have provided a valid organization name." |
+*
+* @param {Error_Org_Not_Found_BodyInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const error_org_not_found_body = /** @type {((inputs?: Error_Org_Not_Found_BodyInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Error_Org_Not_Found_BodyInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.error_org_not_found_body(inputs)
+	return __es.error_org_not_found_body(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Organization not found" |
+*
+* @param {Error_Org_Not_Found_HeaderInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const error_org_not_found_header = /** @type {((inputs?: Error_Org_Not_Found_HeaderInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Error_Org_Not_Found_HeaderInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.error_org_not_found_header(inputs)
+	return __es.error_org_not_found_header(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "The page you're looking for might have been removed, had its name changed, or is temporarily unavailable." |
+*
+* @param {Error_Page_Not_Found_BodyInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const error_page_not_found_body = /** @type {((inputs?: Error_Page_Not_Found_BodyInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Error_Page_Not_Found_BodyInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.error_page_not_found_body(inputs)
+	return __es.error_page_not_found_body(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Sorry, we can't find this page!" |
+*
+* @param {Error_Page_Not_Found_HeaderInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const error_page_not_found_header = /** @type {((inputs?: Error_Page_Not_Found_HeaderInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Error_Page_Not_Found_HeaderInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.error_page_not_found_header(inputs)
+	return __es.error_page_not_found_header(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "The project you requested could not be found. Please check that you have provided a valid project name." |
+*
+* @param {Error_Project_Not_Found_BodyInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const error_project_not_found_body = /** @type {((inputs?: Error_Project_Not_Found_BodyInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Error_Project_Not_Found_BodyInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.error_project_not_found_body(inputs)
+	return __es.error_project_not_found_body(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Project not found" |
+*
+* @param {Error_Project_Not_Found_HeaderInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const error_project_not_found_header = /** @type {((inputs?: Error_Project_Not_Found_HeaderInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Error_Project_Not_Found_HeaderInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.error_project_not_found_header(inputs)
+	return __es.error_project_not_found_header(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "This resource may have been deleted, renamed, or is temporarily unavailable." |
+*
+* @param {Error_Resource_Not_Found_BodyInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const error_resource_not_found_body = /** @type {((inputs?: Error_Resource_Not_Found_BodyInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Error_Resource_Not_Found_BodyInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.error_resource_not_found_body(inputs)
+	return __es.error_resource_not_found_body(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Resource not found" |
+*
+* @param {Error_Resource_Not_Found_HeaderInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const error_resource_not_found_header = /** @type {((inputs?: Error_Resource_Not_Found_HeaderInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Error_Resource_Not_Found_HeaderInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.error_resource_not_found_header(inputs)
+	return __es.error_resource_not_found_header(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Retry now" |
+*
+* @param {Error_Retry_NowInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const error_retry_now = /** @type {((inputs?: Error_Retry_NowInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Error_Retry_NowInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.error_retry_now(inputs)
+	return __es.error_retry_now(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Show details" |
+*
+* @param {Error_Show_DetailsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const error_show_details = /** @type {((inputs?: Error_Show_DetailsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Error_Show_DetailsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.error_show_details(inputs)
+	return __es.error_show_details(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Go to Explore Dashboard" |
 *
 * @param {Explore_Go_To_DashboardInputs} inputs
@@ -6537,6 +7337,48 @@ export const nav_tab_status = /** @type {((inputs?: Nav_Tab_StatusInputs, option
 /**
 * | output |
 * | --- |
+* | "Projects" |
+*
+* @param {Org_Tab_ProjectsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const org_tab_projects = /** @type {((inputs?: Org_Tab_ProjectsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Org_Tab_ProjectsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.org_tab_projects(inputs)
+	return __es.org_tab_projects(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Settings" |
+*
+* @param {Org_Tab_SettingsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const org_tab_settings = /** @type {((inputs?: Org_Tab_SettingsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Org_Tab_SettingsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.org_tab_settings(inputs)
+	return __es.org_tab_settings(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Users" |
+*
+* @param {Org_Tab_UsersInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const org_tab_users = /** @type {((inputs?: Org_Tab_UsersInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Org_Tab_UsersInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.org_tab_users(inputs)
+	return __es.org_tab_users(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Time {grain}" |
 *
 * @param {Pivot_Time_Dimension_HeaderInputs} inputs
@@ -6575,6 +7417,244 @@ export const project_dashboards_title = /** @type {((inputs?: Project_Dashboards
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.project_dashboards_title(inputs)
 	return __es.project_dashboards_title(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Report context menu" |
+*
+* @param {Report_Context_Menu_AriaInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_context_menu_aria = /** @type {((inputs?: Report_Context_Menu_AriaInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Context_Menu_AriaInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_context_menu_aria(inputs)
+	return __es.report_context_menu_aria(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Created by {name}" |
+*
+* @param {Report_Created_ByInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_created_by = /** @type {((inputs: Report_Created_ByInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Created_ByInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_created_by(inputs)
+	return __es.report_created_by(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Report created through code" |
+*
+* @param {Report_Created_Through_CodeInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_created_through_code = /** @type {((inputs?: Report_Created_Through_CodeInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Created_Through_CodeInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_created_through_code(inputs)
+	return __es.report_created_through_code(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Dashboard" |
+*
+* @param {Report_DashboardInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_dashboard = /** @type {((inputs?: Report_DashboardInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_DashboardInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_dashboard(inputs)
+	return __es.report_dashboard(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Email recipients" |
+*
+* @param {Report_Email_RecipientsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_email_recipients = /** @type {((inputs?: Report_Email_RecipientsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Email_RecipientsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_email_recipients(inputs)
+	return __es.report_email_recipients(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Name" |
+*
+* @param {Report_Name_LabelInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_name_label = /** @type {((inputs?: Report_Name_LabelInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Name_LabelInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_name_label(inputs)
+	return __es.report_name_label(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Next run" |
+*
+* @param {Report_Next_RunInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_next_run = /** @type {((inputs?: Report_Next_RunInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Next_RunInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_next_run(inputs)
+	return __es.report_next_run(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "No row limit" |
+*
+* @param {Report_No_Row_LimitInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_no_row_limit = /** @type {((inputs?: Report_No_Row_LimitInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_No_Row_LimitInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_no_row_limit(inputs)
+	return __es.report_no_row_limit(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Repeats" |
+*
+* @param {Report_RepeatsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_repeats = /** @type {((inputs?: Report_RepeatsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_RepeatsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_repeats(inputs)
+	return __es.report_repeats(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Slack recipients" |
+*
+* @param {Report_Slack_RecipientsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_slack_recipients = /** @type {((inputs?: Report_Slack_RecipientsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Slack_RecipientsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_slack_recipients(inputs)
+	return __es.report_slack_recipients(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Failed" |
+*
+* @param {Report_Status_FailedInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_status_failed = /** @type {((inputs?: Report_Status_FailedInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Status_FailedInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_status_failed(inputs)
+	return __es.report_status_failed(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Report sent" |
+*
+* @param {Report_Status_SentInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_status_sent = /** @type {((inputs?: Report_Status_SentInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Status_SentInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_status_sent(inputs)
+	return __es.report_status_sent(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Failed to unsubscribe." |
+*
+* @param {Report_Unsubscribe_FailedInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_unsubscribe_failed = /** @type {((inputs?: Report_Unsubscribe_FailedInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_Unsubscribe_FailedInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_unsubscribe_failed(inputs)
+	return __es.report_unsubscribe_failed(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Unsubscribed from report." |
+*
+* @param {Report_UnsubscribedInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_unsubscribed = /** @type {((inputs?: Report_UnsubscribedInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_UnsubscribedInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_unsubscribed(inputs)
+	return __es.report_unsubscribed(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Unsubscribing..." |
+*
+* @param {Report_UnsubscribingInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const report_unsubscribing = /** @type {((inputs?: Report_UnsubscribingInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Report_UnsubscribingInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.report_unsubscribing(inputs)
+	return __es.report_unsubscribing(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Limited view. For full access and features, visit the {link}." |
+*
+* @param {Share_Limited_ViewInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const share_limited_view = /** @type {((inputs: Share_Limited_ViewInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Share_Limited_ViewInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.share_limited_view(inputs)
+	return __es.share_limited_view(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "original dashboard" |
+*
+* @param {Share_Original_DashboardInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const share_original_dashboard = /** @type {((inputs?: Share_Original_DashboardInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Share_Original_DashboardInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.share_original_dashboard(inputs)
+	return __es.share_original_dashboard(inputs)
 });
 /**
 * | output |

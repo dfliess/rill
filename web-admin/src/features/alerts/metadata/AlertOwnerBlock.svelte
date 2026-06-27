@@ -1,5 +1,6 @@
 <script lang="ts">
   import { useAlertOwnerName } from "../selectors";
+  import * as m from "@rilldata/web-common/paraglide/messages.js";
 
   export let organization: string;
   export let project: string;
@@ -12,6 +13,6 @@
   <span>
     {$ownerName.data
       ? `Alert created by ${$ownerName.data}`
-      : "Alert created through code"}
+      : m.alert_created_through_code()}
   </span>
 {/if}

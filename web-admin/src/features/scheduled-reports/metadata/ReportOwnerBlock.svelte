@@ -1,5 +1,6 @@
 <script lang="ts">
   import { useReportOwnerName } from "../selectors";
+  import * as m from "@rilldata/web-common/paraglide/messages.js";
 
   export let organization: string;
   export let project: string;
@@ -12,6 +13,6 @@
   <span>
     {$ownerName.data
       ? `Report created by ${$ownerName.data}`
-      : "Report created through code"} •
+      : m.report_created_through_code()} •
   </span>
 {/if}

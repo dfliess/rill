@@ -32,6 +32,7 @@
     formatNextRunOn,
     formatRefreshSchedule,
   } from "./utils";
+  import * as m from "@rilldata/web-common/paraglide/messages.js";
 
   export let organization: string;
   export let project: string;
@@ -137,7 +138,7 @@
         <!-- Limit -->
         <span>
           {reportSpec.exportLimit === "0"
-            ? "No row limit"
+            ? m.report_no_row_limit()
             : `${reportSpec.exportLimit} row limit`}
         </span>
       </div>
@@ -150,7 +151,7 @@
         {#if !$isReportCreatedByCode.data}
           <DropdownMenu.Root>
             <DropdownMenu.Trigger>
-              <IconButton ariaLabel="Report context menu">
+              <IconButton ariaLabel={m.report_context_menu_aria()}>
                 <ThreeDot size="16px" />
               </IconButton>
             </DropdownMenu.Trigger>
@@ -175,7 +176,7 @@
       <!-- Dashboard -->
       <div class="flex flex-col gap-y-3" aria-label="Report dashboard name">
         {#if dashboardTitle}
-          <MetadataLabel>Dashboard</MetadataLabel>
+          <MetadataLabel>{m.report_dashboard()}</MetadataLabel>
           <MetadataValue>
             {#if dashboardDoesNotExist}
               <div class="flex items-center gap-x-1">
@@ -194,7 +195,7 @@
             {/if}
           </MetadataValue>
         {:else}
-          <MetadataLabel>Name</MetadataLabel>
+          <MetadataLabel>{m.report_name_label()}</MetadataLabel>
           <MetadataValue>
             {$reportQuery.data?.resource?.meta?.name?.name}
           </MetadataValue>
@@ -203,7 +204,7 @@
 
       <!-- Frequency -->
       <div class="flex flex-col gap-y-3" aria-label="Report schedule">
-        <MetadataLabel>Repeats</MetadataLabel>
+        <MetadataLabel>{m.report_repeats()}</MetadataLabel>
         <MetadataValue>
           {humanReadableFrequency}
         </MetadataValue>
@@ -211,7 +212,7 @@
 
       <!-- Next run -->
       <div class="flex flex-col gap-y-3">
-        <MetadataLabel>Next run</MetadataLabel>
+        <MetadataLabel>{m.report_next_run()}</MetadataLabel>
         <MetadataValue>
           {formatNextRunOn(
             $reportQuery.data.resource.report.state.nextRunOn,
@@ -224,13 +225,16 @@
     {#if slackNotifier}
       <MetadataList
         data={[...slackNotifier.channels, ...slackNotifier.users]}
-        label="Slack recipients"
+        label={m.report_slack_recipients()}
       />
     {/if}
 
     <!-- Email recipients -->
     {#if emailNotifier}
-      <MetadataList data={emailNotifier.recipients} label="Email recipients" />
+      <MetadataList
+        data={emailNotifier.recipients}
+        label={m.report_email_recipients()}
+      />
     {/if}
   </div>
 {/if}

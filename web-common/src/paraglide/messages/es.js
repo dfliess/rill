@@ -1,5 +1,28 @@
 /* eslint-disable */
 /** @typedef {import('../runtime.js').LocalizedString} LocalizedString */
+/** @typedef {{}} Alert_Context_Menu_AriaInputs */
+/** @typedef {{ name: NonNullable<unknown> }} Alert_Created_ByInputs */
+/** @typedef {{}} Alert_Created_Through_CodeInputs */
+/** @typedef {{}} Alert_CriteriaInputs */
+/** @typedef {{}} Alert_DashboardInputs */
+/** @typedef {{}} Alert_Email_NotificationsInputs */
+/** @typedef {{}} Alert_Name_LabelInputs */
+/** @typedef {{}} Alert_NoneInputs */
+/** @typedef {{}} Alert_ScheduleInputs */
+/** @typedef {{}} Alert_Slack_NotificationsInputs */
+/** @typedef {{}} Alert_SnoozeInputs */
+/** @typedef {{}} Alert_Split_By_DimensionInputs */
+/** @typedef {{}} Alert_Status_CheckedInputs */
+/** @typedef {{}} Alert_Status_CheckingInputs */
+/** @typedef {{}} Alert_Status_FailedInputs */
+/** @typedef {{}} Alert_Status_Not_TriggeredInputs */
+/** @typedef {{}} Alert_Status_RunningInputs */
+/** @typedef {{}} Alert_Status_TriggeredInputs */
+/** @typedef {{}} Alert_Status_UnknownInputs */
+/** @typedef {{}} Alert_Unsubscribe_FailedInputs */
+/** @typedef {{}} Alert_UnsubscribedInputs */
+/** @typedef {{}} Alert_UnsubscribingInputs */
+/** @typedef {{}} Alert_Whenever_Data_RefreshesInputs */
 /** @typedef {{}} Avatar_Contact_SupportInputs */
 /** @typedef {{}} Avatar_Copied_UrlInputs */
 /** @typedef {{}} Avatar_Copy_UrlInputs */
@@ -370,6 +393,35 @@
 /** @typedef {{}} Dashboard_Total_RowInputs */
 /** @typedef {{}} Dashboard_View_AsInputs */
 /** @typedef {{}} Dashboard_Viewing_AsInputs */
+/** @typedef {{}} Error_Access_Denied_BodyInputs */
+/** @typedef {{}} Error_Access_Denied_HeaderInputs */
+/** @typedef {{}} Error_Auth_BodyInputs */
+/** @typedef {{}} Error_Auth_HeaderInputs */
+/** @typedef {{}} Error_Back_To_HomeInputs */
+/** @typedef {{}} Error_Conversation_Not_Found_BodyInputs */
+/** @typedef {{}} Error_Conversation_Not_Found_HeaderInputs */
+/** @typedef {{}} Error_Deploying_ProjectInputs */
+/** @typedef {{}} Error_Deployment_ErrorInputs */
+/** @typedef {{}} Error_Deployment_Not_Found_BodyInputs */
+/** @typedef {{}} Error_Deployment_Not_Found_HeaderInputs */
+/** @typedef {{}} Error_Fetching_DeploymentInputs */
+/** @typedef {{}} Error_Generic_BodyInputs */
+/** @typedef {{}} Error_Generic_HeaderInputs */
+/** @typedef {{}} Error_Hide_DetailsInputs */
+/** @typedef {{}} Error_Link_Expired_BodyInputs */
+/** @typedef {{}} Error_Link_Expired_HeaderInputs */
+/** @typedef {{}} Error_Network_BodyInputs */
+/** @typedef {{}} Error_Network_HeaderInputs */
+/** @typedef {{}} Error_Org_Not_Found_BodyInputs */
+/** @typedef {{}} Error_Org_Not_Found_HeaderInputs */
+/** @typedef {{}} Error_Page_Not_Found_BodyInputs */
+/** @typedef {{}} Error_Page_Not_Found_HeaderInputs */
+/** @typedef {{}} Error_Project_Not_Found_BodyInputs */
+/** @typedef {{}} Error_Project_Not_Found_HeaderInputs */
+/** @typedef {{}} Error_Resource_Not_Found_BodyInputs */
+/** @typedef {{}} Error_Resource_Not_Found_HeaderInputs */
+/** @typedef {{}} Error_Retry_NowInputs */
+/** @typedef {{}} Error_Show_DetailsInputs */
 /** @typedef {{}} Explore_Go_To_DashboardInputs */
 /** @typedef {{}} Explore_Go_To_ExploreInputs */
 /** @typedef {{ name: NonNullable<unknown> }} Explore_Go_To_NamedInputs */
@@ -433,9 +485,29 @@
 /** @typedef {{}} Nav_Tab_ReportsInputs */
 /** @typedef {{}} Nav_Tab_SettingsInputs */
 /** @typedef {{}} Nav_Tab_StatusInputs */
+/** @typedef {{}} Org_Tab_ProjectsInputs */
+/** @typedef {{}} Org_Tab_SettingsInputs */
+/** @typedef {{}} Org_Tab_UsersInputs */
 /** @typedef {{ grain: NonNullable<unknown> }} Pivot_Time_Dimension_HeaderInputs */
 /** @typedef {{}} Pivot_Time_PrefixInputs */
 /** @typedef {{}} Project_Dashboards_TitleInputs */
+/** @typedef {{}} Report_Context_Menu_AriaInputs */
+/** @typedef {{ name: NonNullable<unknown> }} Report_Created_ByInputs */
+/** @typedef {{}} Report_Created_Through_CodeInputs */
+/** @typedef {{}} Report_DashboardInputs */
+/** @typedef {{}} Report_Email_RecipientsInputs */
+/** @typedef {{}} Report_Name_LabelInputs */
+/** @typedef {{}} Report_Next_RunInputs */
+/** @typedef {{}} Report_No_Row_LimitInputs */
+/** @typedef {{}} Report_RepeatsInputs */
+/** @typedef {{}} Report_Slack_RecipientsInputs */
+/** @typedef {{}} Report_Status_FailedInputs */
+/** @typedef {{}} Report_Status_SentInputs */
+/** @typedef {{}} Report_Unsubscribe_FailedInputs */
+/** @typedef {{}} Report_UnsubscribedInputs */
+/** @typedef {{}} Report_UnsubscribingInputs */
+/** @typedef {{ link: NonNullable<unknown> }} Share_Limited_ViewInputs */
+/** @typedef {{}} Share_Original_DashboardInputs */
 /** @typedef {{}} Theme_DarkInputs */
 /** @typedef {{}} Theme_LabelInputs */
 /** @typedef {{}} Theme_LightInputs */
@@ -469,6 +541,98 @@
 /** @typedef {{}} Time_Year_To_DateInputs */
 /** @typedef {{}} Time_YesterdayInputs */
 
+
+export const alert_context_menu_aria = /** @type {(inputs: Alert_Context_Menu_AriaInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Menú contextual de alerta`)
+};
+
+export const alert_created_by = /** @type {(inputs: Alert_Created_ByInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Creado por ${i?.name}`)
+};
+
+export const alert_created_through_code = /** @type {(inputs: Alert_Created_Through_CodeInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Creado mediante código`)
+};
+
+export const alert_criteria = /** @type {(inputs: Alert_CriteriaInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Criterios`)
+};
+
+export const alert_dashboard = /** @type {(inputs: Alert_DashboardInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Dashboard`)
+};
+
+export const alert_email_notifications = /** @type {(inputs: Alert_Email_NotificationsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Notificaciones por correo`)
+};
+
+export const alert_name_label = /** @type {(inputs: Alert_Name_LabelInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Nombre`)
+};
+
+export const alert_none = /** @type {(inputs: Alert_NoneInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Ninguno`)
+};
+
+export const alert_schedule = /** @type {(inputs: Alert_ScheduleInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Programación`)
+};
+
+export const alert_slack_notifications = /** @type {(inputs: Alert_Slack_NotificationsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Notificaciones de Slack`)
+};
+
+export const alert_snooze = /** @type {(inputs: Alert_SnoozeInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Posponer`)
+};
+
+export const alert_split_by_dimension = /** @type {(inputs: Alert_Split_By_DimensionInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Dividir por dimensión`)
+};
+
+export const alert_status_checked = /** @type {(inputs: Alert_Status_CheckedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Verificado`)
+};
+
+export const alert_status_checking = /** @type {(inputs: Alert_Status_CheckingInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Verificando`)
+};
+
+export const alert_status_failed = /** @type {(inputs: Alert_Status_FailedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Fallida`)
+};
+
+export const alert_status_not_triggered = /** @type {(inputs: Alert_Status_Not_TriggeredInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No activada`)
+};
+
+export const alert_status_running = /** @type {(inputs: Alert_Status_RunningInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Ejecutando`)
+};
+
+export const alert_status_triggered = /** @type {(inputs: Alert_Status_TriggeredInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Activada`)
+};
+
+export const alert_status_unknown = /** @type {(inputs: Alert_Status_UnknownInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Estado desconocido`)
+};
+
+export const alert_unsubscribe_failed = /** @type {(inputs: Alert_Unsubscribe_FailedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Error al cancelar la suscripción.`)
+};
+
+export const alert_unsubscribed = /** @type {(inputs: Alert_UnsubscribedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Suscripción a la alerta cancelada.`)
+};
+
+export const alert_unsubscribing = /** @type {(inputs: Alert_UnsubscribingInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Cancelando suscripción...`)
+};
+
+export const alert_whenever_data_refreshes = /** @type {(inputs: Alert_Whenever_Data_RefreshesInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Cada vez que tus datos se actualizan`)
+};
 
 export const avatar_contact_support = /** @type {(inputs: Avatar_Contact_SupportInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Contactar soporte de Rill`)
@@ -1950,6 +2114,122 @@ export const dashboard_viewing_as = /** @type {(inputs: Dashboard_Viewing_AsInpu
 	return /** @type {LocalizedString} */ (`Viendo como`)
 };
 
+export const error_access_denied_body = /** @type {(inputs: Error_Access_Denied_BodyInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No tienes acceso a esta página. Verifica que tengas los permisos correctos.`)
+};
+
+export const error_access_denied_header = /** @type {(inputs: Error_Access_Denied_HeaderInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Acceso denegado`)
+};
+
+export const error_auth_body = /** @type {(inputs: Error_Auth_BodyInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Intenta recargar la página. Si el problema persiste, intenta cerrar sesión y volver a iniciarla.`)
+};
+
+export const error_auth_header = /** @type {(inputs: Error_Auth_HeaderInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Error de autenticación`)
+};
+
+export const error_back_to_home = /** @type {(inputs: Error_Back_To_HomeInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Volver al inicio`)
+};
+
+export const error_conversation_not_found_body = /** @type {(inputs: Error_Conversation_Not_Found_BodyInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Verifica que tengas el enlace correcto o que tengas acceso a la conversación.`)
+};
+
+export const error_conversation_not_found_header = /** @type {(inputs: Error_Conversation_Not_Found_HeaderInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Conversación no encontrada`)
+};
+
+export const error_deploying_project = /** @type {(inputs: Error_Deploying_ProjectInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Hubo un error al desplegar tu proyecto. Contacta a soporte.`)
+};
+
+export const error_deployment_error = /** @type {(inputs: Error_Deployment_ErrorInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Error de despliegue`)
+};
+
+export const error_deployment_not_found_body = /** @type {(inputs: Error_Deployment_Not_Found_BodyInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Este es potencialmente un estado temporal si el proyecto se acaba de reiniciar.`)
+};
+
+export const error_deployment_not_found_header = /** @type {(inputs: Error_Deployment_Not_Found_HeaderInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Despliegue del proyecto no encontrado`)
+};
+
+export const error_fetching_deployment = /** @type {(inputs: Error_Fetching_DeploymentInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Error al obtener el despliegue`)
+};
+
+export const error_generic_body = /** @type {(inputs: Error_Generic_BodyInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Intenta recargar la página y contáctanos si el problema persiste.`)
+};
+
+export const error_generic_header = /** @type {(inputs: Error_Generic_HeaderInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Algo salió mal.`)
+};
+
+export const error_hide_details = /** @type {(inputs: Error_Hide_DetailsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Ocultar detalles`)
+};
+
+export const error_link_expired_body = /** @type {(inputs: Error_Link_Expired_BodyInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Parece que este enlace ya no está activo. Contacta al remitente para solicitar un nuevo enlace.`)
+};
+
+export const error_link_expired_header = /** @type {(inputs: Error_Link_Expired_HeaderInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Este enlace ha expirado`)
+};
+
+export const error_network_body = /** @type {(inputs: Error_Network_BodyInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Parece que tenemos problemas para conectarnos a nuestros servidores. Verifica tu conexión o intenta de nuevo más tarde.`)
+};
+
+export const error_network_header = /** @type {(inputs: Error_Network_HeaderInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Error de red`)
+};
+
+export const error_org_not_found_body = /** @type {(inputs: Error_Org_Not_Found_BodyInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`La organización solicitada no se pudo encontrar. Verifica que hayas proporcionado un nombre de organización válido.`)
+};
+
+export const error_org_not_found_header = /** @type {(inputs: Error_Org_Not_Found_HeaderInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Organización no encontrada`)
+};
+
+export const error_page_not_found_body = /** @type {(inputs: Error_Page_Not_Found_BodyInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`La página que buscas puede haber sido eliminada, cambiada de nombre o no estar disponible temporalmente.`)
+};
+
+export const error_page_not_found_header = /** @type {(inputs: Error_Page_Not_Found_HeaderInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No podemos encontrar esta página.`)
+};
+
+export const error_project_not_found_body = /** @type {(inputs: Error_Project_Not_Found_BodyInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`El proyecto solicitado no se pudo encontrar. Verifica que hayas proporcionado un nombre de proyecto válido.`)
+};
+
+export const error_project_not_found_header = /** @type {(inputs: Error_Project_Not_Found_HeaderInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Proyecto no encontrado`)
+};
+
+export const error_resource_not_found_body = /** @type {(inputs: Error_Resource_Not_Found_BodyInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Este recurso puede haber sido eliminado, renombrado o no estar disponible temporalmente.`)
+};
+
+export const error_resource_not_found_header = /** @type {(inputs: Error_Resource_Not_Found_HeaderInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Recurso no encontrado`)
+};
+
+export const error_retry_now = /** @type {(inputs: Error_Retry_NowInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Reintentar ahora`)
+};
+
+export const error_show_details = /** @type {(inputs: Error_Show_DetailsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Mostrar detalles`)
+};
+
 export const explore_go_to_dashboard = /** @type {(inputs: Explore_Go_To_DashboardInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Ir al panel de exploración`)
 };
@@ -2202,6 +2482,18 @@ export const nav_tab_status = /** @type {(inputs: Nav_Tab_StatusInputs) => Local
 	return /** @type {LocalizedString} */ (`Estado`)
 };
 
+export const org_tab_projects = /** @type {(inputs: Org_Tab_ProjectsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Proyectos`)
+};
+
+export const org_tab_settings = /** @type {(inputs: Org_Tab_SettingsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Configuración`)
+};
+
+export const org_tab_users = /** @type {(inputs: Org_Tab_UsersInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Usuarios`)
+};
+
 export const pivot_time_dimension_header = /** @type {(inputs: Pivot_Time_Dimension_HeaderInputs) => LocalizedString} */ (i) => {
 	return /** @type {LocalizedString} */ (`Tiempo ${i?.grain}`)
 };
@@ -2212,6 +2504,74 @@ export const pivot_time_prefix = /** @type {(inputs: Pivot_Time_PrefixInputs) =>
 
 export const project_dashboards_title = /** @type {(inputs: Project_Dashboards_TitleInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Dashboards del proyecto`)
+};
+
+export const report_context_menu_aria = /** @type {(inputs: Report_Context_Menu_AriaInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Menú contextual del informe`)
+};
+
+export const report_created_by = /** @type {(inputs: Report_Created_ByInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Creado por ${i?.name}`)
+};
+
+export const report_created_through_code = /** @type {(inputs: Report_Created_Through_CodeInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Informe creado mediante código`)
+};
+
+export const report_dashboard = /** @type {(inputs: Report_DashboardInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Dashboard`)
+};
+
+export const report_email_recipients = /** @type {(inputs: Report_Email_RecipientsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Destinatarios de correo`)
+};
+
+export const report_name_label = /** @type {(inputs: Report_Name_LabelInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Nombre`)
+};
+
+export const report_next_run = /** @type {(inputs: Report_Next_RunInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Próxima ejecución`)
+};
+
+export const report_no_row_limit = /** @type {(inputs: Report_No_Row_LimitInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Sin límite de filas`)
+};
+
+export const report_repeats = /** @type {(inputs: Report_RepeatsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Se repite`)
+};
+
+export const report_slack_recipients = /** @type {(inputs: Report_Slack_RecipientsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Destinatarios de Slack`)
+};
+
+export const report_status_failed = /** @type {(inputs: Report_Status_FailedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Fallido`)
+};
+
+export const report_status_sent = /** @type {(inputs: Report_Status_SentInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Informe enviado`)
+};
+
+export const report_unsubscribe_failed = /** @type {(inputs: Report_Unsubscribe_FailedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Error al cancelar la suscripción.`)
+};
+
+export const report_unsubscribed = /** @type {(inputs: Report_UnsubscribedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Suscripción al informe cancelada.`)
+};
+
+export const report_unsubscribing = /** @type {(inputs: Report_UnsubscribingInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Cancelando suscripción...`)
+};
+
+export const share_limited_view = /** @type {(inputs: Share_Limited_ViewInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Vista limitada. Para acceso completo y todas las funciones, visita el ${i?.link}.`)
+};
+
+export const share_original_dashboard = /** @type {(inputs: Share_Original_DashboardInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`dashboard original`)
 };
 
 export const theme_dark = /** @type {(inputs: Theme_DarkInputs) => LocalizedString} */ () => {
