@@ -50,7 +50,9 @@
     label={m.report_form_rows()}
     onUpdate={(newRows) => (rows = newRows)}
   >
-    <div slot="empty-fields" class="text-fg-secondary">No rows selected</div>
+    <div slot="empty-fields" class="text-fg-secondary">
+      {m.report_form_no_rows_selected()}
+    </div>
   </FieldList>
 
   <FieldList

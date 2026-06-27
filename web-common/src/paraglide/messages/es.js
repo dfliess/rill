@@ -571,12 +571,15 @@
 /** @typedef {{}} Report_Form_Day_ThursdayInputs */
 /** @typedef {{}} Report_Form_Day_TuesdayInputs */
 /** @typedef {{}} Report_Form_Day_WednesdayInputs */
+/** @typedef {{}} Report_Form_Email_HintInputs */
 /** @typedef {{}} Report_Form_Email_PlaceholderInputs */
 /** @typedef {{}} Report_Form_Email_RecipientsInputs */
 /** @typedef {{}} Report_Form_FiltersInputs */
 /** @typedef {{}} Report_Form_Filters_AriaInputs */
 /** @typedef {{}} Report_Form_FormatInputs */
+/** @typedef {{}} Report_Form_Format_CsvInputs */
 /** @typedef {{}} Report_Form_Format_ParquetInputs */
+/** @typedef {{}} Report_Form_Format_XlsxInputs */
 /** @typedef {{}} Report_Form_Freq_DailyInputs */
 /** @typedef {{}} Report_Form_Freq_MonthlyInputs */
 /** @typedef {{}} Report_Form_Freq_WeekdaysInputs */
@@ -585,6 +588,7 @@
 /** @typedef {{}} Report_Form_Go_To_ReportsInputs */
 /** @typedef {{}} Report_Form_Include_MetadataInputs */
 /** @typedef {{}} Report_Form_Invalid_EmailInputs */
+/** @typedef {{}} Report_Form_No_Rows_SelectedInputs */
 /** @typedef {{}} Report_Form_Recipients_Must_Be_ProjectInputs */
 /** @typedef {{}} Report_Form_RequiredInputs */
 /** @typedef {{}} Report_Form_Row_LimitInputs */
@@ -592,11 +596,16 @@
 /** @typedef {{}} Report_Form_RowsInputs */
 /** @typedef {{}} Report_Form_Run_AsInputs */
 /** @typedef {{}} Report_Form_Run_As_CreatorInputs */
+/** @typedef {{}} Report_Form_Run_As_Creator_DescInputs */
 /** @typedef {{}} Report_Form_Run_As_RecipientInputs */
+/** @typedef {{}} Report_Form_Run_As_Recipient_DescInputs */
 /** @typedef {{}} Report_Form_SaveInputs */
 /** @typedef {{}} Report_Form_Save_ButtonInputs */
 /** @typedef {{}} Report_Form_ScheduleInputs */
+/** @typedef {{}} Report_Form_Slack_Channels_HintInputs */
 /** @typedef {{}} Report_Form_Slack_TitleInputs */
+/** @typedef {{}} Report_Form_Slack_UsersInputs */
+/** @typedef {{}} Report_Form_Slack_Users_HintInputs */
 /** @typedef {{}} Report_Form_TimeInputs */
 /** @typedef {{}} Report_Form_TimezoneInputs */
 /** @typedef {{}} Report_Form_Title_LabelInputs */
@@ -2936,6 +2945,10 @@ export const report_form_day_wednesday = /** @type {(inputs: Report_Form_Day_Wed
 	return /** @type {LocalizedString} */ (`Miércoles`)
 };
 
+export const report_form_email_hint = /** @type {(inputs: Report_Form_Email_HintInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Los destinatarios recibirán vistas diferentes según su política de seguridad.`)
+};
+
 export const report_form_email_placeholder = /** @type {(inputs: Report_Form_Email_PlaceholderInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Ingresa una dirección de correo`)
 };
@@ -2956,8 +2969,16 @@ export const report_form_format = /** @type {(inputs: Report_Form_FormatInputs) 
 	return /** @type {LocalizedString} */ (`Formato`)
 };
 
+export const report_form_format_csv = /** @type {(inputs: Report_Form_Format_CsvInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`CSV`)
+};
+
 export const report_form_format_parquet = /** @type {(inputs: Report_Form_Format_ParquetInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Parquet`)
+};
+
+export const report_form_format_xlsx = /** @type {(inputs: Report_Form_Format_XlsxInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`XLSX`)
 };
 
 export const report_form_freq_daily = /** @type {(inputs: Report_Form_Freq_DailyInputs) => LocalizedString} */ () => {
@@ -2992,6 +3013,10 @@ export const report_form_invalid_email = /** @type {(inputs: Report_Form_Invalid
 	return /** @type {LocalizedString} */ (`Correo inválido`)
 };
 
+export const report_form_no_rows_selected = /** @type {(inputs: Report_Form_No_Rows_SelectedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No hay filas seleccionadas`)
+};
+
 export const report_form_recipients_must_be_project = /** @type {(inputs: Report_Form_Recipients_Must_Be_ProjectInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Los destinatarios deben ser parte del proyecto cuando se ejecuta como destinatario`)
 };
@@ -3020,8 +3045,16 @@ export const report_form_run_as_creator = /** @type {(inputs: Report_Form_Run_As
 	return /** @type {LocalizedString} */ (`Creador`)
 };
 
+export const report_form_run_as_creator_desc = /** @type {(inputs: Report_Form_Run_As_Creator_DescInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Funciona para cualquier destinatario, incluyendo externos. NO otorga acceso más allá de los filtros e informes del dashboard.`)
+};
+
 export const report_form_run_as_recipient = /** @type {(inputs: Report_Form_Run_As_RecipientInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Destinatario`)
+};
+
+export const report_form_run_as_recipient_desc = /** @type {(inputs: Report_Form_Run_As_Recipient_DescInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`NO funciona para usuarios que no son miembros del proyecto.`)
 };
 
 export const report_form_save = /** @type {(inputs: Report_Form_SaveInputs) => LocalizedString} */ () => {
@@ -3036,8 +3069,20 @@ export const report_form_schedule = /** @type {(inputs: Report_Form_ScheduleInpu
 	return /** @type {LocalizedString} */ (`Programar informe`)
 };
 
+export const report_form_slack_channels_hint = /** @type {(inputs: Report_Form_Slack_Channels_HintInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Enviaremos alertas directamente a estos canales.`)
+};
+
 export const report_form_slack_title = /** @type {(inputs: Report_Form_Slack_TitleInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Notificaciones de Slack`)
+};
+
+export const report_form_slack_users = /** @type {(inputs: Report_Form_Slack_UsersInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Usuarios`)
+};
+
+export const report_form_slack_users_hint = /** @type {(inputs: Report_Form_Slack_Users_HintInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Les enviaremos mensajes directos en Slack.`)
 };
 
 export const report_form_time = /** @type {(inputs: Report_Form_TimeInputs) => LocalizedString} */ () => {

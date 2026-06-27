@@ -37,13 +37,12 @@
     {
       value: ReportRunAs.Creator,
       label: m.report_form_run_as_creator(),
-      description:
-        "Works for any recipient, including external recipient. It does NOT grant access beyond the report’s filters and dashboard.",
+      description: m.report_form_run_as_creator_desc(),
     },
     {
       value: ReportRunAs.Recipient,
       label: m.report_form_run_as_recipient(),
-      description: "Does NOT work for non-project members.",
+      description: m.report_form_run_as_recipient_desc(),
     },
   ];
   const runtimeClient = useRuntimeClient();
@@ -92,12 +91,18 @@
       id="exportFormat"
       label={m.report_form_format()}
       options={[
-        { value: V1ExportFormat.EXPORT_FORMAT_CSV, label: "CSV" },
+        {
+          value: V1ExportFormat.EXPORT_FORMAT_CSV,
+          label: m.report_form_format_csv(),
+        },
         {
           value: V1ExportFormat.EXPORT_FORMAT_PARQUET,
           label: m.report_form_format_parquet(),
         },
-        { value: V1ExportFormat.EXPORT_FORMAT_XLSX, label: "XLSX" },
+        {
+          value: V1ExportFormat.EXPORT_FORMAT_XLSX,
+          label: m.report_form_format_xlsx(),
+        },
       ]}
     />
     <Input
@@ -150,8 +155,7 @@
     <MultiInput
       id="emailRecipients"
       label={m.report_form_email_recipients()}
-      hint="Recipients will receive different views based on their security policy.
-        Recipients without project access can only download the report."
+      hint={m.report_form_email_hint()}
       bind:values={$data["emailRecipients"]}
       errors={$errors["emailRecipients"]}
       singular="email"
@@ -168,26 +172,26 @@
         <MultiInput
           id="slackChannels"
           label={m.report_form_channels()}
-          hint="We’ll send alerts directly to these channels."
+          hint={m.report_form_slack_channels_hint()}
           bind:values={$data["slackChannels"]}
           errors={$errors["slackChannels"]}
           singular="channel"
           plural="channels"
-          placeholder="# Enter a Slack channel name"
+          placeholder={m.alert_form_slack_placeholder()}
         />
         <MultiInput
           id="slackUsers"
-          label="Users"
-          hint="We’ll alert them with direct messages in Slack."
+          label={m.report_form_slack_users()}
+          hint={m.report_form_slack_users_hint()}
           bind:values={$data["slackUsers"]}
           errors={$errors["slackUsers"]}
           singular="user"
           plural="users"
-          placeholder="Enter an email address"
+          placeholder={m.report_form_email_placeholder()}
         />
       </FormSection>
     {:else}
-      <FormSection title="Slack notifications" padding="">
+      <FormSection title={m.report_form_slack_title()} padding="">
         <svelte:fragment slot="description">
           <span class="text-sm text-fg-secondary">
             Slack has not been configured for this project. Read the <a
