@@ -60,10 +60,9 @@
     onClick={handleRunNow}
     disabled={$triggerReport.isPending}
   >
-    Run now
+    {m.report_run_now()}
   </Button>
   <TooltipContent slot="tooltip-content" maxWidth="300px">
-    Run this report immediately. A new report will be generated and emailed to
-    recipients.
+    {m.report_run_now_tooltip()}
   </TooltipContent>
 </Tooltip>

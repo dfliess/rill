@@ -139,7 +139,7 @@
         <span>
           {reportSpec.exportLimit === "0"
             ? m.report_no_row_limit()
-            : `${reportSpec.exportLimit} row limit`}
+            : m.report_row_limit({ count: reportSpec.exportLimit })}
         </span>
       </div>
       <div class="flex gap-x-2 items-center">
@@ -184,7 +184,7 @@
                 <Tooltip distance={8}>
                   <CancelCircle size="16px" className="text-red-500" />
                   <TooltipContent slot="tooltip-content">
-                    Dashboard does not exist
+                    {m.report_dashboard_not_exist()}
                   </TooltipContent>
                 </Tooltip>
               </div>

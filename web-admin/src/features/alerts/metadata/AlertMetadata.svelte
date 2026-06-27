@@ -174,7 +174,7 @@
                 <Tooltip distance={8}>
                   <CancelCircle size="16px" className="text-red-500" />
                   <TooltipContent slot="tooltip-content">
-                    Dashboard does not exist
+                    {m.alert_dashboard_not_exist()}
                   </TooltipContent>
                 </Tooltip>
               </div>

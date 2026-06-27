@@ -5,6 +5,7 @@
   import { copyToClipboard } from "@rilldata/web-common/lib/actions/copy-to-clipboard";
   import { Trash2Icon, CopyIcon } from "lucide-svelte";
   import DeletePublicURLConfirmDialog from "./DeletePublicURLConfirmDialog.svelte";
+  import * as m from "@rilldata/web-common/paraglide/messages.js";
 
   export let id: string;
   export let url: string;
@@ -31,7 +32,7 @@
         onclick={handleCopy}
       >
         <CopyIcon size="12px" />
-        <span class="ml-2">Copy URL</span>
+        <span class="ml-2">{m.public_url_copy_url_action()}</span>
       </DropdownMenu.Item>
     {/if}
     <DropdownMenu.Item
@@ -42,7 +43,7 @@
       }}
     >
       <Trash2Icon size="12px" />
-      <span class="ml-2">Delete</span>
+      <span class="ml-2">{m.public_url_delete_action()}</span>
     </DropdownMenu.Item>
   </DropdownMenu.Content>
 </DropdownMenu.Root>

@@ -27,9 +27,9 @@
   {/if}
   {#if adhoc}
     <Tooltip distance={8}>
-      <Tag>Ad-hoc</Tag>
+      <Tag>{m.report_adhoc()}</Tag>
       <TooltipContent slot="tooltip-content">
-        This report was run manually off-schedule.
+        {m.report_adhoc_tooltip()}
       </TooltipContent>
     </Tooltip>
   {/if}

@@ -9,15 +9,16 @@
   import ValueCell from "./ValueCell.svelte";
   import ActionsCell from "./ActionsCell.svelte";
   import type { VariableNames } from "./types";
+  import * as m from "@rilldata/web-common/paraglide/messages.js";
 
   export let data: V1ProjectVariable[];
   export let emptyText: string = "No environment variables";
   export let variableNames: VariableNames = [];
 
-  const columns: ColumnDef<V1ProjectVariable, any>[] = [
+  $: columns = [
     {
       accessorKey: "name",
-      header: "Key",
+      header: m.env_table_key_header(),
       cell: ({ row }) =>
         renderComponent(KeyCell, {
           name: row.original.name,
@@ -26,7 +27,7 @@
     },
     {
       accessorKey: "value",
-      header: "Value",
+      header: m.env_table_value_header(),
       enableSorting: false,
       cell: ({ row }) =>
         renderComponent(ValueCell, {
@@ -34,7 +35,7 @@
         }),
     },
     {
-      header: "Activity",
+      header: m.env_table_activity_header(),
       sortDescFirst: true,
       accessorFn: (row) => row.createdOn,
       cell: ({ row }) => {
@@ -56,7 +57,7 @@
         }),
       enableSorting: false,
     },
-  ];
+  ] as ColumnDef<V1ProjectVariable, any>[];
 </script>
 
 <BasicTable

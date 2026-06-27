@@ -1,6 +1,7 @@
 import type { PlanTier } from "@rilldata/web-admin/features/billing/plans/types.ts";
 import { formatMemorySize } from "@rilldata/web-common/lib/number-formatting/memory-size.ts";
 import { formatCompactInteger } from "@rilldata/web-common/lib/formatters.ts";
+import * as m from "@rilldata/web-common/paraglide/messages.js";
 import type {
   V1OrganizationQuotas,
   V1Quotas,
@@ -94,16 +95,42 @@ export const SELF_SERVE_PLANS: SelfServePlan[] = [
   },
 ];
 
-const ValueRegex = /{value}/g;
 const QuotaPrefix = "quota:";
 const QuotaLength = QuotaPrefix.length;
+
+function translateQuotaTemplate(quotaKey: string, value: string): string {
+  switch (quotaKey) {
+    case "apiCallsPerSeat":
+      return m.billing_quota_api_calls({ value });
+    case "projects":
+      return m.billing_quota_projects({ value });
+    case "seats":
+      return m.billing_quota_seats({ value });
+    case "slotsTotal":
+      return m.billing_quota_compute_units({ value });
+    case "storageLimitBytesPerDeployment":
+      return m.billing_quota_managed_db({ value });
+    default:
+      return "";
+  }
+}
+
+const LiteralHighlightTranslations: Record<string, () => string> = {
+  "1M AI tokens / seat / month": () => m.billing_highlight_1m_ai_tokens(),
+  "Embedded analytics": () => m.billing_highlight_embedded_analytics(),
+  "Bring your own AI model": () => m.billing_highlight_bring_own_ai(),
+  "2M AI tokens / seat / month": () => m.billing_highlight_2m_ai_tokens(),
+};
+
 export function resolvePlanHighlights(
   plan: SelfServePlan,
   quotas: PlanHighlightQuotas,
 ) {
   return plan.highlights
     .map((h) => {
-      if (!h.startsWith(QuotaPrefix)) return h;
+      if (!h.startsWith(QuotaPrefix)) {
+        return LiteralHighlightTranslations[h]?.() ?? h;
+      }
       const quotaKey = h.slice(QuotaLength);
       const planQuota = PlansQuotas[quotaKey];
       if (!planQuota) return "";
@@ -113,9 +140,35 @@ export function resolvePlanHighlights(
       const value = planQuota.formatter
         ? planQuota.formatter(quotaValue)
         : quotaValue;
-      return planQuota.template.replace(ValueRegex, value);
+      return translateQuotaTemplate(quotaKey, value);
     })
     .filter(Boolean);
+}
+
+export function getTranslatedPlanDisplayName(name: string): string {
+  switch (name) {
+    case "starter":
+      return m.billing_plan_name_starter();
+    case "growth":
+      return m.billing_plan_name_growth();
+    default:
+      return name;
+  }
+}
+
+export function getTranslatedPlanTagline(name: string): string {
+  switch (name) {
+    case "starter":
+      return m.billing_plan_tagline_starter();
+    case "growth":
+      return m.billing_plan_tagline_growth();
+    default:
+      return "";
+  }
+}
+
+export function getTranslatedPlanPriceUnit(): string {
+  return m.billing_plan_price_unit();
 }
 
 export const SELF_SERVE_PLANS_BY_NAME = Object.fromEntries(
