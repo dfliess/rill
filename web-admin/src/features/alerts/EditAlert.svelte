@@ -6,6 +6,7 @@
   import GuardedDialog from "@rilldata/web-common/components/dialog/GuardedDialog.svelte";
   import AlertFormDataWrapper from "@rilldata/web-common/features/alerts/AlertFormDataWrapper.svelte";
   import type { V1AlertSpec } from "@rilldata/web-common/runtime-client/gen/index.schemas";
+  import * as m from "@rilldata/web-common/paraglide/messages.js";
   import Button from "web-common/src/components/button/Button.svelte";
 
   export let alertSpec: V1AlertSpec;
@@ -23,8 +24,8 @@
 >
   <DialogTrigger>
     {#snippet child({ props })}
-      <Button {...props} type="secondary" {disabled} label="Edit alert"
-        >Edit</Button
+      <Button {...props} type="secondary" {disabled} label={m.alert_edit()}
+        >{m.alert_form_update()}</Button
       >
     {/snippet}
   </DialogTrigger>

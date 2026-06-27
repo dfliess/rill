@@ -160,10 +160,10 @@
                 onclick={handleEditReport}
                 disabled={!$exploreIsValid}
               >
-                Edit report
+                {m.report_edit()}
               </DropdownMenu.Item>
               <DropdownMenu.Item onclick={handleDeleteReport}>
-                Delete report
+                {m.report_delete()}
               </DropdownMenu.Item>
             </DropdownMenu.Content>
           </DropdownMenu.Root>

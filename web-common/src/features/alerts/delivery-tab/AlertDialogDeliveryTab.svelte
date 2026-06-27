@@ -55,7 +55,7 @@
   </FormSection>
 
   <FormSection
-    description="Set a snooze period to silence repeat notifications for the same alert."
+    description={m.alert_form_snooze_desc()}
     title={m.alert_form_snooze_title()}
   >
     <Select
@@ -74,7 +74,7 @@
       <MultiInput
         id="slackChannels"
         placeholder={m.alert_form_slack_placeholder()}
-        description="We’ll send alerts directly to these channels."
+        description={m.alert_form_slack_channels_desc()}
         contentClassName="relative"
         bind:values={$form.slackChannels}
         errors={$errors.slackChannels}
@@ -85,7 +85,7 @@
       <MultiInput
         id="slackUsers"
         placeholder={m.alert_form_email_placeholder()}
-        description="We’ll alert them with direct messages in Slack."
+        description={m.alert_form_slack_users_desc()}
         contentClassName="relative"
         bind:values={$form.slackUsers}
         errors={$errors.slackUsers}
@@ -110,13 +110,13 @@
   {/if}
   <FormSection
     bind:enabled={$form["enableEmailNotification"]}
-    description="We’ll email alerts to these addresses. Make sure they have access to your project."
+    description={m.alert_form_email_desc()}
     showSectionToggle
     title={m.alert_form_email_title()}
   >
     <MultiInput
       id="slackUsers"
-      placeholder="Enter an email address"
+      placeholder={m.alert_form_email_placeholder()}
       contentClassName="relative"
       bind:values={$form.emailRecipients}
       errors={$errors.emailRecipients}

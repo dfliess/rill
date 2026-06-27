@@ -289,7 +289,10 @@
       open = false;
 
       eventBus.emit("notification", {
-        message: `Report ${props.mode === "create" ? "created" : "edited"}`,
+        message:
+          props.mode === "create"
+            ? m.report_form_created_notification()
+            : m.report_form_edited_notification(),
         link:
           props.mode === "create"
             ? {

@@ -5,6 +5,8 @@
 /** @typedef {{}} Alert_Created_Through_CodeInputs */
 /** @typedef {{}} Alert_CriteriaInputs */
 /** @typedef {{}} Alert_DashboardInputs */
+/** @typedef {{}} Alert_DeleteInputs */
+/** @typedef {{}} Alert_EditInputs */
 /** @typedef {{}} Alert_Email_NotificationsInputs */
 /** @typedef {{}} Alert_Form_BackInputs */
 /** @typedef {{}} Alert_Form_CancelInputs */
@@ -30,6 +32,7 @@
 /** @typedef {{}} Alert_Form_Data_Split_PlaceholderInputs */
 /** @typedef {{}} Alert_Form_Data_TitleInputs */
 /** @typedef {{}} Alert_Form_EditedInputs */
+/** @typedef {{}} Alert_Form_Email_DescInputs */
 /** @typedef {{}} Alert_Form_Email_PlaceholderInputs */
 /** @typedef {{}} Alert_Form_Email_TitleInputs */
 /** @typedef {{}} Alert_Form_Go_To_AlertsInputs */
@@ -41,8 +44,11 @@
 /** @typedef {{}} Alert_Form_Preview_CellInputs */
 /** @typedef {{}} Alert_Form_Preview_Table_AriaInputs */
 /** @typedef {{}} Alert_Form_Select_CriteriaInputs */
+/** @typedef {{}} Alert_Form_Slack_Channels_DescInputs */
 /** @typedef {{}} Alert_Form_Slack_PlaceholderInputs */
 /** @typedef {{}} Alert_Form_Slack_TitleInputs */
+/** @typedef {{}} Alert_Form_Slack_Users_DescInputs */
+/** @typedef {{}} Alert_Form_Snooze_DescInputs */
 /** @typedef {{}} Alert_Form_Snooze_TitleInputs */
 /** @typedef {{}} Alert_Form_TriggerInputs */
 /** @typedef {{}} Alert_Form_UpdateInputs */
@@ -482,6 +488,11 @@
 /** @typedef {{}} Explore_Go_To_ExploreInputs */
 /** @typedef {{ name: NonNullable<unknown> }} Explore_Go_To_NamedInputs */
 /** @typedef {{}} Explore_Unable_To_OpenInputs */
+/** @typedef {{ label: NonNullable<unknown> }} Field_List_Add_FieldsInputs */
+/** @typedef {{ label: NonNullable<unknown> }} Field_List_AriaInputs */
+/** @typedef {{}} Field_List_DimensionsInputs */
+/** @typedef {{}} Field_List_MeasuresInputs */
+/** @typedef {{}} Field_List_TimeInputs */
 /** @typedef {{}} Filter_Enter_Search_TermInputs */
 /** @typedef {{ dimension: NonNullable<unknown> }} Filter_Measure_For_DimensionInputs */
 /** @typedef {{ comparison: NonNullable<unknown> }} Filter_Measure_From_ComparisonInputs */
@@ -555,6 +566,8 @@
 /** @typedef {{ name: NonNullable<unknown> }} Report_Created_ByInputs */
 /** @typedef {{}} Report_Created_Through_CodeInputs */
 /** @typedef {{}} Report_DashboardInputs */
+/** @typedef {{}} Report_DeleteInputs */
+/** @typedef {{}} Report_EditInputs */
 /** @typedef {{}} Report_Email_RecipientsInputs */
 /** @typedef {{}} Report_Form_CancelInputs */
 /** @typedef {{}} Report_Form_ChannelsInputs */
@@ -562,6 +575,7 @@
 /** @typedef {{}} Report_Form_ColumnsInputs */
 /** @typedef {{}} Report_Form_CreateInputs */
 /** @typedef {{}} Report_Form_Create_ButtonInputs */
+/** @typedef {{}} Report_Form_Created_NotificationInputs */
 /** @typedef {{}} Report_Form_DayInputs */
 /** @typedef {{}} Report_Form_Day_FirstInputs */
 /** @typedef {{}} Report_Form_Day_FridayInputs */
@@ -571,9 +585,12 @@
 /** @typedef {{}} Report_Form_Day_ThursdayInputs */
 /** @typedef {{}} Report_Form_Day_TuesdayInputs */
 /** @typedef {{}} Report_Form_Day_WednesdayInputs */
+/** @typedef {{}} Report_Form_DocsInputs */
+/** @typedef {{}} Report_Form_Edited_NotificationInputs */
 /** @typedef {{}} Report_Form_Email_HintInputs */
 /** @typedef {{}} Report_Form_Email_PlaceholderInputs */
 /** @typedef {{}} Report_Form_Email_RecipientsInputs */
+/** @typedef {{}} Report_Form_Email_RecurringInputs */
 /** @typedef {{}} Report_Form_FiltersInputs */
 /** @typedef {{}} Report_Form_Filters_AriaInputs */
 /** @typedef {{}} Report_Form_FormatInputs */
@@ -588,6 +605,8 @@
 /** @typedef {{}} Report_Form_Go_To_ReportsInputs */
 /** @typedef {{}} Report_Form_Include_MetadataInputs */
 /** @typedef {{}} Report_Form_Invalid_EmailInputs */
+/** @typedef {{}} Report_Form_Local_SuffixInputs */
+/** @typedef {{}} Report_Form_Metadata_TooltipInputs */
 /** @typedef {{}} Report_Form_No_Rows_SelectedInputs */
 /** @typedef {{}} Report_Form_Recipients_Must_Be_ProjectInputs */
 /** @typedef {{}} Report_Form_RequiredInputs */
@@ -603,6 +622,7 @@
 /** @typedef {{}} Report_Form_Save_ButtonInputs */
 /** @typedef {{}} Report_Form_ScheduleInputs */
 /** @typedef {{}} Report_Form_Slack_Channels_HintInputs */
+/** @typedef {{ link: NonNullable<unknown> }} Report_Form_Slack_Not_ConfiguredInputs */
 /** @typedef {{}} Report_Form_Slack_TitleInputs */
 /** @typedef {{}} Report_Form_Slack_UsersInputs */
 /** @typedef {{}} Report_Form_Slack_Users_HintInputs */
@@ -679,6 +699,14 @@ export const alert_criteria = /** @type {(inputs: Alert_CriteriaInputs) => Local
 
 export const alert_dashboard = /** @type {(inputs: Alert_DashboardInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Dashboard`)
+};
+
+export const alert_delete = /** @type {(inputs: Alert_DeleteInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Delete Alert`)
+};
+
+export const alert_edit = /** @type {(inputs: Alert_EditInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Edit alert`)
 };
 
 export const alert_email_notifications = /** @type {(inputs: Alert_Email_NotificationsInputs) => LocalizedString} */ () => {
@@ -781,6 +809,10 @@ export const alert_form_edited = /** @type {(inputs: Alert_Form_EditedInputs) =>
 	return /** @type {LocalizedString} */ (`Alert edited`)
 };
 
+export const alert_form_email_desc = /** @type {(inputs: Alert_Form_Email_DescInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`We'll email alerts to these addresses. Make sure they have access to your project.`)
+};
+
 export const alert_form_email_placeholder = /** @type {(inputs: Alert_Form_Email_PlaceholderInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Enter an email address`)
 };
@@ -825,12 +857,24 @@ export const alert_form_select_criteria = /** @type {(inputs: Alert_Form_Select_
 	return /** @type {LocalizedString} */ (`Select criteria to see a preview`)
 };
 
+export const alert_form_slack_channels_desc = /** @type {(inputs: Alert_Form_Slack_Channels_DescInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`We'll send alerts directly to these channels.`)
+};
+
 export const alert_form_slack_placeholder = /** @type {(inputs: Alert_Form_Slack_PlaceholderInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`# Enter a Slack channel name`)
 };
 
 export const alert_form_slack_title = /** @type {(inputs: Alert_Form_Slack_TitleInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Slack notifications`)
+};
+
+export const alert_form_slack_users_desc = /** @type {(inputs: Alert_Form_Slack_Users_DescInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`We'll alert them with direct messages in Slack.`)
+};
+
+export const alert_form_snooze_desc = /** @type {(inputs: Alert_Form_Snooze_DescInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Set a snooze period to silence repeat notifications for the same alert.`)
 };
 
 export const alert_form_snooze_title = /** @type {(inputs: Alert_Form_Snooze_TitleInputs) => LocalizedString} */ () => {
@@ -2589,6 +2633,26 @@ export const explore_unable_to_open = /** @type {(inputs: Explore_Unable_To_Open
 	return /** @type {LocalizedString} */ (`Unable to open Explore Dashboard`)
 };
 
+export const field_list_add_fields = /** @type {(inputs: Field_List_Add_FieldsInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Add ${i?.label} fields`)
+};
+
+export const field_list_aria = /** @type {(inputs: Field_List_AriaInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.label} field list`)
+};
+
+export const field_list_dimensions = /** @type {(inputs: Field_List_DimensionsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`DIMENSIONS`)
+};
+
+export const field_list_measures = /** @type {(inputs: Field_List_MeasuresInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`MEASURES`)
+};
+
+export const field_list_time = /** @type {(inputs: Field_List_TimeInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`TIME`)
+};
+
 export const filter_enter_search_term = /** @type {(inputs: Filter_Enter_Search_TermInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Enter search term`)
 };
@@ -2881,6 +2945,14 @@ export const report_dashboard = /** @type {(inputs: Report_DashboardInputs) => L
 	return /** @type {LocalizedString} */ (`Dashboard`)
 };
 
+export const report_delete = /** @type {(inputs: Report_DeleteInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Delete report`)
+};
+
+export const report_edit = /** @type {(inputs: Report_EditInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Edit report`)
+};
+
 export const report_email_recipients = /** @type {(inputs: Report_Email_RecipientsInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Email recipients`)
 };
@@ -2907,6 +2979,10 @@ export const report_form_create = /** @type {(inputs: Report_Form_CreateInputs) 
 
 export const report_form_create_button = /** @type {(inputs: Report_Form_Create_ButtonInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Create`)
+};
+
+export const report_form_created_notification = /** @type {(inputs: Report_Form_Created_NotificationInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Report created`)
 };
 
 export const report_form_day = /** @type {(inputs: Report_Form_DayInputs) => LocalizedString} */ () => {
@@ -2945,6 +3021,14 @@ export const report_form_day_wednesday = /** @type {(inputs: Report_Form_Day_Wed
 	return /** @type {LocalizedString} */ (`Wednesday`)
 };
 
+export const report_form_docs = /** @type {(inputs: Report_Form_DocsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`docs`)
+};
+
+export const report_form_edited_notification = /** @type {(inputs: Report_Form_Edited_NotificationInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Report edited`)
+};
+
 export const report_form_email_hint = /** @type {(inputs: Report_Form_Email_HintInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Recipients will receive different views based on their security policy.`)
 };
@@ -2955,6 +3039,10 @@ export const report_form_email_placeholder = /** @type {(inputs: Report_Form_Ema
 
 export const report_form_email_recipients = /** @type {(inputs: Report_Form_Email_RecipientsInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Email Recipients`)
+};
+
+export const report_form_email_recurring = /** @type {(inputs: Report_Form_Email_RecurringInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Email recurring exports to recipients.`)
 };
 
 export const report_form_filters = /** @type {(inputs: Report_Form_FiltersInputs) => LocalizedString} */ () => {
@@ -3011,6 +3099,14 @@ export const report_form_include_metadata = /** @type {(inputs: Report_Form_Incl
 
 export const report_form_invalid_email = /** @type {(inputs: Report_Form_Invalid_EmailInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Invalid email`)
+};
+
+export const report_form_local_suffix = /** @type {(inputs: Report_Form_Local_SuffixInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (` (Local)`)
+};
+
+export const report_form_metadata_tooltip = /** @type {(inputs: Report_Form_Metadata_TooltipInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Adds a header to the file that includes filters, time range, and other metadata.`)
 };
 
 export const report_form_no_rows_selected = /** @type {(inputs: Report_Form_No_Rows_SelectedInputs) => LocalizedString} */ () => {
@@ -3071,6 +3167,10 @@ export const report_form_schedule = /** @type {(inputs: Report_Form_ScheduleInpu
 
 export const report_form_slack_channels_hint = /** @type {(inputs: Report_Form_Slack_Channels_HintInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`We'll send alerts directly to these channels.`)
+};
+
+export const report_form_slack_not_configured = /** @type {(inputs: Report_Form_Slack_Not_ConfiguredInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Slack has not been configured for this project. Read the ${i?.link} to learn more.`)
 };
 
 export const report_form_slack_title = /** @type {(inputs: Report_Form_Slack_TitleInputs) => LocalizedString} */ () => {

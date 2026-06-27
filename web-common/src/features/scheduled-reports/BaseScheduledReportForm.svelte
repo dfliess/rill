@@ -64,7 +64,7 @@
   }}
   use:enhance
 >
-  <span>Email recurring exports to recipients.</span>
+  <span>{m.report_form_email_recurring()}</span>
   <div class="flex flex-col gap-y-3 w-full h-[600px] overflow-y-scroll">
     <Input
       bind:value={$data["title"]}
@@ -130,8 +130,7 @@
           <InfoCircle size="13px" />
         </div>
         <TooltipContent maxWidth="400px" slot="tooltip-content">
-          Adds a header to the file that includes filters, time range, and other
-          metadata.
+          {m.report_form_metadata_tooltip()}
         </TooltipContent>
       </Tooltip>
     </div>
@@ -194,12 +193,9 @@
       <FormSection title={m.report_form_slack_title()} padding="">
         <svelte:fragment slot="description">
           <span class="text-sm text-fg-secondary">
-            Slack has not been configured for this project. Read the <a
-              href="https://docs.rilldata.com/guides/alerts#configuring-slack-targets"
-              target="_blank"
-            >
-              docs
-            </a> to learn more.
+            {@html m.report_form_slack_not_configured({
+              link: `<a href="https://docs.rilldata.com/guides/alerts#configuring-slack-targets" target="_blank">${m.report_form_docs()}</a>`,
+            })}
           </span>
         </svelte:fragment>
       </FormSection>

@@ -153,7 +153,7 @@
             </DropdownMenu.Trigger>
             <DropdownMenu.Content align="start">
               <DropdownMenu.Item onclick={handleDeleteAlert}>
-                Delete Alert
+                {m.alert_delete()}
               </DropdownMenu.Item>
             </DropdownMenu.Content>
           </DropdownMenu.Root>
