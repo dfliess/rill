@@ -1,15 +1,16 @@
 <script lang="ts">
+  import * as m from "@rilldata/web-common/paraglide/messages.js";
   import { page } from "$app/stores";
   import ContentContainer from "@rilldata/web-common/components/layout/ContentContainer.svelte";
 
-  const navItems = [
-    { label: "Overview", route: "/status" },
-    { label: "Resources", route: "/status/resources" },
-    { label: "Tables", route: "/status/tables" },
+  $: navItems = [
+    { label: m.status_overview(), route: "/status" },
+    { label: m.status_resources(), route: "/status/resources" },
+    { label: m.status_tables(), route: "/status/tables" },
   ];
 </script>
 
-<ContentContainer title="Status" maxWidth={1100}>
+<ContentContainer title={m.nav_status()} maxWidth={1100}>
   <div class="container flex-col md:flex-row">
     <nav class="nav-items" style:min-width="180px">
       {#each navItems as { label, route } (route)}

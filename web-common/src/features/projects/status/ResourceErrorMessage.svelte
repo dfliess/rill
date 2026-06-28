@@ -29,7 +29,7 @@
       <button
         class="hover:bg-surface-hover rounded p-1 active:bg-surface-active group"
         onclick={() =>
-          copyToClipboard(testErrorMessage, "Copied test error to clipboard")}
+          copyToClipboard(testErrorMessage, m.status_copied_test_error())}
       >
         <CopyIcon
           size="18px"
@@ -50,7 +50,7 @@
       <button
         class="hover:bg-surface-hover rounded p-1 active:bg-surface-active group"
         onclick={() =>
-          copyToClipboard(message, "Copied error message to clipboard")}
+          copyToClipboard(message, m.status_copied_error_message())}
       >
         <CopyIcon
           size="18px"

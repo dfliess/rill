@@ -12,7 +12,7 @@
   export let onDelete: (deletedTokenId: string) => void;
 
   function handleCopy() {
-    copyToClipboard(url, "Public URL copied to clipboard");
+    copyToClipboard(url, m.public_url_copied_to_clipboard());
   }
 
   let isDropdownOpen = false;

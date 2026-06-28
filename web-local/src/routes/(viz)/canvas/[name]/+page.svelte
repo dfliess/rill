@@ -1,4 +1,5 @@
 <script lang="ts">
+  import * as m from "@rilldata/web-common/paraglide/messages.js";
   import CanvasDashboardEmbed from "@rilldata/web-common/features/canvas/CanvasDashboardEmbed.svelte";
   import { useRuntimeClient } from "@rilldata/web-common/runtime-client/v2";
   import CanvasProvider from "@rilldata/web-common/features/canvas/CanvasProvider.svelte";
@@ -41,12 +42,12 @@
   {#if mockUserHasNoAccess}
     <ErrorPage
       statusCode={extractErrorStatusCode($canvasQuery.error)}
-      header="This user can't access this dashboard"
-      body="The security policy for this dashboard may make contents invisible to you. If you deploy this dashboard, {$selectedMockUserStore?.email} will see a 404."
+      header={m.explore_user_no_access()}
+      body={m.explore_security_policy_warning({ email: $selectedMockUserStore?.email ?? "" })}
       href={homeHref}
     />
   {:else if isCanvasNotFound}
-    <ErrorPage statusCode={404} header="Dashboard not found" href={homeHref} />
+    <ErrorPage statusCode={404} header={m.explore_dashboard_not_found()} href={homeHref} />
   {:else}
     <div class="flex h-full overflow-hidden">
       <div class="flex-1 overflow-hidden">

@@ -12,8 +12,10 @@
   import * as m from "@rilldata/web-common/paraglide/messages.js";
 
   export let data: V1ProjectVariable[];
-  export let emptyText: string = "No environment variables";
+  export let emptyText: string = "";
   export let variableNames: VariableNames = [];
+
+  $: resolvedEmptyText = emptyText || m.env_no_variables();
 
   $: columns = [
     {
@@ -64,6 +66,6 @@
   {data}
   {columns}
   emptyIcon={KeyIcon}
-  {emptyText}
+  emptyText={resolvedEmptyText}
   columnLayout="minmax(170px, 1.75fr) 2fr minmax(84px, 1fr) 56px"
 />

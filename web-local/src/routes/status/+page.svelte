@@ -23,6 +23,7 @@
   import { createLocalServiceGetVersion } from "@rilldata/web-common/runtime-client/local-service";
   import { goto } from "$app/navigation";
   import TablesSection from "../../features/tables/TablesSection.svelte";
+  import * as m from "@rilldata/web-common/paraglide/messages.js";
 
   const runtimeClient = useRuntimeClient();
 
@@ -90,7 +91,7 @@
         {:else if totalErrors > 0}
           <span class="status-dot bg-red-500"></span>
           {totalErrors}
-          {totalErrors === 1 ? "error" : "errors"}
+          {totalErrors === 1 ? m.status_error_singular() : m.status_error_plural()}
         {:else}
           <span class="status-dot bg-green-500"></span>
           Running
@@ -122,7 +123,7 @@
       <span class="info-value">
         {instance?.aiConnector && instance.aiConnector !== "admin"
           ? formatConnectorName(instance.aiConnector)
-          : "Rill Managed"}
+          : m.status_rill_managed()}
       </span>
     </div>
   </div>

@@ -202,7 +202,7 @@
         error = "";
       })
       .catch((err) => {
-        error = err.message || "Failed to invite.";
+        error = err.message || m.project_share_failed_to_invite();
       });
   }
 

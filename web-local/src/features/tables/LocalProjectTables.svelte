@@ -1,4 +1,5 @@
 <script lang="ts">
+  import * as m from "@rilldata/web-common/paraglide/messages.js";
   import DelayedSpinner from "@rilldata/web-common/features/entity-management/DelayedSpinner.svelte";
   import Search from "@rilldata/web-common/components/search/Search.svelte";
   import Button from "@rilldata/web-common/components/button/Button.svelte";
@@ -109,11 +110,11 @@
   });
 
   type TypeOption = { label: string; value: "all" | "table" | "view" };
-  const typeOptions: TypeOption[] = [
-    { label: "All Types", value: "all" },
-    { label: "Table", value: "table" },
-    { label: "View", value: "view" },
-  ];
+  $: typeOptions = [
+    { label: m.status_all_types(), value: "all" },
+    { label: m.status_table(), value: "table" },
+    { label: m.status_view_singular(), value: "view" },
+  ] as TypeOption[];
 
   // Split once on unfiltered tables, then apply type filter per section
   $: ({ modelTables: allModelTables, externalTables: allExternalTables } =
@@ -215,7 +216,7 @@
     <div class="flex-1 min-w-0 min-h-9">
       <Search
         bind:value={searchText}
-        placeholder="Search"
+        placeholder={m.common_search()}
         large
         autofocus={false}
         showBorderOnFocus={false}
@@ -230,7 +231,7 @@
           : 'hover:bg-surface-hover'} px-2 py-1"
       >
         <span class="text-fg-secondary font-medium">
-          {typeOptions.find((o) => o.value === typeFilter)?.label ?? "All"}
+          {typeOptions.find((o) => o.value === typeFilter)?.label ?? m.common_all()}
         </span>
         {#if typeDropdownOpen}
           <CaretUpIcon size="12px" />
@@ -375,7 +376,7 @@
           onClick={() => $tablesList.fetchNextPage()}
           disabled={$tablesList.isFetchingNextPage}
           loading={$tablesList.isFetchingNextPage}
-          loadingCopy="Loading..."
+          loadingCopy={m.common_loading()}
         >
           Load more tables
         </Button>

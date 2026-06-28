@@ -3,6 +3,7 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 
 /** @typedef {import('../runtime.js').LocalizedString} LocalizedString */
 /** @typedef {{}} Alert_Context_Menu_AriaInputs */
+/** @typedef {{}} Alert_Create_AlertInputs */
 /** @typedef {{ name: NonNullable<unknown> }} Alert_Created_ByInputs */
 /** @typedef {{}} Alert_Created_Through_CodeInputs */
 /** @typedef {{}} Alert_CriteriaInputs */
@@ -78,6 +79,7 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Alert_Not_Checked_YetInputs */
 /** @typedef {{}} Alert_Recent_HistoryInputs */
 /** @typedef {{}} Alert_ScheduleInputs */
+/** @typedef {{}} Alert_Set_Non_Custom_Time_RangeInputs */
 /** @typedef {{}} Alert_Showing_Recent_ChecksInputs */
 /** @typedef {{}} Alert_Slack_NotificationsInputs */
 /** @typedef {{}} Alert_SnoozeInputs */
@@ -187,6 +189,7 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Billing_Enterprise_Desc_ManagedInputs */
 /** @typedef {{}} Billing_Enterprise_DetailsInputs */
 /** @typedef {{}} Billing_Error_Redirect_PaymentInputs */
+/** @typedef {{ details: NonNullable<unknown> }} Billing_Fix_Payment_IssuesInputs */
 /** @typedef {{}} Billing_Free_Credit_DescInputs */
 /** @typedef {{}} Billing_Free_Trial_InfoInputs */
 /** @typedef {{ amount: NonNullable<unknown> }} Billing_Free_Trial_With_CreditsInputs */
@@ -238,6 +241,7 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Billing_Refer_To_DocsInputs */
 /** @typedef {{}} Billing_RenewInputs */
 /** @typedef {{}} Billing_Renew_To_Maintain_AccessInputs */
+/** @typedef {{ plan: NonNullable<unknown> }} Billing_Renewing_PlanInputs */
 /** @typedef {{}} Billing_See_Pricing_DetailsInputs */
 /** @typedef {{}} Billing_Select_Admin_As_ContactInputs */
 /** @typedef {{}} Billing_Subscription_EndedInputs */
@@ -255,11 +259,13 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Billing_Unit_SpecInputs */
 /** @typedef {{}} Billing_UnknownInputs */
 /** @typedef {{}} Billing_UnlimitedInputs */
+/** @typedef {{}} Billing_Update_PaymentInputs */
 /** @typedef {{}} Billing_Update_Payment_MethodsInputs */
 /** @typedef {{}} Billing_Upgrade_To_ProInputs */
 /** @typedef {{}} Billing_Upgrade_To_TeamInputs */
 /** @typedef {{}} Billing_Upgrade_To_WakeInputs */
 /** @typedef {{ duration: NonNullable<unknown> }} Billing_Upgrade_Within_To_MaintainInputs */
+/** @typedef {{ plan: NonNullable<unknown> }} Billing_Upgrading_PlanInputs */
 /** @typedef {{}} Billing_Usage_Based_PricingInputs */
 /** @typedef {{}} Billing_Usage_Coming_SoonInputs */
 /** @typedef {{}} Billing_Usage_DescriptionInputs */
@@ -299,6 +305,30 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Bookmark_Save_Filters_OnlyInputs */
 /** @typedef {{}} Bookmark_UpdatedInputs */
 /** @typedef {{}} Bookmark_Your_BookmarksInputs */
+/** @typedef {{}} Branch_Add_From_CliInputs */
+/** @typedef {{}} Branch_AuthorInputs */
+/** @typedef {{}} Branch_BranchInputs */
+/** @typedef {{}} Branch_BranchesInputs */
+/** @typedef {{}} Branch_CurrentInputs */
+/** @typedef {{ error: NonNullable<unknown> }} Branch_Delete_FailedInputs */
+/** @typedef {{ error: NonNullable<unknown> }} Branch_Error_LoadingInputs */
+/** @typedef {{}} Branch_HibernateInputs */
+/** @typedef {{ error: NonNullable<unknown> }} Branch_Hibernate_FailedInputs */
+/** @typedef {{}} Branch_Last_UpdatedInputs */
+/** @typedef {{}} Branch_LoadingInputs */
+/** @typedef {{}} Branch_No_BranchesInputs */
+/** @typedef {{}} Branch_Not_EditableInputs */
+/** @typedef {{}} Branch_Open_EditorInputs */
+/** @typedef {{}} Branch_ProductionInputs */
+/** @typedef {{}} Branch_Read_OnlyInputs */
+/** @typedef {{}} Branch_Recreate_WithInputs */
+/** @typedef {{}} Branch_ResumeInputs */
+/** @typedef {{ error: NonNullable<unknown> }} Branch_Resume_FailedInputs */
+/** @typedef {{}} Branch_SlotsInputs */
+/** @typedef {{}} Branch_Status_ErrorInputs */
+/** @typedef {{}} Branch_Status_PendingInputs */
+/** @typedef {{}} Branch_Status_ReadyInputs */
+/** @typedef {{}} Branch_Status_StoppedInputs */
 /** @typedef {{}} Calendar_ApplyInputs */
 /** @typedef {{ capLabel: NonNullable<unknown> }} Calendar_Range_Exceeds_LimitInputs */
 /** @typedef {{}} Canvas_Add_WidgetInputs */
@@ -513,20 +543,28 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Chat_Unable_To_LoadInputs */
 /** @typedef {{}} Chat_Upvote_AriaInputs */
 /** @typedef {{}} Chat_Upvote_TooltipInputs */
+/** @typedef {{}} Common_AllInputs */
 /** @typedef {{}} Common_Allow_Domain_AccessInputs */
 /** @typedef {{ domain: NonNullable<unknown>, role: NonNullable<unknown> }} Common_Allow_Domain_Join_ProjectInputs */
 /** @typedef {{}} Common_ApplyInputs */
+/** @typedef {{}} Common_BackInputs */
 /** @typedef {{}} Common_CancelInputs */
 /** @typedef {{}} Common_Close_SearchInputs */
 /** @typedef {{}} Common_Contact_UsInputs */
 /** @typedef {{}} Common_ContinueInputs */
+/** @typedef {{}} Common_DeleteInputs */
 /** @typedef {{}} Common_Got_ItInputs */
 /** @typedef {{}} Common_Learn_MoreInputs */
+/** @typedef {{}} Common_LoadingInputs */
 /** @typedef {{}} Common_Must_Be_NumberInputs */
+/** @typedef {{}} Common_NameInputs */
+/** @typedef {{}} Common_No_Results_FoundInputs */
 /** @typedef {{}} Common_PreviewInputs */
 /** @typedef {{}} Common_RequiredInputs */
 /** @typedef {{}} Common_SearchInputs */
 /** @typedef {{}} Common_Search_ListInputs */
+/** @typedef {{}} Common_StatusInputs */
+/** @typedef {{}} Common_TypeInputs */
 /** @typedef {{}} Common_UndoInputs */
 /** @typedef {{ name: NonNullable<unknown> }} Dashboard_Add_All_Dims_RowsInputs */
 /** @typedef {{}} Dashboard_Add_All_To_ColumnsInputs */
@@ -569,6 +607,7 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Dashboard_Copy_ErrorInputs */
 /** @typedef {{}} Dashboard_Copy_Error_ClipboardInputs */
 /** @typedef {{}} Dashboard_Copy_Error_To_Clipboard_AriaInputs */
+/** @typedef {{}} Dashboard_Create_A_DashboardInputs */
 /** @typedef {{}} Dashboard_Current_TimeInputs */
 /** @typedef {{}} Dashboard_Current_Time_DescriptionInputs */
 /** @typedef {{}} Dashboard_Currently_FlatInputs */
@@ -587,6 +626,7 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Dashboard_Drag_Dimensions_Or_MeasuresInputs */
 /** @typedef {{ zone: NonNullable<unknown> }} Dashboard_Drag_List_ZoneInputs */
 /** @typedef {{}} Dashboard_Dynamic_Y_AxisInputs */
+/** @typedef {{}} Dashboard_Empty_StateInputs */
 /** @typedef {{}} Dashboard_EndInputs */
 /** @typedef {{}} Dashboard_Error_OccurredInputs */
 /** @typedef {{}} Dashboard_Error_Occurred_HoverInputs */
@@ -631,6 +671,7 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Dashboard_No_Additional_DetailsInputs */
 /** @typedef {{}} Dashboard_No_Available_FieldsInputs */
 /** @typedef {{}} Dashboard_No_Comparison_DimensionInputs */
+/** @typedef {{}} Dashboard_No_Dashboards_FoundInputs */
 /** @typedef {{}} Dashboard_No_Filters_SelectedInputs */
 /** @typedef {{}} Dashboard_No_Matching_TagsInputs */
 /** @typedef {{}} Dashboard_No_Mock_UsersInputs */
@@ -676,6 +717,7 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Dashboard_Search_DimensionInputs */
 /** @typedef {{}} Dashboard_Search_DimensionsInputs */
 /** @typedef {{}} Dashboard_Search_ResultsInputs */
+/** @typedef {{}} Dashboard_See_AllInputs */
 /** @typedef {{}} Dashboard_See_MoreInputs */
 /** @typedef {{}} Dashboard_Select_Aggregation_Grain_AriaInputs */
 /** @typedef {{}} Dashboard_Select_AllInputs */
@@ -710,6 +752,7 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Dashboard_Time_ZoneInputs */
 /** @typedef {{}} Dashboard_Timezone_SelectorInputs */
 /** @typedef {{}} Dashboard_ToInputs */
+/** @typedef {{}} Dashboard_To_Get_StartedInputs */
 /** @typedef {{}} Dashboard_Toggle_ExcludeInputs */
 /** @typedef {{}} Dashboard_Toggle_IncludeInputs */
 /** @typedef {{}} Dashboard_Toggle_Rows_Viewer_AriaInputs */
@@ -718,10 +761,33 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Dashboard_Total_RowInputs */
 /** @typedef {{}} Dashboard_View_AsInputs */
 /** @typedef {{}} Dashboard_Viewing_AsInputs */
+/** @typedef {{}} Deploy_Create_New_Org_LabelInputs */
+/** @typedef {{}} Deploy_Failed_Login_UrlInputs */
+/** @typedef {{}} Deploy_Select_Org_PlaceholderInputs */
 /** @typedef {{}} Dialog_Close_Without_Saving_Alert_DescInputs */
 /** @typedef {{}} Dialog_Close_Without_Saving_CancelInputs */
 /** @typedef {{}} Dialog_Close_Without_Saving_ConfirmInputs */
 /** @typedef {{}} Dialog_Close_Without_Saving_TitleInputs */
+/** @typedef {{}} Edit_Back_To_ProjectsInputs */
+/** @typedef {{}} Edit_Branch_NameInputs */
+/** @typedef {{}} Edit_Changes_Committed_PushedInputs */
+/** @typedef {{}} Edit_Describe_ChangesInputs */
+/** @typedef {{}} Edit_Failed_To_CommitInputs */
+/** @typedef {{}} Edit_Failed_To_MergeInputs */
+/** @typedef {{}} Edit_Failed_To_PublishInputs */
+/** @typedef {{}} Edit_Failed_To_StartInputs */
+/** @typedef {{}} Edit_MergingInputs */
+/** @typedef {{}} Edit_No_Changes_DetectedInputs */
+/** @typedef {{}} Edit_Popup_BlockedInputs */
+/** @typedef {{}} Edit_Provisioning_EnvInputs */
+/** @typedef {{}} Edit_PublishingInputs */
+/** @typedef {{}} Edit_PushingInputs */
+/** @typedef {{}} Edit_Return_To_OrgInputs */
+/** @typedef {{}} Edit_Return_To_ProjectInputs */
+/** @typedef {{}} Edit_StartingInputs */
+/** @typedef {{}} Edit_Starting_EnvInputs */
+/** @typedef {{}} Edit_Taking_LongerInputs */
+/** @typedef {{}} Edit_Updating_EnvInputs */
 /** @typedef {{}} Embed_Explore_ErrorInputs */
 /** @typedef {{}} Embed_Explore_Not_FoundInputs */
 /** @typedef {{}} Embed_Explore_Not_Found_BodyInputs */
@@ -782,6 +848,8 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Error_Back_To_HomeInputs */
 /** @typedef {{}} Error_Conversation_Not_Found_BodyInputs */
 /** @typedef {{}} Error_Conversation_Not_Found_HeaderInputs */
+/** @typedef {{}} Error_Dashboard_Not_FoundInputs */
+/** @typedef {{}} Error_Deploy_DashboardsInputs */
 /** @typedef {{}} Error_Deploying_ProjectInputs */
 /** @typedef {{}} Error_Deployment_ErrorInputs */
 /** @typedef {{}} Error_Deployment_Not_Found_BodyInputs */
@@ -794,8 +862,10 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Error_Link_Expired_HeaderInputs */
 /** @typedef {{}} Error_Network_BodyInputs */
 /** @typedef {{}} Error_Network_HeaderInputs */
+/** @typedef {{}} Error_OccurredInputs */
 /** @typedef {{}} Error_Org_Not_Found_BodyInputs */
 /** @typedef {{}} Error_Org_Not_Found_HeaderInputs */
+/** @typedef {{}} Error_Page_Not_FoundInputs */
 /** @typedef {{}} Error_Page_Not_Found_BodyInputs */
 /** @typedef {{}} Error_Page_Not_Found_HeaderInputs */
 /** @typedef {{}} Error_Project_Not_Found_BodyInputs */
@@ -807,6 +877,7 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Explore_All_DimensionsInputs */
 /** @typedef {{}} Explore_All_MeasuresInputs */
 /** @typedef {{}} Explore_By_Grain_PrefixInputs */
+/** @typedef {{}} Explore_Check_Yaml_ErrorsInputs */
 /** @typedef {{}} Explore_Choose_DimensionsInputs */
 /** @typedef {{}} Explore_Choose_MeasuresInputs */
 /** @typedef {{}} Explore_Clear_FilterInputs */
@@ -816,7 +887,11 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Explore_Clear_Tag_FilterInputs */
 /** @typedef {{}} Explore_Clear_Tag_Filter_To_Reorder_DimensionsInputs */
 /** @typedef {{}} Explore_Clear_Tag_Filter_To_Reorder_MeasuresInputs */
+/** @typedef {{}} Explore_Dashboard_Not_FoundInputs */
 /** @typedef {{ count: NonNullable<unknown>, total: NonNullable<unknown> }} Explore_Dimensions_CountInputs */
+/** @typedef {{}} Explore_Error_BuildingInputs */
+/** @typedef {{}} Explore_Error_FetchingInputs */
+/** @typedef {{}} Explore_Error_ParsingInputs */
 /** @typedef {{ tag: NonNullable<unknown> }} Explore_Filter_By_TagInputs */
 /** @typedef {{}} Explore_Filter_LabelInputs */
 /** @typedef {{}} Explore_Go_To_DashboardInputs */
@@ -844,6 +919,7 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Explore_No_Matching_Leaderboard_MeasuresInputs */
 /** @typedef {{}} Explore_No_Matching_Measures_ShownInputs */
 /** @typedef {{}} Explore_No_Matching_TagsInputs */
+/** @typedef {{}} Explore_No_MeasuresInputs */
 /** @typedef {{}} Explore_No_Measures_From_TagInputs */
 /** @typedef {{}} Explore_No_Measures_Or_TagsInputs */
 /** @typedef {{}} Explore_No_Measures_ShownInputs */
@@ -854,6 +930,7 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Explore_Search_ListInputs */
 /** @typedef {{}} Explore_Search_MeasuresInputs */
 /** @typedef {{}} Explore_Search_Measures_Or_TagsInputs */
+/** @typedef {{ email: NonNullable<unknown> }} Explore_Security_Policy_WarningInputs */
 /** @typedef {{}} Explore_Show_AllInputs */
 /** @typedef {{ tag: NonNullable<unknown> }} Explore_Show_All_In_Named_TagInputs */
 /** @typedef {{}} Explore_Show_All_In_TagInputs */
@@ -865,8 +942,10 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{ visible: NonNullable<unknown>, total: NonNullable<unknown> }} Explore_Tag_Shown_CountInputs */
 /** @typedef {{}} Explore_TagsInputs */
 /** @typedef {{}} Explore_Unable_To_OpenInputs */
+/** @typedef {{}} Explore_Unknown_Build_ErrorInputs */
 /** @typedef {{}} Explore_Unknown_DimensionInputs */
 /** @typedef {{}} Explore_Unknown_MeasureInputs */
+/** @typedef {{}} Explore_User_No_AccessInputs */
 /** @typedef {{ label: NonNullable<unknown> }} Field_List_Add_FieldsInputs */
 /** @typedef {{ label: NonNullable<unknown> }} Field_List_AriaInputs */
 /** @typedef {{}} Field_List_DimensionsInputs */
@@ -928,6 +1007,9 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Github_Create_RepositoryInputs */
 /** @typedef {{}} Github_Deploy_ContinuouslyInputs */
 /** @typedef {{}} Github_Did_Not_Grant_AccessInputs */
+/** @typedef {{}} Github_Error_Push_FailedInputs */
+/** @typedef {{}} Github_Error_Repo_ExistsInputs */
+/** @typedef {{}} Github_Error_Subpath_ExistsInputs */
 /** @typedef {{}} Github_Existing_RepositoryInputs */
 /** @typedef {{}} Github_Grant_Access_To_RepoInputs */
 /** @typedef {{}} Github_No_Access_To_RepoInputs */
@@ -970,8 +1052,11 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{ count: NonNullable<unknown> }} Groups_Total_CountInputs */
 /** @typedef {{}} Groups_Yes_DeleteInputs */
 /** @typedef {{}} Home_Dashboards_HeadingInputs */
+/** @typedef {{ name: NonNullable<unknown> }} Home_GreetingInputs */
 /** @typedef {{}} Home_Subtitle_No_ChatInputs */
 /** @typedef {{}} Home_Subtitle_With_ChatInputs */
+/** @typedef {{ link: NonNullable<unknown> }} Home_Welcome_Getting_StartedInputs */
+/** @typedef {{}} Home_Welcome_Quickstart_LinkInputs */
 /** @typedef {{ projectName: NonNullable<unknown> }} Home_Welcome_ToInputs */
 /** @typedef {{}} Interval_DayInputs */
 /** @typedef {{}} Interval_HourInputs */
@@ -1021,8 +1106,10 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Measures_Choose_TooltipInputs */
 /** @typedef {{}} Measures_LabelInputs */
 /** @typedef {{}} Nav_Close_SidebarInputs */
+/** @typedef {{}} Nav_DashboardsInputs */
 /** @typedef {{}} Nav_Data_ExplorerInputs */
 /** @typedef {{}} Nav_Show_SidebarInputs */
+/** @typedef {{}} Nav_StatusInputs */
 /** @typedef {{}} Nav_Tab_AiInputs */
 /** @typedef {{}} Nav_Tab_AlertsInputs */
 /** @typedef {{}} Nav_Tab_DashboardsInputs */
@@ -1033,6 +1120,10 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Nav_Tab_StatusInputs */
 /** @typedef {{}} Org_Check_Out_ProjectsInputs */
 /** @typedef {{}} Org_New_ProjectInputs */
+/** @typedef {{}} Org_Role_Admin_DescriptionInputs */
+/** @typedef {{}} Org_Role_Editor_DescriptionInputs */
+/** @typedef {{}} Org_Role_Guest_DescriptionInputs */
+/** @typedef {{}} Org_Role_Viewer_DescriptionInputs */
 /** @typedef {{}} Org_Search_Add_Remove_UsersInputs */
 /** @typedef {{}} Org_Tab_ProjectsInputs */
 /** @typedef {{}} Org_Tab_SettingsInputs */
@@ -1054,28 +1145,51 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Project_Branch_HibernatedInputs */
 /** @typedef {{}} Project_Branch_Is_HibernatedInputs */
 /** @typedef {{}} Project_Contact_Admin_To_RedeployInputs */
+/** @typedef {{}} Project_Create_FirstInputs */
+/** @typedef {{}} Project_Create_NewInputs */
+/** @typedef {{}} Project_Create_ProjectInputs */
 /** @typedef {{}} Project_Dashboards_TitleInputs */
 /** @typedef {{}} Project_DeleteInputs */
+/** @typedef {{}} Project_DeployingInputs */
 /** @typedef {{}} Project_EditInputs */
 /** @typedef {{ error: NonNullable<unknown> }} Project_Failed_To_WakeInputs */
 /** @typedef {{}} Project_HibernatingInputs */
 /** @typedef {{}} Project_Is_HibernatingInputs */
+/** @typedef {{}} Project_Name_FirstInputs */
+/** @typedef {{}} Project_Name_Format_ErrorInputs */
+/** @typedef {{}} Project_Name_Max_LengthInputs */
+/** @typedef {{}} Project_Name_Min_LengthInputs */
+/** @typedef {{}} Project_Name_NewInputs */
+/** @typedef {{}} Project_Name_RequiredInputs */
 /** @typedef {{}} Project_RenameInputs */
+/** @typedef {{}} Project_Rename_AnytimeInputs */
 /** @typedef {{}} Project_Resume_BranchInputs */
 /** @typedef {{}} Project_Role_AdminInputs */
+/** @typedef {{}} Project_Role_Guest_DescriptionInputs */
 /** @typedef {{}} Project_Role_ViewerInputs */
 /** @typedef {{}} Project_Search_Or_InviteInputs */
 /** @typedef {{}} Project_Search_UsersInputs */
 /** @typedef {{}} Project_ShareInputs */
+/** @typedef {{}} Project_Share_Failed_To_InviteInputs */
 /** @typedef {{ project: NonNullable<unknown> }} Project_Share_HeadingInputs */
+/** @typedef {{}} Project_Share_Invalid_EmailInputs */
+/** @typedef {{}} Project_Share_Invalid_Email_Or_GroupInputs */
+/** @typedef {{}} Project_Share_Role_AdminInputs */
+/** @typedef {{}} Project_Share_Role_Admin_DescriptionInputs */
+/** @typedef {{}} Project_Share_Role_EditorInputs */
+/** @typedef {{}} Project_Share_Role_Editor_DescriptionInputs */
+/** @typedef {{}} Project_Share_Role_ViewerInputs */
+/** @typedef {{}} Project_Share_Role_Viewer_DescriptionInputs */
 /** @typedef {{}} Project_Share_TooltipInputs */
 /** @typedef {{}} Project_StartingInputs */
+/** @typedef {{}} Project_Starting_Branch_DeploymentInputs */
 /** @typedef {{}} Project_This_Is_HibernatingInputs */
 /** @typedef {{}} Project_WakeInputs */
 /** @typedef {{}} Project_WakingInputs */
 /** @typedef {{}} Project_Waking_UpInputs */
 /** @typedef {{}} Public_Url_Cancel_ButtonInputs */
 /** @typedef {{}} Public_Url_Copied_ButtonInputs */
+/** @typedef {{}} Public_Url_Copied_To_ClipboardInputs */
 /** @typedef {{}} Public_Url_Copy_ButtonInputs */
 /** @typedef {{}} Public_Url_Copy_Url_ActionInputs */
 /** @typedef {{}} Public_Url_Create_ButtonInputs */
@@ -1085,6 +1199,7 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Public_Url_Delete_Error_NotificationInputs */
 /** @typedef {{}} Public_Url_Delete_TitleInputs */
 /** @typedef {{}} Public_Url_Deleted_NotificationInputs */
+/** @typedef {{}} Public_Url_Edit_ExpirationInputs */
 /** @typedef {{}} Public_Url_Error_LoadingInputs */
 /** @typedef {{}} Public_Url_Filters_Locked_HiddenInputs */
 /** @typedef {{}} Public_Url_Label_PlaceholderInputs */
@@ -1105,6 +1220,7 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Public_Url_Table_Filters_HeaderInputs */
 /** @typedef {{}} Public_Url_Table_Label_HeaderInputs */
 /** @typedef {{}} Public_Url_Table_Last_Accessed_HeaderInputs */
+/** @typedef {{}} Public_Url_Title_RequiredInputs */
 /** @typedef {{}} Public_Url_UntitledInputs */
 /** @typedef {{}} Public_Url_Yes_Delete_ButtonInputs */
 /** @typedef {{}} Report_AdhocInputs */
@@ -1232,6 +1348,14 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Role_Project_Editor_DescInputs */
 /** @typedef {{}} Role_Project_Viewer_DescInputs */
 /** @typedef {{}} Role_ViewerInputs */
+/** @typedef {{}} Route_Error_Dashboard_Not_FoundInputs */
+/** @typedef {{}} Route_Error_Fetching_Billing_IssuesInputs */
+/** @typedef {{}} Route_Error_Fetching_Billing_SubscriptionInputs */
+/** @typedef {{}} Route_Error_Fetching_OrganizationInputs */
+/** @typedef {{}} Route_Error_Fetching_ProjectInputs */
+/** @typedef {{}} Route_Error_No_Org_PermissionInputs */
+/** @typedef {{}} Route_Error_Token_Not_FoundInputs */
+/** @typedef {{}} Route_Error_Token_Resource_Not_FoundInputs */
 /** @typedef {{ domain: NonNullable<unknown>, role: NonNullable<unknown> }} Settings_Allow_Domain_DescriptionInputs */
 /** @typedef {{}} Settings_Allow_Domain_TitleInputs */
 /** @typedef {{ branch: NonNullable<unknown> }} Settings_Branch_CalloutInputs */
@@ -1314,6 +1438,7 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Status_Action_Refresh_Errored_PartitionsInputs */
 /** @typedef {{}} Status_Action_View_LogsInputs */
 /** @typedef {{}} Status_Action_View_PartitionsInputs */
+/** @typedef {{}} Status_All_TypesInputs */
 /** @typedef {{}} Status_CancelInputs */
 /** @typedef {{}} Status_Checking_ErrorsInputs */
 /** @typedef {{}} Status_ClearInputs */
@@ -1328,8 +1453,12 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Status_CompleteInputs */
 /** @typedef {{}} Status_Compute_UnitInputs */
 /** @typedef {{}} Status_Compute_UnitsInputs */
+/** @typedef {{ error: NonNullable<unknown> }} Status_Connection_FailedInputs */
+/** @typedef {{}} Status_Copied_Error_MessageInputs */
+/** @typedef {{}} Status_Copied_Test_ErrorInputs */
 /** @typedef {{}} Status_Data_AccessibleInputs */
 /** @typedef {{}} Status_Data_SizeInputs */
+/** @typedef {{}} Status_Database_SizeInputs */
 /** @typedef {{}} Status_Deploy_DeletedInputs */
 /** @typedef {{}} Status_Deploy_DeletingInputs */
 /** @typedef {{}} Status_Deploy_ErrorInputs */
@@ -1343,12 +1472,16 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Status_Download_ProjectInputs */
 /** @typedef {{}} Status_Error_Loading_ResourcesInputs */
 /** @typedef {{}} Status_Error_Loading_TablesInputs */
+/** @typedef {{}} Status_Error_PluralInputs */
+/** @typedef {{}} Status_Error_SingularInputs */
 /** @typedef {{}} Status_ErrorsInputs */
 /** @typedef {{}} Status_External_Tables_SectionInputs */
 /** @typedef {{}} Status_Filter_ErrorInputs */
 /** @typedef {{}} Status_Filter_OkInputs */
 /** @typedef {{}} Status_Filter_WarnInputs */
+/** @typedef {{}} Status_Full_RefreshInputs */
 /** @typedef {{}} Status_Full_Refresh_WarningInputs */
+/** @typedef {{}} Status_Incremental_RefreshInputs */
 /** @typedef {{}} Status_Incremental_Refresh_DescriptionInputs */
 /** @typedef {{}} Status_Label_Ai_ConnectorInputs */
 /** @typedef {{}} Status_Label_BranchInputs */
@@ -1361,11 +1494,13 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Status_Label_StatusInputs */
 /** @typedef {{}} Status_Learn_About_External_OlapInputs */
 /** @typedef {{}} Status_Learn_MoreInputs */
+/** @typedef {{ first: NonNullable<unknown>, count: NonNullable<unknown> }} Status_Levels_SelectedInputs */
 /** @typedef {{}} Status_Load_More_TablesInputs */
 /** @typedef {{}} Status_LoadingInputs */
 /** @typedef {{}} Status_Loading_ModelsInputs */
 /** @typedef {{}} Status_Loading_ResourcesInputs */
 /** @typedef {{}} Status_Loading_TablesInputs */
+/** @typedef {{}} Status_Loading_Tables_ShortInputs */
 /** @typedef {{}} Status_Logs_All_LevelsInputs */
 /** @typedef {{}} Status_Logs_ConnectingInputs */
 /** @typedef {{}} Status_Logs_Connection_FailedInputs */
@@ -1379,7 +1514,9 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Status_Logs_No_MatchInputs */
 /** @typedef {{}} Status_Logs_RetryInputs */
 /** @typedef {{}} Status_Logs_WaitingInputs */
+/** @typedef {{}} Status_Model_NameInputs */
 /** @typedef {{}} Status_Model_PartitionsInputs */
+/** @typedef {{}} Status_Model_ReconcilingInputs */
 /** @typedef {{}} Status_Models_Created_In_DeveloperInputs */
 /** @typedef {{}} Status_Models_SectionInputs */
 /** @typedef {{}} Status_Nav_AnalyticsInputs */
@@ -1399,6 +1536,7 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Status_No_Resources_Match_FiltersInputs */
 /** @typedef {{}} Status_No_TablesInputs */
 /** @typedef {{}} Status_NoteInputs */
+/** @typedef {{}} Status_One_LevelInputs */
 /** @typedef {{}} Status_Owned_By_OtherInputs */
 /** @typedef {{}} Status_Owned_By_YouInputs */
 /** @typedef {{}} Status_Page_TitleInputs */
@@ -1416,13 +1554,18 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{}} Status_RefreshingInputs */
 /** @typedef {{}} Status_Resource_ReconcilingInputs */
 /** @typedef {{}} Status_Rill_ManagedInputs */
+/** @typedef {{}} Status_TableInputs */
+/** @typedef {{}} Status_Table_NameInputs */
 /** @typedef {{}} Status_Table_PluralInputs */
 /** @typedef {{}} Status_Table_SingularInputs */
+/** @typedef {{}} Status_TablesInputs */
 /** @typedef {{}} Status_Unable_To_Check_ErrorsInputs */
 /** @typedef {{}} Status_View_AllInputs */
 /** @typedef {{}} Status_View_PluralInputs */
 /** @typedef {{}} Status_View_SingularInputs */
+/** @typedef {{}} Status_ViewsInputs */
 /** @typedef {{}} Status_Yes_RefreshInputs */
+/** @typedef {{}} Theme_BetaInputs */
 /** @typedef {{}} Theme_DarkInputs */
 /** @typedef {{}} Theme_LabelInputs */
 /** @typedef {{}} Theme_LightInputs */
@@ -1548,6 +1691,7 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{ role: NonNullable<unknown> }} Users_Guest_UpgradedInputs */
 /** @typedef {{ role: NonNullable<unknown> }} Users_Guest_Upgraded_ToInputs */
 /** @typedef {{ count: NonNullable<unknown>, role: NonNullable<unknown> }} Users_Guests_Invited_SuccessInputs */
+/** @typedef {{}} Users_Invalid_EmailInputs */
 /** @typedef {{}} Users_InviteInputs */
 /** @typedef {{}} Users_Invite_OnlyInputs */
 /** @typedef {{ count: NonNullable<unknown> }} Users_Invited_CountInputs */
@@ -1593,6 +1737,7 @@ import { getLocale, experimentalStaticLocale } from "../runtime.js"
 /** @typedef {{ count: NonNullable<unknown> }} Users_User_CountInputs */
 /** @typedef {{}} Users_Yes_RemoveInputs */
 /** @typedef {{}} Users_Yes_UpgradeInputs */
+/** @typedef {{}} Workspace_Generating_Sample_DataInputs */
 import * as __en from "./en.js"
 import * as __es from "./es.js"
 /**
@@ -1608,6 +1753,20 @@ export const alert_context_menu_aria = /** @type {((inputs?: Alert_Context_Menu_
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.alert_context_menu_aria(inputs)
 	return __es.alert_context_menu_aria(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Create alert" |
+*
+* @param {Alert_Create_AlertInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_create_alert = /** @type {((inputs?: Alert_Create_AlertInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Create_AlertInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_create_alert(inputs)
+	return __es.alert_create_alert(inputs)
 });
 /**
 * | output |
@@ -2658,6 +2817,20 @@ export const alert_schedule = /** @type {((inputs?: Alert_ScheduleInputs, option
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.alert_schedule(inputs)
 	return __es.alert_schedule(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "To create an alert, set a non-custom time range." |
+*
+* @param {Alert_Set_Non_Custom_Time_RangeInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const alert_set_non_custom_time_range = /** @type {((inputs?: Alert_Set_Non_Custom_Time_RangeInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Alert_Set_Non_Custom_Time_RangeInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.alert_set_non_custom_time_range(inputs)
+	return __es.alert_set_non_custom_time_range(inputs)
 });
 /**
 * | output |
@@ -4188,6 +4361,20 @@ export const billing_error_redirect_payment = /** @type {((inputs?: Billing_Erro
 /**
 * | output |
 * | --- |
+* | "Please fix payment issues: {details}" |
+*
+* @param {Billing_Fix_Payment_IssuesInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const billing_fix_payment_issues = /** @type {((inputs: Billing_Fix_Payment_IssuesInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Billing_Fix_Payment_IssuesInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.billing_fix_payment_issues(inputs)
+	return __es.billing_fix_payment_issues(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "$250 free credit" |
 *
 * @param {Billing_Free_Credit_DescInputs} inputs
@@ -4902,6 +5089,20 @@ export const billing_renew_to_maintain_access = /** @type {((inputs?: Billing_Re
 /**
 * | output |
 * | --- |
+* | "Renewing {plan} plan..." |
+*
+* @param {Billing_Renewing_PlanInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const billing_renewing_plan = /** @type {((inputs: Billing_Renewing_PlanInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Billing_Renewing_PlanInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.billing_renewing_plan(inputs)
+	return __es.billing_renewing_plan(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "See pricing details" |
 *
 * @param {Billing_See_Pricing_DetailsInputs} inputs
@@ -5140,6 +5341,20 @@ export const billing_unlimited = /** @type {((inputs?: Billing_UnlimitedInputs, 
 /**
 * | output |
 * | --- |
+* | "Update payment" |
+*
+* @param {Billing_Update_PaymentInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const billing_update_payment = /** @type {((inputs?: Billing_Update_PaymentInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Billing_Update_PaymentInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.billing_update_payment(inputs)
+	return __es.billing_update_payment(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Update payment methods" |
 *
 * @param {Billing_Update_Payment_MethodsInputs} inputs
@@ -5206,6 +5421,20 @@ export const billing_upgrade_within_to_maintain = /** @type {((inputs: Billing_U
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.billing_upgrade_within_to_maintain(inputs)
 	return __es.billing_upgrade_within_to_maintain(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Upgrading to {plan} plan..." |
+*
+* @param {Billing_Upgrading_PlanInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const billing_upgrading_plan = /** @type {((inputs: Billing_Upgrading_PlanInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Billing_Upgrading_PlanInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.billing_upgrading_plan(inputs)
+	return __es.billing_upgrading_plan(inputs)
 });
 /**
 * | output |
@@ -5752,6 +5981,342 @@ export const bookmark_your_bookmarks = /** @type {((inputs?: Bookmark_Your_Bookm
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.bookmark_your_bookmarks(inputs)
 	return __es.bookmark_your_bookmarks(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Add a branch from the CLI:" |
+*
+* @param {Branch_Add_From_CliInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const branch_add_from_cli = /** @type {((inputs?: Branch_Add_From_CliInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Branch_Add_From_CliInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.branch_add_from_cli(inputs)
+	return __es.branch_add_from_cli(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Author" |
+*
+* @param {Branch_AuthorInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const branch_author = /** @type {((inputs?: Branch_AuthorInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Branch_AuthorInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.branch_author(inputs)
+	return __es.branch_author(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Branch" |
+*
+* @param {Branch_BranchInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const branch_branch = /** @type {((inputs?: Branch_BranchInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Branch_BranchInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.branch_branch(inputs)
+	return __es.branch_branch(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Branches" |
+*
+* @param {Branch_BranchesInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const branch_branches = /** @type {((inputs?: Branch_BranchesInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Branch_BranchesInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.branch_branches(inputs)
+	return __es.branch_branches(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Current" |
+*
+* @param {Branch_CurrentInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const branch_current = /** @type {((inputs?: Branch_CurrentInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Branch_CurrentInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.branch_current(inputs)
+	return __es.branch_current(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Failed to delete branch: {error}" |
+*
+* @param {Branch_Delete_FailedInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const branch_delete_failed = /** @type {((inputs: Branch_Delete_FailedInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Branch_Delete_FailedInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.branch_delete_failed(inputs)
+	return __es.branch_delete_failed(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Error loading branches: {error}" |
+*
+* @param {Branch_Error_LoadingInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const branch_error_loading = /** @type {((inputs: Branch_Error_LoadingInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Branch_Error_LoadingInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.branch_error_loading(inputs)
+	return __es.branch_error_loading(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Hibernate" |
+*
+* @param {Branch_HibernateInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const branch_hibernate = /** @type {((inputs?: Branch_HibernateInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Branch_HibernateInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.branch_hibernate(inputs)
+	return __es.branch_hibernate(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Failed to hibernate branch: {error}" |
+*
+* @param {Branch_Hibernate_FailedInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const branch_hibernate_failed = /** @type {((inputs: Branch_Hibernate_FailedInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Branch_Hibernate_FailedInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.branch_hibernate_failed(inputs)
+	return __es.branch_hibernate_failed(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Last updated" |
+*
+* @param {Branch_Last_UpdatedInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const branch_last_updated = /** @type {((inputs?: Branch_Last_UpdatedInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Branch_Last_UpdatedInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.branch_last_updated(inputs)
+	return __es.branch_last_updated(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Loading branches" |
+*
+* @param {Branch_LoadingInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const branch_loading = /** @type {((inputs?: Branch_LoadingInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Branch_LoadingInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.branch_loading(inputs)
+	return __es.branch_loading(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "No branches" |
+*
+* @param {Branch_No_BranchesInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const branch_no_branches = /** @type {((inputs?: Branch_No_BranchesInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Branch_No_BranchesInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.branch_no_branches(inputs)
+	return __es.branch_no_branches(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "This deployment isn't configured for editing." |
+*
+* @param {Branch_Not_EditableInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const branch_not_editable = /** @type {((inputs?: Branch_Not_EditableInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Branch_Not_EditableInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.branch_not_editable(inputs)
+	return __es.branch_not_editable(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Open editor" |
+*
+* @param {Branch_Open_EditorInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const branch_open_editor = /** @type {((inputs?: Branch_Open_EditorInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Branch_Open_EditorInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.branch_open_editor(inputs)
+	return __es.branch_open_editor(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Production" |
+*
+* @param {Branch_ProductionInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const branch_production = /** @type {((inputs?: Branch_ProductionInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Branch_ProductionInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.branch_production(inputs)
+	return __es.branch_production(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Read-only" |
+*
+* @param {Branch_Read_OnlyInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const branch_read_only = /** @type {((inputs?: Branch_Read_OnlyInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Branch_Read_OnlyInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.branch_read_only(inputs)
+	return __es.branch_read_only(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "To edit this branch, recreate it with" |
+*
+* @param {Branch_Recreate_WithInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const branch_recreate_with = /** @type {((inputs?: Branch_Recreate_WithInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Branch_Recreate_WithInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.branch_recreate_with(inputs)
+	return __es.branch_recreate_with(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Resume branch" |
+*
+* @param {Branch_ResumeInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const branch_resume = /** @type {((inputs?: Branch_ResumeInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Branch_ResumeInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.branch_resume(inputs)
+	return __es.branch_resume(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Failed to resume branch: {error}" |
+*
+* @param {Branch_Resume_FailedInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const branch_resume_failed = /** @type {((inputs: Branch_Resume_FailedInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Branch_Resume_FailedInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.branch_resume_failed(inputs)
+	return __es.branch_resume_failed(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Slots" |
+*
+* @param {Branch_SlotsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const branch_slots = /** @type {((inputs?: Branch_SlotsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Branch_SlotsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.branch_slots(inputs)
+	return __es.branch_slots(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Error" |
+*
+* @param {Branch_Status_ErrorInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const branch_status_error = /** @type {((inputs?: Branch_Status_ErrorInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Branch_Status_ErrorInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.branch_status_error(inputs)
+	return __es.branch_status_error(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Pending" |
+*
+* @param {Branch_Status_PendingInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const branch_status_pending = /** @type {((inputs?: Branch_Status_PendingInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Branch_Status_PendingInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.branch_status_pending(inputs)
+	return __es.branch_status_pending(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Ready" |
+*
+* @param {Branch_Status_ReadyInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const branch_status_ready = /** @type {((inputs?: Branch_Status_ReadyInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Branch_Status_ReadyInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.branch_status_ready(inputs)
+	return __es.branch_status_ready(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Stopped" |
+*
+* @param {Branch_Status_StoppedInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const branch_status_stopped = /** @type {((inputs?: Branch_Status_StoppedInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Branch_Status_StoppedInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.branch_status_stopped(inputs)
+	return __es.branch_status_stopped(inputs)
 });
 /**
 * | output |
@@ -8752,6 +9317,20 @@ export const chat_upvote_tooltip = /** @type {((inputs?: Chat_Upvote_TooltipInpu
 /**
 * | output |
 * | --- |
+* | "All" |
+*
+* @param {Common_AllInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const common_all = /** @type {((inputs?: Common_AllInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Common_AllInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.common_all(inputs)
+	return __es.common_all(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Allow domain access" |
 *
 * @param {Common_Allow_Domain_AccessInputs} inputs
@@ -8790,6 +9369,20 @@ export const common_apply = /** @type {((inputs?: Common_ApplyInputs, options?: 
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.common_apply(inputs)
 	return __es.common_apply(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Back" |
+*
+* @param {Common_BackInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const common_back = /** @type {((inputs?: Common_BackInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Common_BackInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.common_back(inputs)
+	return __es.common_back(inputs)
 });
 /**
 * | output |
@@ -8850,6 +9443,20 @@ export const common_continue = /** @type {((inputs?: Common_ContinueInputs, opti
 /**
 * | output |
 * | --- |
+* | "Delete" |
+*
+* @param {Common_DeleteInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const common_delete = /** @type {((inputs?: Common_DeleteInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Common_DeleteInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.common_delete(inputs)
+	return __es.common_delete(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Got it" |
 *
 * @param {Common_Got_ItInputs} inputs
@@ -8878,6 +9485,20 @@ export const common_learn_more = /** @type {((inputs?: Common_Learn_MoreInputs, 
 /**
 * | output |
 * | --- |
+* | "Loading..." |
+*
+* @param {Common_LoadingInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const common_loading = /** @type {((inputs?: Common_LoadingInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Common_LoadingInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.common_loading(inputs)
+	return __es.common_loading(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Value must be a valid number" |
 *
 * @param {Common_Must_Be_NumberInputs} inputs
@@ -8888,6 +9509,34 @@ export const common_must_be_number = /** @type {((inputs?: Common_Must_Be_Number
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.common_must_be_number(inputs)
 	return __es.common_must_be_number(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Name" |
+*
+* @param {Common_NameInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const common_name = /** @type {((inputs?: Common_NameInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Common_NameInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.common_name(inputs)
+	return __es.common_name(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "No results found." |
+*
+* @param {Common_No_Results_FoundInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const common_no_results_found = /** @type {((inputs?: Common_No_Results_FoundInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Common_No_Results_FoundInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.common_no_results_found(inputs)
+	return __es.common_no_results_found(inputs)
 });
 /**
 * | output |
@@ -8944,6 +9593,34 @@ export const common_search_list = /** @type {((inputs?: Common_Search_ListInputs
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.common_search_list(inputs)
 	return __es.common_search_list(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Status" |
+*
+* @param {Common_StatusInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const common_status = /** @type {((inputs?: Common_StatusInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Common_StatusInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.common_status(inputs)
+	return __es.common_status(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Type" |
+*
+* @param {Common_TypeInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const common_type = /** @type {((inputs?: Common_TypeInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Common_TypeInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.common_type(inputs)
+	return __es.common_type(inputs)
 });
 /**
 * | output |
@@ -9536,6 +10213,20 @@ export const dashboard_copy_error_to_clipboard_aria = /** @type {((inputs?: Dash
 /**
 * | output |
 * | --- |
+* | "Create a dashboard" |
+*
+* @param {Dashboard_Create_A_DashboardInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const dashboard_create_a_dashboard = /** @type {((inputs?: Dashboard_Create_A_DashboardInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Dashboard_Create_A_DashboardInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.dashboard_create_a_dashboard(inputs)
+	return __es.dashboard_create_a_dashboard(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "current time" |
 *
 * @param {Dashboard_Current_TimeInputs} inputs
@@ -9784,6 +10475,20 @@ export const dashboard_dynamic_y_axis = /** @type {((inputs?: Dashboard_Dynamic_
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.dashboard_dynamic_y_axis(inputs)
 	return __es.dashboard_dynamic_y_axis(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "You don't have any dashboards yet" |
+*
+* @param {Dashboard_Empty_StateInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const dashboard_empty_state = /** @type {((inputs?: Dashboard_Empty_StateInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Dashboard_Empty_StateInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.dashboard_empty_state(inputs)
+	return __es.dashboard_empty_state(inputs)
 });
 /**
 * | output |
@@ -10400,6 +11105,20 @@ export const dashboard_no_comparison_dimension = /** @type {((inputs?: Dashboard
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.dashboard_no_comparison_dimension(inputs)
 	return __es.dashboard_no_comparison_dimension(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "No dashboards found" |
+*
+* @param {Dashboard_No_Dashboards_FoundInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const dashboard_no_dashboards_found = /** @type {((inputs?: Dashboard_No_Dashboards_FoundInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Dashboard_No_Dashboards_FoundInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.dashboard_no_dashboards_found(inputs)
+	return __es.dashboard_no_dashboards_found(inputs)
 });
 /**
 * | output |
@@ -11034,6 +11753,20 @@ export const dashboard_search_results = /** @type {((inputs?: Dashboard_Search_R
 /**
 * | output |
 * | --- |
+* | "See all dashboards →" |
+*
+* @param {Dashboard_See_AllInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const dashboard_see_all = /** @type {((inputs?: Dashboard_See_AllInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Dashboard_See_AllInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.dashboard_see_all(inputs)
+	return __es.dashboard_see_all(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "See more" |
 *
 * @param {Dashboard_See_MoreInputs} inputs
@@ -11510,6 +12243,20 @@ export const dashboard_to = /** @type {((inputs?: Dashboard_ToInputs, options?: 
 /**
 * | output |
 * | --- |
+* | "to get started" |
+*
+* @param {Dashboard_To_Get_StartedInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const dashboard_to_get_started = /** @type {((inputs?: Dashboard_To_Get_StartedInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Dashboard_To_Get_StartedInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.dashboard_to_get_started(inputs)
+	return __es.dashboard_to_get_started(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Toggle to exclude values" |
 *
 * @param {Dashboard_Toggle_ExcludeInputs} inputs
@@ -11622,6 +12369,48 @@ export const dashboard_viewing_as = /** @type {((inputs?: Dashboard_Viewing_AsIn
 /**
 * | output |
 * | --- |
+* | "Create new org" |
+*
+* @param {Deploy_Create_New_Org_LabelInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const deploy_create_new_org_label = /** @type {((inputs?: Deploy_Create_New_Org_LabelInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Deploy_Create_New_Org_LabelInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.deploy_create_new_org_label(inputs)
+	return __es.deploy_create_new_org_label(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Failed to fetch login URL." |
+*
+* @param {Deploy_Failed_Login_UrlInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const deploy_failed_login_url = /** @type {((inputs?: Deploy_Failed_Login_UrlInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Deploy_Failed_Login_UrlInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.deploy_failed_login_url(inputs)
+	return __es.deploy_failed_login_url(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Select organization" |
+*
+* @param {Deploy_Select_Org_PlaceholderInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const deploy_select_org_placeholder = /** @type {((inputs?: Deploy_Select_Org_PlaceholderInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Deploy_Select_Org_PlaceholderInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.deploy_select_org_placeholder(inputs)
+	return __es.deploy_select_org_placeholder(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "You haven't saved changes to this alert yet, so closing this window will lose your work." |
 *
 * @param {Dialog_Close_Without_Saving_Alert_DescInputs} inputs
@@ -11674,6 +12463,286 @@ export const dialog_close_without_saving_title = /** @type {((inputs?: Dialog_Cl
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.dialog_close_without_saving_title(inputs)
 	return __es.dialog_close_without_saving_title(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Back to projects" |
+*
+* @param {Edit_Back_To_ProjectsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const edit_back_to_projects = /** @type {((inputs?: Edit_Back_To_ProjectsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Edit_Back_To_ProjectsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.edit_back_to_projects(inputs)
+	return __es.edit_back_to_projects(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Branch name" |
+*
+* @param {Edit_Branch_NameInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const edit_branch_name = /** @type {((inputs?: Edit_Branch_NameInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Edit_Branch_NameInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.edit_branch_name(inputs)
+	return __es.edit_branch_name(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Changes committed and pushed" |
+*
+* @param {Edit_Changes_Committed_PushedInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const edit_changes_committed_pushed = /** @type {((inputs?: Edit_Changes_Committed_PushedInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Edit_Changes_Committed_PushedInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.edit_changes_committed_pushed(inputs)
+	return __es.edit_changes_committed_pushed(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Describe your changes..." |
+*
+* @param {Edit_Describe_ChangesInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const edit_describe_changes = /** @type {((inputs?: Edit_Describe_ChangesInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Edit_Describe_ChangesInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.edit_describe_changes(inputs)
+	return __es.edit_describe_changes(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Failed to commit and push changes" |
+*
+* @param {Edit_Failed_To_CommitInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const edit_failed_to_commit = /** @type {((inputs?: Edit_Failed_To_CommitInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Edit_Failed_To_CommitInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.edit_failed_to_commit(inputs)
+	return __es.edit_failed_to_commit(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Failed to merge" |
+*
+* @param {Edit_Failed_To_MergeInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const edit_failed_to_merge = /** @type {((inputs?: Edit_Failed_To_MergeInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Edit_Failed_To_MergeInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.edit_failed_to_merge(inputs)
+	return __es.edit_failed_to_merge(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Failed to publish" |
+*
+* @param {Edit_Failed_To_PublishInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const edit_failed_to_publish = /** @type {((inputs?: Edit_Failed_To_PublishInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Edit_Failed_To_PublishInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.edit_failed_to_publish(inputs)
+	return __es.edit_failed_to_publish(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Failed to start edit session." |
+*
+* @param {Edit_Failed_To_StartInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const edit_failed_to_start = /** @type {((inputs?: Edit_Failed_To_StartInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Edit_Failed_To_StartInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.edit_failed_to_start(inputs)
+	return __es.edit_failed_to_start(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Merging..." |
+*
+* @param {Edit_MergingInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const edit_merging = /** @type {((inputs?: Edit_MergingInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Edit_MergingInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.edit_merging(inputs)
+	return __es.edit_merging(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "No changes detected" |
+*
+* @param {Edit_No_Changes_DetectedInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const edit_no_changes_detected = /** @type {((inputs?: Edit_No_Changes_DetectedInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Edit_No_Changes_DetectedInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.edit_no_changes_detected(inputs)
+	return __es.edit_no_changes_detected(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Pop-up was blocked." |
+*
+* @param {Edit_Popup_BlockedInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const edit_popup_blocked = /** @type {((inputs?: Edit_Popup_BlockedInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Edit_Popup_BlockedInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.edit_popup_blocked(inputs)
+	return __es.edit_popup_blocked(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Provisioning your editing environment..." |
+*
+* @param {Edit_Provisioning_EnvInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const edit_provisioning_env = /** @type {((inputs?: Edit_Provisioning_EnvInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Edit_Provisioning_EnvInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.edit_provisioning_env(inputs)
+	return __es.edit_provisioning_env(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Publishing..." |
+*
+* @param {Edit_PublishingInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const edit_publishing = /** @type {((inputs?: Edit_PublishingInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Edit_PublishingInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.edit_publishing(inputs)
+	return __es.edit_publishing(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Pushing..." |
+*
+* @param {Edit_PushingInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const edit_pushing = /** @type {((inputs?: Edit_PushingInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Edit_PushingInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.edit_pushing(inputs)
+	return __es.edit_pushing(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Return to organization" |
+*
+* @param {Edit_Return_To_OrgInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const edit_return_to_org = /** @type {((inputs?: Edit_Return_To_OrgInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Edit_Return_To_OrgInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.edit_return_to_org(inputs)
+	return __es.edit_return_to_org(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Return to project home" |
+*
+* @param {Edit_Return_To_ProjectInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const edit_return_to_project = /** @type {((inputs?: Edit_Return_To_ProjectInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Edit_Return_To_ProjectInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.edit_return_to_project(inputs)
+	return __es.edit_return_to_project(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Starting..." |
+*
+* @param {Edit_StartingInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const edit_starting = /** @type {((inputs?: Edit_StartingInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Edit_StartingInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.edit_starting(inputs)
+	return __es.edit_starting(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Starting your editing environment..." |
+*
+* @param {Edit_Starting_EnvInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const edit_starting_env = /** @type {((inputs?: Edit_Starting_EnvInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Edit_Starting_EnvInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.edit_starting_env(inputs)
+	return __es.edit_starting_env(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "This is taking longer than usual." |
+*
+* @param {Edit_Taking_LongerInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const edit_taking_longer = /** @type {((inputs?: Edit_Taking_LongerInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Edit_Taking_LongerInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.edit_taking_longer(inputs)
+	return __es.edit_taking_longer(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Updating your editing environment..." |
+*
+* @param {Edit_Updating_EnvInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const edit_updating_env = /** @type {((inputs?: Edit_Updating_EnvInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Edit_Updating_EnvInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.edit_updating_env(inputs)
+	return __es.edit_updating_env(inputs)
 });
 /**
 * | output |
@@ -12518,6 +13587,34 @@ export const error_conversation_not_found_header = /** @type {((inputs?: Error_C
 /**
 * | output |
 * | --- |
+* | "Dashboard not found" |
+*
+* @param {Error_Dashboard_Not_FoundInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const error_dashboard_not_found = /** @type {((inputs?: Error_Dashboard_Not_FoundInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Error_Dashboard_Not_FoundInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.error_dashboard_not_found(inputs)
+	return __es.error_dashboard_not_found(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Failed to deploy dashboards" |
+*
+* @param {Error_Deploy_DashboardsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const error_deploy_dashboards = /** @type {((inputs?: Error_Deploy_DashboardsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Error_Deploy_DashboardsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.error_deploy_dashboards(inputs)
+	return __es.error_deploy_dashboards(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "There was an error deploying your project. Please contact support." |
 *
 * @param {Error_Deploying_ProjectInputs} inputs
@@ -12686,6 +13783,20 @@ export const error_network_header = /** @type {((inputs?: Error_Network_HeaderIn
 /**
 * | output |
 * | --- |
+* | "An error occurred" |
+*
+* @param {Error_OccurredInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const error_occurred = /** @type {((inputs?: Error_OccurredInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Error_OccurredInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.error_occurred(inputs)
+	return __es.error_occurred(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "The organization you requested could not be found. Please check that you have provided a valid organization name." |
 *
 * @param {Error_Org_Not_Found_BodyInputs} inputs
@@ -12710,6 +13821,20 @@ export const error_org_not_found_header = /** @type {((inputs?: Error_Org_Not_Fo
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.error_org_not_found_header(inputs)
 	return __es.error_org_not_found_header(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Page not found" |
+*
+* @param {Error_Page_Not_FoundInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const error_page_not_found = /** @type {((inputs?: Error_Page_Not_FoundInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Error_Page_Not_FoundInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.error_page_not_found(inputs)
+	return __es.error_page_not_found(inputs)
 });
 /**
 * | output |
@@ -12868,6 +13993,20 @@ export const explore_by_grain_prefix = /** @type {((inputs?: Explore_By_Grain_Pr
 /**
 * | output |
 * | --- |
+* | "Please check your dashboard's YAML file for errors." |
+*
+* @param {Explore_Check_Yaml_ErrorsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_check_yaml_errors = /** @type {((inputs?: Explore_Check_Yaml_ErrorsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Check_Yaml_ErrorsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_check_yaml_errors(inputs)
+	return __es.explore_check_yaml_errors(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Choose dimensions to display" |
 *
 * @param {Explore_Choose_DimensionsInputs} inputs
@@ -12994,6 +14133,20 @@ export const explore_clear_tag_filter_to_reorder_measures = /** @type {((inputs?
 /**
 * | output |
 * | --- |
+* | "Dashboard not found" |
+*
+* @param {Explore_Dashboard_Not_FoundInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_dashboard_not_found = /** @type {((inputs?: Explore_Dashboard_Not_FoundInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Dashboard_Not_FoundInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_dashboard_not_found(inputs)
+	return __es.explore_dashboard_not_found(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "{count} of {total} Dimensions" |
 *
 * @param {Explore_Dimensions_CountInputs} inputs
@@ -13004,6 +14157,48 @@ export const explore_dimensions_count = /** @type {((inputs: Explore_Dimensions_
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.explore_dimensions_count(inputs)
 	return __es.explore_dimensions_count(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Error building dashboard" |
+*
+* @param {Explore_Error_BuildingInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_error_building = /** @type {((inputs?: Explore_Error_BuildingInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Error_BuildingInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_error_building(inputs)
+	return __es.explore_error_building(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Error fetching dashboard" |
+*
+* @param {Explore_Error_FetchingInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_error_fetching = /** @type {((inputs?: Explore_Error_FetchingInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Error_FetchingInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_error_fetching(inputs)
+	return __es.explore_error_fetching(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Error parsing dashboard" |
+*
+* @param {Explore_Error_ParsingInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_error_parsing = /** @type {((inputs?: Explore_Error_ParsingInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Error_ParsingInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_error_parsing(inputs)
+	return __es.explore_error_parsing(inputs)
 });
 /**
 * | output |
@@ -13386,6 +14581,20 @@ export const explore_no_matching_tags = /** @type {((inputs?: Explore_No_Matchin
 /**
 * | output |
 * | --- |
+* | "No measures available" |
+*
+* @param {Explore_No_MeasuresInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_no_measures = /** @type {((inputs?: Explore_No_MeasuresInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_No_MeasuresInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_no_measures(inputs)
+	return __es.explore_no_measures(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "No measures from this tag are shown" |
 *
 * @param {Explore_No_Measures_From_TagInputs} inputs
@@ -13522,6 +14731,20 @@ export const explore_search_measures_or_tags = /** @type {((inputs?: Explore_Sea
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.explore_search_measures_or_tags(inputs)
 	return __es.explore_search_measures_or_tags(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "The security policy for this dashboard may make contents invisible to you. If you deploy this dashboard, {email} will see a 404." |
+*
+* @param {Explore_Security_Policy_WarningInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_security_policy_warning = /** @type {((inputs: Explore_Security_Policy_WarningInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Security_Policy_WarningInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_security_policy_warning(inputs)
+	return __es.explore_security_policy_warning(inputs)
 });
 /**
 * | output |
@@ -13680,6 +14903,20 @@ export const explore_unable_to_open = /** @type {((inputs?: Explore_Unable_To_Op
 /**
 * | output |
 * | --- |
+* | "An unknown error occurred while building the dashboard." |
+*
+* @param {Explore_Unknown_Build_ErrorInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_unknown_build_error = /** @type {((inputs?: Explore_Unknown_Build_ErrorInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_Unknown_Build_ErrorInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_unknown_build_error(inputs)
+	return __es.explore_unknown_build_error(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Unknown dimension" |
 *
 * @param {Explore_Unknown_DimensionInputs} inputs
@@ -13704,6 +14941,20 @@ export const explore_unknown_measure = /** @type {((inputs?: Explore_Unknown_Mea
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.explore_unknown_measure(inputs)
 	return __es.explore_unknown_measure(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "This user can't access this dashboard" |
+*
+* @param {Explore_User_No_AccessInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const explore_user_no_access = /** @type {((inputs?: Explore_User_No_AccessInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Explore_User_No_AccessInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.explore_user_no_access(inputs)
+	return __es.explore_user_no_access(inputs)
 });
 /**
 * | output |
@@ -14562,6 +15813,48 @@ export const github_did_not_grant_access = /** @type {((inputs?: Github_Did_Not_
 /**
 * | output |
 * | --- |
+* | "Unable to complete push. Please check your repo and subpath settings and try again." |
+*
+* @param {Github_Error_Push_FailedInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const github_error_push_failed = /** @type {((inputs?: Github_Error_Push_FailedInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Github_Error_Push_FailedInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.github_error_push_failed(inputs)
+	return __es.github_error_push_failed(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "This repo already exists. Please choose a new repo name." |
+*
+* @param {Github_Error_Repo_ExistsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const github_error_repo_exists = /** @type {((inputs?: Github_Error_Repo_ExistsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Github_Error_Repo_ExistsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.github_error_repo_exists(inputs)
+	return __es.github_error_repo_exists(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "The subpath you specified already exists in this repo. Please use a different subpath or remove the existing folder before pushing." |
+*
+* @param {Github_Error_Subpath_ExistsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const github_error_subpath_exists = /** @type {((inputs?: Github_Error_Subpath_ExistsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Github_Error_Subpath_ExistsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.github_error_subpath_exists(inputs)
+	return __es.github_error_subpath_exists(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Existing repository" |
 *
 * @param {Github_Existing_RepositoryInputs} inputs
@@ -15150,6 +16443,20 @@ export const home_dashboards_heading = /** @type {((inputs?: Home_Dashboards_Hea
 /**
 * | output |
 * | --- |
+* | "Hi {name}!" |
+*
+* @param {Home_GreetingInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const home_greeting = /** @type {((inputs: Home_GreetingInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Home_GreetingInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.home_greeting(inputs)
+	return __es.home_greeting(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Explore your dashboards below" |
 *
 * @param {Home_Subtitle_No_ChatInputs} inputs
@@ -15174,6 +16481,34 @@ export const home_subtitle_with_chat = /** @type {((inputs?: Home_Subtitle_With_
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.home_subtitle_with_chat(inputs)
 	return __es.home_subtitle_with_chat(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "It looks like you're just starting out! Check out our {link}." |
+*
+* @param {Home_Welcome_Getting_StartedInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const home_welcome_getting_started = /** @type {((inputs: Home_Welcome_Getting_StartedInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Home_Welcome_Getting_StartedInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.home_welcome_getting_started(inputs)
+	return __es.home_welcome_getting_started(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Quickstart to create your first project" |
+*
+* @param {Home_Welcome_Quickstart_LinkInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const home_welcome_quickstart_link = /** @type {((inputs?: Home_Welcome_Quickstart_LinkInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Home_Welcome_Quickstart_LinkInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.home_welcome_quickstart_link(inputs)
+	return __es.home_welcome_quickstart_link(inputs)
 });
 /**
 * | output |
@@ -15864,6 +17199,20 @@ export const nav_close_sidebar = /** @type {((inputs?: Nav_Close_SidebarInputs, 
 /**
 * | output |
 * | --- |
+* | "Dashboards" |
+*
+* @param {Nav_DashboardsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const nav_dashboards = /** @type {((inputs?: Nav_DashboardsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Nav_DashboardsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.nav_dashboards(inputs)
+	return __es.nav_dashboards(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Data Explorer" |
 *
 * @param {Nav_Data_ExplorerInputs} inputs
@@ -15888,6 +17237,20 @@ export const nav_show_sidebar = /** @type {((inputs?: Nav_Show_SidebarInputs, op
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.nav_show_sidebar(inputs)
 	return __es.nav_show_sidebar(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Status" |
+*
+* @param {Nav_StatusInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const nav_status = /** @type {((inputs?: Nav_StatusInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Nav_StatusInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.nav_status(inputs)
+	return __es.nav_status(inputs)
 });
 /**
 * | output |
@@ -16028,6 +17391,62 @@ export const org_new_project = /** @type {((inputs?: Org_New_ProjectInputs, opti
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.org_new_project(inputs)
 	return __es.org_new_project(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Full access to org settings, members, and all projects" |
+*
+* @param {Org_Role_Admin_DescriptionInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const org_role_admin_description = /** @type {((inputs?: Org_Role_Admin_DescriptionInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Org_Role_Admin_DescriptionInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.org_role_admin_description(inputs)
+	return __es.org_role_admin_description(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Can create/manage projects and non-admin members" |
+*
+* @param {Org_Role_Editor_DescriptionInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const org_role_editor_description = /** @type {((inputs?: Org_Role_Editor_DescriptionInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Org_Role_Editor_DescriptionInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.org_role_editor_description(inputs)
+	return __es.org_role_editor_description(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Access to invited projects only" |
+*
+* @param {Org_Role_Guest_DescriptionInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const org_role_guest_description = /** @type {((inputs?: Org_Role_Guest_DescriptionInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Org_Role_Guest_DescriptionInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.org_role_guest_description(inputs)
+	return __es.org_role_guest_description(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Read-only access to all org projects" |
+*
+* @param {Org_Role_Viewer_DescriptionInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const org_role_viewer_description = /** @type {((inputs?: Org_Role_Viewer_DescriptionInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Org_Role_Viewer_DescriptionInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.org_role_viewer_description(inputs)
+	return __es.org_role_viewer_description(inputs)
 });
 /**
 * | output |
@@ -16326,6 +17745,48 @@ export const project_contact_admin_to_redeploy = /** @type {((inputs?: Project_C
 /**
 * | output |
 * | --- |
+* | "Create your first project" |
+*
+* @param {Project_Create_FirstInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const project_create_first = /** @type {((inputs?: Project_Create_FirstInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Project_Create_FirstInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.project_create_first(inputs)
+	return __es.project_create_first(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Create a new project" |
+*
+* @param {Project_Create_NewInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const project_create_new = /** @type {((inputs?: Project_Create_NewInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Project_Create_NewInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.project_create_new(inputs)
+	return __es.project_create_new(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Create project" |
+*
+* @param {Project_Create_ProjectInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const project_create_project = /** @type {((inputs?: Project_Create_ProjectInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Project_Create_ProjectInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.project_create_project(inputs)
+	return __es.project_create_project(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Project dashboards" |
 *
 * @param {Project_Dashboards_TitleInputs} inputs
@@ -16350,6 +17811,20 @@ export const project_delete = /** @type {((inputs?: Project_DeleteInputs, option
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.project_delete(inputs)
 	return __es.project_delete(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Deploying your project..." |
+*
+* @param {Project_DeployingInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const project_deploying = /** @type {((inputs?: Project_DeployingInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Project_DeployingInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.project_deploying(inputs)
+	return __es.project_deploying(inputs)
 });
 /**
 * | output |
@@ -16410,6 +17885,90 @@ export const project_is_hibernating = /** @type {((inputs?: Project_Is_Hibernati
 /**
 * | output |
 * | --- |
+* | "Name your first project" |
+*
+* @param {Project_Name_FirstInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const project_name_first = /** @type {((inputs?: Project_Name_FirstInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Project_Name_FirstInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.project_name_first(inputs)
+	return __es.project_name_first(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Name must start with a letter or number and may only contain letters, numbers, hyphens, and underscores" |
+*
+* @param {Project_Name_Format_ErrorInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const project_name_format_error = /** @type {((inputs?: Project_Name_Format_ErrorInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Project_Name_Format_ErrorInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.project_name_format_error(inputs)
+	return __es.project_name_format_error(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Name must be at most 40 characters" |
+*
+* @param {Project_Name_Max_LengthInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const project_name_max_length = /** @type {((inputs?: Project_Name_Max_LengthInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Project_Name_Max_LengthInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.project_name_max_length(inputs)
+	return __es.project_name_max_length(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Name must be at least 1 character" |
+*
+* @param {Project_Name_Min_LengthInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const project_name_min_length = /** @type {((inputs?: Project_Name_Min_LengthInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Project_Name_Min_LengthInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.project_name_min_length(inputs)
+	return __es.project_name_min_length(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Name your project" |
+*
+* @param {Project_Name_NewInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const project_name_new = /** @type {((inputs?: Project_Name_NewInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Project_Name_NewInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.project_name_new(inputs)
+	return __es.project_name_new(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Name is required" |
+*
+* @param {Project_Name_RequiredInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const project_name_required = /** @type {((inputs?: Project_Name_RequiredInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Project_Name_RequiredInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.project_name_required(inputs)
+	return __es.project_name_required(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Rename" |
 *
 * @param {Project_RenameInputs} inputs
@@ -16420,6 +17979,20 @@ export const project_rename = /** @type {((inputs?: Project_RenameInputs, option
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.project_rename(inputs)
 	return __es.project_rename(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "You can rename your project anytime." |
+*
+* @param {Project_Rename_AnytimeInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const project_rename_anytime = /** @type {((inputs?: Project_Rename_AnytimeInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Project_Rename_AnytimeInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.project_rename_anytime(inputs)
+	return __es.project_rename_anytime(inputs)
 });
 /**
 * | output |
@@ -16448,6 +18021,20 @@ export const project_role_admin = /** @type {((inputs?: Project_Role_AdminInputs
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.project_role_admin(inputs)
 	return __es.project_role_admin(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Access to invited projects only" |
+*
+* @param {Project_Role_Guest_DescriptionInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const project_role_guest_description = /** @type {((inputs?: Project_Role_Guest_DescriptionInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Project_Role_Guest_DescriptionInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.project_role_guest_description(inputs)
+	return __es.project_role_guest_description(inputs)
 });
 /**
 * | output |
@@ -16508,6 +18095,20 @@ export const project_share = /** @type {((inputs?: Project_ShareInputs, options?
 /**
 * | output |
 * | --- |
+* | "Failed to invite." |
+*
+* @param {Project_Share_Failed_To_InviteInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const project_share_failed_to_invite = /** @type {((inputs?: Project_Share_Failed_To_InviteInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Project_Share_Failed_To_InviteInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.project_share_failed_to_invite(inputs)
+	return __es.project_share_failed_to_invite(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Share project: {project}" |
 *
 * @param {Project_Share_HeadingInputs} inputs
@@ -16518,6 +18119,118 @@ export const project_share_heading = /** @type {((inputs: Project_Share_HeadingI
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.project_share_heading(inputs)
 	return __es.project_share_heading(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Invalid email address" |
+*
+* @param {Project_Share_Invalid_EmailInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const project_share_invalid_email = /** @type {((inputs?: Project_Share_Invalid_EmailInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Project_Share_Invalid_EmailInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.project_share_invalid_email(inputs)
+	return __es.project_share_invalid_email(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Invalid email or group name" |
+*
+* @param {Project_Share_Invalid_Email_Or_GroupInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const project_share_invalid_email_or_group = /** @type {((inputs?: Project_Share_Invalid_Email_Or_GroupInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Project_Share_Invalid_Email_Or_GroupInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.project_share_invalid_email_or_group(inputs)
+	return __es.project_share_invalid_email_or_group(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Admin" |
+*
+* @param {Project_Share_Role_AdminInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const project_share_role_admin = /** @type {((inputs?: Project_Share_Role_AdminInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Project_Share_Role_AdminInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.project_share_role_admin(inputs)
+	return __es.project_share_role_admin(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Can manage project settings and members" |
+*
+* @param {Project_Share_Role_Admin_DescriptionInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const project_share_role_admin_description = /** @type {((inputs?: Project_Share_Role_Admin_DescriptionInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Project_Share_Role_Admin_DescriptionInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.project_share_role_admin_description(inputs)
+	return __es.project_share_role_admin_description(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Editor" |
+*
+* @param {Project_Share_Role_EditorInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const project_share_role_editor = /** @type {((inputs?: Project_Share_Role_EditorInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Project_Share_Role_EditorInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.project_share_role_editor(inputs)
+	return __es.project_share_role_editor(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Can edit project resources" |
+*
+* @param {Project_Share_Role_Editor_DescriptionInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const project_share_role_editor_description = /** @type {((inputs?: Project_Share_Role_Editor_DescriptionInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Project_Share_Role_Editor_DescriptionInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.project_share_role_editor_description(inputs)
+	return __es.project_share_role_editor_description(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Viewer" |
+*
+* @param {Project_Share_Role_ViewerInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const project_share_role_viewer = /** @type {((inputs?: Project_Share_Role_ViewerInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Project_Share_Role_ViewerInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.project_share_role_viewer(inputs)
+	return __es.project_share_role_viewer(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Can view dashboards" |
+*
+* @param {Project_Share_Role_Viewer_DescriptionInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const project_share_role_viewer_description = /** @type {((inputs?: Project_Share_Role_Viewer_DescriptionInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Project_Share_Role_Viewer_DescriptionInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.project_share_role_viewer_description(inputs)
+	return __es.project_share_role_viewer_description(inputs)
 });
 /**
 * | output |
@@ -16546,6 +18259,20 @@ export const project_starting = /** @type {((inputs?: Project_StartingInputs, op
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.project_starting(inputs)
 	return __es.project_starting(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Starting branch deployment..." |
+*
+* @param {Project_Starting_Branch_DeploymentInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const project_starting_branch_deployment = /** @type {((inputs?: Project_Starting_Branch_DeploymentInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Project_Starting_Branch_DeploymentInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.project_starting_branch_deployment(inputs)
+	return __es.project_starting_branch_deployment(inputs)
 });
 /**
 * | output |
@@ -16630,6 +18357,20 @@ export const public_url_copied_button = /** @type {((inputs?: Public_Url_Copied_
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.public_url_copied_button(inputs)
 	return __es.public_url_copied_button(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Public URL copied to clipboard" |
+*
+* @param {Public_Url_Copied_To_ClipboardInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const public_url_copied_to_clipboard = /** @type {((inputs?: Public_Url_Copied_To_ClipboardInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Public_Url_Copied_To_ClipboardInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.public_url_copied_to_clipboard(inputs)
+	return __es.public_url_copied_to_clipboard(inputs)
 });
 /**
 * | output |
@@ -16756,6 +18497,20 @@ export const public_url_deleted_notification = /** @type {((inputs?: Public_Url_
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.public_url_deleted_notification(inputs)
 	return __es.public_url_deleted_notification(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Edit expiration date" |
+*
+* @param {Public_Url_Edit_ExpirationInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const public_url_edit_expiration = /** @type {((inputs?: Public_Url_Edit_ExpirationInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Public_Url_Edit_ExpirationInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.public_url_edit_expiration(inputs)
+	return __es.public_url_edit_expiration(inputs)
 });
 /**
 * | output |
@@ -17036,6 +18791,20 @@ export const public_url_table_last_accessed_header = /** @type {((inputs?: Publi
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.public_url_table_last_accessed_header(inputs)
 	return __es.public_url_table_last_accessed_header(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Title is required" |
+*
+* @param {Public_Url_Title_RequiredInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const public_url_title_required = /** @type {((inputs?: Public_Url_Title_RequiredInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Public_Url_Title_RequiredInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.public_url_title_required(inputs)
+	return __es.public_url_title_required(inputs)
 });
 /**
 * | output |
@@ -18818,6 +20587,118 @@ export const role_viewer = /** @type {((inputs?: Role_ViewerInputs, options?: { 
 /**
 * | output |
 * | --- |
+* | "Unable to find a dashboard" |
+*
+* @param {Route_Error_Dashboard_Not_FoundInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const route_error_dashboard_not_found = /** @type {((inputs?: Route_Error_Dashboard_Not_FoundInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Route_Error_Dashboard_Not_FoundInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.route_error_dashboard_not_found(inputs)
+	return __es.route_error_dashboard_not_found(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Error fetching billing issues" |
+*
+* @param {Route_Error_Fetching_Billing_IssuesInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const route_error_fetching_billing_issues = /** @type {((inputs?: Route_Error_Fetching_Billing_IssuesInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Route_Error_Fetching_Billing_IssuesInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.route_error_fetching_billing_issues(inputs)
+	return __es.route_error_fetching_billing_issues(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Failed to fetch billing subscription" |
+*
+* @param {Route_Error_Fetching_Billing_SubscriptionInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const route_error_fetching_billing_subscription = /** @type {((inputs?: Route_Error_Fetching_Billing_SubscriptionInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Route_Error_Fetching_Billing_SubscriptionInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.route_error_fetching_billing_subscription(inputs)
+	return __es.route_error_fetching_billing_subscription(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Error fetching organization" |
+*
+* @param {Route_Error_Fetching_OrganizationInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const route_error_fetching_organization = /** @type {((inputs?: Route_Error_Fetching_OrganizationInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Route_Error_Fetching_OrganizationInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.route_error_fetching_organization(inputs)
+	return __es.route_error_fetching_organization(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Error fetching project" |
+*
+* @param {Route_Error_Fetching_ProjectInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const route_error_fetching_project = /** @type {((inputs?: Route_Error_Fetching_ProjectInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Route_Error_Fetching_ProjectInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.route_error_fetching_project(inputs)
+	return __es.route_error_fetching_project(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "You do not have permission to access this organization" |
+*
+* @param {Route_Error_No_Org_PermissionInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const route_error_no_org_permission = /** @type {((inputs?: Route_Error_No_Org_PermissionInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Route_Error_No_Org_PermissionInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.route_error_no_org_permission(inputs)
+	return __es.route_error_no_org_permission(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Unable to find token" |
+*
+* @param {Route_Error_Token_Not_FoundInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const route_error_token_not_found = /** @type {((inputs?: Route_Error_Token_Not_FoundInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Route_Error_Token_Not_FoundInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.route_error_token_not_found(inputs)
+	return __es.route_error_token_not_found(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Unable to find the token's resource" |
+*
+* @param {Route_Error_Token_Resource_Not_FoundInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const route_error_token_resource_not_found = /** @type {((inputs?: Route_Error_Token_Resource_Not_FoundInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Route_Error_Token_Resource_Not_FoundInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.route_error_token_resource_not_found(inputs)
+	return __es.route_error_token_resource_not_found(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Allow existing and new Rill users with a {domain} email address to join this org as a {role}." |
 *
 * @param {Settings_Allow_Domain_DescriptionInputs} inputs
@@ -19966,6 +21847,20 @@ export const status_action_view_partitions = /** @type {((inputs?: Status_Action
 /**
 * | output |
 * | --- |
+* | "All Types" |
+*
+* @param {Status_All_TypesInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const status_all_types = /** @type {((inputs?: Status_All_TypesInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Status_All_TypesInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.status_all_types(inputs)
+	return __es.status_all_types(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Cancel" |
 *
 * @param {Status_CancelInputs} inputs
@@ -20162,6 +22057,48 @@ export const status_compute_units = /** @type {((inputs?: Status_Compute_UnitsIn
 /**
 * | output |
 * | --- |
+* | "Connection failed: {error}" |
+*
+* @param {Status_Connection_FailedInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const status_connection_failed = /** @type {((inputs: Status_Connection_FailedInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Status_Connection_FailedInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.status_connection_failed(inputs)
+	return __es.status_connection_failed(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Copied error message to clipboard" |
+*
+* @param {Status_Copied_Error_MessageInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const status_copied_error_message = /** @type {((inputs?: Status_Copied_Error_MessageInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Status_Copied_Error_MessageInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.status_copied_error_message(inputs)
+	return __es.status_copied_error_message(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Copied test error to clipboard" |
+*
+* @param {Status_Copied_Test_ErrorInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const status_copied_test_error = /** @type {((inputs?: Status_Copied_Test_ErrorInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Status_Copied_Test_ErrorInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.status_copied_test_error(inputs)
+	return __es.status_copied_test_error(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Data accessible" |
 *
 * @param {Status_Data_AccessibleInputs} inputs
@@ -20186,6 +22123,20 @@ export const status_data_size = /** @type {((inputs?: Status_Data_SizeInputs, op
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.status_data_size(inputs)
 	return __es.status_data_size(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Database Size" |
+*
+* @param {Status_Database_SizeInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const status_database_size = /** @type {((inputs?: Status_Database_SizeInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Status_Database_SizeInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.status_database_size(inputs)
+	return __es.status_database_size(inputs)
 });
 /**
 * | output |
@@ -20372,6 +22323,34 @@ export const status_error_loading_tables = /** @type {((inputs?: Status_Error_Lo
 /**
 * | output |
 * | --- |
+* | "errors" |
+*
+* @param {Status_Error_PluralInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const status_error_plural = /** @type {((inputs?: Status_Error_PluralInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Status_Error_PluralInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.status_error_plural(inputs)
+	return __es.status_error_plural(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "error" |
+*
+* @param {Status_Error_SingularInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const status_error_singular = /** @type {((inputs?: Status_Error_SingularInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Status_Error_SingularInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.status_error_singular(inputs)
+	return __es.status_error_singular(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Errors" |
 *
 * @param {Status_ErrorsInputs} inputs
@@ -20442,6 +22421,20 @@ export const status_filter_warn = /** @type {((inputs?: Status_Filter_WarnInputs
 /**
 * | output |
 * | --- |
+* | "Full Refresh" |
+*
+* @param {Status_Full_RefreshInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const status_full_refresh = /** @type {((inputs?: Status_Full_RefreshInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Status_Full_RefreshInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.status_full_refresh(inputs)
+	return __es.status_full_refresh(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "⚠️ Warning: A full refresh will re-ingest ALL data from scratch. This operation can take a significant amount of time and will update all dependent resources..." |
 *
 * @param {Status_Full_Refresh_WarningInputs} inputs
@@ -20452,6 +22445,20 @@ export const status_full_refresh_warning = /** @type {((inputs?: Status_Full_Ref
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.status_full_refresh_warning(inputs)
 	return __es.status_full_refresh_warning(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Incremental Refresh" |
+*
+* @param {Status_Incremental_RefreshInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const status_incremental_refresh = /** @type {((inputs?: Status_Incremental_RefreshInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Status_Incremental_RefreshInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.status_incremental_refresh(inputs)
+	return __es.status_incremental_refresh(inputs)
 });
 /**
 * | output |
@@ -20624,6 +22631,20 @@ export const status_learn_more = /** @type {((inputs?: Status_Learn_MoreInputs, 
 /**
 * | output |
 * | --- |
+* | "{first}, +{count} other(s)" |
+*
+* @param {Status_Levels_SelectedInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const status_levels_selected = /** @type {((inputs: Status_Levels_SelectedInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Status_Levels_SelectedInputs, { locale?: "en" | "es" }, {}>} */ ((inputs, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.status_levels_selected(inputs)
+	return __es.status_levels_selected(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Load more tables" |
 *
 * @param {Status_Load_More_TablesInputs} inputs
@@ -20690,6 +22711,20 @@ export const status_loading_tables = /** @type {((inputs?: Status_Loading_Tables
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.status_loading_tables(inputs)
 	return __es.status_loading_tables(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Loading tables" |
+*
+* @param {Status_Loading_Tables_ShortInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const status_loading_tables_short = /** @type {((inputs?: Status_Loading_Tables_ShortInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Status_Loading_Tables_ShortInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.status_loading_tables_short(inputs)
+	return __es.status_loading_tables_short(inputs)
 });
 /**
 * | output |
@@ -20876,6 +22911,20 @@ export const status_logs_waiting = /** @type {((inputs?: Status_Logs_WaitingInpu
 /**
 * | output |
 * | --- |
+* | "Model Name" |
+*
+* @param {Status_Model_NameInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const status_model_name = /** @type {((inputs?: Status_Model_NameInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Status_Model_NameInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.status_model_name(inputs)
+	return __es.status_model_name(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Model Partitions" |
 *
 * @param {Status_Model_PartitionsInputs} inputs
@@ -20886,6 +22935,20 @@ export const status_model_partitions = /** @type {((inputs?: Status_Model_Partit
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.status_model_partitions(inputs)
 	return __es.status_model_partitions(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Model is currently being reconciled" |
+*
+* @param {Status_Model_ReconcilingInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const status_model_reconciling = /** @type {((inputs?: Status_Model_ReconcilingInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Status_Model_ReconcilingInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.status_model_reconciling(inputs)
+	return __es.status_model_reconciling(inputs)
 });
 /**
 * | output |
@@ -21156,6 +23219,20 @@ export const status_note = /** @type {((inputs?: Status_NoteInputs, options?: { 
 /**
 * | output |
 * | --- |
+* | "1 level" |
+*
+* @param {Status_One_LevelInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const status_one_level = /** @type {((inputs?: Status_One_LevelInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Status_One_LevelInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.status_one_level(inputs)
+	return __es.status_one_level(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Owned by another user" |
 *
 * @param {Status_Owned_By_OtherInputs} inputs
@@ -21394,6 +23471,34 @@ export const status_rill_managed = /** @type {((inputs?: Status_Rill_ManagedInpu
 /**
 * | output |
 * | --- |
+* | "Table" |
+*
+* @param {Status_TableInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const status_table = /** @type {((inputs?: Status_TableInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Status_TableInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.status_table(inputs)
+	return __es.status_table(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Table Name" |
+*
+* @param {Status_Table_NameInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const status_table_name = /** @type {((inputs?: Status_Table_NameInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Status_Table_NameInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.status_table_name(inputs)
+	return __es.status_table_name(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Tables" |
 *
 * @param {Status_Table_PluralInputs} inputs
@@ -21418,6 +23523,20 @@ export const status_table_singular = /** @type {((inputs?: Status_Table_Singular
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.status_table_singular(inputs)
 	return __es.status_table_singular(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Tables" |
+*
+* @param {Status_TablesInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const status_tables = /** @type {((inputs?: Status_TablesInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Status_TablesInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.status_tables(inputs)
+	return __es.status_tables(inputs)
 });
 /**
 * | output |
@@ -21478,6 +23597,20 @@ export const status_view_singular = /** @type {((inputs?: Status_View_SingularIn
 /**
 * | output |
 * | --- |
+* | "Views" |
+*
+* @param {Status_ViewsInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const status_views = /** @type {((inputs?: Status_ViewsInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Status_ViewsInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.status_views(inputs)
+	return __es.status_views(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Yes, refresh" |
 *
 * @param {Status_Yes_RefreshInputs} inputs
@@ -21488,6 +23621,20 @@ export const status_yes_refresh = /** @type {((inputs?: Status_Yes_RefreshInputs
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.status_yes_refresh(inputs)
 	return __es.status_yes_refresh(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Beta" |
+*
+* @param {Theme_BetaInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const theme_beta = /** @type {((inputs?: Theme_BetaInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Theme_BetaInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.theme_beta(inputs)
+	return __es.theme_beta(inputs)
 });
 /**
 * | output |
@@ -23242,6 +25389,20 @@ export const users_guests_invited_success = /** @type {((inputs: Users_Guests_In
 /**
 * | output |
 * | --- |
+* | "Invalid email" |
+*
+* @param {Users_Invalid_EmailInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const users_invalid_email = /** @type {((inputs?: Users_Invalid_EmailInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Users_Invalid_EmailInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.users_invalid_email(inputs)
+	return __es.users_invalid_email(inputs)
+});
+/**
+* | output |
+* | --- |
 * | "Invite" |
 *
 * @param {Users_InviteInputs} inputs
@@ -23868,4 +26029,18 @@ export const users_yes_upgrade = /** @type {((inputs?: Users_Yes_UpgradeInputs, 
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "en") return __en.users_yes_upgrade(inputs)
 	return __es.users_yes_upgrade(inputs)
+});
+/**
+* | output |
+* | --- |
+* | "Generating your sample data..." |
+*
+* @param {Workspace_Generating_Sample_DataInputs} inputs
+* @param {{ locale?: "en" | "es" }} options
+* @returns {LocalizedString}
+*/
+export const workspace_generating_sample_data = /** @type {((inputs?: Workspace_Generating_Sample_DataInputs, options?: { locale?: "en" | "es" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Workspace_Generating_Sample_DataInputs, { locale?: "en" | "es" }, {}>} */ ((inputs = {}, options = {}) => {
+	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
+	if (locale === "en") return __en.workspace_generating_sample_data(inputs)
+	return __es.workspace_generating_sample_data(inputs)
 });

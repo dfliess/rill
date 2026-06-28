@@ -1,4 +1,5 @@
 <script lang="ts">
+  import * as m from "@rilldata/web-common/paraglide/messages.js";
   import { page } from "$app/stores";
   import TablePreviewWorkspace from "@rilldata/web-common/features/connectors/olap/TablePreviewWorkspace.svelte";
   import { featureFlags } from "@rilldata/web-common/features/feature-flags";
@@ -15,7 +16,7 @@
 
   onMount(() => {
     if ($readOnly) {
-      throw error(404, "Page not found");
+      throw error(404, m.error_page_not_found());
     }
   });
 </script>

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import * as m from "@rilldata/web-common/paraglide/messages.js";
   import { onNavigate } from "$app/navigation";
   import {
     DashboardBannerID,
@@ -101,33 +102,33 @@
 {:else if mockUserHasNoAccess}
   <ErrorPage
     statusCode={extractErrorStatusCode($exploreResource.error)}
-    header="This user can't access this dashboard"
-    body="The security policy for this dashboard may make contents invisible to you. If you deploy this dashboard, {$selectedMockUserStore?.email} will see a 404."
+    header={m.explore_user_no_access()}
+    body={m.explore_security_policy_warning({ email: $selectedMockUserStore?.email ?? "" })}
     href={homeHref}
   />
 {:else if isDashboardNotFound}
-  <ErrorPage statusCode={404} header="Dashboard not found" href={homeHref} />
+  <ErrorPage statusCode={404} header={m.explore_dashboard_not_found()} href={homeHref} />
 {:else if $exploreResource.isSuccess}
   {#if isExploreReconcilingForFirstTime($exploreResource.data)}
     <DashboardBuilding />
   {:else if isExploreErrored($exploreResource.data)}
     <ErrorPage
-      header="Error building dashboard"
+      header={m.explore_error_building()}
       body={$exploreResource.data?.explore?.meta?.reconcileError ??
-        "An unknown error occurred while building the dashboard."}
+        m.explore_unknown_build_error()}
       href={homeHref}
     />
   {:else if dashboardFileHasParseError && dashboardFileHasParseError.length > 0}
     <ErrorPage
-      header="Error parsing dashboard"
-      body="Please check your dashboard's YAML file for errors."
+      header={m.explore_error_parsing()}
+      body={m.explore_check_yaml_errors()}
       href={homeHref}
     />
   {:else if measures.length === 0 && $selectedMockUserStore !== null}
     <ErrorPage
       statusCode={extractErrorStatusCode($exploreResource.error)}
-      header="Error fetching dashboard"
-      body="No measures available"
+      header={m.explore_error_fetching()}
+      body={m.explore_no_measures()}
       href={homeHref}
     />
   {:else if metricsViewName}

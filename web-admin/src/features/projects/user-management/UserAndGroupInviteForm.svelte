@@ -138,7 +138,7 @@
     return (
       RFC5322EmailRegex.test(value) ||
       /^[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*$/.test(value) ||
-      "Must be a valid email or group name"
+      m.project_share_invalid_email_or_group()
     );
   }
 

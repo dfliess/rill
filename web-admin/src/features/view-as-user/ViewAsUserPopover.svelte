@@ -39,7 +39,7 @@
 <Command.Root>
   <Command.Input placeholder={m.project_search_users()} />
   <Command.List>
-    <Command.Empty>No results found.</Command.Empty>
+    <Command.Empty>{m.common_no_results_found()}</Command.Empty>
     <Command.Group>
       <Command.GroupHeading>Users</Command.GroupHeading>
       <Command.GroupItems>

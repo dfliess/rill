@@ -109,13 +109,13 @@
     if (selectedLevels.length === 1) {
       return (
         filterableLevels.find((l) => l.value === selectedLevels[0])?.label ??
-        "1 level"
+        m.status_one_level()
       );
     }
     const first = filterableLevels.find(
       (l) => l.value === selectedLevels[0],
     )?.label;
-    return `${first}, +${selectedLevels.length - 1} other${selectedLevels.length > 2 ? "s" : ""}`;
+    return m.status_levels_selected({ first: first ?? "", count: selectedLevels.length - 1 });
   })();
 
   let unsubs: (() => void)[] = [];
@@ -168,7 +168,7 @@
 
   function handleTransportError(error: Error) {
     console.error("Logs SSE error:", error);
-    connectionError = error.message || "Connection failed";
+    connectionError = error.message || m.status_connection_failed();
   }
 
   function handleOpen() {

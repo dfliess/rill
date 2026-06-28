@@ -87,7 +87,7 @@
       emails: array(
         string().matches(RFC5322EmailRegex, {
           excludeEmptyString: true,
-          message: "Invalid email",
+          message: m.users_invalid_email(),
         }),
       ), // yup's email regex is too simple
       role: string().required(),

@@ -50,12 +50,12 @@
             compact
             disabled={$isCustomTimeRange}
             type="secondary"
-            label="Create alert"
+            label={m.alert_create_alert()}
           >
             <BellPlusIcon class="inline-flex" size="16px" />
           </Button>
           <TooltipContent slot="tooltip-content">
-            To create an alert, set a non-custom time range.
+            {m.alert_set_non_custom_time_range()}
           </TooltipContent>
         </Tooltip>
       {/snippet}

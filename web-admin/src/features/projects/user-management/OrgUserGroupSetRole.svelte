@@ -14,7 +14,6 @@
   import * as m from "@rilldata/web-common/paraglide/messages.js";
   import CaretUpIcon from "@rilldata/web-common/components/icons/CaretUpIcon.svelte";
   import CaretDownIcon from "@rilldata/web-common/components/icons/CaretDownIcon.svelte";
-  import { getProjectRoleDescription } from "./constants";
 
   export let organization: string;
   export let group: V1MemberUsergroup;
@@ -138,9 +137,9 @@
           : ''}"
         onclick={() => handleRoleSelect(OrgUserRoles.Admin)}
       >
-        <span class="font-medium">{m.role_admin()}</span>
+        <span class="font-medium">{m.project_share_role_admin()}</span>
         <span class="text-xs text-fg-secondary"
-          >{getProjectRoleDescription("admin")}</span
+          >{m.project_share_role_admin_description()}</span
         >
       </DropdownMenu.Item>
     {/if}
@@ -152,9 +151,9 @@
         : ''}"
       onclick={() => handleRoleSelect(OrgUserRoles.Editor)}
     >
-      <span class="font-medium">{m.role_editor()}</span>
+      <span class="font-medium">{m.project_share_role_editor()}</span>
       <span class="text-xs text-fg-secondary"
-        >{getProjectRoleDescription("editor")}</span
+        >{m.project_share_role_editor_description()}</span
       >
     </DropdownMenu.Item>
 
@@ -165,9 +164,9 @@
         : ''}"
       onclick={() => handleRoleSelect(OrgUserRoles.Viewer)}
     >
-      <span class="font-medium">{m.role_viewer()}</span>
+      <span class="font-medium">{m.project_share_role_viewer()}</span>
       <span class="text-xs text-fg-secondary"
-        >{getProjectRoleDescription("viewer")}</span
+        >{m.project_share_role_viewer_description()}</span
       >
     </DropdownMenu.Item>
 

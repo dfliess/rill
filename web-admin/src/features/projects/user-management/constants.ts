@@ -1,32 +1,31 @@
-import * as m from "@rilldata/web-common/paraglide/messages.js";
 import { ProjectUserRoles } from "@rilldata/web-common/features/users/roles.ts";
+import * as m from "@rilldata/web-common/paraglide/messages.js";
 
 export function getProjectRolesOptions() {
   return [
     {
       value: ProjectUserRoles.Admin,
-      label: m.role_admin(),
-      description: m.role_project_admin_desc(),
+      label: m.project_share_role_admin(),
+      description: m.project_share_role_admin_description(),
     },
     {
       value: ProjectUserRoles.Editor,
-      label: m.role_editor(),
-      description: m.role_project_editor_desc(),
+      label: m.project_share_role_editor(),
+      description: m.project_share_role_editor_description(),
     },
     {
       value: ProjectUserRoles.Viewer,
-      label: m.role_viewer(),
-      description: m.role_project_viewer_desc(),
+      label: m.project_share_role_viewer(),
+      description: m.project_share_role_viewer_description(),
     },
   ];
 }
 
-export function getProjectRoleDescription(role: string): string {
-  switch (role) {
-    case "admin": return m.role_project_admin_desc();
-    case "editor": return m.role_project_editor_desc();
-    case "viewer": return m.role_project_viewer_desc();
-    case "guest": return m.role_guest_desc();
-    default: return "";
-  }
+export function getProjectRolesDescriptionMap() {
+  return {
+    admin: m.project_share_role_admin_description(),
+    editor: m.project_share_role_editor_description(),
+    viewer: m.project_share_role_viewer_description(),
+    guest: m.project_role_guest_description(),
+  };
 }

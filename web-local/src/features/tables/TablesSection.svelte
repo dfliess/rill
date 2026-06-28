@@ -1,4 +1,5 @@
 <script lang="ts">
+  import * as m from "@rilldata/web-common/paraglide/messages.js";
   import { createRuntimeServiceGetInstance } from "@rilldata/web-common/runtime-client";
   import { useRuntimeClient } from "@rilldata/web-common/runtime-client/v2";
   import { useInfiniteTablesList } from "./selectors";
@@ -45,7 +46,7 @@
     ($tablesList.isLoading && $tablesList.isFetching);
 </script>
 
-<OverviewCard title="Tables" viewAllHref="/status/tables">
+<OverviewCard title={m.status_tables()} viewAllHref="/status/tables">
   {#if isLoading}
     <p class="text-sm text-fg-secondary">Loading tables...</p>
   {:else if filteredTables.length > 0}
@@ -55,7 +56,7 @@
           >{tableCount}{hasMore && tableCount > 0 ? "+" : ""}</span
         >
         <span class="text-fg-secondary"
-          >{tableCount === 1 ? "Table" : "Tables"}</span
+          >{tableCount === 1 ? m.status_table() : m.status_tables()}</span
         >
       </a>
       <a href="/status/tables?type=view" class="chip">
@@ -63,7 +64,7 @@
           >{viewCount}{hasMore && viewCount > 0 ? "+" : ""}</span
         >
         <span class="text-fg-secondary"
-          >{viewCount === 1 ? "View" : "Views"}</span
+          >{viewCount === 1 ? m.status_view_singular() : m.status_views()}</span
         >
       </a>
     </div>

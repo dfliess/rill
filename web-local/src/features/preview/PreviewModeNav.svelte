@@ -1,4 +1,5 @@
 <script lang="ts">
+  import * as m from "@rilldata/web-common/paraglide/messages.js";
   import { page } from "$app/stores";
   import { tick } from "svelte";
   import { featureFlags } from "@rilldata/web-common/features/feature-flags";
@@ -8,9 +9,9 @@
 
   $: currentPath = $page.url.pathname;
 
-  const baseTabs = [
-    { id: "dashboards", label: "Dashboards", path: "/dashboards" },
-    { id: "status", label: "Status", path: "/status" },
+  $: baseTabs = [
+    { id: "dashboards", label: m.nav_dashboards(), path: "/dashboards" },
+    { id: "status", label: m.nav_status(), path: "/status" },
   ];
 
   const aiTab = { id: "ai", label: "AI", path: "/ai" };

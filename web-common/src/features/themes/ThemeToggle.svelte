@@ -24,7 +24,7 @@
       checked={preferenceValue === "dark"}
       onclick={themeControl.set.dark}
     >
-      <Tag text="Beta" height={16} />
+      <Tag text={m.theme_beta()} height={16} />
       {m.theme_dark()}
     </DropdownMenu.CheckboxItem>
     <DropdownMenu.CheckboxItem

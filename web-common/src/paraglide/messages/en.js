@@ -1,6 +1,7 @@
 /* eslint-disable */
 /** @typedef {import('../runtime.js').LocalizedString} LocalizedString */
 /** @typedef {{}} Alert_Context_Menu_AriaInputs */
+/** @typedef {{}} Alert_Create_AlertInputs */
 /** @typedef {{ name: NonNullable<unknown> }} Alert_Created_ByInputs */
 /** @typedef {{}} Alert_Created_Through_CodeInputs */
 /** @typedef {{}} Alert_CriteriaInputs */
@@ -76,6 +77,7 @@
 /** @typedef {{}} Alert_Not_Checked_YetInputs */
 /** @typedef {{}} Alert_Recent_HistoryInputs */
 /** @typedef {{}} Alert_ScheduleInputs */
+/** @typedef {{}} Alert_Set_Non_Custom_Time_RangeInputs */
 /** @typedef {{}} Alert_Showing_Recent_ChecksInputs */
 /** @typedef {{}} Alert_Slack_NotificationsInputs */
 /** @typedef {{}} Alert_SnoozeInputs */
@@ -185,6 +187,7 @@
 /** @typedef {{}} Billing_Enterprise_Desc_ManagedInputs */
 /** @typedef {{}} Billing_Enterprise_DetailsInputs */
 /** @typedef {{}} Billing_Error_Redirect_PaymentInputs */
+/** @typedef {{ details: NonNullable<unknown> }} Billing_Fix_Payment_IssuesInputs */
 /** @typedef {{}} Billing_Free_Credit_DescInputs */
 /** @typedef {{}} Billing_Free_Trial_InfoInputs */
 /** @typedef {{ amount: NonNullable<unknown> }} Billing_Free_Trial_With_CreditsInputs */
@@ -236,6 +239,7 @@
 /** @typedef {{}} Billing_Refer_To_DocsInputs */
 /** @typedef {{}} Billing_RenewInputs */
 /** @typedef {{}} Billing_Renew_To_Maintain_AccessInputs */
+/** @typedef {{ plan: NonNullable<unknown> }} Billing_Renewing_PlanInputs */
 /** @typedef {{}} Billing_See_Pricing_DetailsInputs */
 /** @typedef {{}} Billing_Select_Admin_As_ContactInputs */
 /** @typedef {{}} Billing_Subscription_EndedInputs */
@@ -253,11 +257,13 @@
 /** @typedef {{}} Billing_Unit_SpecInputs */
 /** @typedef {{}} Billing_UnknownInputs */
 /** @typedef {{}} Billing_UnlimitedInputs */
+/** @typedef {{}} Billing_Update_PaymentInputs */
 /** @typedef {{}} Billing_Update_Payment_MethodsInputs */
 /** @typedef {{}} Billing_Upgrade_To_ProInputs */
 /** @typedef {{}} Billing_Upgrade_To_TeamInputs */
 /** @typedef {{}} Billing_Upgrade_To_WakeInputs */
 /** @typedef {{ duration: NonNullable<unknown> }} Billing_Upgrade_Within_To_MaintainInputs */
+/** @typedef {{ plan: NonNullable<unknown> }} Billing_Upgrading_PlanInputs */
 /** @typedef {{}} Billing_Usage_Based_PricingInputs */
 /** @typedef {{}} Billing_Usage_Coming_SoonInputs */
 /** @typedef {{}} Billing_Usage_DescriptionInputs */
@@ -297,6 +303,30 @@
 /** @typedef {{}} Bookmark_Save_Filters_OnlyInputs */
 /** @typedef {{}} Bookmark_UpdatedInputs */
 /** @typedef {{}} Bookmark_Your_BookmarksInputs */
+/** @typedef {{}} Branch_Add_From_CliInputs */
+/** @typedef {{}} Branch_AuthorInputs */
+/** @typedef {{}} Branch_BranchInputs */
+/** @typedef {{}} Branch_BranchesInputs */
+/** @typedef {{}} Branch_CurrentInputs */
+/** @typedef {{ error: NonNullable<unknown> }} Branch_Delete_FailedInputs */
+/** @typedef {{ error: NonNullable<unknown> }} Branch_Error_LoadingInputs */
+/** @typedef {{}} Branch_HibernateInputs */
+/** @typedef {{ error: NonNullable<unknown> }} Branch_Hibernate_FailedInputs */
+/** @typedef {{}} Branch_Last_UpdatedInputs */
+/** @typedef {{}} Branch_LoadingInputs */
+/** @typedef {{}} Branch_No_BranchesInputs */
+/** @typedef {{}} Branch_Not_EditableInputs */
+/** @typedef {{}} Branch_Open_EditorInputs */
+/** @typedef {{}} Branch_ProductionInputs */
+/** @typedef {{}} Branch_Read_OnlyInputs */
+/** @typedef {{}} Branch_Recreate_WithInputs */
+/** @typedef {{}} Branch_ResumeInputs */
+/** @typedef {{ error: NonNullable<unknown> }} Branch_Resume_FailedInputs */
+/** @typedef {{}} Branch_SlotsInputs */
+/** @typedef {{}} Branch_Status_ErrorInputs */
+/** @typedef {{}} Branch_Status_PendingInputs */
+/** @typedef {{}} Branch_Status_ReadyInputs */
+/** @typedef {{}} Branch_Status_StoppedInputs */
 /** @typedef {{}} Calendar_ApplyInputs */
 /** @typedef {{ capLabel: NonNullable<unknown> }} Calendar_Range_Exceeds_LimitInputs */
 /** @typedef {{}} Canvas_Add_WidgetInputs */
@@ -511,20 +541,28 @@
 /** @typedef {{}} Chat_Unable_To_LoadInputs */
 /** @typedef {{}} Chat_Upvote_AriaInputs */
 /** @typedef {{}} Chat_Upvote_TooltipInputs */
+/** @typedef {{}} Common_AllInputs */
 /** @typedef {{}} Common_Allow_Domain_AccessInputs */
 /** @typedef {{ domain: NonNullable<unknown>, role: NonNullable<unknown> }} Common_Allow_Domain_Join_ProjectInputs */
 /** @typedef {{}} Common_ApplyInputs */
+/** @typedef {{}} Common_BackInputs */
 /** @typedef {{}} Common_CancelInputs */
 /** @typedef {{}} Common_Close_SearchInputs */
 /** @typedef {{}} Common_Contact_UsInputs */
 /** @typedef {{}} Common_ContinueInputs */
+/** @typedef {{}} Common_DeleteInputs */
 /** @typedef {{}} Common_Got_ItInputs */
 /** @typedef {{}} Common_Learn_MoreInputs */
+/** @typedef {{}} Common_LoadingInputs */
 /** @typedef {{}} Common_Must_Be_NumberInputs */
+/** @typedef {{}} Common_NameInputs */
+/** @typedef {{}} Common_No_Results_FoundInputs */
 /** @typedef {{}} Common_PreviewInputs */
 /** @typedef {{}} Common_RequiredInputs */
 /** @typedef {{}} Common_SearchInputs */
 /** @typedef {{}} Common_Search_ListInputs */
+/** @typedef {{}} Common_StatusInputs */
+/** @typedef {{}} Common_TypeInputs */
 /** @typedef {{}} Common_UndoInputs */
 /** @typedef {{ name: NonNullable<unknown> }} Dashboard_Add_All_Dims_RowsInputs */
 /** @typedef {{}} Dashboard_Add_All_To_ColumnsInputs */
@@ -567,6 +605,7 @@
 /** @typedef {{}} Dashboard_Copy_ErrorInputs */
 /** @typedef {{}} Dashboard_Copy_Error_ClipboardInputs */
 /** @typedef {{}} Dashboard_Copy_Error_To_Clipboard_AriaInputs */
+/** @typedef {{}} Dashboard_Create_A_DashboardInputs */
 /** @typedef {{}} Dashboard_Current_TimeInputs */
 /** @typedef {{}} Dashboard_Current_Time_DescriptionInputs */
 /** @typedef {{}} Dashboard_Currently_FlatInputs */
@@ -585,6 +624,7 @@
 /** @typedef {{}} Dashboard_Drag_Dimensions_Or_MeasuresInputs */
 /** @typedef {{ zone: NonNullable<unknown> }} Dashboard_Drag_List_ZoneInputs */
 /** @typedef {{}} Dashboard_Dynamic_Y_AxisInputs */
+/** @typedef {{}} Dashboard_Empty_StateInputs */
 /** @typedef {{}} Dashboard_EndInputs */
 /** @typedef {{}} Dashboard_Error_OccurredInputs */
 /** @typedef {{}} Dashboard_Error_Occurred_HoverInputs */
@@ -629,6 +669,7 @@
 /** @typedef {{}} Dashboard_No_Additional_DetailsInputs */
 /** @typedef {{}} Dashboard_No_Available_FieldsInputs */
 /** @typedef {{}} Dashboard_No_Comparison_DimensionInputs */
+/** @typedef {{}} Dashboard_No_Dashboards_FoundInputs */
 /** @typedef {{}} Dashboard_No_Filters_SelectedInputs */
 /** @typedef {{}} Dashboard_No_Matching_TagsInputs */
 /** @typedef {{}} Dashboard_No_Mock_UsersInputs */
@@ -674,6 +715,7 @@
 /** @typedef {{}} Dashboard_Search_DimensionInputs */
 /** @typedef {{}} Dashboard_Search_DimensionsInputs */
 /** @typedef {{}} Dashboard_Search_ResultsInputs */
+/** @typedef {{}} Dashboard_See_AllInputs */
 /** @typedef {{}} Dashboard_See_MoreInputs */
 /** @typedef {{}} Dashboard_Select_Aggregation_Grain_AriaInputs */
 /** @typedef {{}} Dashboard_Select_AllInputs */
@@ -708,6 +750,7 @@
 /** @typedef {{}} Dashboard_Time_ZoneInputs */
 /** @typedef {{}} Dashboard_Timezone_SelectorInputs */
 /** @typedef {{}} Dashboard_ToInputs */
+/** @typedef {{}} Dashboard_To_Get_StartedInputs */
 /** @typedef {{}} Dashboard_Toggle_ExcludeInputs */
 /** @typedef {{}} Dashboard_Toggle_IncludeInputs */
 /** @typedef {{}} Dashboard_Toggle_Rows_Viewer_AriaInputs */
@@ -716,10 +759,33 @@
 /** @typedef {{}} Dashboard_Total_RowInputs */
 /** @typedef {{}} Dashboard_View_AsInputs */
 /** @typedef {{}} Dashboard_Viewing_AsInputs */
+/** @typedef {{}} Deploy_Create_New_Org_LabelInputs */
+/** @typedef {{}} Deploy_Failed_Login_UrlInputs */
+/** @typedef {{}} Deploy_Select_Org_PlaceholderInputs */
 /** @typedef {{}} Dialog_Close_Without_Saving_Alert_DescInputs */
 /** @typedef {{}} Dialog_Close_Without_Saving_CancelInputs */
 /** @typedef {{}} Dialog_Close_Without_Saving_ConfirmInputs */
 /** @typedef {{}} Dialog_Close_Without_Saving_TitleInputs */
+/** @typedef {{}} Edit_Back_To_ProjectsInputs */
+/** @typedef {{}} Edit_Branch_NameInputs */
+/** @typedef {{}} Edit_Changes_Committed_PushedInputs */
+/** @typedef {{}} Edit_Describe_ChangesInputs */
+/** @typedef {{}} Edit_Failed_To_CommitInputs */
+/** @typedef {{}} Edit_Failed_To_MergeInputs */
+/** @typedef {{}} Edit_Failed_To_PublishInputs */
+/** @typedef {{}} Edit_Failed_To_StartInputs */
+/** @typedef {{}} Edit_MergingInputs */
+/** @typedef {{}} Edit_No_Changes_DetectedInputs */
+/** @typedef {{}} Edit_Popup_BlockedInputs */
+/** @typedef {{}} Edit_Provisioning_EnvInputs */
+/** @typedef {{}} Edit_PublishingInputs */
+/** @typedef {{}} Edit_PushingInputs */
+/** @typedef {{}} Edit_Return_To_OrgInputs */
+/** @typedef {{}} Edit_Return_To_ProjectInputs */
+/** @typedef {{}} Edit_StartingInputs */
+/** @typedef {{}} Edit_Starting_EnvInputs */
+/** @typedef {{}} Edit_Taking_LongerInputs */
+/** @typedef {{}} Edit_Updating_EnvInputs */
 /** @typedef {{}} Embed_Explore_ErrorInputs */
 /** @typedef {{}} Embed_Explore_Not_FoundInputs */
 /** @typedef {{}} Embed_Explore_Not_Found_BodyInputs */
@@ -780,6 +846,8 @@
 /** @typedef {{}} Error_Back_To_HomeInputs */
 /** @typedef {{}} Error_Conversation_Not_Found_BodyInputs */
 /** @typedef {{}} Error_Conversation_Not_Found_HeaderInputs */
+/** @typedef {{}} Error_Dashboard_Not_FoundInputs */
+/** @typedef {{}} Error_Deploy_DashboardsInputs */
 /** @typedef {{}} Error_Deploying_ProjectInputs */
 /** @typedef {{}} Error_Deployment_ErrorInputs */
 /** @typedef {{}} Error_Deployment_Not_Found_BodyInputs */
@@ -792,8 +860,10 @@
 /** @typedef {{}} Error_Link_Expired_HeaderInputs */
 /** @typedef {{}} Error_Network_BodyInputs */
 /** @typedef {{}} Error_Network_HeaderInputs */
+/** @typedef {{}} Error_OccurredInputs */
 /** @typedef {{}} Error_Org_Not_Found_BodyInputs */
 /** @typedef {{}} Error_Org_Not_Found_HeaderInputs */
+/** @typedef {{}} Error_Page_Not_FoundInputs */
 /** @typedef {{}} Error_Page_Not_Found_BodyInputs */
 /** @typedef {{}} Error_Page_Not_Found_HeaderInputs */
 /** @typedef {{}} Error_Project_Not_Found_BodyInputs */
@@ -805,6 +875,7 @@
 /** @typedef {{}} Explore_All_DimensionsInputs */
 /** @typedef {{}} Explore_All_MeasuresInputs */
 /** @typedef {{}} Explore_By_Grain_PrefixInputs */
+/** @typedef {{}} Explore_Check_Yaml_ErrorsInputs */
 /** @typedef {{}} Explore_Choose_DimensionsInputs */
 /** @typedef {{}} Explore_Choose_MeasuresInputs */
 /** @typedef {{}} Explore_Clear_FilterInputs */
@@ -814,7 +885,11 @@
 /** @typedef {{}} Explore_Clear_Tag_FilterInputs */
 /** @typedef {{}} Explore_Clear_Tag_Filter_To_Reorder_DimensionsInputs */
 /** @typedef {{}} Explore_Clear_Tag_Filter_To_Reorder_MeasuresInputs */
+/** @typedef {{}} Explore_Dashboard_Not_FoundInputs */
 /** @typedef {{ count: NonNullable<unknown>, total: NonNullable<unknown> }} Explore_Dimensions_CountInputs */
+/** @typedef {{}} Explore_Error_BuildingInputs */
+/** @typedef {{}} Explore_Error_FetchingInputs */
+/** @typedef {{}} Explore_Error_ParsingInputs */
 /** @typedef {{ tag: NonNullable<unknown> }} Explore_Filter_By_TagInputs */
 /** @typedef {{}} Explore_Filter_LabelInputs */
 /** @typedef {{}} Explore_Go_To_DashboardInputs */
@@ -842,6 +917,7 @@
 /** @typedef {{}} Explore_No_Matching_Leaderboard_MeasuresInputs */
 /** @typedef {{}} Explore_No_Matching_Measures_ShownInputs */
 /** @typedef {{}} Explore_No_Matching_TagsInputs */
+/** @typedef {{}} Explore_No_MeasuresInputs */
 /** @typedef {{}} Explore_No_Measures_From_TagInputs */
 /** @typedef {{}} Explore_No_Measures_Or_TagsInputs */
 /** @typedef {{}} Explore_No_Measures_ShownInputs */
@@ -852,6 +928,7 @@
 /** @typedef {{}} Explore_Search_ListInputs */
 /** @typedef {{}} Explore_Search_MeasuresInputs */
 /** @typedef {{}} Explore_Search_Measures_Or_TagsInputs */
+/** @typedef {{ email: NonNullable<unknown> }} Explore_Security_Policy_WarningInputs */
 /** @typedef {{}} Explore_Show_AllInputs */
 /** @typedef {{ tag: NonNullable<unknown> }} Explore_Show_All_In_Named_TagInputs */
 /** @typedef {{}} Explore_Show_All_In_TagInputs */
@@ -863,8 +940,10 @@
 /** @typedef {{ visible: NonNullable<unknown>, total: NonNullable<unknown> }} Explore_Tag_Shown_CountInputs */
 /** @typedef {{}} Explore_TagsInputs */
 /** @typedef {{}} Explore_Unable_To_OpenInputs */
+/** @typedef {{}} Explore_Unknown_Build_ErrorInputs */
 /** @typedef {{}} Explore_Unknown_DimensionInputs */
 /** @typedef {{}} Explore_Unknown_MeasureInputs */
+/** @typedef {{}} Explore_User_No_AccessInputs */
 /** @typedef {{ label: NonNullable<unknown> }} Field_List_Add_FieldsInputs */
 /** @typedef {{ label: NonNullable<unknown> }} Field_List_AriaInputs */
 /** @typedef {{}} Field_List_DimensionsInputs */
@@ -926,6 +1005,9 @@
 /** @typedef {{}} Github_Create_RepositoryInputs */
 /** @typedef {{}} Github_Deploy_ContinuouslyInputs */
 /** @typedef {{}} Github_Did_Not_Grant_AccessInputs */
+/** @typedef {{}} Github_Error_Push_FailedInputs */
+/** @typedef {{}} Github_Error_Repo_ExistsInputs */
+/** @typedef {{}} Github_Error_Subpath_ExistsInputs */
 /** @typedef {{}} Github_Existing_RepositoryInputs */
 /** @typedef {{}} Github_Grant_Access_To_RepoInputs */
 /** @typedef {{}} Github_No_Access_To_RepoInputs */
@@ -968,8 +1050,11 @@
 /** @typedef {{ count: NonNullable<unknown> }} Groups_Total_CountInputs */
 /** @typedef {{}} Groups_Yes_DeleteInputs */
 /** @typedef {{}} Home_Dashboards_HeadingInputs */
+/** @typedef {{ name: NonNullable<unknown> }} Home_GreetingInputs */
 /** @typedef {{}} Home_Subtitle_No_ChatInputs */
 /** @typedef {{}} Home_Subtitle_With_ChatInputs */
+/** @typedef {{ link: NonNullable<unknown> }} Home_Welcome_Getting_StartedInputs */
+/** @typedef {{}} Home_Welcome_Quickstart_LinkInputs */
 /** @typedef {{ projectName: NonNullable<unknown> }} Home_Welcome_ToInputs */
 /** @typedef {{}} Interval_DayInputs */
 /** @typedef {{}} Interval_HourInputs */
@@ -1019,8 +1104,10 @@
 /** @typedef {{}} Measures_Choose_TooltipInputs */
 /** @typedef {{}} Measures_LabelInputs */
 /** @typedef {{}} Nav_Close_SidebarInputs */
+/** @typedef {{}} Nav_DashboardsInputs */
 /** @typedef {{}} Nav_Data_ExplorerInputs */
 /** @typedef {{}} Nav_Show_SidebarInputs */
+/** @typedef {{}} Nav_StatusInputs */
 /** @typedef {{}} Nav_Tab_AiInputs */
 /** @typedef {{}} Nav_Tab_AlertsInputs */
 /** @typedef {{}} Nav_Tab_DashboardsInputs */
@@ -1031,6 +1118,10 @@
 /** @typedef {{}} Nav_Tab_StatusInputs */
 /** @typedef {{}} Org_Check_Out_ProjectsInputs */
 /** @typedef {{}} Org_New_ProjectInputs */
+/** @typedef {{}} Org_Role_Admin_DescriptionInputs */
+/** @typedef {{}} Org_Role_Editor_DescriptionInputs */
+/** @typedef {{}} Org_Role_Guest_DescriptionInputs */
+/** @typedef {{}} Org_Role_Viewer_DescriptionInputs */
 /** @typedef {{}} Org_Search_Add_Remove_UsersInputs */
 /** @typedef {{}} Org_Tab_ProjectsInputs */
 /** @typedef {{}} Org_Tab_SettingsInputs */
@@ -1052,28 +1143,51 @@
 /** @typedef {{}} Project_Branch_HibernatedInputs */
 /** @typedef {{}} Project_Branch_Is_HibernatedInputs */
 /** @typedef {{}} Project_Contact_Admin_To_RedeployInputs */
+/** @typedef {{}} Project_Create_FirstInputs */
+/** @typedef {{}} Project_Create_NewInputs */
+/** @typedef {{}} Project_Create_ProjectInputs */
 /** @typedef {{}} Project_Dashboards_TitleInputs */
 /** @typedef {{}} Project_DeleteInputs */
+/** @typedef {{}} Project_DeployingInputs */
 /** @typedef {{}} Project_EditInputs */
 /** @typedef {{ error: NonNullable<unknown> }} Project_Failed_To_WakeInputs */
 /** @typedef {{}} Project_HibernatingInputs */
 /** @typedef {{}} Project_Is_HibernatingInputs */
+/** @typedef {{}} Project_Name_FirstInputs */
+/** @typedef {{}} Project_Name_Format_ErrorInputs */
+/** @typedef {{}} Project_Name_Max_LengthInputs */
+/** @typedef {{}} Project_Name_Min_LengthInputs */
+/** @typedef {{}} Project_Name_NewInputs */
+/** @typedef {{}} Project_Name_RequiredInputs */
 /** @typedef {{}} Project_RenameInputs */
+/** @typedef {{}} Project_Rename_AnytimeInputs */
 /** @typedef {{}} Project_Resume_BranchInputs */
 /** @typedef {{}} Project_Role_AdminInputs */
+/** @typedef {{}} Project_Role_Guest_DescriptionInputs */
 /** @typedef {{}} Project_Role_ViewerInputs */
 /** @typedef {{}} Project_Search_Or_InviteInputs */
 /** @typedef {{}} Project_Search_UsersInputs */
 /** @typedef {{}} Project_ShareInputs */
+/** @typedef {{}} Project_Share_Failed_To_InviteInputs */
 /** @typedef {{ project: NonNullable<unknown> }} Project_Share_HeadingInputs */
+/** @typedef {{}} Project_Share_Invalid_EmailInputs */
+/** @typedef {{}} Project_Share_Invalid_Email_Or_GroupInputs */
+/** @typedef {{}} Project_Share_Role_AdminInputs */
+/** @typedef {{}} Project_Share_Role_Admin_DescriptionInputs */
+/** @typedef {{}} Project_Share_Role_EditorInputs */
+/** @typedef {{}} Project_Share_Role_Editor_DescriptionInputs */
+/** @typedef {{}} Project_Share_Role_ViewerInputs */
+/** @typedef {{}} Project_Share_Role_Viewer_DescriptionInputs */
 /** @typedef {{}} Project_Share_TooltipInputs */
 /** @typedef {{}} Project_StartingInputs */
+/** @typedef {{}} Project_Starting_Branch_DeploymentInputs */
 /** @typedef {{}} Project_This_Is_HibernatingInputs */
 /** @typedef {{}} Project_WakeInputs */
 /** @typedef {{}} Project_WakingInputs */
 /** @typedef {{}} Project_Waking_UpInputs */
 /** @typedef {{}} Public_Url_Cancel_ButtonInputs */
 /** @typedef {{}} Public_Url_Copied_ButtonInputs */
+/** @typedef {{}} Public_Url_Copied_To_ClipboardInputs */
 /** @typedef {{}} Public_Url_Copy_ButtonInputs */
 /** @typedef {{}} Public_Url_Copy_Url_ActionInputs */
 /** @typedef {{}} Public_Url_Create_ButtonInputs */
@@ -1083,6 +1197,7 @@
 /** @typedef {{}} Public_Url_Delete_Error_NotificationInputs */
 /** @typedef {{}} Public_Url_Delete_TitleInputs */
 /** @typedef {{}} Public_Url_Deleted_NotificationInputs */
+/** @typedef {{}} Public_Url_Edit_ExpirationInputs */
 /** @typedef {{}} Public_Url_Error_LoadingInputs */
 /** @typedef {{}} Public_Url_Filters_Locked_HiddenInputs */
 /** @typedef {{}} Public_Url_Label_PlaceholderInputs */
@@ -1103,6 +1218,7 @@
 /** @typedef {{}} Public_Url_Table_Filters_HeaderInputs */
 /** @typedef {{}} Public_Url_Table_Label_HeaderInputs */
 /** @typedef {{}} Public_Url_Table_Last_Accessed_HeaderInputs */
+/** @typedef {{}} Public_Url_Title_RequiredInputs */
 /** @typedef {{}} Public_Url_UntitledInputs */
 /** @typedef {{}} Public_Url_Yes_Delete_ButtonInputs */
 /** @typedef {{}} Report_AdhocInputs */
@@ -1230,6 +1346,14 @@
 /** @typedef {{}} Role_Project_Editor_DescInputs */
 /** @typedef {{}} Role_Project_Viewer_DescInputs */
 /** @typedef {{}} Role_ViewerInputs */
+/** @typedef {{}} Route_Error_Dashboard_Not_FoundInputs */
+/** @typedef {{}} Route_Error_Fetching_Billing_IssuesInputs */
+/** @typedef {{}} Route_Error_Fetching_Billing_SubscriptionInputs */
+/** @typedef {{}} Route_Error_Fetching_OrganizationInputs */
+/** @typedef {{}} Route_Error_Fetching_ProjectInputs */
+/** @typedef {{}} Route_Error_No_Org_PermissionInputs */
+/** @typedef {{}} Route_Error_Token_Not_FoundInputs */
+/** @typedef {{}} Route_Error_Token_Resource_Not_FoundInputs */
 /** @typedef {{ domain: NonNullable<unknown>, role: NonNullable<unknown> }} Settings_Allow_Domain_DescriptionInputs */
 /** @typedef {{}} Settings_Allow_Domain_TitleInputs */
 /** @typedef {{ branch: NonNullable<unknown> }} Settings_Branch_CalloutInputs */
@@ -1312,6 +1436,7 @@
 /** @typedef {{}} Status_Action_Refresh_Errored_PartitionsInputs */
 /** @typedef {{}} Status_Action_View_LogsInputs */
 /** @typedef {{}} Status_Action_View_PartitionsInputs */
+/** @typedef {{}} Status_All_TypesInputs */
 /** @typedef {{}} Status_CancelInputs */
 /** @typedef {{}} Status_Checking_ErrorsInputs */
 /** @typedef {{}} Status_ClearInputs */
@@ -1326,8 +1451,12 @@
 /** @typedef {{}} Status_CompleteInputs */
 /** @typedef {{}} Status_Compute_UnitInputs */
 /** @typedef {{}} Status_Compute_UnitsInputs */
+/** @typedef {{ error: NonNullable<unknown> }} Status_Connection_FailedInputs */
+/** @typedef {{}} Status_Copied_Error_MessageInputs */
+/** @typedef {{}} Status_Copied_Test_ErrorInputs */
 /** @typedef {{}} Status_Data_AccessibleInputs */
 /** @typedef {{}} Status_Data_SizeInputs */
+/** @typedef {{}} Status_Database_SizeInputs */
 /** @typedef {{}} Status_Deploy_DeletedInputs */
 /** @typedef {{}} Status_Deploy_DeletingInputs */
 /** @typedef {{}} Status_Deploy_ErrorInputs */
@@ -1341,12 +1470,16 @@
 /** @typedef {{}} Status_Download_ProjectInputs */
 /** @typedef {{}} Status_Error_Loading_ResourcesInputs */
 /** @typedef {{}} Status_Error_Loading_TablesInputs */
+/** @typedef {{}} Status_Error_PluralInputs */
+/** @typedef {{}} Status_Error_SingularInputs */
 /** @typedef {{}} Status_ErrorsInputs */
 /** @typedef {{}} Status_External_Tables_SectionInputs */
 /** @typedef {{}} Status_Filter_ErrorInputs */
 /** @typedef {{}} Status_Filter_OkInputs */
 /** @typedef {{}} Status_Filter_WarnInputs */
+/** @typedef {{}} Status_Full_RefreshInputs */
 /** @typedef {{}} Status_Full_Refresh_WarningInputs */
+/** @typedef {{}} Status_Incremental_RefreshInputs */
 /** @typedef {{}} Status_Incremental_Refresh_DescriptionInputs */
 /** @typedef {{}} Status_Label_Ai_ConnectorInputs */
 /** @typedef {{}} Status_Label_BranchInputs */
@@ -1359,11 +1492,13 @@
 /** @typedef {{}} Status_Label_StatusInputs */
 /** @typedef {{}} Status_Learn_About_External_OlapInputs */
 /** @typedef {{}} Status_Learn_MoreInputs */
+/** @typedef {{ first: NonNullable<unknown>, count: NonNullable<unknown> }} Status_Levels_SelectedInputs */
 /** @typedef {{}} Status_Load_More_TablesInputs */
 /** @typedef {{}} Status_LoadingInputs */
 /** @typedef {{}} Status_Loading_ModelsInputs */
 /** @typedef {{}} Status_Loading_ResourcesInputs */
 /** @typedef {{}} Status_Loading_TablesInputs */
+/** @typedef {{}} Status_Loading_Tables_ShortInputs */
 /** @typedef {{}} Status_Logs_All_LevelsInputs */
 /** @typedef {{}} Status_Logs_ConnectingInputs */
 /** @typedef {{}} Status_Logs_Connection_FailedInputs */
@@ -1377,7 +1512,9 @@
 /** @typedef {{}} Status_Logs_No_MatchInputs */
 /** @typedef {{}} Status_Logs_RetryInputs */
 /** @typedef {{}} Status_Logs_WaitingInputs */
+/** @typedef {{}} Status_Model_NameInputs */
 /** @typedef {{}} Status_Model_PartitionsInputs */
+/** @typedef {{}} Status_Model_ReconcilingInputs */
 /** @typedef {{}} Status_Models_Created_In_DeveloperInputs */
 /** @typedef {{}} Status_Models_SectionInputs */
 /** @typedef {{}} Status_Nav_AnalyticsInputs */
@@ -1397,6 +1534,7 @@
 /** @typedef {{}} Status_No_Resources_Match_FiltersInputs */
 /** @typedef {{}} Status_No_TablesInputs */
 /** @typedef {{}} Status_NoteInputs */
+/** @typedef {{}} Status_One_LevelInputs */
 /** @typedef {{}} Status_Owned_By_OtherInputs */
 /** @typedef {{}} Status_Owned_By_YouInputs */
 /** @typedef {{}} Status_Page_TitleInputs */
@@ -1414,13 +1552,18 @@
 /** @typedef {{}} Status_RefreshingInputs */
 /** @typedef {{}} Status_Resource_ReconcilingInputs */
 /** @typedef {{}} Status_Rill_ManagedInputs */
+/** @typedef {{}} Status_TableInputs */
+/** @typedef {{}} Status_Table_NameInputs */
 /** @typedef {{}} Status_Table_PluralInputs */
 /** @typedef {{}} Status_Table_SingularInputs */
+/** @typedef {{}} Status_TablesInputs */
 /** @typedef {{}} Status_Unable_To_Check_ErrorsInputs */
 /** @typedef {{}} Status_View_AllInputs */
 /** @typedef {{}} Status_View_PluralInputs */
 /** @typedef {{}} Status_View_SingularInputs */
+/** @typedef {{}} Status_ViewsInputs */
 /** @typedef {{}} Status_Yes_RefreshInputs */
+/** @typedef {{}} Theme_BetaInputs */
 /** @typedef {{}} Theme_DarkInputs */
 /** @typedef {{}} Theme_LabelInputs */
 /** @typedef {{}} Theme_LightInputs */
@@ -1546,6 +1689,7 @@
 /** @typedef {{ role: NonNullable<unknown> }} Users_Guest_UpgradedInputs */
 /** @typedef {{ role: NonNullable<unknown> }} Users_Guest_Upgraded_ToInputs */
 /** @typedef {{ count: NonNullable<unknown>, role: NonNullable<unknown> }} Users_Guests_Invited_SuccessInputs */
+/** @typedef {{}} Users_Invalid_EmailInputs */
 /** @typedef {{}} Users_InviteInputs */
 /** @typedef {{}} Users_Invite_OnlyInputs */
 /** @typedef {{ count: NonNullable<unknown> }} Users_Invited_CountInputs */
@@ -1591,10 +1735,15 @@
 /** @typedef {{ count: NonNullable<unknown> }} Users_User_CountInputs */
 /** @typedef {{}} Users_Yes_RemoveInputs */
 /** @typedef {{}} Users_Yes_UpgradeInputs */
+/** @typedef {{}} Workspace_Generating_Sample_DataInputs */
 
 
 export const alert_context_menu_aria = /** @type {(inputs: Alert_Context_Menu_AriaInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Alert context menu`)
+};
+
+export const alert_create_alert = /** @type {(inputs: Alert_Create_AlertInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Create alert`)
 };
 
 export const alert_created_by = /** @type {(inputs: Alert_Created_ByInputs) => LocalizedString} */ (i) => {
@@ -1895,6 +2044,10 @@ export const alert_recent_history = /** @type {(inputs: Alert_Recent_HistoryInpu
 
 export const alert_schedule = /** @type {(inputs: Alert_ScheduleInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Schedule`)
+};
+
+export const alert_set_non_custom_time_range = /** @type {(inputs: Alert_Set_Non_Custom_Time_RangeInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`To create an alert, set a non-custom time range.`)
 };
 
 export const alert_showing_recent_checks = /** @type {(inputs: Alert_Showing_Recent_ChecksInputs) => LocalizedString} */ () => {
@@ -2333,6 +2486,10 @@ export const billing_error_redirect_payment = /** @type {(inputs: Billing_Error_
 	return /** @type {LocalizedString} */ (`Error redirecting to payment portal`)
 };
 
+export const billing_fix_payment_issues = /** @type {(inputs: Billing_Fix_Payment_IssuesInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Please fix payment issues: ${i?.details}`)
+};
+
 export const billing_free_credit_desc = /** @type {(inputs: Billing_Free_Credit_DescInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`$250 free credit`)
 };
@@ -2537,6 +2694,10 @@ export const billing_renew_to_maintain_access = /** @type {(inputs: Billing_Rene
 	return /** @type {LocalizedString} */ (`To maintain access, renew your plan.`)
 };
 
+export const billing_renewing_plan = /** @type {(inputs: Billing_Renewing_PlanInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Renewing ${i?.plan} plan...`)
+};
+
 export const billing_see_pricing_details = /** @type {(inputs: Billing_See_Pricing_DetailsInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`See pricing details`)
 };
@@ -2605,6 +2766,10 @@ export const billing_unlimited = /** @type {(inputs: Billing_UnlimitedInputs) =>
 	return /** @type {LocalizedString} */ (`Unlimited`)
 };
 
+export const billing_update_payment = /** @type {(inputs: Billing_Update_PaymentInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Update payment`)
+};
+
 export const billing_update_payment_methods = /** @type {(inputs: Billing_Update_Payment_MethodsInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Update payment methods`)
 };
@@ -2623,6 +2788,10 @@ export const billing_upgrade_to_wake = /** @type {(inputs: Billing_Upgrade_To_Wa
 
 export const billing_upgrade_within_to_maintain = /** @type {(inputs: Billing_Upgrade_Within_To_MaintainInputs) => LocalizedString} */ (i) => {
 	return /** @type {LocalizedString} */ (`Upgrade within ${i?.duration} to maintain access.`)
+};
+
+export const billing_upgrading_plan = /** @type {(inputs: Billing_Upgrading_PlanInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Upgrading to ${i?.plan} plan...`)
 };
 
 export const billing_usage_based_pricing = /** @type {(inputs: Billing_Usage_Based_PricingInputs) => LocalizedString} */ () => {
@@ -2780,6 +2949,102 @@ export const bookmark_updated = /** @type {(inputs: Bookmark_UpdatedInputs) => L
 
 export const bookmark_your_bookmarks = /** @type {(inputs: Bookmark_Your_BookmarksInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Your bookmarks`)
+};
+
+export const branch_add_from_cli = /** @type {(inputs: Branch_Add_From_CliInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Add a branch from the CLI:`)
+};
+
+export const branch_author = /** @type {(inputs: Branch_AuthorInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Author`)
+};
+
+export const branch_branch = /** @type {(inputs: Branch_BranchInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Branch`)
+};
+
+export const branch_branches = /** @type {(inputs: Branch_BranchesInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Branches`)
+};
+
+export const branch_current = /** @type {(inputs: Branch_CurrentInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Current`)
+};
+
+export const branch_delete_failed = /** @type {(inputs: Branch_Delete_FailedInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Failed to delete branch: ${i?.error}`)
+};
+
+export const branch_error_loading = /** @type {(inputs: Branch_Error_LoadingInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Error loading branches: ${i?.error}`)
+};
+
+export const branch_hibernate = /** @type {(inputs: Branch_HibernateInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Hibernate`)
+};
+
+export const branch_hibernate_failed = /** @type {(inputs: Branch_Hibernate_FailedInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Failed to hibernate branch: ${i?.error}`)
+};
+
+export const branch_last_updated = /** @type {(inputs: Branch_Last_UpdatedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Last updated`)
+};
+
+export const branch_loading = /** @type {(inputs: Branch_LoadingInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Loading branches`)
+};
+
+export const branch_no_branches = /** @type {(inputs: Branch_No_BranchesInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No branches`)
+};
+
+export const branch_not_editable = /** @type {(inputs: Branch_Not_EditableInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`This deployment isn't configured for editing.`)
+};
+
+export const branch_open_editor = /** @type {(inputs: Branch_Open_EditorInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Open editor`)
+};
+
+export const branch_production = /** @type {(inputs: Branch_ProductionInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Production`)
+};
+
+export const branch_read_only = /** @type {(inputs: Branch_Read_OnlyInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Read-only`)
+};
+
+export const branch_recreate_with = /** @type {(inputs: Branch_Recreate_WithInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`To edit this branch, recreate it with`)
+};
+
+export const branch_resume = /** @type {(inputs: Branch_ResumeInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Resume branch`)
+};
+
+export const branch_resume_failed = /** @type {(inputs: Branch_Resume_FailedInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Failed to resume branch: ${i?.error}`)
+};
+
+export const branch_slots = /** @type {(inputs: Branch_SlotsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Slots`)
+};
+
+export const branch_status_error = /** @type {(inputs: Branch_Status_ErrorInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Error`)
+};
+
+export const branch_status_pending = /** @type {(inputs: Branch_Status_PendingInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Pending`)
+};
+
+export const branch_status_ready = /** @type {(inputs: Branch_Status_ReadyInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Ready`)
+};
+
+export const branch_status_stopped = /** @type {(inputs: Branch_Status_StoppedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Stopped`)
 };
 
 export const calendar_apply = /** @type {(inputs: Calendar_ApplyInputs) => LocalizedString} */ () => {
@@ -3638,6 +3903,10 @@ export const chat_upvote_tooltip = /** @type {(inputs: Chat_Upvote_TooltipInputs
 	return /** @type {LocalizedString} */ (`This response was helpful`)
 };
 
+export const common_all = /** @type {(inputs: Common_AllInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`All`)
+};
+
 export const common_allow_domain_access = /** @type {(inputs: Common_Allow_Domain_AccessInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Allow domain access`)
 };
@@ -3648,6 +3917,10 @@ export const common_allow_domain_join_project = /** @type {(inputs: Common_Allow
 
 export const common_apply = /** @type {(inputs: Common_ApplyInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Apply`)
+};
+
+export const common_back = /** @type {(inputs: Common_BackInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Back`)
 };
 
 export const common_cancel = /** @type {(inputs: Common_CancelInputs) => LocalizedString} */ () => {
@@ -3666,6 +3939,10 @@ export const common_continue = /** @type {(inputs: Common_ContinueInputs) => Loc
 	return /** @type {LocalizedString} */ (`Continue`)
 };
 
+export const common_delete = /** @type {(inputs: Common_DeleteInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Delete`)
+};
+
 export const common_got_it = /** @type {(inputs: Common_Got_ItInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Got it`)
 };
@@ -3674,8 +3951,20 @@ export const common_learn_more = /** @type {(inputs: Common_Learn_MoreInputs) =>
 	return /** @type {LocalizedString} */ (`Learn more`)
 };
 
+export const common_loading = /** @type {(inputs: Common_LoadingInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Loading...`)
+};
+
 export const common_must_be_number = /** @type {(inputs: Common_Must_Be_NumberInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Value must be a valid number`)
+};
+
+export const common_name = /** @type {(inputs: Common_NameInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Name`)
+};
+
+export const common_no_results_found = /** @type {(inputs: Common_No_Results_FoundInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No results found.`)
 };
 
 export const common_preview = /** @type {(inputs: Common_PreviewInputs) => LocalizedString} */ () => {
@@ -3692,6 +3981,14 @@ export const common_search = /** @type {(inputs: Common_SearchInputs) => Localiz
 
 export const common_search_list = /** @type {(inputs: Common_Search_ListInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Search list`)
+};
+
+export const common_status = /** @type {(inputs: Common_StatusInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Status`)
+};
+
+export const common_type = /** @type {(inputs: Common_TypeInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Type`)
 };
 
 export const common_undo = /** @type {(inputs: Common_UndoInputs) => LocalizedString} */ () => {
@@ -3862,6 +4159,10 @@ export const dashboard_copy_error_to_clipboard_aria = /** @type {(inputs: Dashbo
 	return /** @type {LocalizedString} */ (`Copy error message to clipboard`)
 };
 
+export const dashboard_create_a_dashboard = /** @type {(inputs: Dashboard_Create_A_DashboardInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Create a dashboard`)
+};
+
 export const dashboard_current_time = /** @type {(inputs: Dashboard_Current_TimeInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`current time`)
 };
@@ -3932,6 +4233,10 @@ export const dashboard_drag_list_zone = /** @type {(inputs: Dashboard_Drag_List_
 
 export const dashboard_dynamic_y_axis = /** @type {(inputs: Dashboard_Dynamic_Y_AxisInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Dynamic Y-axis scale`)
+};
+
+export const dashboard_empty_state = /** @type {(inputs: Dashboard_Empty_StateInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`You don't have any dashboards yet`)
 };
 
 export const dashboard_end = /** @type {(inputs: Dashboard_EndInputs) => LocalizedString} */ () => {
@@ -4108,6 +4413,10 @@ export const dashboard_no_available_fields = /** @type {(inputs: Dashboard_No_Av
 
 export const dashboard_no_comparison_dimension = /** @type {(inputs: Dashboard_No_Comparison_DimensionInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`No comparison dimension selected`)
+};
+
+export const dashboard_no_dashboards_found = /** @type {(inputs: Dashboard_No_Dashboards_FoundInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No dashboards found`)
 };
 
 export const dashboard_no_filters_selected = /** @type {(inputs: Dashboard_No_Filters_SelectedInputs) => LocalizedString} */ () => {
@@ -4290,6 +4599,10 @@ export const dashboard_search_results = /** @type {(inputs: Dashboard_Search_Res
 	return /** @type {LocalizedString} */ (`Search Results`)
 };
 
+export const dashboard_see_all = /** @type {(inputs: Dashboard_See_AllInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`See all dashboards →`)
+};
+
 export const dashboard_see_more = /** @type {(inputs: Dashboard_See_MoreInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`See more`)
 };
@@ -4426,6 +4739,10 @@ export const dashboard_to = /** @type {(inputs: Dashboard_ToInputs) => Localized
 	return /** @type {LocalizedString} */ (`to`)
 };
 
+export const dashboard_to_get_started = /** @type {(inputs: Dashboard_To_Get_StartedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`to get started`)
+};
+
 export const dashboard_toggle_exclude = /** @type {(inputs: Dashboard_Toggle_ExcludeInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Toggle to exclude values`)
 };
@@ -4458,6 +4775,18 @@ export const dashboard_viewing_as = /** @type {(inputs: Dashboard_Viewing_AsInpu
 	return /** @type {LocalizedString} */ (`Viewing as`)
 };
 
+export const deploy_create_new_org_label = /** @type {(inputs: Deploy_Create_New_Org_LabelInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Create new org`)
+};
+
+export const deploy_failed_login_url = /** @type {(inputs: Deploy_Failed_Login_UrlInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Failed to fetch login URL.`)
+};
+
+export const deploy_select_org_placeholder = /** @type {(inputs: Deploy_Select_Org_PlaceholderInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Select organization`)
+};
+
 export const dialog_close_without_saving_alert_desc = /** @type {(inputs: Dialog_Close_Without_Saving_Alert_DescInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`You haven't saved changes to this alert yet, so closing this window will lose your work.`)
 };
@@ -4472,6 +4801,86 @@ export const dialog_close_without_saving_confirm = /** @type {(inputs: Dialog_Cl
 
 export const dialog_close_without_saving_title = /** @type {(inputs: Dialog_Close_Without_Saving_TitleInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Close without saving?`)
+};
+
+export const edit_back_to_projects = /** @type {(inputs: Edit_Back_To_ProjectsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Back to projects`)
+};
+
+export const edit_branch_name = /** @type {(inputs: Edit_Branch_NameInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Branch name`)
+};
+
+export const edit_changes_committed_pushed = /** @type {(inputs: Edit_Changes_Committed_PushedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Changes committed and pushed`)
+};
+
+export const edit_describe_changes = /** @type {(inputs: Edit_Describe_ChangesInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Describe your changes...`)
+};
+
+export const edit_failed_to_commit = /** @type {(inputs: Edit_Failed_To_CommitInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Failed to commit and push changes`)
+};
+
+export const edit_failed_to_merge = /** @type {(inputs: Edit_Failed_To_MergeInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Failed to merge`)
+};
+
+export const edit_failed_to_publish = /** @type {(inputs: Edit_Failed_To_PublishInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Failed to publish`)
+};
+
+export const edit_failed_to_start = /** @type {(inputs: Edit_Failed_To_StartInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Failed to start edit session.`)
+};
+
+export const edit_merging = /** @type {(inputs: Edit_MergingInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Merging...`)
+};
+
+export const edit_no_changes_detected = /** @type {(inputs: Edit_No_Changes_DetectedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No changes detected`)
+};
+
+export const edit_popup_blocked = /** @type {(inputs: Edit_Popup_BlockedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Pop-up was blocked.`)
+};
+
+export const edit_provisioning_env = /** @type {(inputs: Edit_Provisioning_EnvInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Provisioning your editing environment...`)
+};
+
+export const edit_publishing = /** @type {(inputs: Edit_PublishingInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Publishing...`)
+};
+
+export const edit_pushing = /** @type {(inputs: Edit_PushingInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Pushing...`)
+};
+
+export const edit_return_to_org = /** @type {(inputs: Edit_Return_To_OrgInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Return to organization`)
+};
+
+export const edit_return_to_project = /** @type {(inputs: Edit_Return_To_ProjectInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Return to project home`)
+};
+
+export const edit_starting = /** @type {(inputs: Edit_StartingInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Starting...`)
+};
+
+export const edit_starting_env = /** @type {(inputs: Edit_Starting_EnvInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Starting your editing environment...`)
+};
+
+export const edit_taking_longer = /** @type {(inputs: Edit_Taking_LongerInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`This is taking longer than usual.`)
+};
+
+export const edit_updating_env = /** @type {(inputs: Edit_Updating_EnvInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Updating your editing environment...`)
 };
 
 export const embed_explore_error = /** @type {(inputs: Embed_Explore_ErrorInputs) => LocalizedString} */ () => {
@@ -4714,6 +5123,14 @@ export const error_conversation_not_found_header = /** @type {(inputs: Error_Con
 	return /** @type {LocalizedString} */ (`Conversation not found`)
 };
 
+export const error_dashboard_not_found = /** @type {(inputs: Error_Dashboard_Not_FoundInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Dashboard not found`)
+};
+
+export const error_deploy_dashboards = /** @type {(inputs: Error_Deploy_DashboardsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Failed to deploy dashboards`)
+};
+
 export const error_deploying_project = /** @type {(inputs: Error_Deploying_ProjectInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`There was an error deploying your project. Please contact support.`)
 };
@@ -4762,12 +5179,20 @@ export const error_network_header = /** @type {(inputs: Error_Network_HeaderInpu
 	return /** @type {LocalizedString} */ (`Network Error`)
 };
 
+export const error_occurred = /** @type {(inputs: Error_OccurredInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`An error occurred`)
+};
+
 export const error_org_not_found_body = /** @type {(inputs: Error_Org_Not_Found_BodyInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`The organization you requested could not be found. Please check that you have provided a valid organization name.`)
 };
 
 export const error_org_not_found_header = /** @type {(inputs: Error_Org_Not_Found_HeaderInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Organization not found`)
+};
+
+export const error_page_not_found = /** @type {(inputs: Error_Page_Not_FoundInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Page not found`)
 };
 
 export const error_page_not_found_body = /** @type {(inputs: Error_Page_Not_Found_BodyInputs) => LocalizedString} */ () => {
@@ -4814,6 +5239,10 @@ export const explore_by_grain_prefix = /** @type {(inputs: Explore_By_Grain_Pref
 	return /** @type {LocalizedString} */ (`by`)
 };
 
+export const explore_check_yaml_errors = /** @type {(inputs: Explore_Check_Yaml_ErrorsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Please check your dashboard's YAML file for errors.`)
+};
+
 export const explore_choose_dimensions = /** @type {(inputs: Explore_Choose_DimensionsInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Choose dimensions to display`)
 };
@@ -4850,8 +5279,24 @@ export const explore_clear_tag_filter_to_reorder_measures = /** @type {(inputs: 
 	return /** @type {LocalizedString} */ (`Clear the tag filter to reorder measures.`)
 };
 
+export const explore_dashboard_not_found = /** @type {(inputs: Explore_Dashboard_Not_FoundInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Dashboard not found`)
+};
+
 export const explore_dimensions_count = /** @type {(inputs: Explore_Dimensions_CountInputs) => LocalizedString} */ (i) => {
 	return /** @type {LocalizedString} */ (`${i?.count} of ${i?.total} Dimensions`)
+};
+
+export const explore_error_building = /** @type {(inputs: Explore_Error_BuildingInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Error building dashboard`)
+};
+
+export const explore_error_fetching = /** @type {(inputs: Explore_Error_FetchingInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Error fetching dashboard`)
+};
+
+export const explore_error_parsing = /** @type {(inputs: Explore_Error_ParsingInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Error parsing dashboard`)
 };
 
 export const explore_filter_by_tag = /** @type {(inputs: Explore_Filter_By_TagInputs) => LocalizedString} */ (i) => {
@@ -4962,6 +5407,10 @@ export const explore_no_matching_tags = /** @type {(inputs: Explore_No_Matching_
 	return /** @type {LocalizedString} */ (`No matching tags`)
 };
 
+export const explore_no_measures = /** @type {(inputs: Explore_No_MeasuresInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`No measures available`)
+};
+
 export const explore_no_measures_from_tag = /** @type {(inputs: Explore_No_Measures_From_TagInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`No measures from this tag are shown`)
 };
@@ -5000,6 +5449,10 @@ export const explore_search_measures = /** @type {(inputs: Explore_Search_Measur
 
 export const explore_search_measures_or_tags = /** @type {(inputs: Explore_Search_Measures_Or_TagsInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Search measures or tags`)
+};
+
+export const explore_security_policy_warning = /** @type {(inputs: Explore_Security_Policy_WarningInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`The security policy for this dashboard may make contents invisible to you. If you deploy this dashboard, ${i?.email} will see a 404.`)
 };
 
 export const explore_show_all = /** @type {(inputs: Explore_Show_AllInputs) => LocalizedString} */ () => {
@@ -5046,12 +5499,20 @@ export const explore_unable_to_open = /** @type {(inputs: Explore_Unable_To_Open
 	return /** @type {LocalizedString} */ (`Unable to open Explore Dashboard`)
 };
 
+export const explore_unknown_build_error = /** @type {(inputs: Explore_Unknown_Build_ErrorInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`An unknown error occurred while building the dashboard.`)
+};
+
 export const explore_unknown_dimension = /** @type {(inputs: Explore_Unknown_DimensionInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Unknown dimension`)
 };
 
 export const explore_unknown_measure = /** @type {(inputs: Explore_Unknown_MeasureInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Unknown measure`)
+};
+
+export const explore_user_no_access = /** @type {(inputs: Explore_User_No_AccessInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`This user can't access this dashboard`)
 };
 
 export const field_list_add_fields = /** @type {(inputs: Field_List_Add_FieldsInputs) => LocalizedString} */ (i) => {
@@ -5298,6 +5759,18 @@ export const github_did_not_grant_access = /** @type {(inputs: Github_Did_Not_Gr
 	return /** @type {LocalizedString} */ (`It looks like you did not grant access to the desired repository at`)
 };
 
+export const github_error_push_failed = /** @type {(inputs: Github_Error_Push_FailedInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Unable to complete push. Please check your repo and subpath settings and try again.`)
+};
+
+export const github_error_repo_exists = /** @type {(inputs: Github_Error_Repo_ExistsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`This repo already exists. Please choose a new repo name.`)
+};
+
+export const github_error_subpath_exists = /** @type {(inputs: Github_Error_Subpath_ExistsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`The subpath you specified already exists in this repo. Please use a different subpath or remove the existing folder before pushing.`)
+};
+
 export const github_existing_repository = /** @type {(inputs: Github_Existing_RepositoryInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Existing repository`)
 };
@@ -5466,12 +5939,24 @@ export const home_dashboards_heading = /** @type {(inputs: Home_Dashboards_Headi
 	return /** @type {LocalizedString} */ (`Dashboards`)
 };
 
+export const home_greeting = /** @type {(inputs: Home_GreetingInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Hi ${i?.name}!`)
+};
+
 export const home_subtitle_no_chat = /** @type {(inputs: Home_Subtitle_No_ChatInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Explore your dashboards below`)
 };
 
 export const home_subtitle_with_chat = /** @type {(inputs: Home_Subtitle_With_ChatInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Ask questions about your data, or explore your dashboards below`)
+};
+
+export const home_welcome_getting_started = /** @type {(inputs: Home_Welcome_Getting_StartedInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`It looks like you're just starting out! Check out our ${i?.link}.`)
+};
+
+export const home_welcome_quickstart_link = /** @type {(inputs: Home_Welcome_Quickstart_LinkInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Quickstart to create your first project`)
 };
 
 export const home_welcome_to = /** @type {(inputs: Home_Welcome_ToInputs) => LocalizedString} */ (i) => {
@@ -5670,12 +6155,20 @@ export const nav_close_sidebar = /** @type {(inputs: Nav_Close_SidebarInputs) =>
 	return /** @type {LocalizedString} */ (`Close sidebar`)
 };
 
+export const nav_dashboards = /** @type {(inputs: Nav_DashboardsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Dashboards`)
+};
+
 export const nav_data_explorer = /** @type {(inputs: Nav_Data_ExplorerInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Data Explorer`)
 };
 
 export const nav_show_sidebar = /** @type {(inputs: Nav_Show_SidebarInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Show sidebar`)
+};
+
+export const nav_status = /** @type {(inputs: Nav_StatusInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Status`)
 };
 
 export const nav_tab_ai = /** @type {(inputs: Nav_Tab_AiInputs) => LocalizedString} */ () => {
@@ -5716,6 +6209,22 @@ export const org_check_out_projects = /** @type {(inputs: Org_Check_Out_Projects
 
 export const org_new_project = /** @type {(inputs: Org_New_ProjectInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`+ New project`)
+};
+
+export const org_role_admin_description = /** @type {(inputs: Org_Role_Admin_DescriptionInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Full access to org settings, members, and all projects`)
+};
+
+export const org_role_editor_description = /** @type {(inputs: Org_Role_Editor_DescriptionInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Can create/manage projects and non-admin members`)
+};
+
+export const org_role_guest_description = /** @type {(inputs: Org_Role_Guest_DescriptionInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Access to invited projects only`)
+};
+
+export const org_role_viewer_description = /** @type {(inputs: Org_Role_Viewer_DescriptionInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Read-only access to all org projects`)
 };
 
 export const org_search_add_remove_users = /** @type {(inputs: Org_Search_Add_Remove_UsersInputs) => LocalizedString} */ () => {
@@ -5802,12 +6311,28 @@ export const project_contact_admin_to_redeploy = /** @type {(inputs: Project_Con
 	return /** @type {LocalizedString} */ (`Contact the project's administrator to redeploy the project.`)
 };
 
+export const project_create_first = /** @type {(inputs: Project_Create_FirstInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Create your first project`)
+};
+
+export const project_create_new = /** @type {(inputs: Project_Create_NewInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Create a new project`)
+};
+
+export const project_create_project = /** @type {(inputs: Project_Create_ProjectInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Create project`)
+};
+
 export const project_dashboards_title = /** @type {(inputs: Project_Dashboards_TitleInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Project dashboards`)
 };
 
 export const project_delete = /** @type {(inputs: Project_DeleteInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Delete`)
+};
+
+export const project_deploying = /** @type {(inputs: Project_DeployingInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Deploying your project...`)
 };
 
 export const project_edit = /** @type {(inputs: Project_EditInputs) => LocalizedString} */ () => {
@@ -5826,8 +6351,36 @@ export const project_is_hibernating = /** @type {(inputs: Project_Is_Hibernating
 	return /** @type {LocalizedString} */ (`Your project is hibernating`)
 };
 
+export const project_name_first = /** @type {(inputs: Project_Name_FirstInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Name your first project`)
+};
+
+export const project_name_format_error = /** @type {(inputs: Project_Name_Format_ErrorInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Name must start with a letter or number and may only contain letters, numbers, hyphens, and underscores`)
+};
+
+export const project_name_max_length = /** @type {(inputs: Project_Name_Max_LengthInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Name must be at most 40 characters`)
+};
+
+export const project_name_min_length = /** @type {(inputs: Project_Name_Min_LengthInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Name must be at least 1 character`)
+};
+
+export const project_name_new = /** @type {(inputs: Project_Name_NewInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Name your project`)
+};
+
+export const project_name_required = /** @type {(inputs: Project_Name_RequiredInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Name is required`)
+};
+
 export const project_rename = /** @type {(inputs: Project_RenameInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Rename`)
+};
+
+export const project_rename_anytime = /** @type {(inputs: Project_Rename_AnytimeInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`You can rename your project anytime.`)
 };
 
 export const project_resume_branch = /** @type {(inputs: Project_Resume_BranchInputs) => LocalizedString} */ () => {
@@ -5836,6 +6389,10 @@ export const project_resume_branch = /** @type {(inputs: Project_Resume_BranchIn
 
 export const project_role_admin = /** @type {(inputs: Project_Role_AdminInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Admin`)
+};
+
+export const project_role_guest_description = /** @type {(inputs: Project_Role_Guest_DescriptionInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Access to invited projects only`)
 };
 
 export const project_role_viewer = /** @type {(inputs: Project_Role_ViewerInputs) => LocalizedString} */ () => {
@@ -5854,8 +6411,44 @@ export const project_share = /** @type {(inputs: Project_ShareInputs) => Localiz
 	return /** @type {LocalizedString} */ (`Share`)
 };
 
+export const project_share_failed_to_invite = /** @type {(inputs: Project_Share_Failed_To_InviteInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Failed to invite.`)
+};
+
 export const project_share_heading = /** @type {(inputs: Project_Share_HeadingInputs) => LocalizedString} */ (i) => {
 	return /** @type {LocalizedString} */ (`Share project: ${i?.project}`)
+};
+
+export const project_share_invalid_email = /** @type {(inputs: Project_Share_Invalid_EmailInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Invalid email address`)
+};
+
+export const project_share_invalid_email_or_group = /** @type {(inputs: Project_Share_Invalid_Email_Or_GroupInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Invalid email or group name`)
+};
+
+export const project_share_role_admin = /** @type {(inputs: Project_Share_Role_AdminInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Admin`)
+};
+
+export const project_share_role_admin_description = /** @type {(inputs: Project_Share_Role_Admin_DescriptionInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Can manage project settings and members`)
+};
+
+export const project_share_role_editor = /** @type {(inputs: Project_Share_Role_EditorInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Editor`)
+};
+
+export const project_share_role_editor_description = /** @type {(inputs: Project_Share_Role_Editor_DescriptionInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Can edit project resources`)
+};
+
+export const project_share_role_viewer = /** @type {(inputs: Project_Share_Role_ViewerInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Viewer`)
+};
+
+export const project_share_role_viewer_description = /** @type {(inputs: Project_Share_Role_Viewer_DescriptionInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Can view dashboards`)
 };
 
 export const project_share_tooltip = /** @type {(inputs: Project_Share_TooltipInputs) => LocalizedString} */ () => {
@@ -5864,6 +6457,10 @@ export const project_share_tooltip = /** @type {(inputs: Project_Share_TooltipIn
 
 export const project_starting = /** @type {(inputs: Project_StartingInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Starting...`)
+};
+
+export const project_starting_branch_deployment = /** @type {(inputs: Project_Starting_Branch_DeploymentInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Starting branch deployment...`)
 };
 
 export const project_this_is_hibernating = /** @type {(inputs: Project_This_Is_HibernatingInputs) => LocalizedString} */ () => {
@@ -5888,6 +6485,10 @@ export const public_url_cancel_button = /** @type {(inputs: Public_Url_Cancel_Bu
 
 export const public_url_copied_button = /** @type {(inputs: Public_Url_Copied_ButtonInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Copied URL`)
+};
+
+export const public_url_copied_to_clipboard = /** @type {(inputs: Public_Url_Copied_To_ClipboardInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Public URL copied to clipboard`)
 };
 
 export const public_url_copy_button = /** @type {(inputs: Public_Url_Copy_ButtonInputs) => LocalizedString} */ () => {
@@ -5924,6 +6525,10 @@ export const public_url_delete_title = /** @type {(inputs: Public_Url_Delete_Tit
 
 export const public_url_deleted_notification = /** @type {(inputs: Public_Url_Deleted_NotificationInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Public URL deleted`)
+};
+
+export const public_url_edit_expiration = /** @type {(inputs: Public_Url_Edit_ExpirationInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Edit expiration date`)
 };
 
 export const public_url_error_loading = /** @type {(inputs: Public_Url_Error_LoadingInputs) => LocalizedString} */ () => {
@@ -6004,6 +6609,10 @@ export const public_url_table_label_header = /** @type {(inputs: Public_Url_Tabl
 
 export const public_url_table_last_accessed_header = /** @type {(inputs: Public_Url_Table_Last_Accessed_HeaderInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Last accessed`)
+};
+
+export const public_url_title_required = /** @type {(inputs: Public_Url_Title_RequiredInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Title is required`)
 };
 
 export const public_url_untitled = /** @type {(inputs: Public_Url_UntitledInputs) => LocalizedString} */ () => {
@@ -6514,6 +7123,38 @@ export const role_viewer = /** @type {(inputs: Role_ViewerInputs) => LocalizedSt
 	return /** @type {LocalizedString} */ (`Viewer`)
 };
 
+export const route_error_dashboard_not_found = /** @type {(inputs: Route_Error_Dashboard_Not_FoundInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Unable to find a dashboard`)
+};
+
+export const route_error_fetching_billing_issues = /** @type {(inputs: Route_Error_Fetching_Billing_IssuesInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Error fetching billing issues`)
+};
+
+export const route_error_fetching_billing_subscription = /** @type {(inputs: Route_Error_Fetching_Billing_SubscriptionInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Failed to fetch billing subscription`)
+};
+
+export const route_error_fetching_organization = /** @type {(inputs: Route_Error_Fetching_OrganizationInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Error fetching organization`)
+};
+
+export const route_error_fetching_project = /** @type {(inputs: Route_Error_Fetching_ProjectInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Error fetching project`)
+};
+
+export const route_error_no_org_permission = /** @type {(inputs: Route_Error_No_Org_PermissionInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`You do not have permission to access this organization`)
+};
+
+export const route_error_token_not_found = /** @type {(inputs: Route_Error_Token_Not_FoundInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Unable to find token`)
+};
+
+export const route_error_token_resource_not_found = /** @type {(inputs: Route_Error_Token_Resource_Not_FoundInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Unable to find the token's resource`)
+};
+
 export const settings_allow_domain_description = /** @type {(inputs: Settings_Allow_Domain_DescriptionInputs) => LocalizedString} */ (i) => {
 	return /** @type {LocalizedString} */ (`Allow existing and new Rill users with a ${i?.domain} email address to join this org as a ${i?.role}.`)
 };
@@ -6842,6 +7483,10 @@ export const status_action_view_partitions = /** @type {(inputs: Status_Action_V
 	return /** @type {LocalizedString} */ (`View Partitions`)
 };
 
+export const status_all_types = /** @type {(inputs: Status_All_TypesInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`All Types`)
+};
+
 export const status_cancel = /** @type {(inputs: Status_CancelInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Cancel`)
 };
@@ -6898,12 +7543,28 @@ export const status_compute_units = /** @type {(inputs: Status_Compute_UnitsInpu
 	return /** @type {LocalizedString} */ (`Compute units`)
 };
 
+export const status_connection_failed = /** @type {(inputs: Status_Connection_FailedInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Connection failed: ${i?.error}`)
+};
+
+export const status_copied_error_message = /** @type {(inputs: Status_Copied_Error_MessageInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Copied error message to clipboard`)
+};
+
+export const status_copied_test_error = /** @type {(inputs: Status_Copied_Test_ErrorInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Copied test error to clipboard`)
+};
+
 export const status_data_accessible = /** @type {(inputs: Status_Data_AccessibleInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Data accessible`)
 };
 
 export const status_data_size = /** @type {(inputs: Status_Data_SizeInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Data size`)
+};
+
+export const status_database_size = /** @type {(inputs: Status_Database_SizeInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Database Size`)
 };
 
 export const status_deploy_deleted = /** @type {(inputs: Status_Deploy_DeletedInputs) => LocalizedString} */ () => {
@@ -6958,6 +7619,14 @@ export const status_error_loading_tables = /** @type {(inputs: Status_Error_Load
 	return /** @type {LocalizedString} */ (`Error loading tables`)
 };
 
+export const status_error_plural = /** @type {(inputs: Status_Error_PluralInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`errors`)
+};
+
+export const status_error_singular = /** @type {(inputs: Status_Error_SingularInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`error`)
+};
+
 export const status_errors = /** @type {(inputs: Status_ErrorsInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Errors`)
 };
@@ -6978,8 +7647,16 @@ export const status_filter_warn = /** @type {(inputs: Status_Filter_WarnInputs) 
 	return /** @type {LocalizedString} */ (`Warn`)
 };
 
+export const status_full_refresh = /** @type {(inputs: Status_Full_RefreshInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Full Refresh`)
+};
+
 export const status_full_refresh_warning = /** @type {(inputs: Status_Full_Refresh_WarningInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`⚠️ Warning: A full refresh will re-ingest ALL data from scratch. This operation can take a significant amount of time and will update all dependent resources. Only proceed if you're certain this is necessary.`)
+};
+
+export const status_incremental_refresh = /** @type {(inputs: Status_Incremental_RefreshInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Incremental Refresh`)
 };
 
 export const status_incremental_refresh_description = /** @type {(inputs: Status_Incremental_Refresh_DescriptionInputs) => LocalizedString} */ () => {
@@ -7030,6 +7707,10 @@ export const status_learn_more = /** @type {(inputs: Status_Learn_MoreInputs) =>
 	return /** @type {LocalizedString} */ (`Learn more ->`)
 };
 
+export const status_levels_selected = /** @type {(inputs: Status_Levels_SelectedInputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.first}, +${i?.count} other(s)`)
+};
+
 export const status_load_more_tables = /** @type {(inputs: Status_Load_More_TablesInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Load more tables`)
 };
@@ -7048,6 +7729,10 @@ export const status_loading_resources = /** @type {(inputs: Status_Loading_Resou
 
 export const status_loading_tables = /** @type {(inputs: Status_Loading_TablesInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Loading tables...`)
+};
+
+export const status_loading_tables_short = /** @type {(inputs: Status_Loading_Tables_ShortInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Loading tables`)
 };
 
 export const status_logs_all_levels = /** @type {(inputs: Status_Logs_All_LevelsInputs) => LocalizedString} */ () => {
@@ -7102,8 +7787,16 @@ export const status_logs_waiting = /** @type {(inputs: Status_Logs_WaitingInputs
 	return /** @type {LocalizedString} */ (`Waiting for logs...`)
 };
 
+export const status_model_name = /** @type {(inputs: Status_Model_NameInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Model Name`)
+};
+
 export const status_model_partitions = /** @type {(inputs: Status_Model_PartitionsInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Model Partitions`)
+};
+
+export const status_model_reconciling = /** @type {(inputs: Status_Model_ReconcilingInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Model is currently being reconciled`)
 };
 
 export const status_models_created_in_developer = /** @type {(inputs: Status_Models_Created_In_DeveloperInputs) => LocalizedString} */ () => {
@@ -7182,6 +7875,10 @@ export const status_note = /** @type {(inputs: Status_NoteInputs) => LocalizedSt
 	return /** @type {LocalizedString} */ (`Note:`)
 };
 
+export const status_one_level = /** @type {(inputs: Status_One_LevelInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`1 level`)
+};
+
 export const status_owned_by_other = /** @type {(inputs: Status_Owned_By_OtherInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Owned by another user`)
 };
@@ -7250,12 +7947,24 @@ export const status_rill_managed = /** @type {(inputs: Status_Rill_ManagedInputs
 	return /** @type {LocalizedString} */ (`Rill Managed`)
 };
 
+export const status_table = /** @type {(inputs: Status_TableInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Table`)
+};
+
+export const status_table_name = /** @type {(inputs: Status_Table_NameInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Table Name`)
+};
+
 export const status_table_plural = /** @type {(inputs: Status_Table_PluralInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Tables`)
 };
 
 export const status_table_singular = /** @type {(inputs: Status_Table_SingularInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Table`)
+};
+
+export const status_tables = /** @type {(inputs: Status_TablesInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Tables`)
 };
 
 export const status_unable_to_check_errors = /** @type {(inputs: Status_Unable_To_Check_ErrorsInputs) => LocalizedString} */ () => {
@@ -7274,8 +7983,16 @@ export const status_view_singular = /** @type {(inputs: Status_View_SingularInpu
 	return /** @type {LocalizedString} */ (`View`)
 };
 
+export const status_views = /** @type {(inputs: Status_ViewsInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Views`)
+};
+
 export const status_yes_refresh = /** @type {(inputs: Status_Yes_RefreshInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Yes, refresh`)
+};
+
+export const theme_beta = /** @type {(inputs: Theme_BetaInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Beta`)
 };
 
 export const theme_dark = /** @type {(inputs: Theme_DarkInputs) => LocalizedString} */ () => {
@@ -7778,6 +8495,10 @@ export const users_guests_invited_success = /** @type {(inputs: Users_Guests_Inv
 	return /** @type {LocalizedString} */ (`Invited ${i?.count} guests as ${i?.role}`)
 };
 
+export const users_invalid_email = /** @type {(inputs: Users_Invalid_EmailInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Invalid email`)
+};
+
 export const users_invite = /** @type {(inputs: Users_InviteInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Invite`)
 };
@@ -7956,4 +8677,8 @@ export const users_yes_remove = /** @type {(inputs: Users_Yes_RemoveInputs) => L
 
 export const users_yes_upgrade = /** @type {(inputs: Users_Yes_UpgradeInputs) => LocalizedString} */ () => {
 	return /** @type {LocalizedString} */ (`Yes, upgrade`)
+};
+
+export const workspace_generating_sample_data = /** @type {(inputs: Workspace_Generating_Sample_DataInputs) => LocalizedString} */ () => {
+	return /** @type {LocalizedString} */ (`Generating your sample data...`)
 };

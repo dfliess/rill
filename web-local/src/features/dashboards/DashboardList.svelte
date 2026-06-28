@@ -1,4 +1,5 @@
 <script lang="ts">
+  import * as m from "@rilldata/web-common/paraglide/messages.js";
   import DashboardsTable from "@rilldata/web-common/features/dashboards/listing/DashboardsTable.svelte";
   import ResourceListEmptyState from "@rilldata/web-common/features/resources/ResourceListEmptyState.svelte";
   import ExploreIcon from "@rilldata/web-common/components/icons/ExploreIcon.svelte";
@@ -34,7 +35,7 @@
 >
   <svelte:fragment slot="empty">
     {#if $previewModeStore}
-      <ResourceListEmptyState icon={ExploreIcon} message="No dashboards found">
+      <ResourceListEmptyState icon={ExploreIcon} message={m.dashboard_no_dashboards_found()}>
         <span slot="action">
           Create dashboards using your code editor, then return here to preview
           them.
@@ -43,7 +44,7 @@
     {:else}
       <ResourceListEmptyState
         icon={ExploreIcon}
-        message="You don't have any dashboards yet"
+        message={m.dashboard_empty_state()}
       >
         <span slot="action">
           <a href="/deploy" class="text-primary-600 hover:text-primary-700">

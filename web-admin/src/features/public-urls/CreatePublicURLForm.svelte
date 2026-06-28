@@ -68,7 +68,7 @@
 
   const validationSchema = object({
     expiresAt: string().nullable(),
-    title: string().required("Title is required"),
+    title: string().required(m.public_url_title_required()),
   });
 
   const issueMagicAuthToken = createAdminServiceIssueMagicAuthToken();
@@ -177,7 +177,7 @@
           </label>
           <Popover bind:open={popoverOpen}>
             <PopoverTrigger>
-              <IconButton ariaLabel="Edit expiration date">
+              <IconButton ariaLabel={m.public_url_edit_expiration()}>
                 <Pencil size="14px" class="text-primary-600" />
               </IconButton>
             </PopoverTrigger>

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import * as m from "@rilldata/web-common/paraglide/messages.js";
   import { Button } from "@rilldata/web-common/components/button";
   import * as Dialog from "@rilldata/web-common/components/dialog";
   import Select from "@rilldata/web-common/components/forms/Select.svelte";
@@ -60,8 +61,8 @@
   bind:value={selectedOrg}
   id="deploy-target-org"
   label=""
-  ariaLabel="Select organization"
-  placeholder="Select organization"
+  ariaLabel={m.deploy_select_org_placeholder()}
+  placeholder={m.deploy_select_org_placeholder()}
   options={orgOptions}
   onAddNew={() => (isNewOrgDialogOpen = true)}
   addNewLabel="+ Create organization"
@@ -99,7 +100,7 @@
         type="primary"
         submitForm
         form={CreateNewOrgFormId}
-        label="Create new org"
+        label={m.deploy_create_new_org_label()}
       >
         Continue
       </Button>

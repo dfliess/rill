@@ -8,7 +8,7 @@
     type V1OrganizationMemberUser,
   } from "@rilldata/web-admin/client";
   import {
-    getProjectRoleDescription,
+    getProjectRolesDescriptionMap,
     getProjectRolesOptions,
   } from "@rilldata/web-admin/features/projects/user-management/constants.ts";
   import { Button } from "@rilldata/web-common/components/button";
@@ -32,6 +32,7 @@
 
   $: userName = user?.userName ?? user?.userEmail ?? "";
   $: projectRolesOptions = getProjectRolesOptions();
+  $: projectRolesDescriptions = getProjectRolesDescriptionMap();
 
   async function handleUpgrade() {
     if (!user?.userEmail) return;
@@ -93,7 +94,7 @@
           full
         />
       </div>
-      <div>{getProjectRoleDescription(role)}</div>
+      <div>{projectRolesDescriptions[role]}</div>
     </Dialog.Description>
     <Dialog.Footer>
       <Button type="tertiary" onClick={() => (open = false)}>{m.users_cancel()}</Button>

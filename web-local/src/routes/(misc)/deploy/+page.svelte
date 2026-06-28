@@ -1,4 +1,5 @@
 <script lang="ts">
+  import * as m from "@rilldata/web-common/paraglide/messages.js";
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
   import CTAMessage from "@rilldata/web-common/components/calls-to-action/CTAMessage.svelte";
@@ -39,7 +40,7 @@
   function handleDeploy() {
     // Should not happen if the servers are up. If not, there should be a query error.
     if (!$user.data || !$metadata.data?.loginUrl) {
-      error = new Error("Failed to fetch login URL.");
+      error = new Error(m.deploy_failed_login_url());
       return;
     }
 

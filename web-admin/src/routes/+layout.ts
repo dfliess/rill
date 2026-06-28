@@ -21,6 +21,7 @@ import { redirectToLoginOrRequestAccess } from "@rilldata/web-admin/features/aut
 import { getFetchOrganizationQueryOptions } from "@rilldata/web-admin/features/organizations/selectors";
 import { fetchProjectDeploymentDetails } from "@rilldata/web-admin/features/projects/selectors";
 import { getOrgWithBearerToken } from "@rilldata/web-admin/features/public-urls/get-org-with-bearer-token";
+import * as m from "@rilldata/web-common/paraglide/messages.js";
 import { queryClient } from "@rilldata/web-common/lib/svelte-query/globalQueryClient.js";
 import { error, type Page } from "@sveltejs/kit";
 import { isAxiosError } from "axios";
@@ -80,7 +81,7 @@ export const load = async ({ params, url, route, depends }) => {
     organizationResp = await getOrganizationPromise;
   } catch (e) {
     if (!isAxiosError<RpcStatus>(e) || !e.response) {
-      throw error(500, "Error fetching organization");
+      throw error(500, m.route_error_fetching_organization());
     }
 
     const shouldRedirectToRequestAccess =
@@ -128,7 +129,7 @@ export const load = async ({ params, url, route, depends }) => {
     };
   } catch (e) {
     if (!isAxiosError<RpcStatus>(e) || !e.response) {
-      throw error(500, "Error fetching project");
+      throw error(500, m.route_error_fetching_project());
     }
 
     const shouldRedirectToRequestAccess =
