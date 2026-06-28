@@ -17,7 +17,7 @@
   export let planName: string;
 
   $: planDisplayName = getTranslatedPlanDisplayName(planName) ||
-    SELF_SERVE_PLANS_BY_NAME[planName]?.displayName ?? planName;
+    (SELF_SERVE_PLANS_BY_NAME[planName]?.displayName ?? planName);
 </script>
 
 <AlertDialog bind:open>
