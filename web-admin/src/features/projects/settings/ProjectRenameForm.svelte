@@ -145,7 +145,7 @@
     errors={$errors?.name}
     id="name"
     label="Name"
-    description={`Your project will be available at https://ui.rilldata.com/${organization}/${sanitizeSlug($form.name)}.`}
+    description={`Your project will be available at ${window.location.origin}/${organization}/${sanitizeSlug($form.name)}.`}
     textClass="text-sm"
     alwaysShowError
     additionalClass="max-w-[520px]"
