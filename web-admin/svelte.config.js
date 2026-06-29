@@ -55,21 +55,11 @@ const config = {
           // constructor, which CSP treats as eval. Until we move to a
           // standalone-compiled validator, 'unsafe-eval' is required.
           "unsafe-eval",
-          // ActiveCampaign: our app loads diffuser.js which chains to prism and trackcmp.
-          "https://diffuser-cdn.app-us1.com",
-          "https://prism.app-us1.com",
-          "https://trackcmp.net",
-          "https://widget.usepylon.com",
-          // Pusher JS SDK is likely bundled, but kept for Pylon's dynamic script injection.
-          "https://js.pusher.com",
           ...(dev ? ["http:"] : []),
-          // Hash of the inline script injected by the Pylon chat widget at runtime.
-          // If Pylon updates their widget, this hash may need to be refreshed.
-          "sha256-q7DzCTpmdcQlqCarsIE22KTL5subp7TPBUdWqrL6HJw=",
         ],
         // style-src keeps 'unsafe-inline': runtime style injection from
         // CodeMirror and other libraries cannot be hash-attributed.
-        "style-src": ["self", "unsafe-inline", "https://widget.usepylon.com"],
+        "style-src": ["self", "unsafe-inline"],
         "img-src": [...(dev ? ["http:"] : []), "https:", "data:", "blob:"],
         "frame-src": [
           "self",
@@ -86,18 +76,12 @@ const config = {
         "connect-src": [
           "self",
           rillWildcard,
-          "https://apichatwidget.usepylon.com",
           "https://docs.google.com",
           "https://storage.googleapis.com",
           "https://cdn.prod.website-files.com",
-          "wss://ws-us3.pusher.com",
           ...(dev ? ["http://localhost:*", "ws://localhost:*"] : []),
         ],
-        "font-src": [
-          "self",
-          "https://fonts.gstatic.com",
-          "https://widget.usepylon.com",
-        ],
+        "font-src": ["self", "https://fonts.gstatic.com"],
       },
     },
     adapter: adapter({
