@@ -107,12 +107,14 @@ func (s *Server) runtimeProxyForOrgAndProject(w http.ResponseWriter, r *http.Req
 	// Track usage of the deployment
 	s.admin.Used.Deployment(depl.ID)
 
-	// Determine runtime host.
-	// NOTE: In production, the runtime host serves both the HTTP and gRPC servers.
-	// But in development, the two are presently on different ports, and depl.RuntimeHost is that of the gRPC server.
-	// Until we get both servers on the same port in development, this hack rewrites the runtime host to the HTTP server.
+	// Determine runtime host for the proxied HTTP request.
+	// When RILL_ADMIN_RUNTIME_INTERNAL_URL is set, use it so the proxy
+	// reaches the runtime directly (bypassing any tunnel/public URL).
+	// Fallback: the original localhost rewrite for split-port dev setups.
 	runtimeHost := depl.RuntimeHost
-	if strings.HasPrefix(runtimeHost, "http://localhost:") {
+	if override := os.Getenv("RILL_ADMIN_RUNTIME_INTERNAL_URL"); override != "" {
+		runtimeHost = override
+	} else if strings.HasPrefix(runtimeHost, "http://localhost:") {
 		runtimeHost = os.Getenv("RILL_RUNTIME_AUTH_AUDIENCE_URL")
 		if runtimeHost == "" {
 			runtimeHost = "http://localhost:8081"

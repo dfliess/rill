@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -265,9 +266,18 @@ func (s *Service) StartDeploymentInner(ctx context.Context, depl *database.Deplo
 		return err
 	}
 
-	// Prepare connectors
+	// Prepare connectors.
+	// admin_url is the URL the runtime uses to call back to the admin.
+	// In Kubernetes this is the in-cluster service URL. With the static
+	// provisioner behind a tunnel, the public URL may not support raw
+	// gRPC. RILL_ADMIN_RUNTIME_FACING_URL overrides admin_url for
+	// server-to-server calls while leaving the public ExternalURL intact.
+	adminURL := s.opts.ExternalURL
+	if override := os.Getenv("RILL_ADMIN_RUNTIME_FACING_URL"); override != "" {
+		adminURL = override
+	}
 	adminConfig, err := structpb.NewStruct(map[string]any{
-		"admin_url":    s.opts.ExternalURL,
+		"admin_url":    adminURL,
 		"access_token": dat.Token().String(),
 		"project_id":   depl.ProjectID,
 	})
@@ -621,7 +631,17 @@ func (s *Service) OpenRuntimeClient(depl *database.Deployment) (*client.Client, 
 		return nil, err
 	}
 
-	rt, err := client.New(depl.RuntimeHost, jwt)
+	// When the deployment's RuntimeHost is a public URL (e.g. exposed via a
+	// tunnel for browser access), admin-to-runtime raw gRPC must still use an
+	// internal address to avoid going through the tunnel (which may reject
+	// raw gRPC). RILL_ADMIN_RUNTIME_INTERNAL_URL overrides the host for
+	// server-to-server calls only.
+	host := depl.RuntimeHost
+	if override := os.Getenv("RILL_ADMIN_RUNTIME_INTERNAL_URL"); override != "" {
+		host = override
+	}
+
+	rt, err := client.New(host, jwt)
 	if err != nil {
 		return nil, err
 	}
