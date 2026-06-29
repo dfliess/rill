@@ -22,8 +22,7 @@ export type SelfServePlan = {
 };
 
 type PlanQuota = {
-  name: string;
-  template: string;
+  translate: (value: string) => string;
   formatter?: (value: string) => string;
 };
 type PlanHighlightQuotaKey = keyof V1Quotas | keyof V1OrganizationQuotas;
@@ -33,25 +32,20 @@ type PlanHighlightQuotas = Partial<
 
 const PlansQuotas: Record<string, PlanQuota> = {
   apiCallsPerSeat: {
-    name: "API calls",
-    template: "{value} API calls / seat / month",
+    translate: (value) => m.billing_quota_api_calls({ value }),
     formatter: (value) => formatCompactInteger(Number(value)),
   },
   projects: {
-    name: "Projects",
-    template: "Up to {value} projects",
+    translate: (value) => m.billing_quota_projects({ value }),
   },
   seats: {
-    name: "Seats",
-    template: "Up to {value} seats",
+    translate: (value) => m.billing_quota_seats({ value }),
   },
   slotsTotal: {
-    name: "Compute units",
-    template: "Up to {value} compute units",
+    translate: (value) => m.billing_quota_compute_units({ value }),
   },
   storageLimitBytesPerDeployment: {
-    name: "Managed database size",
-    template: "Managed database up to {value}",
+    translate: (value) => m.billing_quota_managed_db({ value }),
     formatter: (value) => formatMemorySize(Number(value)),
   },
 };
@@ -69,7 +63,7 @@ export const SELF_SERVE_PLANS: SelfServePlan[] = [
     highlights: [
       "quota:seats",
       "quota:projects",
-      "1M AI tokens / seat / month",
+      "highlight:1m_ai_tokens",
       "quota:apiCallsPerSeat",
       "quota:storageLimitBytesPerDeployment",
       "quota:slotsTotal",
@@ -86,40 +80,20 @@ export const SELF_SERVE_PLANS: SelfServePlan[] = [
     highlights: [
       "quota:seats",
       "quota:projects",
-      "Embedded analytics",
-      "Bring your own AI model",
-      "2M AI tokens / seat / month",
+      "highlight:embedded_analytics",
+      "highlight:bring_own_ai",
+      "highlight:2m_ai_tokens",
       "quota:storageLimitBytesPerDeployment",
       "quota:slotsTotal",
     ],
   },
 ];
 
-const QuotaPrefix = "quota:";
-const QuotaLength = QuotaPrefix.length;
-
-function translateQuotaTemplate(quotaKey: string, value: string): string {
-  switch (quotaKey) {
-    case "apiCallsPerSeat":
-      return m.billing_quota_api_calls({ value });
-    case "projects":
-      return m.billing_quota_projects({ value });
-    case "seats":
-      return m.billing_quota_seats({ value });
-    case "slotsTotal":
-      return m.billing_quota_compute_units({ value });
-    case "storageLimitBytesPerDeployment":
-      return m.billing_quota_managed_db({ value });
-    default:
-      return "";
-  }
-}
-
-const LiteralHighlightTranslations: Record<string, () => string> = {
-  "1M AI tokens / seat / month": () => m.billing_highlight_1m_ai_tokens(),
-  "Embedded analytics": () => m.billing_highlight_embedded_analytics(),
-  "Bring your own AI model": () => m.billing_highlight_bring_own_ai(),
-  "2M AI tokens / seat / month": () => m.billing_highlight_2m_ai_tokens(),
+const HighlightTranslations: Record<string, () => string> = {
+  "1m_ai_tokens": () => m.billing_highlight_1m_ai_tokens(),
+  "2m_ai_tokens": () => m.billing_highlight_2m_ai_tokens(),
+  embedded_analytics: () => m.billing_highlight_embedded_analytics(),
+  bring_own_ai: () => m.billing_highlight_bring_own_ai(),
 };
 
 export function resolvePlanHighlights(
@@ -128,19 +102,23 @@ export function resolvePlanHighlights(
 ) {
   return plan.highlights
     .map((h) => {
-      if (!h.startsWith(QuotaPrefix)) {
-        return LiteralHighlightTranslations[h]?.() ?? h;
+      if (h.startsWith("highlight:")) {
+        const key = h.slice("highlight:".length);
+        return HighlightTranslations[key]?.() ?? "";
       }
-      const quotaKey = h.slice(QuotaLength);
-      const planQuota = PlansQuotas[quotaKey];
-      if (!planQuota) return "";
-      const quota = quotas[quotaKey as PlanHighlightQuotaKey];
-      if (quota == null) return "";
-      const quotaValue = String(quota);
-      const value = planQuota.formatter
-        ? planQuota.formatter(quotaValue)
-        : quotaValue;
-      return translateQuotaTemplate(quotaKey, value);
+      if (h.startsWith("quota:")) {
+        const quotaKey = h.slice("quota:".length);
+        const planQuota = PlansQuotas[quotaKey];
+        if (!planQuota) return "";
+        const quota = quotas[quotaKey as PlanHighlightQuotaKey];
+        if (quota == null) return "";
+        const quotaValue = String(quota);
+        const value = planQuota.formatter
+          ? planQuota.formatter(quotaValue)
+          : quotaValue;
+        return planQuota.translate(value);
+      }
+      return "";
     })
     .filter(Boolean);
 }
