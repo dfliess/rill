@@ -1,17 +1,14 @@
 <script lang="ts">
-  import Rill from "@rilldata/web-common/components/icons/Rill.svelte";
-
   export let href: string = "/";
   export let logoUrl: string | undefined = undefined;
+
+  const kairosLogo =
+    "https://kairosagentica.com/img/logo/kairos-lockup-horizontal-mono-azul.svg";
 </script>
 
 <a
   {href}
-  class="grid place-content-center rounded {logoUrl ? 'pl-2 pr-2' : 'p-2'}"
+  class="grid place-content-center rounded pl-2 pr-2"
 >
-  {#if logoUrl}
-    <img src={logoUrl} alt="logo" class="h-7" />
-  {:else}
-    <Rill />
-  {/if}
+  <img src={logoUrl || kairosLogo} alt="logo" class="h-7" />
 </a>
