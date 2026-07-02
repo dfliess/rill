@@ -100,7 +100,7 @@
     width="500px"
     {size}
     onInput={() => (orgNameChangedDirectly = true)}
-    textInputPrefix="https://ui.rilldata.com/"
+    textInputPrefix="{window.location.origin}/"
   >
     <!-- TODO: once we have the path to docs we can add this back -->
     <!--    <div class="text-xs text-left" slot="description">-->
