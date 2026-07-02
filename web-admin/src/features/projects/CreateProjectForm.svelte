@@ -163,7 +163,7 @@
     alwaysShowError
     width="500px"
     size="xl"
-    textInputPrefix="https://ui.rilldata.com/{organization}/"
+    textInputPrefix="{window.location.origin}/{organization}/"
   />
   <div class="w-full flex justify-end">
     <Button

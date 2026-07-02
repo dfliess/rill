@@ -151,6 +151,7 @@
     description={m.settings_project_url_description({
       org: organization,
       slug: sanitizeSlug($form.name),
+      origin: window.location.origin,
     })}
     textClass="text-sm"
     alwaysShowError
