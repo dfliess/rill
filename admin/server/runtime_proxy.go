@@ -216,10 +216,15 @@ func (s *Server) issueEphemeralRuntimeToken(ctx context.Context, proj *database.
 }
 
 // runtimeHTTPHost returns the host to send HTTP requests to for a deployment.
+// When RILL_ADMIN_RUNTIME_INTERNAL_URL is set, it takes precedence so the admin reaches the runtime directly,
+// bypassing any tunnel or public URL that cannot serve server-to-server traffic.
 // NOTE: In production, the runtime host serves both the HTTP and gRPC servers.
 // But in development, the two are presently on different ports, and depl.RuntimeHost is that of the gRPC server.
 // Until we get both servers on the same port in development, this hack rewrites the runtime host to the HTTP server.
 func runtimeHTTPHost(runtimeHost string) string {
+	if override := os.Getenv("RILL_ADMIN_RUNTIME_INTERNAL_URL"); override != "" {
+		return override
+	}
 	if !strings.HasPrefix(runtimeHost, "http://localhost:") {
 		return runtimeHost
 	}
