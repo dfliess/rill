@@ -55,21 +55,11 @@ const config = {
           // constructor, which CSP treats as eval. Until we move to a
           // standalone-compiled validator, 'unsafe-eval' is required.
           "unsafe-eval",
-          // ActiveCampaign: our app loads diffuser.js which chains to prism and trackcmp.
-          "https://diffuser-cdn.app-us1.com",
-          "https://prism.app-us1.com",
-          "https://trackcmp.net",
-          "https://widget.usepylon.com",
-          // Pusher JS SDK is likely bundled, but kept for Pylon's dynamic script injection.
-          "https://js.pusher.com",
           ...(dev ? ["http:"] : []),
-          // Hash of the inline script injected by the Pylon chat widget at runtime.
-          // If Pylon updates their widget, this hash may need to be refreshed.
-          "sha256-q7DzCTpmdcQlqCarsIE22KTL5subp7TPBUdWqrL6HJw=",
         ],
         // style-src keeps 'unsafe-inline': runtime style injection from
         // CodeMirror and other libraries cannot be hash-attributed.
-        "style-src": ["self", "unsafe-inline", "https://widget.usepylon.com"],
+        "style-src": ["self", "unsafe-inline", "https://fonts.googleapis.com"],
         "img-src": [...(dev ? ["http:"] : []), "https:", "data:", "blob:"],
         "frame-src": [
           "self",
@@ -86,13 +76,9 @@ const config = {
         "connect-src": [
           "self",
           rillWildcard,
-          // Pylon chat widget calls several subdomains (API, events, etc.),
-          // so use the wildcard recommended by Pylon's CSP docs.
-          "https://*.usepylon.com",
           "https://docs.google.com",
           "https://storage.googleapis.com",
           "https://cdn.prod.website-files.com",
-          "wss://*.pusher.com",
           // Mapbox GL JS (canvas map component) fetches styles, sprites,
           // glyphs and tiles from api.mapbox.com and reports telemetry to
           // events.mapbox.com. See https://docs.mapbox.com/mapbox-gl-js/guides/browsers-and-testing/
@@ -100,11 +86,7 @@ const config = {
           "https://events.mapbox.com",
           ...(dev ? ["http://localhost:*", "ws://localhost:*"] : []),
         ],
-        "font-src": [
-          "self",
-          "https://fonts.gstatic.com",
-          "https://widget.usepylon.com",
-        ],
+        "font-src": ["self", "https://fonts.gstatic.com"],
         // Mapbox GL JS (canvas map component) runs its tile parser in a Web
         // Worker created from a blob: URL. Without worker-src, browsers fall
         // back to script-src, which does not allow blob:. child-src is the
