@@ -20,7 +20,7 @@
   import BannerCenter from "@rilldata/web-common/components/banner/BannerCenter.svelte";
   import NotificationCenter from "@rilldata/web-common/components/notifications/NotificationCenter.svelte";
   import { featureFlags } from "@rilldata/web-common/features/feature-flags";
-  import { initPylonWidget } from "@rilldata/web-common/features/help/initPylonWidget";
+  // initPylonWidget removed — Rill's support chat is irrelevant for Kairos
   import { isEmbedPage } from "@rilldata/web-common/layout/navigation/navigation-utils.ts";
   import { eventBus } from "@rilldata/web-common/lib/event-bus/event-bus.ts";
   import { queryClient } from "@rilldata/web-common/lib/svelte-query/globalQueryClient";
@@ -90,7 +90,7 @@
         errorEventHandler?.addJavascriptErrorListeners();
     })
     .catch(console.error);
-  initPylonWidget();
+  // initPylonWidget removed
 
   onMount(() => {
     const removeNetworkRecoveryListeners =
@@ -141,7 +141,7 @@
 </script>
 
 <svelte:head>
-  <meta content="Rill Cloud" name="description" />
+  <meta content="Kairos Cloud" name="description" />
   {#if organizationFaviconUrl}
     <link rel="icon" href={organizationFaviconUrl} />
   {:else}
