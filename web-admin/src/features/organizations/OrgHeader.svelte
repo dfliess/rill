@@ -25,7 +25,7 @@
   $: onOrgPage = isOrganizationPage($page);
 
   $: loggedIn = !!$user.data?.user;
-  $: rillLogoHref = !loggedIn ? "https://www.rilldata.com" : "/";
+  $: rillLogoHref = "/";
 
   $: orgPathsQuery = useBreadcrumbOrgPaths(
     loggedIn,
