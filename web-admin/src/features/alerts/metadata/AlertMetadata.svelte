@@ -83,6 +83,7 @@
 
   $: emailNotifier = extractNotifier(alertSpec?.notifiers, "email");
   $: slackNotifier = extractNotifier(alertSpec?.notifiers, "slack");
+  $: webhookNotifier = extractNotifier(alertSpec?.notifiers, "webhook");
 
   $: exploreUrl = getMappedExploreUrl(
     {
@@ -235,6 +236,14 @@
       <MetadataList
         data={[...slackNotifier.channels, ...slackNotifier.users]}
         label={m.alert_slack_notifications()}
+      />
+    {/if}
+
+    <!-- Webhook notifications -->
+    {#if webhookNotifier}
+      <MetadataList
+        data={webhookNotifier.urls}
+        label={m.alert_webhook_notifications()}
       />
     {/if}
 
