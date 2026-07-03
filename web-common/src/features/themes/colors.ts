@@ -308,18 +308,21 @@ const stone = {
   950: chroma.oklch(0.147, 0.004, 49.25),
 };
 
+// Kairos Control steel-blue scale: generated with generatePalette("#2c53b0")
+// (color-generation.ts), with 500 pinned to #2c53b0 (accent-primary) and
+// 600 pinned to #24459a (accent-secondary) for exact brand fidelity.
 export const primary = {
-  50: chroma.oklch(0.96, 0.0206, 274.04),
-  100: chroma.oklch(0.92, 0.0375, 274.1),
-  200: chroma.oklch(0.86, 0.0707, 275.12),
-  300: chroma.oklch(0.76, 0.1218, 275.41),
-  400: chroma.oklch(0.65, 0.188451, 276.7938),
-  500: chroma.oklch(0.56, 0.2439, 275.39),
-  600: chroma.oklch(0.5, 0.2657, 275.04),
-  700: chroma.oklch(0.42, 0.2319, 274.45),
-  800: chroma.oklch(0.39, 0.2033, 275.31),
-  900: chroma.oklch(0.35, 0.1574, 277.12),
-  950: chroma.oklch(0.25, 0.1016, 280.81),
+  50: chroma.oklch(0.9684, 0.0092, 264.1943),
+  100: chroma.oklch(0.8926, 0.0313, 264.1598),
+  200: chroma.oklch(0.8037, 0.0573, 264.1533),
+  300: chroma.oklch(0.709, 0.0849, 264.1507),
+  400: chroma.oklch(0.6104, 0.1137, 264.1494),
+  500: chroma.oklch(0.4688, 0.1551, 264.1483),
+  600: chroma.oklch(0.4184, 0.1445, 264.7789),
+  700: chroma.oklch(0.3849, 0.1273, 264.1483),
+  800: chroma.oklch(0.3316, 0.1097, 264.1483),
+  900: chroma.oklch(0.2776, 0.0918, 264.1483),
+  950: chroma.oklch(0.2228, 0.0737, 264.1483),
 };
 
 export const secondary = {
