@@ -1,4 +1,6 @@
 @import "./colors.css";
+/* Kairos Control typography; @import must precede all other rules or browsers ignore it */
+@import url("https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700&family=Source+Sans+3:wght@400;500;600&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -510,6 +512,65 @@
   h4 {
     @apply font-bold;
   }
+
+  /* Kairos Control design tokens: platinum surfaces, neutral inks, square
+     geometry, hairlines. Light-mode values only; in dark mode :root.dark
+     wins by specificity, keeping Rill's dark surfaces while the Kairos
+     steel-blue accent flows in through the primary palette
+     (features/themes/colors.ts). */
+  :root {
+    --accent-secondary: var(--color-primary-600);
+    --accent-secondary-action: var(--color-primary-600);
+
+    --surface-base: #f4f4f1;
+    --surface-background: #f4f4f1;
+    --surface-subtle: #eeeee9;
+    --surface-card: #fbfbf9;
+    --surface-overlay: #fbfbf9;
+
+    --fg-primary: #232528;
+    --fg-secondary: #3a3e42;
+    --fg-tertiary: #5b6065;
+
+    --icon-default: #3a3e42;
+    --icon-muted: #5b6065;
+
+    --border: #dcdcd6;
+
+    --destructive: #b63a32;
+    --destructive-foreground: #fce8e6;
+
+    --input: #fff;
+    --radius: 4px;
+  }
+
+  body {
+    font-family:
+      "Source Sans 3",
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      Roboto,
+      sans-serif;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: "Inter Tight", "Source Sans 3", sans-serif;
+    letter-spacing: -0.018em;
+  }
+
+  textarea,
+  input[type="text"],
+  input[type="search"],
+  input[type="email"],
+  input[type="password"],
+  input[type="url"],
+  input[type="number"] {
+    background-color: var(--input);
+  }
 }
 
 html {
@@ -561,57 +622,4 @@ a {
 
 .left-shift {
   @apply pl-8;
-}
-
-/* Kairos Control — typography */
-@import url("https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700&family=Source+Sans+3:wght@400;500;600&display=swap");
-
-/* Kairos Control design tokens — steel-blue interaction, platinum surface,
-   square geometry, hairlines. Layered after @layer base so overrides win. */
-:root {
-  --accent-primary: #2c53b0;
-  --accent-primary-action: #2c53b0;
-  --accent-secondary: #24459a;
-  --accent-secondary-action: #24459a;
-
-  --surface-base: #f4f4f1;
-  --surface-background: #f4f4f1;
-  --surface-subtle: #eeeee9;
-  --surface-card: #fbfbf9;
-  --surface-overlay: #fbfbf9;
-  --surface-hover: #e8ecf4;
-  --surface-active: #d6ddef;
-
-  --fg-primary: #232528;
-  --fg-secondary: #3a3e42;
-  --fg-tertiary: #5b6065;
-  --fg-accent: #1a2d5c;
-
-  --icon-accent: #2c53b0;
-  --icon-default: #3a3e42;
-  --icon-muted: #5b6065;
-
-  --border: #dcdcd6;
-  --ring-focus: #7a9be0;
-
-  --destructive: #b63a32;
-  --destructive-foreground: #fce8e6;
-
-  --input: #fff;
-  --radius: 4px;
-}
-
-body {
-  font-family: "Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI",
-    Roboto, sans-serif;
-}
-
-h1, h2, h3, h4 {
-  font-family: "Inter Tight", "Source Sans 3", sans-serif;
-  letter-spacing: -0.018em;
-}
-
-textarea, input[type="text"], input[type="search"], input[type="email"],
-input[type="password"], input[type="url"], input[type="number"] {
-  background-color: #fff;
 }
