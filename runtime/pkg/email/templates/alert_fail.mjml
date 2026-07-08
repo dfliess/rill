@@ -4,56 +4,68 @@
       <meta name="color-scheme" content="light" />
       <meta name="supported-color-schemes" content="light" />
     </mj-raw>
+    <mj-preview>Tu alerta se activó, revisa el detalle.</mj-preview>
+    <mj-font name="Source Sans 3" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600&display=swap" />
+    <mj-font name="Inter Tight" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600&display=swap" />
     <mj-attributes>
-      <mj-all font-family="Helvetica" font-size="16px" />
-      <mj-text color="#000" font-size="16px" line-height="1.25" />
+      <mj-all font-family="'Source Sans 3', Arial, Helvetica, sans-serif" />
+      <mj-text color="#3a3e42" font-size="16px" line-height="1.6" />
+      <mj-button background-color="#2c53b0" color="#ffffff" font-family="'Inter Tight', 'Source Sans 3', Arial, sans-serif" font-weight="600" font-size="15px" border-radius="4px" inner-padding="13px 24px" align="left" />
     </mj-attributes>
+    <mj-style>
+      .failrow { background-color: #f4f4f1; border-radius: 4px; border-left: 3px solid #2c53b0; }
+      a { color: #2c53b0; }
+    </mj-style>
   </mj-head>
-  <mj-body>
-    <mj-section>
-      <mj-column>
-        <mj-image container-background-color="#FFF" width="100px" src="https://cdn.rilldata.com/email-transactional/rill-logo-purple.png" />
-        
-        <mj-spacer height="35px" />
-        
-        <mj-text font-size="20px" font-weight="bold">
-          {{ .DisplayName }}
-        </mj-text>
+  <mj-body background-color="#f4f4f1" width="560px">
+    <mj-wrapper background-color="#fbfbf9" border="1px solid #dcdcd6" border-top="3px solid #2c53b0" border-radius="6px" padding="0">
 
-        <mj-text padding-bottom="0px">
-          Your alert triggered for <b>{{ .ExecutionTimeString }}</b>. The first row that matched your alert criteria is:
-        </mj-text>
+      <mj-section padding="24px 32px" border-bottom="1px solid #dcdcd6">
+        <mj-column>
+          <mj-image align="left" width="143px" padding="0" src="https://kairosagentica.com/img/logo/kairos-lockup-horizontal-mono-azul.png" alt="Kairos" />
+        </mj-column>
+      </mj-section>
 
-        <mj-text padding-bottom="0px">
-          {{ range $key, $value := .FailRow }}
-          • <b>{{ $key }}</b>: {{ $value }}<br />
-          {{ end }}
-        </mj-text>
+      <mj-section padding="32px">
+        <mj-column>
+          <mj-text font-family="'Inter Tight', 'Source Sans 3', Arial, sans-serif" font-size="12px" font-weight="600" letter-spacing="0.08em" color="#2c53b0" padding="0 0 6px 0">
+            ALERTA
+          </mj-text>
 
-        <mj-spacer height="20px" />
+          <mj-text font-family="'Inter Tight', 'Source Sans 3', Arial, sans-serif" font-size="20px" font-weight="600" color="#232528" letter-spacing="-0.018em" padding="0 0 12px 0">
+            {{ .DisplayName }}
+          </mj-text>
 
-        <mj-button background-color="#ECF0FF" color="#3524C7" font-weight="bold" href="{{ .OpenLink }}">
-          Open in browser
-        </mj-button>
-        
-        <mj-spacer height="20px" />
+          <mj-text padding="0 0 16px 0">
+            Tu alerta se activó el <b>{{ .ExecutionTimeString }}</b>. La primera fila que cumplió tus criterios es:
+          </mj-text>
 
-        <mj-divider border-color="#AAA" border-width="1px"></mj-divider>
+          <mj-text css-class="failrow" font-size="14px" line-height="1.7" color="#3a3e42" padding="14px 18px">
+            {{ range $key, $value := .FailRow }}
+            <b>{{ $key }}</b>: {{ $value }}<br />
+            {{ end }}
+          </mj-text>
 
-        <mj-spacer height="20px" />
-        
-        <mj-text align="center" font-size="12px">
-          {{ if .EditLink }} To edit this alert, <a href="{{ .EditLink }}">click here</a>. {{ end }} {{ if .UnsubscribeLink }} To unsubscribe from this alert, <a href="{{ .UnsubscribeLink }}">click here</a>. {{ end }}
-        </mj-text>
-        
-        <mj-text align="center" font-size="12px" line-height="1.5">
-          © {{ now.Year }} Rill Data, Inc.<br />
-          18 Bartol St. • San Francisco • CA<br />
-          <a href="https://www.rilldata.com/contact">Contact us</a> •
-          <a href="https://bit.ly/3unvA05">Community</a> •
-          <a href="https://www.rilldata.com/legal/privacy">Privacy Policy</a>
-        </mj-text>
-      </mj-column>
-    </mj-section>
+          <mj-spacer height="20px" />
+
+          <mj-button href="{{ .OpenLink }}">
+            Abrir en el navegador
+          </mj-button>
+
+          <mj-text font-size="13px" line-height="1.5" color="#5b6065" padding="24px 0 0 0">
+            {{ if .EditLink }}Para editar esta alerta, <a href="{{ .EditLink }}">haz clic aquí</a>. {{ end }}{{ if .UnsubscribeLink }}Para darte de baja de esta alerta, <a href="{{ .UnsubscribeLink }}">haz clic aquí</a>.{{ end }}
+          </mj-text>
+        </mj-column>
+      </mj-section>
+
+      <mj-section padding="20px 32px" border-top="1px solid #dcdcd6">
+        <mj-column>
+          <mj-text font-size="13px" line-height="1.5" color="#5b6065" padding="0">
+            Kairos &middot; Inteligencia para empresas
+          </mj-text>
+        </mj-column>
+      </mj-section>
+
+    </mj-wrapper>
   </mj-body>
 </mjml>
