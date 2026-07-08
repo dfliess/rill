@@ -158,7 +158,7 @@ type alertStatusData struct {
 func (c *Client) sendAlertStatus(opts *drivers.AlertStatus, data *alertStatusData) error {
 	subject := fmt.Sprintf("%s (%s)", data.DisplayName, data.ExecutionTimeString)
 	if data.IsRecover {
-		subject = fmt.Sprintf("Recovered: %s", subject)
+		subject = fmt.Sprintf("Recuperada: %s", subject)
 	}
 
 	buf := new(bytes.Buffer)
@@ -249,15 +249,15 @@ type OrganizationInvite struct {
 
 func (c *Client) SendOrganizationInvite(opts *OrganizationInvite) error {
 	if opts.InvitedByName == "" {
-		opts.InvitedByName = "Rill"
+		opts.InvitedByName = "Kairos"
 	}
 
 	return c.SendCallToAction(&CallToAction{
 		ToEmail:    opts.ToEmail,
 		ToName:     opts.ToName,
-		Subject:    fmt.Sprintf("%s invited you to join Rill", opts.InvitedByName),
-		PreButton:  template.HTML(fmt.Sprintf("%s has invited you to join <b>%s</b> as a %s for their Rill account. Get started interacting with fast, exploratory dashboards by clicking the button below to sign in and accept your invitation.", opts.InvitedByName, opts.OrgName, opts.RoleName)),
-		ButtonText: "Accept invitation",
+		Subject:    fmt.Sprintf("%s te invita a unirte a %s", opts.InvitedByName, opts.OrgName),
+		PreButton:  template.HTML(fmt.Sprintf("%s te ha invitado a unirte a <b>%s</b> como %s. Haz clic en el botón de abajo para iniciar sesión, aceptar tu invitación y empezar a explorar tus dashboards.", opts.InvitedByName, opts.OrgName, opts.RoleName)),
+		ButtonText: "Aceptar invitación",
 		ButtonLink: opts.AcceptURL,
 	})
 }
@@ -273,15 +273,15 @@ type OrganizationAddition struct {
 
 func (c *Client) SendOrganizationAddition(opts *OrganizationAddition) error {
 	if opts.InvitedByName == "" {
-		opts.InvitedByName = "Rill"
+		opts.InvitedByName = "Kairos"
 	}
 
 	return c.SendCallToAction(&CallToAction{
 		ToEmail:    opts.ToEmail,
 		ToName:     opts.ToName,
-		Subject:    fmt.Sprintf("%s has added you to %s", opts.InvitedByName, opts.OrgName),
-		PreButton:  template.HTML(fmt.Sprintf("%s has added you as a %s for <b>%s</b>. Click the button below to view and collaborate on Rill dashboard projects for %s.", opts.InvitedByName, opts.RoleName, opts.OrgName, opts.OrgName)),
-		ButtonText: "View account",
+		Subject:    fmt.Sprintf("%s te ha añadido a %s", opts.InvitedByName, opts.OrgName),
+		PreButton:  template.HTML(fmt.Sprintf("%s te ha añadido como %s en <b>%s</b>. Haz clic en el botón de abajo para ver y colaborar en los proyectos de %s.", opts.InvitedByName, opts.RoleName, opts.OrgName, opts.OrgName)),
+		ButtonText: "Ver cuenta",
 		ButtonLink: opts.OpenURL,
 	})
 }
@@ -298,15 +298,15 @@ type ProjectInvite struct {
 
 func (c *Client) SendProjectInvite(opts *ProjectInvite) error {
 	if opts.InvitedByName == "" {
-		opts.InvitedByName = "Rill"
+		opts.InvitedByName = "Kairos"
 	}
 
 	return c.SendCallToAction(&CallToAction{
 		ToEmail:    opts.ToEmail,
 		ToName:     opts.ToName,
-		Subject:    fmt.Sprintf("You have been invited to the %s/%s project", opts.OrgName, opts.ProjectName),
-		PreButton:  template.HTML(fmt.Sprintf("%s has invited you to collaborate as a %s for the <b>%s/%s</b> project. Click the button below to accept your invitation. ", opts.InvitedByName, opts.RoleName, opts.OrgName, opts.ProjectName)),
-		ButtonText: "Accept invitation",
+		Subject:    fmt.Sprintf("Te han invitado al proyecto %s/%s", opts.OrgName, opts.ProjectName),
+		PreButton:  template.HTML(fmt.Sprintf("%s te ha invitado a colaborar como %s en el proyecto <b>%s/%s</b>. Haz clic en el botón de abajo para aceptar tu invitación.", opts.InvitedByName, opts.RoleName, opts.OrgName, opts.ProjectName)),
+		ButtonText: "Aceptar invitación",
 		ButtonLink: opts.AcceptURL,
 	})
 }
@@ -323,15 +323,15 @@ type ProjectAddition struct {
 
 func (c *Client) SendProjectAddition(opts *ProjectAddition) error {
 	if opts.InvitedByName == "" {
-		opts.InvitedByName = "Rill"
+		opts.InvitedByName = "Kairos"
 	}
 
 	return c.SendCallToAction(&CallToAction{
 		ToEmail:    opts.ToEmail,
 		ToName:     opts.ToName,
-		Subject:    fmt.Sprintf("You have been added to the %s/%s project", opts.OrgName, opts.ProjectName),
-		PreButton:  template.HTML(fmt.Sprintf("%s has invited you to collaborate as a %s for the <b>%s</b> project. Click the button below to accept your invitation. ", opts.InvitedByName, opts.RoleName, opts.ProjectName)),
-		ButtonText: "View account",
+		Subject:    fmt.Sprintf("Te han añadido al proyecto %s/%s", opts.OrgName, opts.ProjectName),
+		PreButton:  template.HTML(fmt.Sprintf("%s te ha añadido para colaborar como %s en el proyecto <b>%s</b>. Haz clic en el botón de abajo para acceder.", opts.InvitedByName, opts.RoleName, opts.ProjectName)),
+		ButtonText: "Ver cuenta",
 		ButtonLink: opts.OpenURL,
 	})
 }
@@ -353,16 +353,19 @@ func (c *Client) SendProjectAccessRequest(opts *ProjectAccessRequest) error {
 	var accessPrefix string
 	switch opts.Role {
 	case database.ProjectRoleNameAdmin:
-		accessPrefix = "to be an admin of"
+		accessPrefix = "ser admin de"
 	case database.ProjectRoleNameEditor:
-		accessPrefix = "to edit"
+		accessPrefix = "editar"
 	case database.ProjectRoleNameViewer:
-		accessPrefix = "to view"
+		accessPrefix = "ver"
 	}
 
-	subject := fmt.Sprintf("%s would like %s %s/%s", opts.Email, accessPrefix, opts.OrgName, opts.ProjectName)
+	subject := fmt.Sprintf("%s quiere %s %s/%s", opts.Email, accessPrefix, opts.OrgName, opts.ProjectName)
+	if opts.Title == "" {
+		opts.Title = "Solicitud de acceso"
+	}
 	if opts.Body == "" {
-		opts.Body = template.HTML(fmt.Sprintf("<b>%s</b> would like %s <b>%s/%s</b>", opts.Email, accessPrefix, opts.OrgName, opts.ProjectName))
+		opts.Body = template.HTML(fmt.Sprintf("<b>%s</b> quiere %s <b>%s/%s</b>.", opts.Email, accessPrefix, opts.OrgName, opts.ProjectName))
 	}
 
 	buf := new(bytes.Buffer)
@@ -386,9 +389,9 @@ func (c *Client) SendProjectAccessGranted(opts *ProjectAccessGranted) error {
 	return c.SendCallToAction(&CallToAction{
 		ToEmail:    opts.ToEmail,
 		ToName:     opts.ToName,
-		Subject:    fmt.Sprintf("Your request to %s/%s has been approved", opts.OrgName, opts.ProjectName),
-		PreButton:  template.HTML(fmt.Sprintf("Your request to <b>%s/%s</b> has been approved", opts.OrgName, opts.ProjectName)),
-		ButtonText: "View project in Rill",
+		Subject:    fmt.Sprintf("Tu solicitud de acceso a %s/%s fue aprobada", opts.OrgName, opts.ProjectName),
+		PreButton:  template.HTML(fmt.Sprintf("Tu solicitud de acceso a <b>%s/%s</b> fue aprobada.", opts.OrgName, opts.ProjectName)),
+		ButtonText: "Ver proyecto en Kairos",
 		ButtonLink: opts.OpenURL,
 	})
 }
@@ -404,8 +407,8 @@ func (c *Client) SendProjectAccessRejected(opts *ProjectAccessRejected) error {
 	return c.SendInformational(&Informational{
 		ToEmail: opts.ToEmail,
 		ToName:  opts.ToName,
-		Subject: fmt.Sprintf("Your request to %s/%s has been denied", opts.OrgName, opts.ProjectName),
-		Body:    template.HTML(fmt.Sprintf("Your request to <b>%s/%s</b> has been denied. Contact your project admin for help.", opts.OrgName, opts.ProjectName)),
+		Subject: fmt.Sprintf("Tu solicitud de acceso a %s/%s fue rechazada", opts.OrgName, opts.ProjectName),
+		Body:    template.HTML(fmt.Sprintf("Tu solicitud de acceso a <b>%s/%s</b> fue rechazada. Contacta al administrador del proyecto si necesitas ayuda.", opts.OrgName, opts.ProjectName)),
 	})
 }
 

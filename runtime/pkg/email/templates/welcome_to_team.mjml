@@ -4,59 +4,51 @@
       <meta name="color-scheme" content="light" />
       <meta name="supported-color-schemes" content="light" />
     </mj-raw>
+    <mj-preview>Novedades de tu cuenta de Kairos.</mj-preview>
+    <mj-font name="Source Sans 3" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600&display=swap" />
+    <mj-font name="Inter Tight" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600&display=swap" />
     <mj-attributes>
-      <mj-all font-family="Helvetica" font-size="14px" />
+      <mj-all font-family="'Source Sans 3', Arial, Helvetica, sans-serif" />
       <mj-all align="left" />
-      <mj-text color="#4b5563" font-size="14px" line-height="1.25" />
-      <mj-section padding="0 0 32px 0" />
-      <mj-column padding-bottom="0px" />
+      <mj-text color="#3a3e42" font-size="16px" line-height="1.6" />
     </mj-attributes>
+    <mj-style>
+      a { color: #2c53b0; }
+    </mj-style>
   </mj-head>
-  <mj-body>
-    <mj-section padding-top="24px">
-      <mj-column>
-        <mj-image container-background-color="#FFF" width="48px" src="https://cdn.rilldata.com/email-transactional/rill-logo-purple-square.png" />
-      </mj-column>
-    </mj-section>
-    <mj-section>
-      <mj-column>
-        <mj-text>
-          {{ .WelcomeText }}
-        </mj-text>
-      </mj-column>
-    </mj-section>
+  <mj-body background-color="#f4f4f1" width="560px">
+    <mj-wrapper background-color="#fbfbf9" border="1px solid #dcdcd6" border-top="3px solid #2c53b0" border-radius="6px" padding="0">
 
-    <mj-section>
-      <mj-column>
-        <mj-button background-color="#FFF" color="#4736F5" padding="0px" href="https://docs.rilldata.com" font-weight="600" padding-bottom="0">Documentation and tutorials →</mj-button>
-        <mj-text padding-top="0" padding-bottom="32px">
-          Check out the quickstart, example projects, then dive deep into advanced features.
-        </mj-text>
+      <mj-section padding="24px 32px" border-bottom="1px solid #dcdcd6">
+        <mj-column>
+          <mj-image align="left" width="143px" padding="0" src="https://kairosagentica.com/img/logo/kairos-lockup-horizontal-mono-azul.png" alt="Kairos" />
+        </mj-column>
+      </mj-section>
 
-        <mj-button background-color="#FFF" color="#4736F5" padding="0px" href="https://docs.rilldata.com/notes" font-weight="600" padding-bottom="0">Release notes → </mj-button>
-        <mj-text padding-top="0" padding-bottom="32px">
-          We are constantly shipping new features. Follow our release notes to stay up to date.
-        </mj-text>
-        <mj-text>We are here to help you and your team. If you have any questions, feel free to contact us via <a href="mailto:support@rilldata.com" style="color:#4736F5">email</a>, or via chat on <a href="https://docs.rilldata.com/contact#in-app-chat" style="color:#4736F5">Rill Developer or Rill Cloud.</a></mj-text>
-        <mj-text>- The Rill Team</mj-text>
-      </mj-column>
-    </mj-section>
+      <mj-section padding="32px">
+        <mj-column>
+          <mj-text padding="0">
+            {{ .WelcomeText }}
+          </mj-text>
 
-    <mj-section>
-      <mj-column>
-        <mj-divider border-color="#AAA" border-width="1px"></mj-divider>
+          <mj-text padding="24px 0 0 0">
+            Estamos para ayudarte. Si tienes alguna pregunta, escríbenos por <a href="mailto:soporte@kairosagentica.com">email</a>.
+          </mj-text>
+          <mj-text padding="16px 0 0 0">
+            Un saludo,<br />
+            El equipo de Kairos
+          </mj-text>
+        </mj-column>
+      </mj-section>
 
-        <mj-spacer height="20px" />
+      <mj-section padding="20px 32px" border-top="1px solid #dcdcd6">
+        <mj-column>
+          <mj-text font-size="13px" line-height="1.5" color="#5b6065" padding="0">
+            Kairos &middot; Inteligencia para empresas
+          </mj-text>
+        </mj-column>
+      </mj-section>
 
-        <mj-text align="center" font-size="12px" line-height="1.5">
-          © {{ now.Year }} Rill Data, Inc.<br />
-          18 Bartol St. • San Francisco • CA<br />
-          <a href="https://www.rilldata.com/contact">Contact us</a> •
-          <a href="https://bit.ly/3unvA05">Community</a> •
-          <a href="https://www.rilldata.com/legal/privacy">Privacy Policy</a>
-        </mj-text>
-      </mj-column>
-    </mj-section>
-
+    </mj-wrapper>
   </mj-body>
 </mjml>
