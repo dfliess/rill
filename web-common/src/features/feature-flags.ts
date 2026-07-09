@@ -46,6 +46,14 @@ class FeatureFlags {
     "rill",
     !!import.meta.env.VITE_PLAYWRIGHT_TEST,
   );
+  // Kairos white-label: hides Rill-branded external affordances (docs links,
+  // Discord, support chat) on Tenant-visible surfaces. On by default in the
+  // Kairos fork; disable in dev with VITE_KAIROS_WHITE_LABEL=false. The
+  // upstream-configurable form (instance flag) is tracked in epic #88.
+  whiteLabel = new FeatureFlag(
+    "rill",
+    import.meta.env.VITE_KAIROS_WHITE_LABEL !== "false",
+  );
 
   // These are fallback defaults in case of issues in parsing rill.yaml.
   // Full defaults are in defaultFeatureFlags in runtime/drivers/registry.go

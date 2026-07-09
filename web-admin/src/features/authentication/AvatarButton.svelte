@@ -29,9 +29,11 @@
   import { m } from "@rilldata/web-common/lib/i18n/gen/messages";
   import ViewAsUserPopover from "../view-as-user/ViewAsUserPopover.svelte";
   import ThemeToggle from "@rilldata/web-common/features/themes/ThemeToggle.svelte";
+  import { featureFlags } from "@rilldata/web-common/features/feature-flags";
 
   export let projectPermissions: V1ProjectPermissions | undefined = undefined;
 
+  const { whiteLabel } = featureFlags;
   const user = createAdminServiceGetCurrentUser();
 
   let imgContainer: HTMLElement;
@@ -129,23 +131,25 @@
     <LanguageSwitcher />
     <DropdownMenu.Separator />
 
-    <DropdownMenu.Item
-      href="https://docs.rilldata.com"
-      target="_blank"
-      rel="noreferrer noopener"
-    >
-      {m.avatar_documentation()}
-    </DropdownMenu.Item>
-    <DropdownMenu.Item
-      href="https://discord.gg/2ubRfjC7Rh"
-      target="_blank"
-      rel="noreferrer noopener"
-    >
-      {m.avatar_join_discord()}
-    </DropdownMenu.Item>
-    <DropdownMenu.Item onclick={handlePylon}>
-      {m.avatar_contact_support()}
-    </DropdownMenu.Item>
+    {#if !$whiteLabel}
+      <DropdownMenu.Item
+        href="https://docs.rilldata.com"
+        target="_blank"
+        rel="noreferrer noopener"
+      >
+        {m.avatar_documentation()}
+      </DropdownMenu.Item>
+      <DropdownMenu.Item
+        href="https://discord.gg/2ubRfjC7Rh"
+        target="_blank"
+        rel="noreferrer noopener"
+      >
+        {m.avatar_join_discord()}
+      </DropdownMenu.Item>
+      <DropdownMenu.Item onclick={handlePylon}>
+        {m.avatar_contact_support()}
+      </DropdownMenu.Item>
+    {/if}
     <DropdownMenu.Item onclick={redirectToLogout}
       >{m.avatar_logout()}</DropdownMenu.Item
     >
