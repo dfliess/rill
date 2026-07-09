@@ -4,11 +4,14 @@
   import { m } from "@rilldata/web-common/lib/i18n/gen/messages";
   import EmptyMeasureIcon from "./EmptyMeasureIcon.svelte";
   import EmptyTableIcon from "./EmptyTableIcon.svelte";
+  import { featureFlags } from "@rilldata/web-common/features/feature-flags";
 
   export let isFetching = false;
   export let assembled = false;
   export let hasColumnAndNoMeasure = false;
   export let isEmbedded = false;
+
+  const { whiteLabel } = featureFlags;
 </script>
 
 <div class="flex flex-col items-center w-full h-full justify-center gap-y-6">
@@ -17,7 +20,7 @@
     <div class="font-semibold text-fg-primary mt-1 text-lg">
       {m.dashboard_pivot_building_table()}
     </div>
-    {#if !isEmbedded}
+    {#if !isEmbedded && !$whiteLabel}
       <div class="text-fg-secondary">
         {m.dashboard_pivot_need_help_discord()}
         <a target="_blank" rel="noopener" href="https://discord.gg/2ubRfjC7Rh">
@@ -36,7 +39,7 @@
         {m.dashboard_pivot_add_measure()}
       </div>
     </div>
-    {#if !isEmbedded}
+    {#if !isEmbedded && !$whiteLabel}
       <div class="text-fg-secondary">
         {m.dashboard_pivot_learn_more()}
         <a
@@ -62,7 +65,7 @@
         {m.dashboard_pivot_give_data()}
       </div>
     </div>
-    {#if !isEmbedded}
+    {#if !isEmbedded && !$whiteLabel}
       <div class="text-fg-secondary">
         {m.dashboard_pivot_learn_more()}
         <a
