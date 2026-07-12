@@ -56,7 +56,7 @@
 {#if $isErrorStoreEmpty && shouldRender}
   <div class="flex items-center w-full">
     {#if navigationEnabled}
-      <nav class="flex-1">
+      <nav class="flex-1 min-w-0">
         <ol class="flex items-center pl-4">
           {#if !onProjectPage}
             <div class="flex gap-x-2">
