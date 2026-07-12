@@ -59,7 +59,11 @@
       </button>
     {/snippet}
   </DropdownMenu.Trigger>
-  <DropdownMenu.Content align="start" {side} class="p-0 overflow-hidden">
+  <DropdownMenu.Content
+    align="start"
+    {side}
+    class="p-0 overflow-hidden max-w-[calc(100vw-2rem)]"
+  >
     <div class="flex">
       <div class="flex flex-col w-48 p-1">
         <TimeRangeMenu

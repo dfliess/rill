@@ -311,7 +311,7 @@
 
     <div
       class="flex w-56 max-h-fit"
-      class:!w-[456px]={showCalendarPicker}
+      class:!w-[min(456px,calc(100vw-2rem))]={showCalendarPicker}
       style:height="470px"
     >
       <div
