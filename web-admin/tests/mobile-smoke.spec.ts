@@ -9,10 +9,16 @@ import { MOBILE_READY_ROUTES } from "../src/lib/mobile-viewport";
  * the smoke test knows how to reach it; the coverage guard below fails
  * otherwise.
  *
- * Populate alongside MOBILE_READY_ROUTES, e.g.:
- *   "/[organization]/[project]/-/ai": "/e2e/openrtb/-/ai",
+ * Populate alongside MOBILE_READY_ROUTES.
  */
-const TEST_ROUTES: Record<string, string> = {};
+const TEST_ROUTES: Record<string, string> = {
+  "/[organization]/[project]": "/e2e/openrtb",
+  "/[organization]/[project]/-/ai": "/e2e/openrtb/-/ai",
+  "/[organization]/[project]/explore/[dashboard]":
+    "/e2e/openrtb/explore/auction_explore",
+  "/[organization]/[project]/canvas/[dashboard]":
+    "/e2e/openrtb/canvas/bids_canvas",
+};
 
 /**
  * Asserts that the page produces no horizontal overflow at the current
