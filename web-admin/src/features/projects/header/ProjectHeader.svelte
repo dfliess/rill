@@ -235,7 +235,7 @@
     </Breadcrumbs>
   {/if}
 
-  <div class="flex gap-x-2 items-center ml-auto">
+  <div class="flex gap-x-2 items-center ml-auto shrink-0">
     {#if editContext}
       {#if editSessionDeploymentId && editSessionJwt}
         <EditSessionViewAs
