@@ -1,6 +1,10 @@
 <script lang="ts">
   import CellInspector from "@rilldata/web-common/components/CellInspector.svelte";
+  import CtaContentContainer from "@rilldata/web-common/components/calls-to-action/CTAContentContainer.svelte";
+  import CtaHeader from "@rilldata/web-common/components/calls-to-action/CTAHeader.svelte";
+  import CtaMessage from "@rilldata/web-common/components/calls-to-action/CTAMessage.svelte";
   import ErrorPage from "@rilldata/web-common/components/ErrorPage.svelte";
+  import { m } from "@rilldata/web-common/lib/i18n/gen/messages";
   import {
     extractErrorStatusCode,
     isNotFoundError,
@@ -187,7 +191,17 @@
         body="The security policy for this dashboard may make contents invisible to you. If you deploy this dashboard, {$selectedMockUserStore?.email} will see a 404."
       />
     {:else if $showPivot}
-      <PivotDisplay {isEmbedded} />
+      <!-- The pivot's table and config sidebar don't fit phones; below sm a
+           notice takes its place and the tab bar above leads back to Explore. -->
+      <div class="hidden sm:contents">
+        <PivotDisplay {isEmbedded} />
+      </div>
+      <div class="flex sm:hidden flex-1 items-center justify-center p-8">
+        <CtaContentContainer>
+          <CtaHeader>{m.pivot_desktop_only_title()}</CtaHeader>
+          <CtaMessage>{m.pivot_desktop_only_message()}</CtaMessage>
+        </CtaContentContainer>
+      </div>
     {:else}
       <div
         class="flex flex-col gap-x-1 overflow-hidden slide pb-0 {showTimeDimensionDetail
