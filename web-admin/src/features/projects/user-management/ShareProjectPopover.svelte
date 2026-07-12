@@ -47,7 +47,11 @@
       </Tooltip>
     {/snippet}
   </PopoverTrigger>
-  <PopoverContent align="end" class="w-[520px]" padding="0">
+  <PopoverContent
+    align="end"
+    class="w-[min(520px,calc(100vw-2rem))]"
+    padding="0"
+  >
     <ShareProjectForm
       {organization}
       {project}
