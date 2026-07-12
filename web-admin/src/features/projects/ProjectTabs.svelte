@@ -104,6 +104,9 @@
   div {
     @apply border-b pt-1;
     @apply gap-y-[3px] flex flex-col;
+    /* On narrow viewports the tab row scrolls horizontally; the selection
+       indicator scrolls with it since both share this container. */
+    @apply overflow-x-auto;
   }
 
   nav {
