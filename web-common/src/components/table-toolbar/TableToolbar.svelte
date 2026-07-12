@@ -28,7 +28,9 @@
 </script>
 
 <section class="flex flex-col w-full gap-y-2">
-  <div class="flex flex-row items-center gap-x-2.5">
+  <div
+    class="flex flex-row flex-wrap items-center justify-between gap-x-4 gap-y-2 sm:h-9 sm:flex-nowrap"
+  >
     <div class="flex flex-row items-center gap-x-2.5 shrink-0">
       <TableToolbarFilterDropdown {filterGroups} />
 
