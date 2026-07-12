@@ -184,3 +184,17 @@
 
   <NotificationCenter />
 </Tooltip.Provider>
+
+<style lang="postcss">
+  /* On mobile browsers 100vh includes the area behind the retractable
+     browser chrome, which pushes bottom-anchored UI (like the chat input)
+     behind it. Prefer the dynamic viewport; the Tailwind classes remain
+     as the 100vh fallback where dvh is unsupported. */
+  main.h-screen {
+    height: 100dvh;
+  }
+
+  main.min-h-screen {
+    min-height: 100dvh;
+  }
+</style>
