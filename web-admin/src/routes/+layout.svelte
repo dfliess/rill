@@ -34,15 +34,10 @@
   import { themeControl } from "@rilldata/web-common/features/themes/theme-control";
   import { getThemedLogoUrl } from "@rilldata/web-admin/features/themes/organization-logo";
   import type { V1Organization } from "@rilldata/web-admin/client";
-  import { applyViewportForRoute } from "../lib/mobile-viewport";
 
   export let data;
 
   initializeI18n();
-
-  // Switch the meta viewport between the desktop fallback and the device
-  // viewport as the user navigates between non-migrated and mobile-ready routes.
-  $: applyViewportForRoute($page.route.id);
 
   $: ({
     organizationPermissions,
