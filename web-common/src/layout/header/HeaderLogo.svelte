@@ -8,7 +8,7 @@
 
 <a
   {href}
-  class="grid place-content-center rounded pl-2 pr-2"
+  class="grid place-content-center rounded pl-2 pr-2 shrink-0"
 >
   <img src={logoUrl || kairosLogo} alt="logo" class="h-7" />
 </a>
