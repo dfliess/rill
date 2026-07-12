@@ -58,7 +58,11 @@
           class:shadow-lg={isSelected}
           class:border-ring-focus={isSelected}
         >
-          <img src={themeOption.image} alt="{themeOption.value} image" />
+          <img
+            src={themeOption.image}
+            alt="{themeOption.value} image"
+            class="w-20 sm:w-auto"
+          />
         </div>
         <div class="text-sm font-semibold text-fg-primary">
           {themeOption.label}
