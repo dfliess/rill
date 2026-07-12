@@ -42,14 +42,14 @@ const config: PlaywrightTestConfig = {
       },
     },
     {
-      // Responsive smoke checks run at a phone viewport against the same seeded
-      // stack. Limited to mobile-smoke so the desktop suites aren't re-run here.
+      // Responsive smoke checks run on an emulated phone against the same
+      // seeded stack. Limited to mobile-smoke so the desktop suites aren't
+      // re-run here.
       name: "mobile",
       dependencies: process.env.E2E_NO_SETUP_OR_TEARDOWN ? [] : ["setup"],
       testMatch: "mobile-smoke.spec.ts",
       use: {
-        ...devices["Desktop Chrome"],
-        viewport: { width: 375, height: 812 },
+        ...devices["iPhone 13"],
         storageState: ADMIN_STORAGE_STATE,
       },
     },

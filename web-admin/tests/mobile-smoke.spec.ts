@@ -1,15 +1,29 @@
 import { expect, type Page } from "@playwright/test";
 import { test } from "./setup/base";
-import { MOBILE_READY_ROUTES } from "../src/lib/mobile-viewport";
+
+/**
+ * Mobile smoke manifest.
+ *
+ * web-admin serves the real device viewport on every route (see `app.html`).
+ * The route ids listed here are the surfaces that were explicitly audited for
+ * narrow screens and are exercised below at a phone viewport. When a new
+ * surface is made responsive, add its route id here and a matching smoke URL
+ * to {@link TEST_ROUTES}; the coverage guard fails otherwise.
+ *
+ * `/[organization]/[project]/-/ai/[conversationId]` is intentionally not
+ * listed yet: its layout is covered by the `-/ai` surface, and the smoke test
+ * has no seeded conversation to visit.
+ */
+const MOBILE_READY_ROUTES: string[] = [
+  "/[organization]/[project]",
+  "/[organization]/[project]/-/ai",
+  "/[organization]/[project]/explore/[dashboard]",
+  "/[organization]/[project]/canvas/[dashboard]",
+];
 
 /**
  * Maps each mobile-ready SvelteKit route id to a concrete URL in the e2e
  * environment (org `e2e`, projects `openrtb` / `adbids` seeded by `setup`).
- * Every entry in {@link MOBILE_READY_ROUTES} must have a matching entry here so
- * the smoke test knows how to reach it; the coverage guard below fails
- * otherwise.
- *
- * Populate alongside MOBILE_READY_ROUTES.
  */
 const TEST_ROUTES: Record<string, string> = {
   "/[organization]/[project]": "/e2e/openrtb",
