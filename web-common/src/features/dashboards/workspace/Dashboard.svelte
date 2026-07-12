@@ -158,7 +158,7 @@
   >
     <div
       id="header"
-      class="border-b w-fit min-w-full flex flex-col bg-surface-subtle slide"
+      class="border-b w-full sm:w-fit min-w-full flex flex-col bg-surface-subtle slide"
       class:left-shift={extraLeftPadding}
     >
       {#if mockUserHasNoAccess}
@@ -186,17 +186,18 @@
       <PivotDisplay {isEmbedded} />
     {:else}
       <div
-        class="flex gap-x-1 overflow-hidden slide pb-0"
-        class:gap-y-2={showTimeDimensionDetail}
-        class:flex-col={showTimeDimensionDetail}
-        class:flex-row={!showTimeDimensionDetail}
+        class="flex flex-col gap-x-1 overflow-hidden slide pb-0 {showTimeDimensionDetail
+          ? 'gap-y-2'
+          : 'sm:flex-row'}"
         class:left-shift={extraLeftPadding}
         class:w-full={$dynamicHeight}
         class:size-full={!$dynamicHeight}
         bind:clientHeight={exploreContainerHeight}
       >
         <div
-          class="flex-none pl-4"
+          class="flex-none pl-4 max-w-full {showTimeDimensionDetail
+            ? ''
+            : 'h-[50vh] overflow-y-auto sm:h-auto sm:overflow-y-visible'}"
           class:pt-2={!showTimeDimensionDetail}
           style:width={showTimeDimensionDetail
             ? "auto"
@@ -239,7 +240,7 @@
             hideStartPivotButton={hidePivot}
           />
         {:else}
-          <div class="relative flex-none bg-border w-[1px]">
+          <div class="relative flex-none bg-border w-[1px] hidden sm:block">
             <Resizer
               dimension={$exploreTimeseriesWidth}
               min={MIN_TIMESERIES_WIDTH}
@@ -252,7 +253,7 @@
               }}
             />
           </div>
-          <div class="pt-2 pl-1 overflow-auto w-full">
+          <div class="pt-2 pl-1 overflow-auto w-full min-h-0">
             {#if showDimensionTable && selectedDimension}
               <DimensionDisplay
                 dimension={selectedDimension}
