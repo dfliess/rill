@@ -82,7 +82,7 @@
       </Tooltip>
     {/snippet}
   </PopoverTrigger>
-  <PopoverContent align="end" class="w-[402px] p-0">
+  <PopoverContent align="end" class="w-[min(402px,calc(100vw-2rem))] p-0">
     <Tabs>
       <TabsList>
         <TabsTrigger value="tab1">{m.avatar_copy_url()}</TabsTrigger>
