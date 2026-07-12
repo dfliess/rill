@@ -172,9 +172,13 @@
         <div class="mb-3"></div>
       {:else}
         {#key exploreName}
-          <section class="flex relative justify-between gap-x-4 py-4 pb-6 px-4">
+          <!-- On phones the tab bar leaves the corner overlay (it would sit on
+               top of wrapped filter chips) and flows below the filters. -->
+          <section
+            class="flex flex-col sm:flex-row relative justify-between gap-x-4 gap-y-2 py-4 pb-2 sm:pb-6 px-4"
+          >
             <Filters {timeRanges} {metricsViewName} {hasTimeSeries} />
-            <div class="absolute bottom-0 flex flex-col right-0">
+            <div class="self-end sm:absolute sm:bottom-0 sm:right-0 flex flex-col">
               <TabBar {hidePivot} {exploreName} onPivot={$showPivot} />
             </div>
           </section>
@@ -298,6 +302,8 @@
 
 <style lang="postcss">
   .left-shift {
-    @apply pl-8;
+    /* Clears the floating nav-toggle button; phones have no room to spare
+       for the indent and the toggle overlays content anyway. */
+    @apply sm:pl-8;
   }
 </style>
