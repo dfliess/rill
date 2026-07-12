@@ -214,7 +214,7 @@
     </Breadcrumbs>
   {/if}
 
-  <div class="flex gap-x-2 items-center ml-auto shrink-0">
+  <div class="flex flex-wrap justify-end gap-y-1 gap-x-2 items-center ml-auto max-w-full sm:shrink-0">
     {#if editContext}
       {#if $developerChat && !onEditDashboardPreview}
         <ChatToggle open={developerChatOpen} actions={developerChatActions} />

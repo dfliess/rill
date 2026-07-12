@@ -39,7 +39,7 @@
   <HeaderLogo href={rillLogoHref} logoUrl={organizationLogoUrl} />
   <Breadcrumbs {pathParts} {currentPath} />
 
-  <div class="flex gap-x-2 items-center ml-auto shrink-0">
+  <div class="flex flex-wrap justify-end gap-y-1 gap-x-2 items-center ml-auto max-w-full sm:shrink-0">
     {#if $user.isSuccess}
       {#if $user.data?.user}
         <AvatarButton />
