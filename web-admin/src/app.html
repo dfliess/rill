@@ -46,7 +46,13 @@
       crossorigin
     />
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- maximum-scale suppresses the iOS auto-zoom on sub-16px inputs; since
+         iOS 10 Safari ignores it for user-initiated pinch zoom, so it does
+         not restrict accessibility. -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1"
+    />
     <!-- og:image: use org logo upload (GCS bucket) when available -->
     %sveltekit.head%
   </head>
