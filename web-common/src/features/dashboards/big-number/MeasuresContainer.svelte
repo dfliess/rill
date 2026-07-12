@@ -44,7 +44,7 @@
   $: chartReady = !!$timeControlsStore.ready;
 </script>
 
-<div class="overflow-y-scroll">
+<div class="overflow-y-scroll max-w-full">
   <DashboardMetricsDraggableList
     type="measure"
     onSelectedChange={(items) => setMeasureVisibility(items, allMeasureNames)}
