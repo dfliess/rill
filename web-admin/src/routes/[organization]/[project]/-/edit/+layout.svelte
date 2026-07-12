@@ -17,6 +17,11 @@
   import { baseGetProjectQueryOptions } from "@rilldata/web-admin/features/projects/project-query-options";
   import SlimProjectHeader from "@rilldata/web-admin/features/projects/SlimProjectHeader.svelte";
   import { getThemedLogoUrl } from "@rilldata/web-admin/features/themes/organization-logo";
+  import CtaButton from "@rilldata/web-common/components/calls-to-action/CTAButton.svelte";
+  import CtaContentContainer from "@rilldata/web-common/components/calls-to-action/CTAContentContainer.svelte";
+  import CtaHeader from "@rilldata/web-common/components/calls-to-action/CTAHeader.svelte";
+  import CtaLayoutContainer from "@rilldata/web-common/components/calls-to-action/CTALayoutContainer.svelte";
+  import CtaMessage from "@rilldata/web-common/components/calls-to-action/CTAMessage.svelte";
   import ErrorPage from "@rilldata/web-common/components/ErrorPage.svelte";
   import FileAndResourceWatcher from "@rilldata/web-common/features/entity-management/FileAndResourceWatcher.svelte";
   import { themeControl } from "@rilldata/web-common/features/themes/theme-control";
@@ -31,6 +36,7 @@
   import { overlay } from "@rilldata/web-common/layout/overlay-store";
   import BlockingOverlayContainer from "@rilldata/web-common/layout/BlockingOverlayContainer.svelte";
   import { fileArtifacts } from "@rilldata/web-common/features/entity-management/file-artifacts.ts";
+  import { m } from "@rilldata/web-common/lib/i18n/gen/messages";
 
   $: organization = $page.params.organization;
   $: project = $page.params.project;
@@ -142,6 +148,10 @@
   });
 </script>
 
+<!-- The in-browser editor needs a real keyboard and a wide canvas, so below `md`
+     we show a "use desktop" notice instead. `contents` keeps this wrapper out
+     of the box tree at `md` and up, so it doesn't affect the editor's layout. -->
+<div class="hidden md:contents">
 <div class="edit-session">
   {#if isLoading}
     <EditSessionLoading status={deploymentStatus} href={`/${organization}`} />
@@ -223,6 +233,19 @@
       body="This editing session is no longer active. Use the Edit button to start a new one."
     />
   {/if}
+</div>
+</div>
+
+<div class="flex md:hidden">
+  <CtaLayoutContainer>
+    <CtaContentContainer>
+      <CtaHeader>{m.edit_desktop_only_title()}</CtaHeader>
+      <CtaMessage>{m.edit_desktop_only_message()}</CtaMessage>
+      <CtaButton variant="secondary" href={`/${organization}/${project}`}>
+        {m.edit_desktop_only_back_link()}
+      </CtaButton>
+    </CtaContentContainer>
+  </CtaLayoutContainer>
 </div>
 
 {#if $overlay !== null}
