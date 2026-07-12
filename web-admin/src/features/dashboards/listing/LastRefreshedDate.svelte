@@ -5,6 +5,7 @@
   import { useRuntimeClient } from "@rilldata/web-common/runtime-client/v2";
   import { timeAgo } from "@rilldata/web-common/lib/time/relative-time";
   import { m } from "@rilldata/web-common/lib/i18n/gen/messages";
+  import { Clock } from "lucide-svelte";
 
   export let dashboard: string;
 
@@ -28,8 +29,13 @@
 
 {#if data}
   <Tooltip distance={8}>
+    <!-- On phones the relative text costs a full header row, so it collapses
+         to the clock icon; the tooltip keeps the exact date either way. -->
     <div class="text-[11px] text-fg-secondary">
-      {m.dashboard_last_refreshed_ago({ time: timeAgo(data) })}
+      <Clock size="14px" class="sm:hidden" aria-label={m.dashboard_last_refreshed_ago({ time: timeAgo(data) })} />
+      <span class="hidden sm:inline">
+        {m.dashboard_last_refreshed_ago({ time: timeAgo(data) })}
+      </span>
     </div>
     <TooltipContent slot="tooltip-content">
       {data.toLocaleString()}
