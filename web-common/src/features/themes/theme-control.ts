@@ -21,7 +21,7 @@ class ThemeControl {
   private darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
   private preferenceStore = isEmbedEnvironment()
     ? sessionStorageStore<ThemeMode>(THEME_SESSION_STORAGE_KEY, "light")
-    : explicitLocalStorageStore<ThemeMode>(THEME_LOCAL_STORAGE_KEY, "light");
+    : explicitLocalStorageStore<ThemeMode>(THEME_LOCAL_STORAGE_KEY, "dark");
 
   public subscribe = this.current.subscribe;
   public preference = { subscribe: this.preferenceStore.subscribe };
