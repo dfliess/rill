@@ -18,7 +18,7 @@
   // Bookmarks belong to users, so anonymous viewers of public projects have none to manage.
   export let hasUser: boolean = false;
 
-  const { chat, reports, alerts } = featureFlags;
+  const { chat, reports, alerts, agents } = featureFlags;
 
   $: tabs = [
     {
@@ -55,6 +55,12 @@
       route: `/${organization}/${project}${branchPrefix}/-/alerts`,
       label: m.nav_tab_alerts(),
       hasPermission: $alerts,
+    },
+    {
+      // Kairos Act (pillar C).
+      route: `/${organization}/${project}${branchPrefix}/-/agents`,
+      label: m.nav_tab_agents(),
+      hasPermission: $agents,
     },
     {
       route: `/${organization}/${project}${branchPrefix}/-/status`,

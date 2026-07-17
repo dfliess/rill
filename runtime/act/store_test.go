@@ -1,0 +1,356 @@
+package act_test
+
+import (
+	"testing"
+	"time"
+
+	"github.com/google/uuid"
+	"github.com/rilldata/rill/runtime/act"
+	"github.com/stretchr/testify/require"
+)
+
+// newRunStore returns a migrated PostgresRunStore on a schema unique to this test, so tests never see each other's
+// rows and a rerun starts clean. It reuses the same Postgres as the DBOS spike (requirePostgres skips if it is down).
+func newRunStore(t *testing.T) *act.PostgresRunStore {
+	t.Helper()
+	dsn, _ := requirePostgres(t)
+	// A schema per test: sanitized UUID (bare identifier), dropped on cleanup so the dev database does not accrete.
+	schema := "act_test_" + uuid.New().String()[:8]
+	store, err := act.NewPostgresRunStore(t.Context(), act.StoreConfig{DatabaseURL: dsn, Schema: schema})
+	require.NoError(t, err)
+	require.NoError(t, store.Migrate(t.Context()))
+	t.Cleanup(func() { store.DropSchemaForTest(t.Context()); store.Close() })
+	return store
+}
+
+// TestRunStoreRoundTrip covers the create -> transition -> read cycle: a run is created queued, walked through
+// running to succeeded, and every read reflects the latest state with a matching, ordered event stream.
+func TestRunStoreRoundTrip(t *testing.T) {
+	store := newRunStore(t)
+	ctx := t.Context()
+
+	const instanceID = "inst-round-trip"
+	runID := act.ComposeRunID(instanceID, "triage", "key-1")
+
+	require.NoError(t, store.CreateRun(ctx, act.NewRun{
+		RunID:          runID,
+		InstanceID:     instanceID,
+		AgentName:      "triage",
+		Trigger:        "manual",
+		IdempotencyKey: "key-1",
+		Actor:          act.Actor{Subject: "user:alice"},
+	}))
+
+	// Immediately queryable after create: this is what lets StartAgentRun answer 202 with a real, readable run.
+	run, err := store.GetRun(ctx, instanceID, runID)
+	require.NoError(t, err)
+	require.Equal(t, act.RunStatusQueued, run.Status)
+	require.Equal(t, "triage", run.AgentName)
+	require.Equal(t, "manual", run.Trigger)
+	require.Empty(t, run.TriggerRef, "a manual run has no source resource to reference")
+	require.Equal(t, "user:alice", run.Actor.Subject)
+	require.Nil(t, run.StartedOn)
+	require.Nil(t, run.FinishedOn)
+
+	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{
+		InstanceID: instanceID, RunID: runID, Status: act.RunStatusRunning, EventType: act.EventTypeRunning,
+	}))
+	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{
+		InstanceID: instanceID, RunID: runID, Status: act.RunStatusSucceeded, EventType: act.EventTypeSucceeded,
+	}))
+
+	run, err = store.GetRun(ctx, instanceID, runID)
+	require.NoError(t, err)
+	require.Equal(t, act.RunStatusSucceeded, run.Status)
+	require.NotNil(t, run.StartedOn, "started_on latches on the first running transition")
+	require.NotNil(t, run.FinishedOn, "finished_on latches on the terminal transition")
+
+	// Events are monotonic per run and ordered by the global cursor id.
+	events, err := store.ListRunEvents(ctx, instanceID, runID, 0, 100)
+	require.NoError(t, err)
+	require.Len(t, events, 3)
+	require.Equal(t, []string{act.EventTypeQueued, act.EventTypeRunning, act.EventTypeSucceeded},
+		[]string{events[0].EventType, events[1].EventType, events[2].EventType})
+	require.Equal(t, []int64{1, 2, 3}, []int64{events[0].Seq, events[1].Seq, events[2].Seq})
+	require.Less(t, events[0].ID, events[1].ID)
+	require.Less(t, events[1].ID, events[2].ID)
+}
+
+// TestRunStoreTriggerRefRoundTrip verifies trigger_ref, the source resource an automatic trigger fired from,
+// survives the create -> read cycle through both GetRun and ListRuns.
+func TestRunStoreTriggerRefRoundTrip(t *testing.T) {
+	store := newRunStore(t)
+	ctx := t.Context()
+
+	const instanceID = "inst-trigger-ref"
+	runID := act.ComposeRunID(instanceID, "triage", "alert-1")
+
+	require.NoError(t, store.CreateRun(ctx, act.NewRun{
+		RunID:      runID,
+		InstanceID: instanceID,
+		AgentName:  "triage",
+		Trigger:    act.TriggerAlert,
+		TriggerRef: "revenue_drop_alert",
+	}))
+
+	run, err := store.GetRun(ctx, instanceID, runID)
+	require.NoError(t, err)
+	require.Equal(t, act.TriggerAlert, run.Trigger)
+	require.Equal(t, "revenue_drop_alert", run.TriggerRef)
+
+	runs, err := store.ListRuns(ctx, act.ListRunsFilter{InstanceID: instanceID})
+	require.NoError(t, err)
+	require.Len(t, runs, 1)
+	require.Equal(t, "revenue_drop_alert", runs[0].TriggerRef)
+}
+
+// TestRunStoreCreateRunIdempotent verifies a replayed create neither errors nor duplicates the run or its event.
+func TestRunStoreCreateRunIdempotent(t *testing.T) {
+	store := newRunStore(t)
+	ctx := t.Context()
+
+	const instanceID = "inst-idem"
+	runID := act.ComposeRunID(instanceID, "triage", "key-1")
+	newRun := act.NewRun{RunID: runID, InstanceID: instanceID, AgentName: "triage", IdempotencyKey: "key-1"}
+
+	require.NoError(t, store.CreateRun(ctx, newRun))
+	require.NoError(t, store.CreateRun(ctx, newRun)) // replay: no error, no duplicate
+
+	events, err := store.ListRunEvents(ctx, instanceID, runID, 0, 100)
+	require.NoError(t, err)
+	require.Len(t, events, 1, "the queued event is appended once despite two creates")
+}
+
+// TestRunStoreTransitionIdempotent verifies re-applying the same transition is a no-op: no duplicate event, no error.
+func TestRunStoreTransitionIdempotent(t *testing.T) {
+	store := newRunStore(t)
+	ctx := t.Context()
+
+	const instanceID = "inst-idem-tr"
+	runID := act.ComposeRunID(instanceID, "triage", "key-1")
+	require.NoError(t, store.CreateRun(ctx, act.NewRun{RunID: runID, InstanceID: instanceID, AgentName: "triage"}))
+
+	tr := act.RunTransition{InstanceID: instanceID, RunID: runID, Status: act.RunStatusRunning, EventType: act.EventTypeRunning}
+	require.NoError(t, store.RecordTransition(ctx, tr))
+	require.NoError(t, store.RecordTransition(ctx, tr)) // replay of the same edge
+
+	events, err := store.ListRunEvents(ctx, instanceID, runID, 0, 100)
+	require.NoError(t, err)
+	require.Len(t, events, 2, "queued + running, running not duplicated")
+}
+
+// TestRunStoreTransitionGuardsTerminal verifies a terminal run never transitions again: re-applying a stale earlier
+// edge does not regress its status, and a different terminal edge does not overwrite its recorded outcome. This is
+// what makes a replayed DBOS transition step safe once the run has finished.
+func TestRunStoreTransitionGuardsTerminal(t *testing.T) {
+	store := newRunStore(t)
+	ctx := t.Context()
+
+	const instanceID = "inst-terminal"
+	runID := act.ComposeRunID(instanceID, "triage", "k")
+	require.NoError(t, store.CreateRun(ctx, act.NewRun{RunID: runID, InstanceID: instanceID, AgentName: "triage"}))
+	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{InstanceID: instanceID, RunID: runID, Status: act.RunStatusRunning, EventType: act.EventTypeRunning}))
+	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{InstanceID: instanceID, RunID: runID, Status: act.RunStatusSucceeded, EventType: act.EventTypeSucceeded}))
+
+	// A replayed earlier edge after the run is terminal is a no-op: the status stays succeeded rather than regressing
+	// back to running.
+	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{InstanceID: instanceID, RunID: runID, Status: act.RunStatusRunning, EventType: act.EventTypeRunning}))
+	// A different terminal edge does not overwrite the recorded outcome or its (absent) error either.
+	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{InstanceID: instanceID, RunID: runID, Status: act.RunStatusFailed, EventType: act.EventTypeFailed, Error: "should be ignored"}))
+
+	run, err := store.GetRun(ctx, instanceID, runID)
+	require.NoError(t, err)
+	require.Equal(t, act.RunStatusSucceeded, run.Status)
+	require.Empty(t, run.Error)
+
+	// The guarded transitions appended no stray events.
+	events, err := store.ListRunEvents(ctx, instanceID, runID, 0, 100)
+	require.NoError(t, err)
+	require.Equal(t, []string{act.EventTypeQueued, act.EventTypeRunning, act.EventTypeSucceeded}, eventTypes(events))
+}
+
+// TestRunStoreResolveApprovalRejectsExpired verifies a human decision cannot claim an approval whose window has
+// already elapsed, while the expiry path that marks it expired stays exempt.
+func TestRunStoreResolveApprovalRejectsExpired(t *testing.T) {
+	store := newRunStore(t)
+	ctx := t.Context()
+
+	const instanceID = "inst-appr-exp"
+	runID := act.ComposeRunID(instanceID, "triage", "k")
+	require.NoError(t, store.CreateRun(ctx, act.NewRun{RunID: runID, InstanceID: instanceID, AgentName: "triage"}))
+
+	past := time.Now().Add(-time.Minute)
+	approvalID := act.ApprovalIDForRun(runID)
+	require.NoError(t, store.CreateApproval(ctx, act.NewApproval{
+		ApprovalID: approvalID, RunID: runID, InstanceID: instanceID,
+		ArgsHash: act.HashArgs("x"), Proposal: "x", RequestedBy: "user:alice", ExpiresOn: &past,
+	}))
+
+	// The approval is still pending, but its deadline passed: approving it is rejected.
+	_, err := store.ResolveApproval(ctx, instanceID, approvalID, act.ApprovalStatusApproved, "admin:bob")
+	require.ErrorIs(t, err, act.ErrApprovalNotResolvable)
+
+	// The expiry marking is exempt: it is exactly what resolves a lapsed approval.
+	resolved, err := store.ResolveApproval(ctx, instanceID, approvalID, act.ApprovalStatusExpired, "")
+	require.NoError(t, err)
+	require.Equal(t, act.ApprovalStatusExpired, resolved.Status)
+}
+
+// TestRunStoreCancelPendingApprovals verifies that cancelling a run withdraws its pending approval (so the inbox stops
+// offering a decision) while leaving an already-decided approval, and another run's approval, untouched.
+func TestRunStoreCancelPendingApprovals(t *testing.T) {
+	store := newRunStore(t)
+	ctx := t.Context()
+
+	const instanceID = "inst-appr-cancel"
+	pendingRun := act.ComposeRunID(instanceID, "triage", "pending")
+	decidedRun := act.ComposeRunID(instanceID, "triage", "decided")
+	require.NoError(t, store.CreateRun(ctx, act.NewRun{RunID: pendingRun, InstanceID: instanceID, AgentName: "triage"}))
+	require.NoError(t, store.CreateRun(ctx, act.NewRun{RunID: decidedRun, InstanceID: instanceID, AgentName: "triage"}))
+
+	pendingApproval := act.ApprovalIDForRun(pendingRun)
+	require.NoError(t, store.CreateApproval(ctx, act.NewApproval{
+		ApprovalID: pendingApproval, RunID: pendingRun, InstanceID: instanceID,
+		ArgsHash: act.HashArgs("x"), Proposal: "x", RequestedBy: "user:alice",
+	}))
+	// A second run whose approval was already approved: cancelling the first run must not touch it.
+	decidedApproval := act.ApprovalIDForRun(decidedRun)
+	require.NoError(t, store.CreateApproval(ctx, act.NewApproval{
+		ApprovalID: decidedApproval, RunID: decidedRun, InstanceID: instanceID,
+		ArgsHash: act.HashArgs("y"), Proposal: "y", RequestedBy: "user:alice",
+	}))
+	_, err := store.ResolveApproval(ctx, instanceID, decidedApproval, act.ApprovalStatusApproved, "admin:bob")
+	require.NoError(t, err)
+
+	// Cancelling the first run withdraws exactly its one pending approval.
+	n, err := store.CancelPendingApprovals(ctx, instanceID, pendingRun)
+	require.NoError(t, err)
+	require.Equal(t, int64(1), n)
+
+	cancelled, err := store.GetApproval(ctx, instanceID, pendingApproval)
+	require.NoError(t, err)
+	require.Equal(t, act.ApprovalStatusCancelled, cancelled.Status)
+
+	// The already-approved approval is left alone.
+	untouched, err := store.GetApproval(ctx, instanceID, decidedApproval)
+	require.NoError(t, err)
+	require.Equal(t, act.ApprovalStatusApproved, untouched.Status)
+
+	// Idempotent: with nothing pending, a second sweep cancels zero.
+	n, err = store.CancelPendingApprovals(ctx, instanceID, pendingRun)
+	require.NoError(t, err)
+	require.Equal(t, int64(0), n)
+}
+
+// TestRunStoreScopingIsolatesTenants is the isolation test (§15.2): two instances create runs, and neither can see
+// nor read the other's, whether listing or fetching by ID.
+func TestRunStoreScopingIsolatesTenants(t *testing.T) {
+	store := newRunStore(t)
+	ctx := t.Context()
+
+	const instA, instB = "inst-a", "inst-b"
+	runA := act.ComposeRunID(instA, "triage", "k")
+	runB := act.ComposeRunID(instB, "triage", "k")
+	require.NoError(t, store.CreateRun(ctx, act.NewRun{RunID: runA, InstanceID: instA, AgentName: "triage"}))
+	require.NoError(t, store.CreateRun(ctx, act.NewRun{RunID: runB, InstanceID: instB, AgentName: "triage"}))
+
+	// Each instance lists only its own run.
+	listA, err := store.ListRuns(ctx, act.ListRunsFilter{InstanceID: instA})
+	require.NoError(t, err)
+	require.Len(t, listA, 1)
+	require.Equal(t, runA, listA[0].RunID)
+
+	listB, err := store.ListRuns(ctx, act.ListRunsFilter{InstanceID: instB})
+	require.NoError(t, err)
+	require.Len(t, listB, 1)
+	require.Equal(t, runB, listB[0].RunID)
+
+	// A cross-instance fetch fails as not-found, indistinguishable from a truly missing run: instance B cannot read
+	// instance A's run even with the exact run ID.
+	_, err = store.GetRun(ctx, instB, runA)
+	require.ErrorIs(t, err, act.ErrRunNotFound)
+
+	// A cross-instance transition also fails closed, so state cannot be mutated across tenants.
+	err = store.RecordTransition(ctx, act.RunTransition{InstanceID: instB, RunID: runA, Status: act.RunStatusRunning, EventType: act.EventTypeRunning})
+	require.ErrorIs(t, err, act.ErrRunNotFound)
+
+	// Events are unreadable across tenants too.
+	events, err := store.ListRunEvents(ctx, instB, runA, 0, 100)
+	require.NoError(t, err)
+	require.Empty(t, events)
+}
+
+// TestRunStoreListFilters verifies the agent and status filters narrow within an instance.
+func TestRunStoreListFilters(t *testing.T) {
+	store := newRunStore(t)
+	ctx := t.Context()
+
+	const instanceID = "inst-filters"
+	mk := func(agent, key string, status act.RunStatus) string {
+		runID := act.ComposeRunID(instanceID, agent, key)
+		require.NoError(t, store.CreateRun(ctx, act.NewRun{RunID: runID, InstanceID: instanceID, AgentName: agent}))
+		if status != act.RunStatusQueued {
+			require.NoError(t, store.RecordTransition(ctx, act.RunTransition{InstanceID: instanceID, RunID: runID, Status: status, EventType: string(status)}))
+		}
+		return runID
+	}
+	mk("triage", "1", act.RunStatusQueued)
+	mk("triage", "2", act.RunStatusSucceeded)
+	mk("summary", "3", act.RunStatusQueued)
+
+	byAgent, err := store.ListRuns(ctx, act.ListRunsFilter{InstanceID: instanceID, AgentName: "triage"})
+	require.NoError(t, err)
+	require.Len(t, byAgent, 2)
+
+	byStatus, err := store.ListRuns(ctx, act.ListRunsFilter{InstanceID: instanceID, Status: act.RunStatusQueued})
+	require.NoError(t, err)
+	require.Len(t, byStatus, 2)
+}
+
+// TestRunStoreApprovalLifecycle covers create -> read -> resolve, and the double-submit guard: only the first
+// resolution of a pending approval wins.
+func TestRunStoreApprovalLifecycle(t *testing.T) {
+	store := newRunStore(t)
+	ctx := t.Context()
+
+	const instanceID = "inst-appr"
+	runID := act.ComposeRunID(instanceID, "triage", "k")
+	require.NoError(t, store.CreateRun(ctx, act.NewRun{RunID: runID, InstanceID: instanceID, AgentName: "triage"}))
+
+	expires := time.Now().Add(time.Hour)
+	approvalID := act.ApprovalIDForRun(runID)
+	require.NoError(t, store.CreateApproval(ctx, act.NewApproval{
+		ApprovalID:  approvalID,
+		RunID:       runID,
+		InstanceID:  instanceID,
+		ToolName:    "act.propose_action",
+		ArgsHash:    act.HashArgs("crear ticket P2"),
+		Proposal:    "crear ticket P2",
+		RequestedBy: "user:alice",
+		ExpiresOn:   &expires,
+	}))
+
+	got, err := store.GetApproval(ctx, instanceID, approvalID)
+	require.NoError(t, err)
+	require.Equal(t, act.ApprovalStatusPending, got.Status)
+	require.Equal(t, act.HashArgs("crear ticket P2"), got.ArgsHash)
+
+	// Only pending approvals appear in the inbox filter.
+	pending, err := store.ListApprovals(ctx, act.ListApprovalsFilter{InstanceID: instanceID, Status: act.ApprovalStatusPending})
+	require.NoError(t, err)
+	require.Len(t, pending, 1)
+
+	// First resolution wins; the second sees a non-pending approval.
+	resolved, err := store.ResolveApproval(ctx, instanceID, approvalID, act.ApprovalStatusApproved, "admin:bob")
+	require.NoError(t, err)
+	require.Equal(t, act.ApprovalStatusApproved, resolved.Status)
+	require.Equal(t, "admin:bob", resolved.DecidedBy)
+	require.NotNil(t, resolved.DecidedOn)
+
+	_, err = store.ResolveApproval(ctx, instanceID, approvalID, act.ApprovalStatusDenied, "admin:carol")
+	require.ErrorIs(t, err, act.ErrApprovalNotResolvable)
+
+	// Cross-tenant resolution fails closed.
+	_, err = store.ResolveApproval(ctx, "other-inst", approvalID, act.ApprovalStatusApproved, "x")
+	require.ErrorIs(t, err, act.ErrApprovalNotFound)
+}

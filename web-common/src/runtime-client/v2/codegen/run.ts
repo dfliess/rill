@@ -14,6 +14,7 @@ import { fileURLToPath } from "node:url";
 import { QueryService } from "../../../proto/gen/rill/runtime/v1/queries_connect";
 import { RuntimeService } from "../../../proto/gen/rill/runtime/v1/api_connect";
 import { ConnectorService } from "../../../proto/gen/rill/runtime/v1/connectors_connect";
+import { AgentService } from "../../../proto/gen/rill/runtime/v1/agents_connect";
 
 import {
   generateServiceFile,
@@ -41,6 +42,7 @@ const services: { descriptor: ServiceDef; name: string }[] = [
     descriptor: ConnectorService as unknown as ServiceDef,
     name: "ConnectorService",
   },
+  { descriptor: AgentService as unknown as ServiceDef, name: "AgentService" },
 ];
 
 let totalQueries = 0;

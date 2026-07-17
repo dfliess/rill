@@ -68,6 +68,9 @@ class FeatureFlags {
   alerts = new FeatureFlag("user", true);
   reports = new FeatureFlag("user", true);
   chat = new FeatureFlag("user", true);
+  // Kairos Act (pillar C). Experimental; off by default until the agent worker
+  // and approvals flow are production-ready. Enable per project via rill.yaml.
+  agents = new FeatureFlag("user", false);
   dashboardChat = new FeatureFlag("user", false);
   developerChat = new FeatureFlag("user", false);
   deploy = new FeatureFlag("user", true);

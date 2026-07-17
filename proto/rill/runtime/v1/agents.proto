@@ -1,0 +1,267 @@
+syntax = "proto3";
+package rill.runtime.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+import "validate/validate.proto";
+
+// AgentService is the control and query surface of Kairos Act: it lists declarative agents, starts and tracks their
+// durable runs, streams a run's events, and drives the human-approval inbox. Agent definitions live in the Rill
+// resource catalog; runs, events and approvals live in the Act product store. This service never executes an agent
+// inline: StartAgentRun enqueues a durable run and returns immediately (§7.2, §14).
+service AgentService {
+  // ListAgents lists the valid agents defined in an instance's project.
+  rpc ListAgents(ListAgentsRequest) returns (ListAgentsResponse) {
+    option (google.api.http) = {get: "/v1/instances/{instance_id}/agents"};
+  }
+
+  // GetAgent returns a single agent by name.
+  rpc GetAgent(GetAgentRequest) returns (GetAgentResponse) {
+    option (google.api.http) = {get: "/v1/instances/{instance_id}/agents/{name}"};
+  }
+
+  // StartAgentRun enqueues a durable run of an agent and returns its run id and initial status (queued). It responds
+  // immediately; the run executes asynchronously and its progress is observed via GetAgentRun/StreamAgentRunEvents.
+  rpc StartAgentRun(StartAgentRunRequest) returns (StartAgentRunResponse) {
+    option (google.api.http) = {
+      post: "/v1/instances/{instance_id}/agents/{name}/runs"
+      body: "*"
+    };
+  }
+
+  // ListAgentRuns lists an instance's runs, newest first, optionally filtered by agent and status.
+  rpc ListAgentRuns(ListAgentRunsRequest) returns (ListAgentRunsResponse) {
+    option (google.api.http) = {get: "/v1/instances/{instance_id}/agent-runs"};
+  }
+
+  // GetAgentRun returns a single run by id.
+  rpc GetAgentRun(GetAgentRunRequest) returns (GetAgentRunResponse) {
+    option (google.api.http) = {get: "/v1/instances/{instance_id}/agent-runs/{run_id}"};
+  }
+
+  // CancelAgentRun stops a run and returns its updated state.
+  rpc CancelAgentRun(CancelAgentRunRequest) returns (CancelAgentRunResponse) {
+    option (google.api.http) = {
+      post: "/v1/instances/{instance_id}/agent-runs/{run_id}/cancel"
+      body: "*"
+    };
+  }
+
+  // StreamAgentRunEvents streams a run's lifecycle events in order, resuming after after_id. It is served over SSE by
+  // a dedicated HTTP handler; the HTTP annotation documents the path and drives OpenAPI generation.
+  rpc StreamAgentRunEvents(StreamAgentRunEventsRequest) returns (stream StreamAgentRunEventsResponse) {
+    option (google.api.http) = {get: "/v1/instances/{instance_id}/agent-runs/{run_id}/events"};
+  }
+
+  // ListAgentApprovals lists approval requests, newest first, optionally filtered by run and status (e.g. pending
+  // for the inbox).
+  rpc ListAgentApprovals(ListAgentApprovalsRequest) returns (ListAgentApprovalsResponse) {
+    option (google.api.http) = {get: "/v1/instances/{instance_id}/agent-approvals"};
+  }
+
+  // GetAgentApproval returns a single approval by id.
+  rpc GetAgentApproval(GetAgentApprovalRequest) returns (GetAgentApprovalResponse) {
+    option (google.api.http) = {get: "/v1/instances/{instance_id}/agent-approvals/{approval_id}"};
+  }
+
+  // ApproveAgentApproval approves a pending approval and resumes its run. The request must carry the args_hash the
+  // approver saw; the server rejects the decision if it no longer matches the proposed arguments (§6.4, §14.3).
+  rpc ApproveAgentApproval(ApproveAgentApprovalRequest) returns (ApproveAgentApprovalResponse) {
+    option (google.api.http) = {
+      post: "/v1/instances/{instance_id}/agent-approvals/{approval_id}/approve"
+      body: "*"
+    };
+  }
+
+  // DenyAgentApproval denies a pending approval; its run ends without performing the proposed action.
+  rpc DenyAgentApproval(DenyAgentApprovalRequest) returns (DenyAgentApprovalResponse) {
+    option (google.api.http) = {
+      post: "/v1/instances/{instance_id}/agent-approvals/{approval_id}/deny"
+      body: "*"
+    };
+  }
+}
+
+// AgentDefinition is a declarative agent's effective definition, projected from its validated spec in the resource catalog.
+message AgentDefinition {
+  string name = 1;
+  string display_name = 2;
+  string instructions = 3;
+  string model_connector = 4;
+  string model_name = 5;
+  repeated string tools = 6;
+  int32 max_steps = 7;
+  int32 timeout_seconds = 8;
+}
+
+// AgentRun is the stored state of one run of an agent.
+message AgentRun {
+  string run_id = 1;
+  string instance_id = 2;
+  string organization_id = 3;
+  string project_id = 4;
+  string agent_name = 5;
+  string spec_hash = 6;
+  string trigger = 7;
+  // trigger_ref names the source resource (e.g. the alert) when the trigger is not manual; empty otherwise.
+  string trigger_ref = 18;
+  string idempotency_key = 8;
+  string conversation_id = 9;
+  string actor_subject = 10;
+  bool actor_service_principal = 11;
+  string status = 12;
+  string error = 13;
+  google.protobuf.Timestamp created_on = 14;
+  google.protobuf.Timestamp updated_on = 15;
+  google.protobuf.Timestamp started_on = 16;
+  google.protobuf.Timestamp finished_on = 17;
+}
+
+// AgentRunEvent is a single lifecycle event of a run. id is the global, monotonic cursor a stream consumer pages by;
+// seq is the per-run position for display.
+message AgentRunEvent {
+  int64 id = 1;
+  string run_id = 2;
+  int64 seq = 3;
+  string event_type = 4;
+  string status = 5;
+  google.protobuf.Struct payload = 6;
+  string visibility = 7;
+  google.protobuf.Timestamp created_on = 8;
+}
+
+// AgentApproval is a human-approval request captured when a run suspends at the approval gate.
+message AgentApproval {
+  string approval_id = 1;
+  string run_id = 2;
+  string instance_id = 3;
+  string tool_name = 4;
+  string connector = 5;
+  string tool_call_id = 6;
+  string args_hash = 7;
+  string proposal = 8;
+  string policy = 9;
+  string status = 10;
+  string requested_by = 11;
+  string decided_by = 12;
+  google.protobuf.Timestamp expires_on = 13;
+  google.protobuf.Timestamp created_on = 14;
+  google.protobuf.Timestamp decided_on = 15;
+}
+
+message ListAgentsRequest {
+  string instance_id = 1 [(validate.rules).string = {pattern: "^[_\\-a-zA-Z0-9]+$"}];
+}
+
+message ListAgentsResponse {
+  repeated AgentDefinition agents = 1;
+}
+
+message GetAgentRequest {
+  string instance_id = 1 [(validate.rules).string = {pattern: "^[_\\-a-zA-Z0-9]+$"}];
+  string name = 2;
+}
+
+message GetAgentResponse {
+  AgentDefinition agent = 1;
+}
+
+message StartAgentRunRequest {
+  string instance_id = 1 [(validate.rules).string = {pattern: "^[_\\-a-zA-Z0-9]+$"}];
+  string name = 2;
+  // idempotency_key is the caller's stable key for this run: a repeated start with the same key attaches to the
+  // existing run rather than creating a second one.
+  string idempotency_key = 3;
+  string prompt = 4;
+  string conversation_id = 5;
+  // trigger records what started the run (defaults to "manual").
+  string trigger = 6;
+}
+
+message StartAgentRunResponse {
+  string run_id = 1;
+  string status = 2;
+  string agent_name = 3;
+  string spec_hash = 4;
+}
+
+message ListAgentRunsRequest {
+  string instance_id = 1 [(validate.rules).string = {pattern: "^[_\\-a-zA-Z0-9]+$"}];
+  string agent_name = 2;
+  string status = 3;
+  int32 page_size = 4;
+}
+
+message ListAgentRunsResponse {
+  repeated AgentRun runs = 1;
+}
+
+message GetAgentRunRequest {
+  string instance_id = 1 [(validate.rules).string = {pattern: "^[_\\-a-zA-Z0-9]+$"}];
+  string run_id = 2;
+}
+
+message GetAgentRunResponse {
+  AgentRun run = 1;
+}
+
+message CancelAgentRunRequest {
+  string instance_id = 1 [(validate.rules).string = {pattern: "^[_\\-a-zA-Z0-9]+$"}];
+  string run_id = 2;
+}
+
+message CancelAgentRunResponse {
+  AgentRun run = 1;
+}
+
+message StreamAgentRunEventsRequest {
+  string instance_id = 1 [(validate.rules).string = {pattern: "^[_\\-a-zA-Z0-9]+$"}];
+  string run_id = 2;
+  // after_id resumes the stream after this event cursor id; 0 replays from the first event.
+  int64 after_id = 3;
+}
+
+message StreamAgentRunEventsResponse {
+  AgentRunEvent event = 1;
+}
+
+message ListAgentApprovalsRequest {
+  string instance_id = 1 [(validate.rules).string = {pattern: "^[_\\-a-zA-Z0-9]+$"}];
+  string run_id = 2;
+  string status = 3;
+  int32 page_size = 4;
+}
+
+message ListAgentApprovalsResponse {
+  repeated AgentApproval approvals = 1;
+}
+
+message GetAgentApprovalRequest {
+  string instance_id = 1 [(validate.rules).string = {pattern: "^[_\\-a-zA-Z0-9]+$"}];
+  string approval_id = 2;
+}
+
+message GetAgentApprovalResponse {
+  AgentApproval approval = 1;
+}
+
+message ApproveAgentApprovalRequest {
+  string instance_id = 1 [(validate.rules).string = {pattern: "^[_\\-a-zA-Z0-9]+$"}];
+  string approval_id = 2;
+  // args_hash is the hash the approver saw; the decision is rejected if it no longer matches the proposal.
+  string args_hash = 3;
+}
+
+message ApproveAgentApprovalResponse {
+  AgentApproval approval = 1;
+}
+
+message DenyAgentApprovalRequest {
+  string instance_id = 1 [(validate.rules).string = {pattern: "^[_\\-a-zA-Z0-9]+$"}];
+  string approval_id = 2;
+}
+
+message DenyAgentApprovalResponse {
+  AgentApproval approval = 1;
+}

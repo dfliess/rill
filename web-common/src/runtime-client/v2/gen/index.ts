@@ -3,3 +3,4 @@
 export * from "./query-service";
 export * from "./runtime-service";
 export * from "./connector-service";
+export * from "./agent-service";

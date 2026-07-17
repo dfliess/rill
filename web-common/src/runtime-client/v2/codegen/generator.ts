@@ -74,6 +74,7 @@ function getProtoImportPath(serviceName: string): string {
     QueryService: "queries_pb",
     RuntimeService: "api_pb",
     ConnectorService: "connectors_pb",
+    AgentService: "agents_pb",
   };
   if (!(serviceName in fileMap)) {
     throw new Error(
