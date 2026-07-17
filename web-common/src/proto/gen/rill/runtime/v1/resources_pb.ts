@@ -222,6 +222,40 @@ proto3.util.setEnumType(AssertionStatus, "rill.runtime.v1.AssertionStatus", [
 ]);
 
 /**
+ * AgentTriggerSourceKind is the kind of resource whose events drive a trigger.
+ *
+ * @generated from enum rill.runtime.v1.AgentTriggerSourceKind
+ */
+export enum AgentTriggerSourceKind {
+  /**
+   * @generated from enum value: AGENT_TRIGGER_SOURCE_KIND_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: AGENT_TRIGGER_SOURCE_KIND_ALERT = 1;
+   */
+  ALERT = 1,
+
+  /**
+   * @generated from enum value: AGENT_TRIGGER_SOURCE_KIND_REPORT = 2;
+   */
+  REPORT = 2,
+
+  /**
+   * @generated from enum value: AGENT_TRIGGER_SOURCE_KIND_SCHEDULE = 3;
+   */
+  SCHEDULE = 3,
+}
+// Retrieve enum metadata with: proto3.getEnumType(AgentTriggerSourceKind)
+proto3.util.setEnumType(AgentTriggerSourceKind, "rill.runtime.v1.AgentTriggerSourceKind", [
+  { no: 0, name: "AGENT_TRIGGER_SOURCE_KIND_UNSPECIFIED" },
+  { no: 1, name: "AGENT_TRIGGER_SOURCE_KIND_ALERT" },
+  { no: 2, name: "AGENT_TRIGGER_SOURCE_KIND_REPORT" },
+  { no: 3, name: "AGENT_TRIGGER_SOURCE_KIND_SCHEDULE" },
+]);
+
+/**
  * @generated from message rill.runtime.v1.Resource
  */
 export class Resource extends Message<Resource> {
@@ -319,6 +353,18 @@ export class Resource extends Message<Resource> {
      */
     value: ConnectorV2;
     case: "connector";
+  } | {
+    /**
+     * @generated from field: rill.runtime.v1.Agent agent = 18;
+     */
+    value: Agent;
+    case: "agent";
+  } | {
+    /**
+     * @generated from field: rill.runtime.v1.AgentTrigger agent_trigger = 19;
+     */
+    value: AgentTrigger;
+    case: "agentTrigger";
   } | { case: undefined; value?: undefined } = { case: undefined };
 
   constructor(data?: PartialMessage<Resource>) {
@@ -344,6 +390,8 @@ export class Resource extends Message<Resource> {
     { no: 14, name: "canvas", kind: "message", T: Canvas, oneof: "resource" },
     { no: 15, name: "api", kind: "message", T: API, oneof: "resource" },
     { no: 16, name: "connector", kind: "message", T: ConnectorV2, oneof: "resource" },
+    { no: 18, name: "agent", kind: "message", T: Agent, oneof: "resource" },
+    { no: 19, name: "agent_trigger", kind: "message", T: AgentTrigger, oneof: "resource" },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Resource {
@@ -6120,6 +6168,717 @@ export class ConnectorState extends Message<ConnectorState> {
 
   static equals(a: ConnectorState | PlainMessage<ConnectorState> | undefined, b: ConnectorState | PlainMessage<ConnectorState> | undefined): boolean {
     return proto3.util.equals(ConnectorState, a, b);
+  }
+}
+
+/**
+ * Agent is a declarative agent resource (Kairos Act, experimental).
+ * The reconciler only validates the spec; it never executes anything.
+ *
+ * @generated from message rill.runtime.v1.Agent
+ */
+export class Agent extends Message<Agent> {
+  /**
+   * @generated from field: rill.runtime.v1.AgentSpec spec = 1;
+   */
+  spec?: AgentSpec;
+
+  /**
+   * @generated from field: rill.runtime.v1.AgentState state = 2;
+   */
+  state?: AgentState;
+
+  constructor(data?: PartialMessage<Agent>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rill.runtime.v1.Agent";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "spec", kind: "message", T: AgentSpec },
+    { no: 2, name: "state", kind: "message", T: AgentState },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Agent {
+    return new Agent().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): Agent {
+    return new Agent().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): Agent {
+    return new Agent().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: Agent | PlainMessage<Agent> | undefined, b: Agent | PlainMessage<Agent> | undefined): boolean {
+    return proto3.util.equals(Agent, a, b);
+  }
+}
+
+/**
+ * @generated from message rill.runtime.v1.AgentSpec
+ */
+export class AgentSpec extends Message<AgentSpec> {
+  /**
+   * @generated from field: string display_name = 1;
+   */
+  displayName = "";
+
+  /**
+   * @generated from field: string description = 2;
+   */
+  description = "";
+
+  /**
+   * Model connector and model name reference an existing AI connector in the project.
+   *
+   * @generated from field: string model_connector = 3;
+   */
+  modelConnector = "";
+
+  /**
+   * @generated from field: string model_name = 4;
+   */
+  modelName = "";
+
+  /**
+   * Instructions is the system prompt for the agent. Required.
+   *
+   * @generated from field: string instructions = 5;
+   */
+  instructions = "";
+
+  /**
+   * Tools is an allowlist of the built-in (analytical) tool names the agent may use.
+   *
+   * @generated from field: repeated string tools = 6;
+   */
+  tools: string[] = [];
+
+  /**
+   * @generated from field: rill.runtime.v1.AgentLimits limits = 7;
+   */
+  limits?: AgentLimits;
+
+  /**
+   * Mcp declares outbound MCP connectors. Each connector's tools are discovered at run start and offered to
+   * the model under namespaced names (mcp.<name>.<tool>), separate from the built-in tools allowlist above.
+   *
+   * @generated from field: repeated rill.runtime.v1.MCPConnector mcp = 8;
+   */
+  mcp: MCPConnector[] = [];
+
+  constructor(data?: PartialMessage<AgentSpec>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rill.runtime.v1.AgentSpec";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "display_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "description", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "model_connector", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "model_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "instructions", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 6, name: "tools", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 7, name: "limits", kind: "message", T: AgentLimits },
+    { no: 8, name: "mcp", kind: "message", T: MCPConnector, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): AgentSpec {
+    return new AgentSpec().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): AgentSpec {
+    return new AgentSpec().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): AgentSpec {
+    return new AgentSpec().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: AgentSpec | PlainMessage<AgentSpec> | undefined, b: AgentSpec | PlainMessage<AgentSpec> | undefined): boolean {
+    return proto3.util.equals(AgentSpec, a, b);
+  }
+}
+
+/**
+ * MCPConnector declares one outbound MCP server the agent may reach (Kairos Act, experimental). It carries
+ * only a reference to the bearer credential, never the literal: the executor resolves the secret server-side
+ * and the mcpconn client attaches it below the egress guard.
+ *
+ * @generated from message rill.runtime.v1.MCPConnector
+ */
+export class MCPConnector extends Message<MCPConnector> {
+  /**
+   * Name is the local connector name; its discovered tools are namespaced as mcp.<name>.<tool>.
+   *
+   * @generated from field: string name = 1;
+   */
+  name = "";
+
+  /**
+   * Url is the absolute https endpoint of the remote MCP server.
+   *
+   * @generated from field: string url = 2;
+   */
+  url = "";
+
+  /**
+   * AuthSecret is the name of the variable/secret holding the bearer token. It is a reference only.
+   *
+   * @generated from field: string auth_secret = 3;
+   */
+  authSecret = "";
+
+  /**
+   * AllowedHosts is the egress allowlist for this connector.
+   *
+   * @generated from field: repeated string allowed_hosts = 4;
+   */
+  allowedHosts: string[] = [];
+
+  /**
+   * TrustReadOnlyHint opts the connector in to treating a tool's server-advertised readOnlyHint as meaningful.
+   *
+   * @generated from field: bool trust_read_only_hint = 5;
+   */
+  trustReadOnlyHint = false;
+
+  /**
+   * Approval is the connector's approval posture for its write tools: "manual" (default, empty means manual) requires
+   * human approval for every action; "auto" auto-approves actions, subject to require_approval. It never affects a
+   * trusted read-only tool, which runs inline regardless.
+   *
+   * @generated from field: string approval = 6;
+   */
+  approval = "";
+
+  /**
+   * RequireApproval lists tool-name glob patterns (e.g. "delete_*") that still require human approval even when
+   * approval is "auto". Matched against the tool's raw name.
+   *
+   * @generated from field: repeated string require_approval = 7;
+   */
+  requireApproval: string[] = [];
+
+  /**
+   * AutoApprove lists tool-name glob patterns that skip human approval when approval is "manual" (the default).
+   * Matched against the tool's raw name.
+   *
+   * @generated from field: repeated string auto_approve = 8;
+   */
+  autoApprove: string[] = [];
+
+  constructor(data?: PartialMessage<MCPConnector>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rill.runtime.v1.MCPConnector";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "auth_secret", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "allowed_hosts", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 5, name: "trust_read_only_hint", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 6, name: "approval", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 7, name: "require_approval", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 8, name: "auto_approve", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MCPConnector {
+    return new MCPConnector().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): MCPConnector {
+    return new MCPConnector().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): MCPConnector {
+    return new MCPConnector().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: MCPConnector | PlainMessage<MCPConnector> | undefined, b: MCPConnector | PlainMessage<MCPConnector> | undefined): boolean {
+    return proto3.util.equals(MCPConnector, a, b);
+  }
+}
+
+/**
+ * @generated from message rill.runtime.v1.AgentLimits
+ */
+export class AgentLimits extends Message<AgentLimits> {
+  /**
+   * @generated from field: uint32 max_steps = 1;
+   */
+  maxSteps = 0;
+
+  /**
+   * @generated from field: uint32 timeout_seconds = 2;
+   */
+  timeoutSeconds = 0;
+
+  constructor(data?: PartialMessage<AgentLimits>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rill.runtime.v1.AgentLimits";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "max_steps", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 2, name: "timeout_seconds", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): AgentLimits {
+    return new AgentLimits().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): AgentLimits {
+    return new AgentLimits().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): AgentLimits {
+    return new AgentLimits().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: AgentLimits | PlainMessage<AgentLimits> | undefined, b: AgentLimits | PlainMessage<AgentLimits> | undefined): boolean {
+    return proto3.util.equals(AgentLimits, a, b);
+  }
+}
+
+/**
+ * @generated from message rill.runtime.v1.AgentState
+ */
+export class AgentState extends Message<AgentState> {
+  /**
+   * Valid spec is a (potentially previous) version of the spec that is known to currently be valid.
+   *
+   * @generated from field: rill.runtime.v1.AgentSpec valid_spec = 1;
+   */
+  validSpec?: AgentSpec;
+
+  /**
+   * Spec hash is a stable hash of the effective spec, used to detect changes.
+   *
+   * @generated from field: string spec_hash = 2;
+   */
+  specHash = "";
+
+  constructor(data?: PartialMessage<AgentState>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rill.runtime.v1.AgentState";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "valid_spec", kind: "message", T: AgentSpec },
+    { no: 2, name: "spec_hash", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): AgentState {
+    return new AgentState().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): AgentState {
+    return new AgentState().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): AgentState {
+    return new AgentState().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: AgentState | PlainMessage<AgentState> | undefined, b: AgentState | PlainMessage<AgentState> | undefined): boolean {
+    return proto3.util.equals(AgentState, a, b);
+  }
+}
+
+/**
+ * AgentTrigger binds an Agent to a source of events (an alert, a report or a schedule), so a detected
+ * condition or a finished report starts an agent run (Kairos Act, experimental). It separates the agent's
+ * definition from its activation: one agent may have zero, one or several triggers, and a trigger can be
+ * paused without editing the agent.
+ *
+ * The reconciler only validates it (the referenced agent exists and the source is coherent); it never runs
+ * anything. The trigger dispatcher (runtime/act/trigger) matches persisted alert/report execution events
+ * against valid triggers out of band, so no LLM call ever happens inside a reconciler.
+ *
+ * @generated from message rill.runtime.v1.AgentTrigger
+ */
+export class AgentTrigger extends Message<AgentTrigger> {
+  /**
+   * @generated from field: rill.runtime.v1.AgentTriggerSpec spec = 1;
+   */
+  spec?: AgentTriggerSpec;
+
+  /**
+   * @generated from field: rill.runtime.v1.AgentTriggerState state = 2;
+   */
+  state?: AgentTriggerState;
+
+  constructor(data?: PartialMessage<AgentTrigger>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rill.runtime.v1.AgentTrigger";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "spec", kind: "message", T: AgentTriggerSpec },
+    { no: 2, name: "state", kind: "message", T: AgentTriggerState },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): AgentTrigger {
+    return new AgentTrigger().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): AgentTrigger {
+    return new AgentTrigger().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): AgentTrigger {
+    return new AgentTrigger().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: AgentTrigger | PlainMessage<AgentTrigger> | undefined, b: AgentTrigger | PlainMessage<AgentTrigger> | undefined): boolean {
+    return proto3.util.equals(AgentTrigger, a, b);
+  }
+}
+
+/**
+ * @generated from message rill.runtime.v1.AgentTriggerSpec
+ */
+export class AgentTriggerSpec extends Message<AgentTriggerSpec> {
+  /**
+   * Agent is the name of the Agent resource this trigger starts. Required.
+   *
+   * @generated from field: string agent = 1;
+   */
+  agent = "";
+
+  /**
+   * Source selects which resource's executions activate this trigger and which of their events.
+   *
+   * @generated from field: rill.runtime.v1.AgentTriggerSource source = 2;
+   */
+  source?: AgentTriggerSource;
+
+  /**
+   * Actor is the identity a started run acts as: a user (manual) or a declared service principal (§17.3).
+   *
+   * @generated from field: rill.runtime.v1.AgentTriggerActor actor = 3;
+   */
+  actor?: AgentTriggerActor;
+
+  /**
+   * Input is the prompt and static context handed to a started run.
+   *
+   * @generated from field: rill.runtime.v1.AgentTriggerInput input = 4;
+   */
+  input?: AgentTriggerInput;
+
+  /**
+   * Deduplication collapses repeated events for this trigger within a window into a single run.
+   *
+   * @generated from field: rill.runtime.v1.AgentTriggerDeduplication deduplication = 5;
+   */
+  deduplication?: AgentTriggerDeduplication;
+
+  constructor(data?: PartialMessage<AgentTriggerSpec>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rill.runtime.v1.AgentTriggerSpec";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "agent", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "source", kind: "message", T: AgentTriggerSource },
+    { no: 3, name: "actor", kind: "message", T: AgentTriggerActor },
+    { no: 4, name: "input", kind: "message", T: AgentTriggerInput },
+    { no: 5, name: "deduplication", kind: "message", T: AgentTriggerDeduplication },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): AgentTriggerSpec {
+    return new AgentTriggerSpec().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): AgentTriggerSpec {
+    return new AgentTriggerSpec().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): AgentTriggerSpec {
+    return new AgentTriggerSpec().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: AgentTriggerSpec | PlainMessage<AgentTriggerSpec> | undefined, b: AgentTriggerSpec | PlainMessage<AgentTriggerSpec> | undefined): boolean {
+    return proto3.util.equals(AgentTriggerSpec, a, b);
+  }
+}
+
+/**
+ * @generated from message rill.runtime.v1.AgentTriggerSource
+ */
+export class AgentTriggerSource extends Message<AgentTriggerSource> {
+  /**
+   * @generated from field: rill.runtime.v1.AgentTriggerSourceKind kind = 1;
+   */
+  kind = AgentTriggerSourceKind.UNSPECIFIED;
+
+  /**
+   * Name of the source alert or report. Empty for a schedule trigger, which owns its own clock.
+   *
+   * @generated from field: string name = 2;
+   */
+  name = "";
+
+  /**
+   * Events is the allowlist of event types that activate this trigger, in short form scoped to the source
+   * kind (e.g. "entered_fail", "recovered", "renotify_due" for an alert; "completed", "failed" for a report).
+   *
+   * @generated from field: repeated string events = 3;
+   */
+  events: string[] = [];
+
+  /**
+   * Cron is the schedule a schedule-kind trigger fires on (standard 5-field cron, optionally prefixed with
+   * "CRON_TZ=<tz>"). Required for a schedule source and must be empty for an alert or report source.
+   *
+   * @generated from field: string cron = 4;
+   */
+  cron = "";
+
+  constructor(data?: PartialMessage<AgentTriggerSource>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rill.runtime.v1.AgentTriggerSource";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "kind", kind: "enum", T: proto3.getEnumType(AgentTriggerSourceKind) },
+    { no: 2, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "events", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 4, name: "cron", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): AgentTriggerSource {
+    return new AgentTriggerSource().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): AgentTriggerSource {
+    return new AgentTriggerSource().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): AgentTriggerSource {
+    return new AgentTriggerSource().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: AgentTriggerSource | PlainMessage<AgentTriggerSource> | undefined, b: AgentTriggerSource | PlainMessage<AgentTriggerSource> | undefined): boolean {
+    return proto3.util.equals(AgentTriggerSource, a, b);
+  }
+}
+
+/**
+ * AgentTriggerActor is the identity a started run acts as, mirroring an alert's identity model: name a user
+ * (user_id/user_email, resolved to attributes via the admin service) or give explicit attributes. The run's subject
+ * and service-principal flag are derived from this, so there is no separate mode/service to keep in sync.
+ *
+ * @generated from message rill.runtime.v1.AgentTriggerActor
+ */
+export class AgentTriggerActor extends Message<AgentTriggerActor> {
+  /**
+   * Attributes is the security identity a started run executes as: the user attributes its SecurityClaims are built
+   * from (row-level data access and tool authorization), mirroring an alert's query_for_attributes. Explicit
+   * attributes take precedence over user_id/user_email. Empty (and no user reference) means the run carries no claims
+   * and fails closed (it cannot execute tools); set it for an automatic run that must act.
+   *
+   * @generated from field: google.protobuf.Struct attributes = 3;
+   */
+  attributes?: Struct;
+
+  /**
+   * UserId names the user whose attributes a started run acts as; the reconciler resolves it to attributes via the
+   * admin service, exactly like an alert's query_for_user_id. Mutually exclusive with user_email.
+   *
+   * @generated from field: string user_id = 4;
+   */
+  userId = "";
+
+  /**
+   * UserEmail names the user (by email) whose attributes a started run acts as; resolved to attributes via the admin
+   * service like an alert's query_for_user_email. Mutually exclusive with user_id.
+   *
+   * @generated from field: string user_email = 5;
+   */
+  userEmail = "";
+
+  constructor(data?: PartialMessage<AgentTriggerActor>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rill.runtime.v1.AgentTriggerActor";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 3, name: "attributes", kind: "message", T: Struct },
+    { no: 4, name: "user_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "user_email", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): AgentTriggerActor {
+    return new AgentTriggerActor().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): AgentTriggerActor {
+    return new AgentTriggerActor().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): AgentTriggerActor {
+    return new AgentTriggerActor().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: AgentTriggerActor | PlainMessage<AgentTriggerActor> | undefined, b: AgentTriggerActor | PlainMessage<AgentTriggerActor> | undefined): boolean {
+    return proto3.util.equals(AgentTriggerActor, a, b);
+  }
+}
+
+/**
+ * @generated from message rill.runtime.v1.AgentTriggerInput
+ */
+export class AgentTriggerInput extends Message<AgentTriggerInput> {
+  /**
+   * Prompt is the instruction handed to the started run.
+   *
+   * @generated from field: string prompt = 1;
+   */
+  prompt = "";
+
+  /**
+   * Context is static key/value context attached to the run (e.g. the source alert name).
+   *
+   * @generated from field: map<string, string> context = 2;
+   */
+  context: { [key: string]: string } = {};
+
+  constructor(data?: PartialMessage<AgentTriggerInput>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rill.runtime.v1.AgentTriggerInput";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "prompt", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "context", kind: "map", K: 9 /* ScalarType.STRING */, V: {kind: "scalar", T: 9 /* ScalarType.STRING */} },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): AgentTriggerInput {
+    return new AgentTriggerInput().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): AgentTriggerInput {
+    return new AgentTriggerInput().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): AgentTriggerInput {
+    return new AgentTriggerInput().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: AgentTriggerInput | PlainMessage<AgentTriggerInput> | undefined, b: AgentTriggerInput | PlainMessage<AgentTriggerInput> | undefined): boolean {
+    return proto3.util.equals(AgentTriggerInput, a, b);
+  }
+}
+
+/**
+ * @generated from message rill.runtime.v1.AgentTriggerDeduplication
+ */
+export class AgentTriggerDeduplication extends Message<AgentTriggerDeduplication> {
+  /**
+   * Window seconds is the period within which repeated events for this trigger collapse into one run.
+   * Zero disables window deduplication (only exact event replays are still deduplicated by identity).
+   *
+   * @generated from field: uint32 window_seconds = 1;
+   */
+  windowSeconds = 0;
+
+  constructor(data?: PartialMessage<AgentTriggerDeduplication>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rill.runtime.v1.AgentTriggerDeduplication";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "window_seconds", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): AgentTriggerDeduplication {
+    return new AgentTriggerDeduplication().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): AgentTriggerDeduplication {
+    return new AgentTriggerDeduplication().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): AgentTriggerDeduplication {
+    return new AgentTriggerDeduplication().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: AgentTriggerDeduplication | PlainMessage<AgentTriggerDeduplication> | undefined, b: AgentTriggerDeduplication | PlainMessage<AgentTriggerDeduplication> | undefined): boolean {
+    return proto3.util.equals(AgentTriggerDeduplication, a, b);
+  }
+}
+
+/**
+ * @generated from message rill.runtime.v1.AgentTriggerState
+ */
+export class AgentTriggerState extends Message<AgentTriggerState> {
+  /**
+   * Valid spec is a (potentially previous) version of the spec that is known to currently be valid.
+   *
+   * @generated from field: rill.runtime.v1.AgentTriggerSpec valid_spec = 1;
+   */
+  validSpec?: AgentTriggerSpec;
+
+  /**
+   * Spec hash is a stable hash of the effective spec, used to detect changes.
+   *
+   * @generated from field: string spec_hash = 2;
+   */
+  specHash = "";
+
+  constructor(data?: PartialMessage<AgentTriggerState>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rill.runtime.v1.AgentTriggerState";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "valid_spec", kind: "message", T: AgentTriggerSpec },
+    { no: 2, name: "spec_hash", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): AgentTriggerState {
+    return new AgentTriggerState().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): AgentTriggerState {
+    return new AgentTriggerState().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): AgentTriggerState {
+    return new AgentTriggerState().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: AgentTriggerState | PlainMessage<AgentTriggerState> | undefined, b: AgentTriggerState | PlainMessage<AgentTriggerState> | undefined): boolean {
+    return proto3.util.equals(AgentTriggerState, a, b);
   }
 }
 

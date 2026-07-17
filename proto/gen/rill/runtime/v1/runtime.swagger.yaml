@@ -1,8 +1,9 @@
 swagger: "2.0"
 info:
-  title: rill/runtime/v1/schema.proto
+  title: rill/runtime/v1/agents.proto
   version: version not set
 tags:
+  - name: AgentService
   - name: RuntimeService
   - name: ConnectorService
   - name: QueryService
@@ -385,6 +386,341 @@ paths:
               See message Instance for field descriptions.
       tags:
         - RuntimeService
+  /v1/instances/{instanceId}/agent-approvals:
+    get:
+      summary: |-
+        ListAgentApprovals lists approval requests, newest first, optionally filtered by run and status (e.g. pending
+        for the inbox).
+      operationId: AgentService_ListAgentApprovals
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1ListAgentApprovalsResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: instanceId
+          in: path
+          required: true
+          type: string
+        - name: runId
+          in: query
+          required: false
+          type: string
+        - name: status
+          in: query
+          required: false
+          type: string
+        - name: pageSize
+          in: query
+          required: false
+          type: integer
+          format: int32
+      tags:
+        - AgentService
+  /v1/instances/{instanceId}/agent-approvals/{approvalId}:
+    get:
+      summary: GetAgentApproval returns a single approval by id.
+      operationId: AgentService_GetAgentApproval
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1GetAgentApprovalResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: instanceId
+          in: path
+          required: true
+          type: string
+        - name: approvalId
+          in: path
+          required: true
+          type: string
+      tags:
+        - AgentService
+  /v1/instances/{instanceId}/agent-approvals/{approvalId}/approve:
+    post:
+      summary: |-
+        ApproveAgentApproval approves a pending approval and resumes its run. The request must carry the args_hash the
+        approver saw; the server rejects the decision if it no longer matches the proposed arguments (§6.4, §14.3).
+      operationId: AgentService_ApproveAgentApproval
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1ApproveAgentApprovalResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: instanceId
+          in: path
+          required: true
+          type: string
+        - name: approvalId
+          in: path
+          required: true
+          type: string
+        - name: body
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              argsHash:
+                type: string
+                description: args_hash is the hash the approver saw; the decision is rejected if it no longer matches the proposal.
+      tags:
+        - AgentService
+  /v1/instances/{instanceId}/agent-approvals/{approvalId}/deny:
+    post:
+      summary: DenyAgentApproval denies a pending approval; its run ends without performing the proposed action.
+      operationId: AgentService_DenyAgentApproval
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1DenyAgentApprovalResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: instanceId
+          in: path
+          required: true
+          type: string
+        - name: approvalId
+          in: path
+          required: true
+          type: string
+        - name: body
+          in: body
+          required: true
+          schema:
+            type: object
+      tags:
+        - AgentService
+  /v1/instances/{instanceId}/agent-runs:
+    get:
+      summary: ListAgentRuns lists an instance's runs, newest first, optionally filtered by agent and status.
+      operationId: AgentService_ListAgentRuns
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1ListAgentRunsResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: instanceId
+          in: path
+          required: true
+          type: string
+        - name: agentName
+          in: query
+          required: false
+          type: string
+        - name: status
+          in: query
+          required: false
+          type: string
+        - name: pageSize
+          in: query
+          required: false
+          type: integer
+          format: int32
+      tags:
+        - AgentService
+  /v1/instances/{instanceId}/agent-runs/{runId}:
+    get:
+      summary: GetAgentRun returns a single run by id.
+      operationId: AgentService_GetAgentRun
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1GetAgentRunResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: instanceId
+          in: path
+          required: true
+          type: string
+        - name: runId
+          in: path
+          required: true
+          type: string
+      tags:
+        - AgentService
+  /v1/instances/{instanceId}/agent-runs/{runId}/cancel:
+    post:
+      summary: CancelAgentRun stops a run and returns its updated state.
+      operationId: AgentService_CancelAgentRun
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1CancelAgentRunResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: instanceId
+          in: path
+          required: true
+          type: string
+        - name: runId
+          in: path
+          required: true
+          type: string
+        - name: body
+          in: body
+          required: true
+          schema:
+            type: object
+      tags:
+        - AgentService
+  /v1/instances/{instanceId}/agent-runs/{runId}/events:
+    get:
+      summary: |-
+        StreamAgentRunEvents streams a run's lifecycle events in order, resuming after after_id. It is served over SSE by
+        a dedicated HTTP handler; the HTTP annotation documents the path and drives OpenAPI generation.
+      operationId: AgentService_StreamAgentRunEvents
+      responses:
+        "200":
+          description: A successful response.(streaming responses)
+          schema:
+            type: object
+            properties:
+              result:
+                $ref: '#/definitions/v1StreamAgentRunEventsResponse'
+              error:
+                $ref: '#/definitions/rpcStatus'
+            title: Stream result of v1StreamAgentRunEventsResponse
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: instanceId
+          in: path
+          required: true
+          type: string
+        - name: runId
+          in: path
+          required: true
+          type: string
+        - name: afterId
+          description: after_id resumes the stream after this event cursor id; 0 replays from the first event.
+          in: query
+          required: false
+          type: string
+          format: int64
+      tags:
+        - AgentService
+  /v1/instances/{instanceId}/agents:
+    get:
+      summary: ListAgents lists the valid agents defined in an instance's project.
+      operationId: AgentService_ListAgents
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1ListAgentsResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: instanceId
+          in: path
+          required: true
+          type: string
+      tags:
+        - AgentService
+  /v1/instances/{instanceId}/agents/{name}:
+    get:
+      summary: GetAgent returns a single agent by name.
+      operationId: AgentService_GetAgent
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1GetAgentResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: instanceId
+          in: path
+          required: true
+          type: string
+        - name: name
+          in: path
+          required: true
+          type: string
+      tags:
+        - AgentService
+  /v1/instances/{instanceId}/agents/{name}/runs:
+    post:
+      summary: |-
+        StartAgentRun enqueues a durable run of an agent and returns its run id and initial status (queued). It responds
+        immediately; the run executes asynchronously and its progress is observed via GetAgentRun/StreamAgentRunEvents.
+      operationId: AgentService_StartAgentRun
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1StartAgentRunResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: instanceId
+          in: path
+          required: true
+          type: string
+        - name: name
+          in: path
+          required: true
+          type: string
+        - name: body
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              idempotencyKey:
+                type: string
+                description: |-
+                  idempotency_key is the caller's stable key for this run: a repeated start with the same key attaches to the
+                  existing run rather than creating a second one.
+              prompt:
+                type: string
+              conversationId:
+                type: string
+              trigger:
+                type: string
+                description: trigger records what started the run (defaults to "manual").
+      tags:
+        - AgentService
   /v1/instances/{instanceId}/ai/complete:
     post:
       summary: Complete runs a language model completion (LLM chat) using the configured AI connector.
@@ -4177,6 +4513,311 @@ definitions:
         type: boolean
   v1APIState:
     type: object
+  v1Agent:
+    type: object
+    properties:
+      spec:
+        $ref: '#/definitions/v1AgentSpec'
+      state:
+        $ref: '#/definitions/v1AgentState'
+    description: |-
+      Agent is a declarative agent resource (Kairos Act, experimental).
+      The reconciler only validates the spec; it never executes anything.
+  v1AgentApproval:
+    type: object
+    properties:
+      approvalId:
+        type: string
+      runId:
+        type: string
+      instanceId:
+        type: string
+      toolName:
+        type: string
+      connector:
+        type: string
+      toolCallId:
+        type: string
+      argsHash:
+        type: string
+      proposal:
+        type: string
+      policy:
+        type: string
+      status:
+        type: string
+      requestedBy:
+        type: string
+      decidedBy:
+        type: string
+      expiresOn:
+        type: string
+        format: date-time
+      createdOn:
+        type: string
+        format: date-time
+      decidedOn:
+        type: string
+        format: date-time
+    description: AgentApproval is a human-approval request captured when a run suspends at the approval gate.
+  v1AgentDefinition:
+    type: object
+    properties:
+      name:
+        type: string
+      displayName:
+        type: string
+      instructions:
+        type: string
+      modelConnector:
+        type: string
+      modelName:
+        type: string
+      tools:
+        type: array
+        items:
+          type: string
+      maxSteps:
+        type: integer
+        format: int32
+      timeoutSeconds:
+        type: integer
+        format: int32
+    description: AgentDefinition is a declarative agent's effective definition, projected from its validated spec in the resource catalog.
+  v1AgentLimits:
+    type: object
+    properties:
+      maxSteps:
+        type: integer
+        format: int64
+      timeoutSeconds:
+        type: integer
+        format: int64
+  v1AgentRun:
+    type: object
+    properties:
+      runId:
+        type: string
+      instanceId:
+        type: string
+      organizationId:
+        type: string
+      projectId:
+        type: string
+      agentName:
+        type: string
+      specHash:
+        type: string
+      trigger:
+        type: string
+      triggerRef:
+        type: string
+        description: trigger_ref names the source resource (e.g. the alert) when the trigger is not manual; empty otherwise.
+      idempotencyKey:
+        type: string
+      conversationId:
+        type: string
+      actorSubject:
+        type: string
+      actorServicePrincipal:
+        type: boolean
+      status:
+        type: string
+      error:
+        type: string
+      createdOn:
+        type: string
+        format: date-time
+      updatedOn:
+        type: string
+        format: date-time
+      startedOn:
+        type: string
+        format: date-time
+      finishedOn:
+        type: string
+        format: date-time
+    description: AgentRun is the stored state of one run of an agent.
+  v1AgentRunEvent:
+    type: object
+    properties:
+      id:
+        type: string
+        format: int64
+      runId:
+        type: string
+      seq:
+        type: string
+        format: int64
+      eventType:
+        type: string
+      status:
+        type: string
+      payload:
+        type: object
+      visibility:
+        type: string
+      createdOn:
+        type: string
+        format: date-time
+    description: |-
+      AgentRunEvent is a single lifecycle event of a run. id is the global, monotonic cursor a stream consumer pages by;
+      seq is the per-run position for display.
+  v1AgentSpec:
+    type: object
+    properties:
+      displayName:
+        type: string
+      description:
+        type: string
+      modelConnector:
+        type: string
+        description: Model connector and model name reference an existing AI connector in the project.
+      modelName:
+        type: string
+      instructions:
+        type: string
+        description: Instructions is the system prompt for the agent. Required.
+      tools:
+        type: array
+        items:
+          type: string
+        description: Tools is an allowlist of the built-in (analytical) tool names the agent may use.
+      limits:
+        $ref: '#/definitions/v1AgentLimits'
+      mcp:
+        type: array
+        items:
+          type: object
+          $ref: '#/definitions/v1MCPConnector'
+        description: |-
+          Mcp declares outbound MCP connectors. Each connector's tools are discovered at run start and offered to
+          the model under namespaced names (mcp.<name>.<tool>), separate from the built-in tools allowlist above.
+  v1AgentState:
+    type: object
+    properties:
+      validSpec:
+        $ref: '#/definitions/v1AgentSpec'
+        description: Valid spec is a (potentially previous) version of the spec that is known to currently be valid.
+      specHash:
+        type: string
+        description: Spec hash is a stable hash of the effective spec, used to detect changes.
+  v1AgentTrigger:
+    type: object
+    properties:
+      spec:
+        $ref: '#/definitions/v1AgentTriggerSpec'
+      state:
+        $ref: '#/definitions/v1AgentTriggerState'
+    description: |-
+      AgentTrigger binds an Agent to a source of events (an alert, a report or a schedule), so a detected
+      condition or a finished report starts an agent run (Kairos Act, experimental). It separates the agent's
+      definition from its activation: one agent may have zero, one or several triggers, and a trigger can be
+      paused without editing the agent.
+
+      The reconciler only validates it (the referenced agent exists and the source is coherent); it never runs
+      anything. The trigger dispatcher (runtime/act/trigger) matches persisted alert/report execution events
+      against valid triggers out of band, so no LLM call ever happens inside a reconciler.
+  v1AgentTriggerActor:
+    type: object
+    properties:
+      attributes:
+        type: object
+        description: |-
+          Attributes is the security identity a started run executes as: the user attributes its SecurityClaims are built
+          from (row-level data access and tool authorization), mirroring an alert's query_for_attributes. Explicit
+          attributes take precedence over user_id/user_email. Empty (and no user reference) means the run carries no claims
+          and fails closed (it cannot execute tools); set it for an automatic run that must act.
+      userId:
+        type: string
+        description: |-
+          UserId names the user whose attributes a started run acts as; the reconciler resolves it to attributes via the
+          admin service, exactly like an alert's query_for_user_id. Mutually exclusive with user_email.
+      userEmail:
+        type: string
+        description: |-
+          UserEmail names the user (by email) whose attributes a started run acts as; resolved to attributes via the admin
+          service like an alert's query_for_user_email. Mutually exclusive with user_id.
+    description: |-
+      AgentTriggerActor is the identity a started run acts as, mirroring an alert's identity model: name a user
+      (user_id/user_email, resolved to attributes via the admin service) or give explicit attributes. The run's subject
+      and service-principal flag are derived from this, so there is no separate mode/service to keep in sync.
+  v1AgentTriggerDeduplication:
+    type: object
+    properties:
+      windowSeconds:
+        type: integer
+        format: int64
+        description: |-
+          Window seconds is the period within which repeated events for this trigger collapse into one run.
+          Zero disables window deduplication (only exact event replays are still deduplicated by identity).
+  v1AgentTriggerInput:
+    type: object
+    properties:
+      prompt:
+        type: string
+        description: Prompt is the instruction handed to the started run.
+      context:
+        type: object
+        additionalProperties:
+          type: string
+        description: Context is static key/value context attached to the run (e.g. the source alert name).
+  v1AgentTriggerSource:
+    type: object
+    properties:
+      kind:
+        $ref: '#/definitions/v1AgentTriggerSourceKind'
+      name:
+        type: string
+        description: Name of the source alert or report. Empty for a schedule trigger, which owns its own clock.
+      events:
+        type: array
+        items:
+          type: string
+        description: |-
+          Events is the allowlist of event types that activate this trigger, in short form scoped to the source
+          kind (e.g. "entered_fail", "recovered", "renotify_due" for an alert; "completed", "failed" for a report).
+      cron:
+        type: string
+        description: |-
+          Cron is the schedule a schedule-kind trigger fires on (standard 5-field cron, optionally prefixed with
+          "CRON_TZ=<tz>"). Required for a schedule source and must be empty for an alert or report source.
+  v1AgentTriggerSourceKind:
+    type: string
+    enum:
+      - AGENT_TRIGGER_SOURCE_KIND_UNSPECIFIED
+      - AGENT_TRIGGER_SOURCE_KIND_ALERT
+      - AGENT_TRIGGER_SOURCE_KIND_REPORT
+      - AGENT_TRIGGER_SOURCE_KIND_SCHEDULE
+    default: AGENT_TRIGGER_SOURCE_KIND_UNSPECIFIED
+    description: AgentTriggerSourceKind is the kind of resource whose events drive a trigger.
+  v1AgentTriggerSpec:
+    type: object
+    properties:
+      agent:
+        type: string
+        description: Agent is the name of the Agent resource this trigger starts. Required.
+      source:
+        $ref: '#/definitions/v1AgentTriggerSource'
+        description: Source selects which resource's executions activate this trigger and which of their events.
+      actor:
+        $ref: '#/definitions/v1AgentTriggerActor'
+        description: 'Actor is the identity a started run acts as: a user (manual) or a declared service principal (§17.3).'
+      input:
+        $ref: '#/definitions/v1AgentTriggerInput'
+        description: Input is the prompt and static context handed to a started run.
+      deduplication:
+        $ref: '#/definitions/v1AgentTriggerDeduplication'
+        description: Deduplication collapses repeated events for this trigger within a window into a single run.
+  v1AgentTriggerState:
+    type: object
+    properties:
+      validSpec:
+        $ref: '#/definitions/v1AgentTriggerSpec'
+        description: Valid spec is a (potentially previous) version of the spec that is known to currently be valid.
+      specHash:
+        type: string
+        description: Spec hash is a stable hash of the effective spec, used to detect changes.
   v1Alert:
     type: object
     properties:
@@ -4400,6 +5041,11 @@ definitions:
           type: object
           $ref: '#/definitions/v1ResourceName'
         description: List of resources that appear to use the connector.
+  v1ApproveAgentApprovalResponse:
+    type: object
+    properties:
+      approval:
+        $ref: '#/definitions/v1AgentApproval'
   v1AssertionResult:
     type: object
     properties:
@@ -4428,6 +5074,11 @@ definitions:
       - BUILTIN_MEASURE_COUNT
       - BUILTIN_MEASURE_COUNT_DISTINCT
     default: BUILTIN_MEASURE_UNSPECIFIED
+  v1CancelAgentRunResponse:
+    type: object
+    properties:
+      run:
+        $ref: '#/definitions/v1AgentRun'
   v1Canvas:
     type: object
     properties:
@@ -5227,6 +5878,11 @@ definitions:
   v1DeleteInstanceResponse:
     type: object
     title: Response message for RuntimeService.DeleteInstance
+  v1DenyAgentApprovalResponse:
+    type: object
+    properties:
+      approval:
+        $ref: '#/definitions/v1AgentApproval'
   v1DeveloperAgentContext:
     type: object
     properties:
@@ -5620,6 +6276,21 @@ definitions:
       result:
         $ref: '#/definitions/v1Message'
     title: Response message for RuntimeService.GetAIMessage
+  v1GetAgentApprovalResponse:
+    type: object
+    properties:
+      approval:
+        $ref: '#/definitions/v1AgentApproval'
+  v1GetAgentResponse:
+    type: object
+    properties:
+      agent:
+        $ref: '#/definitions/v1AgentDefinition'
+  v1GetAgentRunResponse:
+    type: object
+    properties:
+      run:
+        $ref: '#/definitions/v1AgentRun'
   v1GetConversationResponse:
     type: object
     properties:
@@ -5923,6 +6594,30 @@ definitions:
       jwt:
         type: string
     title: Response message for RuntimeService.IssueDevJWT
+  v1ListAgentApprovalsResponse:
+    type: object
+    properties:
+      approvals:
+        type: array
+        items:
+          type: object
+          $ref: '#/definitions/v1AgentApproval'
+  v1ListAgentRunsResponse:
+    type: object
+    properties:
+      runs:
+        type: array
+        items:
+          type: object
+          $ref: '#/definitions/v1AgentRun'
+  v1ListAgentsResponse:
+    type: object
+    properties:
+      agents:
+        type: array
+        items:
+          type: object
+          $ref: '#/definitions/v1AgentDefinition'
   v1ListBucketsResponse:
     type: object
     properties:
@@ -6080,6 +6775,50 @@ definitions:
       - LOG_LEVEL_ERROR
       - LOG_LEVEL_FATAL
     default: LOG_LEVEL_UNSPECIFIED
+  v1MCPConnector:
+    type: object
+    properties:
+      name:
+        type: string
+        description: Name is the local connector name; its discovered tools are namespaced as mcp.<name>.<tool>.
+      url:
+        type: string
+        description: Url is the absolute https endpoint of the remote MCP server.
+      authSecret:
+        type: string
+        description: AuthSecret is the name of the variable/secret holding the bearer token. It is a reference only.
+      allowedHosts:
+        type: array
+        items:
+          type: string
+        description: AllowedHosts is the egress allowlist for this connector.
+      trustReadOnlyHint:
+        type: boolean
+        description: TrustReadOnlyHint opts the connector in to treating a tool's server-advertised readOnlyHint as meaningful.
+      approval:
+        type: string
+        description: |-
+          Approval is the connector's approval posture for its write tools: "manual" (default, empty means manual) requires
+          human approval for every action; "auto" auto-approves actions, subject to require_approval. It never affects a
+          trusted read-only tool, which runs inline regardless.
+      requireApproval:
+        type: array
+        items:
+          type: string
+        description: |-
+          RequireApproval lists tool-name glob patterns (e.g. "delete_*") that still require human approval even when
+          approval is "auto". Matched against the tool's raw name.
+      autoApprove:
+        type: array
+        items:
+          type: string
+        description: |-
+          AutoApprove lists tool-name glob patterns that skip human approval when approval is "manual" (the default).
+          Matched against the tool's raw name.
+    description: |-
+      MCPConnector declares one outbound MCP server the agent may reach (Kairos Act, experimental). It carries
+      only a reference to the bearer credential, never the literal: the executor resolves the secret server-side
+      and the mcpconn client attaches it below the egress guard.
   v1MapType:
     type: object
     properties:
@@ -7826,6 +8565,10 @@ definitions:
         $ref: '#/definitions/v1API'
       connector:
         $ref: '#/definitions/v1ConnectorV2'
+      agent:
+        $ref: '#/definitions/v1Agent'
+      agentTrigger:
+        $ref: '#/definitions/v1AgentTrigger'
   v1ResourceEvent:
     type: string
     enum:
@@ -8086,6 +8829,22 @@ definitions:
           type: string
         description: span attributes plus driver-set attributes like "cancelled", "failed", "queue_latency_ms", "olap", etc.
     description: Span corresponds to a single OTel span captured during a request.
+  v1StartAgentRunResponse:
+    type: object
+    properties:
+      runId:
+        type: string
+      status:
+        type: string
+      agentName:
+        type: string
+      specHash:
+        type: string
+  v1StreamAgentRunEventsResponse:
+    type: object
+    properties:
+      event:
+        $ref: '#/definitions/v1AgentRunEvent'
   v1StringListValue:
     type: object
     properties:

@@ -18,6 +18,9 @@ export const MessageType = {
   CALL: "call",
   RESULT: "result",
   PROGRESS: "progress",
+  // TEXT is a plain conversation turn (e.g. a dynamic agent run's opening user prompt). It is routed to a text
+  // block by the message's role, not by this type, so no routing switch needs to branch on it.
+  TEXT: "text",
 } as const;
 
 /**
@@ -55,6 +58,10 @@ export const ToolName = {
 
   // Feedback agent
   FEEDBACK_AGENT: "feedback_agent",
+
+  // Marks the message a governed agent run injects to feed an executed action's result back to the model. It is an
+  // internal prompt (not a user turn), so the chat hides it; the model's own closing answer conveys the outcome.
+  ACTION_RESULT: "act.action_result",
 
   // Common tools
   NAVIGATE: "navigate",

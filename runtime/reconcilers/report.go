@@ -338,7 +338,12 @@ func (r *ReportReconciler) popCurrentExecution(ctx context.Context, self *runtim
 		rep.State.ExecutionHistory = rep.State.ExecutionHistory[:reportExecutionHistoryLimit]
 	}
 
-	return r.C.UpdateState(ctx, self.Meta.Name, self)
+	if err := r.C.UpdateState(ctx, self.Meta.Name, self); err != nil {
+		return err
+	}
+	// Act: announce the persisted execution to the execution observer, which derives trigger events (§9.4). No-op if unset.
+	r.C.Runtime.ObserveExecution(ctx, r.C.InstanceID, self)
+	return nil
 }
 
 // setTriggerFalse sets the report's spec.Trigger to false.

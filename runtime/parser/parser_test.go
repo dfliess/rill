@@ -2942,6 +2942,8 @@ func requireResourcesAndErrors(t testing.TB, p *Parser, wantResources []*Resourc
 				require.Equal(t, want.CanvasSpec, got.CanvasSpec, "for resource %q", want.Name)
 				require.Equal(t, want.APISpec, got.APISpec, "for resource %q", want.Name)
 				require.Equal(t, want.ConnectorSpec, got.ConnectorSpec, "for resource %q", want.Name)
+				require.True(t, reflect.DeepEqual(want.AgentSpec, got.AgentSpec), "for resource %q", want.Name)
+				require.True(t, reflect.DeepEqual(want.AgentTriggerSpec, got.AgentTriggerSpec), "for resource %q", want.Name)
 
 				delete(gotResources, got.Name)
 				found = true

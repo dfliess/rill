@@ -15,6 +15,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	runtimev1 "github.com/rilldata/rill/proto/gen/rill/runtime/v1"
 	"github.com/rilldata/rill/runtime"
+	"github.com/rilldata/rill/runtime/act"
 	"github.com/rilldata/rill/runtime/ai"
 	"github.com/rilldata/rill/runtime/drivers"
 	"github.com/rilldata/rill/runtime/metricsview"
@@ -55,6 +56,7 @@ type Server struct {
 	runtimev1.UnsafeRuntimeServiceServer
 	runtimev1.UnsafeQueryServiceServer
 	runtimev1.UnsafeConnectorServiceServer
+	runtimev1.UnsafeAgentServiceServer
 	runtime  *runtime.Runtime
 	opts     *Options
 	logger   *zap.Logger
@@ -63,12 +65,21 @@ type Server struct {
 	limiter  ratelimit.Limiter
 	activity *activity.Client
 	ai       *ai.Runner
+	// agents resolves declarative agent definitions from the resource catalog. It is always set (it only needs the
+	// runtime); the run/approval surface below is optional.
+	agents ai.AgentDefinitionProvider
+	// agentRuns and agentExecutor are the Act run/approval plane. They are nil unless ConfigureAct wires them (they
+	// need Postgres and the DBOS worker), so the discovery endpoints work without Act being provisioned while the
+	// run and approval endpoints report Unimplemented until it is.
+	agentRuns     act.RunStore
+	agentExecutor act.AgentExecutor
 }
 
 var (
 	_ runtimev1.RuntimeServiceServer   = (*Server)(nil)
 	_ runtimev1.QueryServiceServer     = (*Server)(nil)
 	_ runtimev1.ConnectorServiceServer = (*Server)(nil)
+	_ runtimev1.AgentServiceServer     = (*Server)(nil)
 )
 
 // NewServer creates a new runtime server.
@@ -91,6 +102,7 @@ func NewServer(ctx context.Context, opts *Options, rt *runtime.Runtime, logger *
 		limiter:  limiter,
 		activity: activityClient,
 		ai:       ai.NewRunner(rt, activityClient),
+		agents:   act.NewCatalogAgentProvider(rt),
 	}
 
 	if opts.AuthEnable {
@@ -102,6 +114,15 @@ func NewServer(ctx context.Context, opts *Options, rt *runtime.Runtime, logger *
 	}
 
 	return srv, nil
+}
+
+// ConfigureAct wires the Act run/approval plane onto the server. It is separate from NewServer because the store and
+// executor need Postgres and the DBOS worker, which are provisioned independently of the runtime: until this is
+// called, the agent discovery endpoints work but the run and approval endpoints report Unimplemented. runs and
+// executor should share the same store so a run started through the executor is immediately readable through runs.
+func (s *Server) ConfigureAct(runs act.RunStore, executor act.AgentExecutor) {
+	s.agentRuns = runs
+	s.agentExecutor = executor
 }
 
 // Close should be called when the server is done
@@ -169,6 +190,7 @@ func (s *Server) HTTPHandler(ctx context.Context, registerAdditionalHandlers fun
 	runtimev1.RegisterRuntimeServiceServer(grpcServer, s)
 	runtimev1.RegisterQueryServiceServer(grpcServer, s)
 	runtimev1.RegisterConnectorServiceServer(grpcServer, s)
+	runtimev1.RegisterAgentServiceServer(grpcServer, s)
 
 	// Add gRPC and gRPC-to-REST transcoder.
 	// This will be the fallback for REST routes like `/v1/ping` and GPRC routes like `/rill.admin.v1.RuntimeService/Ping`.
@@ -180,6 +202,7 @@ func (s *Server) HTTPHandler(ctx context.Context, registerAdditionalHandlers fun
 	httpMux.Handle("/rill.runtime.v1.RuntimeService/", transcoder)
 	httpMux.Handle("/rill.runtime.v1.QueryService/", transcoder)
 	httpMux.Handle("/rill.runtime.v1.ConnectorService/", transcoder)
+	httpMux.Handle("/rill.runtime.v1.AgentService/", transcoder)
 
 	// Call callback to register additional paths
 	// NOTE: This is so ugly, but not worth refactoring it properly right now.
@@ -210,6 +233,7 @@ func (s *Server) HTTPHandler(ctx context.Context, registerAdditionalHandlers fun
 	observability.MuxHandle(httpMux, "/v1/instances/{instance_id}/files/watch", observability.Middleware("runtime", s.logger, auth.HTTPMiddleware(s.aud, http.HandlerFunc(s.SSEHandler))))       // Deprecated: Use /sse?streams=files
 	observability.MuxHandle(httpMux, "/v1/instances/{instance_id}/resources/-/watch", observability.Middleware("runtime", s.logger, auth.HTTPMiddleware(s.aud, http.HandlerFunc(s.SSEHandler)))) // Deprecated: Use /sse?streams=resources
 	observability.MuxHandle(httpMux, "/v1/instances/{instance_id}/ai/complete/stream", observability.Middleware("runtime", s.logger, auth.HTTPMiddleware(s.aud, middleware.ActivityHTTPMiddleware(s.activity, runtime.RequestSourceChat)(http.HandlerFunc(s.CompleteStreamingHandler)))))
+	observability.MuxHandle(httpMux, "/v1/instances/{instance_id}/agent-runs/{run_id}/events", observability.Middleware("runtime", s.logger, auth.HTTPMiddleware(s.aud, middleware.ActivityHTTPMiddleware(s.activity, runtime.RequestSourceAct)(http.HandlerFunc(s.StreamAgentRunEventsHandler)))))
 
 	// Add Prometheus
 	if s.opts.ServePrometheus {

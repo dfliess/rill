@@ -661,6 +661,88 @@ func (m *Resource) validate(all bool) error {
 			}
 		}
 
+	case *Resource_Agent:
+		if v == nil {
+			err := ResourceValidationError{
+				field:  "Resource",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+		if all {
+			switch v := interface{}(m.GetAgent()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ResourceValidationError{
+						field:  "Agent",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ResourceValidationError{
+						field:  "Agent",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetAgent()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ResourceValidationError{
+					field:  "Agent",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	case *Resource_AgentTrigger:
+		if v == nil {
+			err := ResourceValidationError{
+				field:  "Resource",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+		if all {
+			switch v := interface{}(m.GetAgentTrigger()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ResourceValidationError{
+						field:  "AgentTrigger",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ResourceValidationError{
+						field:  "AgentTrigger",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetAgentTrigger()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ResourceValidationError{
+					field:  "AgentTrigger",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
 	default:
 		_ = v // ensures v is used
 	}
@@ -13004,6 +13086,1637 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = ConnectorStateValidationError{}
+
+// Validate checks the field values on Agent with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *Agent) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Agent with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in AgentMultiError, or nil if none found.
+func (m *Agent) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Agent) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetSpec()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, AgentValidationError{
+					field:  "Spec",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, AgentValidationError{
+					field:  "Spec",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetSpec()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return AgentValidationError{
+				field:  "Spec",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetState()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, AgentValidationError{
+					field:  "State",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, AgentValidationError{
+					field:  "State",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetState()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return AgentValidationError{
+				field:  "State",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return AgentMultiError(errors)
+	}
+
+	return nil
+}
+
+// AgentMultiError is an error wrapping multiple validation errors returned by
+// Agent.ValidateAll() if the designated constraints aren't met.
+type AgentMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m AgentMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m AgentMultiError) AllErrors() []error { return m }
+
+// AgentValidationError is the validation error returned by Agent.Validate if
+// the designated constraints aren't met.
+type AgentValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e AgentValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e AgentValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e AgentValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e AgentValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e AgentValidationError) ErrorName() string { return "AgentValidationError" }
+
+// Error satisfies the builtin error interface
+func (e AgentValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sAgent.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = AgentValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = AgentValidationError{}
+
+// Validate checks the field values on AgentSpec with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *AgentSpec) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on AgentSpec with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in AgentSpecMultiError, or nil
+// if none found.
+func (m *AgentSpec) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *AgentSpec) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for DisplayName
+
+	// no validation rules for Description
+
+	// no validation rules for ModelConnector
+
+	// no validation rules for ModelName
+
+	// no validation rules for Instructions
+
+	if all {
+		switch v := interface{}(m.GetLimits()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, AgentSpecValidationError{
+					field:  "Limits",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, AgentSpecValidationError{
+					field:  "Limits",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetLimits()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return AgentSpecValidationError{
+				field:  "Limits",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	for idx, item := range m.GetMcp() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, AgentSpecValidationError{
+						field:  fmt.Sprintf("Mcp[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, AgentSpecValidationError{
+						field:  fmt.Sprintf("Mcp[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return AgentSpecValidationError{
+					field:  fmt.Sprintf("Mcp[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return AgentSpecMultiError(errors)
+	}
+
+	return nil
+}
+
+// AgentSpecMultiError is an error wrapping multiple validation errors returned
+// by AgentSpec.ValidateAll() if the designated constraints aren't met.
+type AgentSpecMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m AgentSpecMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m AgentSpecMultiError) AllErrors() []error { return m }
+
+// AgentSpecValidationError is the validation error returned by
+// AgentSpec.Validate if the designated constraints aren't met.
+type AgentSpecValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e AgentSpecValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e AgentSpecValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e AgentSpecValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e AgentSpecValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e AgentSpecValidationError) ErrorName() string { return "AgentSpecValidationError" }
+
+// Error satisfies the builtin error interface
+func (e AgentSpecValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sAgentSpec.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = AgentSpecValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = AgentSpecValidationError{}
+
+// Validate checks the field values on MCPConnector with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *MCPConnector) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on MCPConnector with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in MCPConnectorMultiError, or
+// nil if none found.
+func (m *MCPConnector) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *MCPConnector) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Name
+
+	// no validation rules for Url
+
+	// no validation rules for AuthSecret
+
+	// no validation rules for TrustReadOnlyHint
+
+	// no validation rules for Approval
+
+	if len(errors) > 0 {
+		return MCPConnectorMultiError(errors)
+	}
+
+	return nil
+}
+
+// MCPConnectorMultiError is an error wrapping multiple validation errors
+// returned by MCPConnector.ValidateAll() if the designated constraints aren't met.
+type MCPConnectorMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m MCPConnectorMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m MCPConnectorMultiError) AllErrors() []error { return m }
+
+// MCPConnectorValidationError is the validation error returned by
+// MCPConnector.Validate if the designated constraints aren't met.
+type MCPConnectorValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e MCPConnectorValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e MCPConnectorValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e MCPConnectorValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e MCPConnectorValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e MCPConnectorValidationError) ErrorName() string { return "MCPConnectorValidationError" }
+
+// Error satisfies the builtin error interface
+func (e MCPConnectorValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sMCPConnector.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = MCPConnectorValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = MCPConnectorValidationError{}
+
+// Validate checks the field values on AgentLimits with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *AgentLimits) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on AgentLimits with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in AgentLimitsMultiError, or
+// nil if none found.
+func (m *AgentLimits) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *AgentLimits) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for MaxSteps
+
+	// no validation rules for TimeoutSeconds
+
+	if len(errors) > 0 {
+		return AgentLimitsMultiError(errors)
+	}
+
+	return nil
+}
+
+// AgentLimitsMultiError is an error wrapping multiple validation errors
+// returned by AgentLimits.ValidateAll() if the designated constraints aren't met.
+type AgentLimitsMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m AgentLimitsMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m AgentLimitsMultiError) AllErrors() []error { return m }
+
+// AgentLimitsValidationError is the validation error returned by
+// AgentLimits.Validate if the designated constraints aren't met.
+type AgentLimitsValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e AgentLimitsValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e AgentLimitsValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e AgentLimitsValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e AgentLimitsValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e AgentLimitsValidationError) ErrorName() string { return "AgentLimitsValidationError" }
+
+// Error satisfies the builtin error interface
+func (e AgentLimitsValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sAgentLimits.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = AgentLimitsValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = AgentLimitsValidationError{}
+
+// Validate checks the field values on AgentState with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *AgentState) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on AgentState with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in AgentStateMultiError, or
+// nil if none found.
+func (m *AgentState) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *AgentState) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetValidSpec()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, AgentStateValidationError{
+					field:  "ValidSpec",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, AgentStateValidationError{
+					field:  "ValidSpec",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetValidSpec()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return AgentStateValidationError{
+				field:  "ValidSpec",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	// no validation rules for SpecHash
+
+	if len(errors) > 0 {
+		return AgentStateMultiError(errors)
+	}
+
+	return nil
+}
+
+// AgentStateMultiError is an error wrapping multiple validation errors
+// returned by AgentState.ValidateAll() if the designated constraints aren't met.
+type AgentStateMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m AgentStateMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m AgentStateMultiError) AllErrors() []error { return m }
+
+// AgentStateValidationError is the validation error returned by
+// AgentState.Validate if the designated constraints aren't met.
+type AgentStateValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e AgentStateValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e AgentStateValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e AgentStateValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e AgentStateValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e AgentStateValidationError) ErrorName() string { return "AgentStateValidationError" }
+
+// Error satisfies the builtin error interface
+func (e AgentStateValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sAgentState.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = AgentStateValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = AgentStateValidationError{}
+
+// Validate checks the field values on AgentTrigger with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *AgentTrigger) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on AgentTrigger with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in AgentTriggerMultiError, or
+// nil if none found.
+func (m *AgentTrigger) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *AgentTrigger) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetSpec()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, AgentTriggerValidationError{
+					field:  "Spec",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, AgentTriggerValidationError{
+					field:  "Spec",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetSpec()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return AgentTriggerValidationError{
+				field:  "Spec",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetState()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, AgentTriggerValidationError{
+					field:  "State",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, AgentTriggerValidationError{
+					field:  "State",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetState()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return AgentTriggerValidationError{
+				field:  "State",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return AgentTriggerMultiError(errors)
+	}
+
+	return nil
+}
+
+// AgentTriggerMultiError is an error wrapping multiple validation errors
+// returned by AgentTrigger.ValidateAll() if the designated constraints aren't met.
+type AgentTriggerMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m AgentTriggerMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m AgentTriggerMultiError) AllErrors() []error { return m }
+
+// AgentTriggerValidationError is the validation error returned by
+// AgentTrigger.Validate if the designated constraints aren't met.
+type AgentTriggerValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e AgentTriggerValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e AgentTriggerValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e AgentTriggerValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e AgentTriggerValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e AgentTriggerValidationError) ErrorName() string { return "AgentTriggerValidationError" }
+
+// Error satisfies the builtin error interface
+func (e AgentTriggerValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sAgentTrigger.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = AgentTriggerValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = AgentTriggerValidationError{}
+
+// Validate checks the field values on AgentTriggerSpec with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *AgentTriggerSpec) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on AgentTriggerSpec with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// AgentTriggerSpecMultiError, or nil if none found.
+func (m *AgentTriggerSpec) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *AgentTriggerSpec) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Agent
+
+	if all {
+		switch v := interface{}(m.GetSource()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, AgentTriggerSpecValidationError{
+					field:  "Source",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, AgentTriggerSpecValidationError{
+					field:  "Source",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetSource()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return AgentTriggerSpecValidationError{
+				field:  "Source",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetActor()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, AgentTriggerSpecValidationError{
+					field:  "Actor",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, AgentTriggerSpecValidationError{
+					field:  "Actor",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetActor()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return AgentTriggerSpecValidationError{
+				field:  "Actor",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetInput()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, AgentTriggerSpecValidationError{
+					field:  "Input",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, AgentTriggerSpecValidationError{
+					field:  "Input",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetInput()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return AgentTriggerSpecValidationError{
+				field:  "Input",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetDeduplication()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, AgentTriggerSpecValidationError{
+					field:  "Deduplication",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, AgentTriggerSpecValidationError{
+					field:  "Deduplication",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetDeduplication()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return AgentTriggerSpecValidationError{
+				field:  "Deduplication",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return AgentTriggerSpecMultiError(errors)
+	}
+
+	return nil
+}
+
+// AgentTriggerSpecMultiError is an error wrapping multiple validation errors
+// returned by AgentTriggerSpec.ValidateAll() if the designated constraints
+// aren't met.
+type AgentTriggerSpecMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m AgentTriggerSpecMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m AgentTriggerSpecMultiError) AllErrors() []error { return m }
+
+// AgentTriggerSpecValidationError is the validation error returned by
+// AgentTriggerSpec.Validate if the designated constraints aren't met.
+type AgentTriggerSpecValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e AgentTriggerSpecValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e AgentTriggerSpecValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e AgentTriggerSpecValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e AgentTriggerSpecValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e AgentTriggerSpecValidationError) ErrorName() string { return "AgentTriggerSpecValidationError" }
+
+// Error satisfies the builtin error interface
+func (e AgentTriggerSpecValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sAgentTriggerSpec.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = AgentTriggerSpecValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = AgentTriggerSpecValidationError{}
+
+// Validate checks the field values on AgentTriggerSource with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *AgentTriggerSource) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on AgentTriggerSource with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// AgentTriggerSourceMultiError, or nil if none found.
+func (m *AgentTriggerSource) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *AgentTriggerSource) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Kind
+
+	// no validation rules for Name
+
+	// no validation rules for Cron
+
+	if len(errors) > 0 {
+		return AgentTriggerSourceMultiError(errors)
+	}
+
+	return nil
+}
+
+// AgentTriggerSourceMultiError is an error wrapping multiple validation errors
+// returned by AgentTriggerSource.ValidateAll() if the designated constraints
+// aren't met.
+type AgentTriggerSourceMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m AgentTriggerSourceMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m AgentTriggerSourceMultiError) AllErrors() []error { return m }
+
+// AgentTriggerSourceValidationError is the validation error returned by
+// AgentTriggerSource.Validate if the designated constraints aren't met.
+type AgentTriggerSourceValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e AgentTriggerSourceValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e AgentTriggerSourceValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e AgentTriggerSourceValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e AgentTriggerSourceValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e AgentTriggerSourceValidationError) ErrorName() string {
+	return "AgentTriggerSourceValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e AgentTriggerSourceValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sAgentTriggerSource.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = AgentTriggerSourceValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = AgentTriggerSourceValidationError{}
+
+// Validate checks the field values on AgentTriggerActor with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *AgentTriggerActor) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on AgentTriggerActor with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// AgentTriggerActorMultiError, or nil if none found.
+func (m *AgentTriggerActor) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *AgentTriggerActor) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetAttributes()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, AgentTriggerActorValidationError{
+					field:  "Attributes",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, AgentTriggerActorValidationError{
+					field:  "Attributes",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetAttributes()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return AgentTriggerActorValidationError{
+				field:  "Attributes",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	// no validation rules for UserId
+
+	// no validation rules for UserEmail
+
+	if len(errors) > 0 {
+		return AgentTriggerActorMultiError(errors)
+	}
+
+	return nil
+}
+
+// AgentTriggerActorMultiError is an error wrapping multiple validation errors
+// returned by AgentTriggerActor.ValidateAll() if the designated constraints
+// aren't met.
+type AgentTriggerActorMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m AgentTriggerActorMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m AgentTriggerActorMultiError) AllErrors() []error { return m }
+
+// AgentTriggerActorValidationError is the validation error returned by
+// AgentTriggerActor.Validate if the designated constraints aren't met.
+type AgentTriggerActorValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e AgentTriggerActorValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e AgentTriggerActorValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e AgentTriggerActorValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e AgentTriggerActorValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e AgentTriggerActorValidationError) ErrorName() string {
+	return "AgentTriggerActorValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e AgentTriggerActorValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sAgentTriggerActor.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = AgentTriggerActorValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = AgentTriggerActorValidationError{}
+
+// Validate checks the field values on AgentTriggerInput with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *AgentTriggerInput) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on AgentTriggerInput with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// AgentTriggerInputMultiError, or nil if none found.
+func (m *AgentTriggerInput) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *AgentTriggerInput) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Prompt
+
+	// no validation rules for Context
+
+	if len(errors) > 0 {
+		return AgentTriggerInputMultiError(errors)
+	}
+
+	return nil
+}
+
+// AgentTriggerInputMultiError is an error wrapping multiple validation errors
+// returned by AgentTriggerInput.ValidateAll() if the designated constraints
+// aren't met.
+type AgentTriggerInputMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m AgentTriggerInputMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m AgentTriggerInputMultiError) AllErrors() []error { return m }
+
+// AgentTriggerInputValidationError is the validation error returned by
+// AgentTriggerInput.Validate if the designated constraints aren't met.
+type AgentTriggerInputValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e AgentTriggerInputValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e AgentTriggerInputValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e AgentTriggerInputValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e AgentTriggerInputValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e AgentTriggerInputValidationError) ErrorName() string {
+	return "AgentTriggerInputValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e AgentTriggerInputValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sAgentTriggerInput.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = AgentTriggerInputValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = AgentTriggerInputValidationError{}
+
+// Validate checks the field values on AgentTriggerDeduplication with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *AgentTriggerDeduplication) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on AgentTriggerDeduplication with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// AgentTriggerDeduplicationMultiError, or nil if none found.
+func (m *AgentTriggerDeduplication) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *AgentTriggerDeduplication) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for WindowSeconds
+
+	if len(errors) > 0 {
+		return AgentTriggerDeduplicationMultiError(errors)
+	}
+
+	return nil
+}
+
+// AgentTriggerDeduplicationMultiError is an error wrapping multiple validation
+// errors returned by AgentTriggerDeduplication.ValidateAll() if the
+// designated constraints aren't met.
+type AgentTriggerDeduplicationMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m AgentTriggerDeduplicationMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m AgentTriggerDeduplicationMultiError) AllErrors() []error { return m }
+
+// AgentTriggerDeduplicationValidationError is the validation error returned by
+// AgentTriggerDeduplication.Validate if the designated constraints aren't met.
+type AgentTriggerDeduplicationValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e AgentTriggerDeduplicationValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e AgentTriggerDeduplicationValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e AgentTriggerDeduplicationValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e AgentTriggerDeduplicationValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e AgentTriggerDeduplicationValidationError) ErrorName() string {
+	return "AgentTriggerDeduplicationValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e AgentTriggerDeduplicationValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sAgentTriggerDeduplication.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = AgentTriggerDeduplicationValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = AgentTriggerDeduplicationValidationError{}
+
+// Validate checks the field values on AgentTriggerState with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *AgentTriggerState) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on AgentTriggerState with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// AgentTriggerStateMultiError, or nil if none found.
+func (m *AgentTriggerState) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *AgentTriggerState) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetValidSpec()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, AgentTriggerStateValidationError{
+					field:  "ValidSpec",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, AgentTriggerStateValidationError{
+					field:  "ValidSpec",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetValidSpec()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return AgentTriggerStateValidationError{
+				field:  "ValidSpec",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	// no validation rules for SpecHash
+
+	if len(errors) > 0 {
+		return AgentTriggerStateMultiError(errors)
+	}
+
+	return nil
+}
+
+// AgentTriggerStateMultiError is an error wrapping multiple validation errors
+// returned by AgentTriggerState.ValidateAll() if the designated constraints
+// aren't met.
+type AgentTriggerStateMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m AgentTriggerStateMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m AgentTriggerStateMultiError) AllErrors() []error { return m }
+
+// AgentTriggerStateValidationError is the validation error returned by
+// AgentTriggerState.Validate if the designated constraints aren't met.
+type AgentTriggerStateValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e AgentTriggerStateValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e AgentTriggerStateValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e AgentTriggerStateValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e AgentTriggerStateValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e AgentTriggerStateValidationError) ErrorName() string {
+	return "AgentTriggerStateValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e AgentTriggerStateValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sAgentTriggerState.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = AgentTriggerStateValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = AgentTriggerStateValidationError{}
 
 // Validate checks the field values on MetricsViewSpec_Dimension with the rules
 // defined in the proto definition for this message. If any rules are

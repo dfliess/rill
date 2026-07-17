@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"maps"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -51,6 +52,9 @@ type Runtime struct {
 	queryCache     *queryCache
 	securityEngine *securityEngine
 	configReloader *configReloader
+	// executionObserver is an optional hook notified after alert/report executions are persisted (§9.3/§9.4).
+	// It is the generic seam Act hangs its trigger machinery on; the runtime core never depends on that machinery.
+	executionObserver atomic.Pointer[executionObserverHolder]
 }
 
 func New(ctx context.Context, opts *Options, logger *zap.Logger, st *storage.Client, ac *activity.Client, emailClient *email.Client) (*Runtime, error) {

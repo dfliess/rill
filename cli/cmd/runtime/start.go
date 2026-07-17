@@ -105,6 +105,12 @@ type Config struct {
 	ActivitySinkKafkaBrokers string `default:"" split_words:"true"`
 	// Kafka topic of an activity client's sink
 	ActivitySinkKafkaTopic string `default:"" split_words:"true"`
+	// ActPostgresDSN gates the in-process Act plane (agentic run/approval + triggers). Empty => Act disabled and the
+	// runtime serves exactly as before. Set it (RILL_RUNTIME_ACT_POSTGRES_DSN) to a Postgres DSN to enable Act; DBOS
+	// and the product tables live in that database under ActDBOSSchema / ActProductSchema. See runtime/server/act_bootstrap.go.
+	ActPostgresDSN   string `default:"" split_words:"true"`
+	ActDBOSSchema    string `default:"act_dbos" split_words:"true"`
+	ActProductSchema string `default:"act_product" split_words:"true"`
 }
 
 // StartCmd starts a stand-alone runtime server. It only allows configuration using environment variables.
@@ -285,6 +291,24 @@ func StartCmd(ch *cmdutil.Helper) *cobra.Command {
 			s, err := server.NewServer(ctx, srvOpts, rt, logger, limiter, activityClient)
 			if err != nil {
 				logger.Fatal("error: could not create server", zap.Error(err))
+			}
+
+			// Wire the in-process Act plane when configured. Gated on the Act Postgres DSN: without it this is a
+			// no-op and the runtime serves exactly as before (Kairos ADR-0012: minimal, gated wiring).
+			if conf.ActPostgresDSN != "" {
+				actCloser, err := s.BootstrapAct(ctx, server.ActConfig{
+					PostgresDSN:   conf.ActPostgresDSN,
+					DBOSSchema:    conf.ActDBOSSchema,
+					ProductSchema: conf.ActProductSchema,
+				})
+				if err != nil {
+					logger.Fatal("error: could not bootstrap act", zap.Error(err))
+				}
+				defer func() {
+					if err := actCloser.Close(); err != nil {
+						logger.Error("act shutdown failed", zap.Error(err))
+					}
+				}()
 			}
 
 			// Run server
