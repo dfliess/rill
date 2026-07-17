@@ -544,6 +544,39 @@
     --radius: 4px;
   }
 
+  /* Kairos Control dark tokens — normative values from the website's
+     DESIGN.md (source of truth), so the app's dark theme matches
+     kairosagentica.com. surface-dark #232629 is the antracita bookend, used
+     as the dominant dark background (identical to the site's hero);
+     surface-dark-raised #2B2E32 for elevated panels; border-dark #3B3E43 for
+     hairlines. Overrides :root.dark (above) by source order; on-dark inks,
+     the steel-blue accent and the 4px radius are inherited unchanged. */
+  :root.dark {
+    --surface-base: #232629;
+    --surface-subtle: #26292d;
+    --surface-background: #2b2e32;
+    --surface-card: #2b2e32;
+    --surface-overlay: #2b2e32;
+    --surface-muted: #313539;
+    --surface-active: #313539;
+    --surface-hover: #33373c;
+
+    --tooltip: #2b2e32;
+    --popover: #2b2e32;
+    --popover-footer: #2b2e32;
+
+    --border: #3b3e43;
+
+    /* on-dark inks + accent-on-dark, from DESIGN.md. Replaces Rill's
+       cool-tinted gray-light ramp with the brand's neutral inks and the
+       periwinkle accent used for labels/eyebrows over dark. */
+    --fg-primary: #ecedea;
+    --fg-secondary: #c6c8c7;
+    --fg-tertiary: #a8acaf;
+    --fg-muted: #a8acaf;
+    --fg-accent: #9bb6f2;
+  }
+
   body {
     font-family:
       "Source Sans 3",
