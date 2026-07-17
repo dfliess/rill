@@ -59,6 +59,10 @@ func (p *Parser) parseNode(ctx context.Context, node *Node) error {
 		return p.parseAPI(node)
 	case ResourceKindConnector:
 		return p.parseConnector(node)
+	case ResourceKindAgent:
+		return p.parseAgent(node)
+	case ResourceKindAgentTrigger:
+		return p.parseAgentTrigger(node)
 	default:
 		panic(fmt.Errorf("unexpected resource type: %s", node.Kind.String()))
 	}

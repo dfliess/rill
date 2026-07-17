@@ -26,6 +26,8 @@ const (
 	ResourceKindCanvas         string = "rill.runtime.v1.Canvas"
 	ResourceKindAPI            string = "rill.runtime.v1.API"
 	ResourceKindConnector      string = "rill.runtime.v1.Connector"
+	ResourceKindAgent          string = "rill.runtime.v1.Agent"
+	ResourceKindAgentTrigger   string = "rill.runtime.v1.AgentTrigger"
 )
 
 // ResourceKindFromPretty converts a user-friendly resource kind to a runtime resource kind.
@@ -60,6 +62,10 @@ func ResourceKindFromShorthand(kind string) string {
 		return ResourceKindAPI
 	case "connector":
 		return ResourceKindConnector
+	case "agent":
+		return ResourceKindAgent
+	case "agenttrigger", "agent_trigger":
+		return ResourceKindAgentTrigger
 	default:
 		return kind
 	}
@@ -80,7 +86,9 @@ func IsKnownResourceKind(kind string) bool {
 		ResourceKindComponent,
 		ResourceKindCanvas,
 		ResourceKindAPI,
-		ResourceKindConnector:
+		ResourceKindConnector,
+		ResourceKindAgent,
+		ResourceKindAgentTrigger:
 		return true
 	default:
 		return false
@@ -114,6 +122,10 @@ func ResourceKindFromParser(kind parser.ResourceKind) string {
 		return ResourceKindAPI
 	case parser.ResourceKindConnector:
 		return ResourceKindConnector
+	case parser.ResourceKindAgent:
+		return ResourceKindAgent
+	case parser.ResourceKindAgentTrigger:
+		return ResourceKindAgentTrigger
 	default:
 		panic(fmt.Errorf("unknown parser resource type %q", kind))
 	}
@@ -146,6 +158,10 @@ func ResourceKindToParser(kind string) parser.ResourceKind {
 		return parser.ResourceKindAPI
 	case ResourceKindConnector:
 		return parser.ResourceKindConnector
+	case ResourceKindAgent:
+		return parser.ResourceKindAgent
+	case ResourceKindAgentTrigger:
+		return parser.ResourceKindAgentTrigger
 	case ResourceKindProjectParser, ResourceKindRefreshTrigger:
 		panic(fmt.Errorf("unsupported resource type %q", kind))
 	default:

@@ -1,0 +1,57 @@
+<script lang="ts">
+  import { m } from "@rilldata/web-common/lib/i18n/gen/messages";
+  import { useRuntimeClient } from "@rilldata/web-common/runtime-client/v2";
+  import AgentRunsTable from "./runs/AgentRunsTable.svelte";
+  import { useAgentApprovals, useAgentRuns } from "./selectors";
+  import type { AgentApprovalData } from "./types";
+
+  let { organization, project }: { organization: string; project: string } =
+    $props();
+
+  const runtimeClient = useRuntimeClient();
+
+  // The Home inbox: runs blocked on a human decision. No search or filters here —
+  // it is a focused "needs you" list; the Act tab is where you filter and dig in.
+  const runsQuery = useAgentRuns(runtimeClient, { status: "waiting_approval" });
+  let runs = $derived($runsQuery.data?.runs ?? []);
+
+  // Runs blocked on a pending approval. A run waits until a human decides or it is
+  // cancelled, so every pending approval is actionable and belongs in the inbox.
+  const approvalsQuery = useAgentApprovals(runtimeClient, {
+    status: "pending",
+  });
+  let approvalsByRun = $derived(
+    ($approvalsQuery.data?.approvals ?? []).reduce(
+      (map, a: AgentApprovalData) => {
+        if (a.runId && !map.has(a.runId)) map.set(a.runId, a);
+        return map;
+      },
+      new Map<string, AgentApprovalData>(),
+    ),
+  );
+  let pendingRuns = $derived(
+    runs.filter((r) => approvalsByRun.has(r.runId ?? "")),
+  );
+
+  let base = $derived(`/${organization}/${project}/-/agents`);
+</script>
+
+<!-- Hidden entirely when nothing is waiting, so Home stays quiet until it needs attention. -->
+{#if pendingRuns.length > 0}
+  <div class="flex flex-col gap-y-4">
+    <h2
+      class="flex items-center justify-between text-xl font-semibold text-fg-secondary"
+    >
+      {m.agents_home_pending_heading()}
+      <a class="text-sm font-normal text-primary-600" href={base}>
+        {m.agents_home_view_all()}
+      </a>
+    </h2>
+    <AgentRunsTable
+      data={pendingRuns}
+      {approvalsByRun}
+      {organization}
+      {project}
+    />
+  </div>
+{/if}

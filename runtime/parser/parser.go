@@ -42,18 +42,20 @@ type Resource struct {
 	rawRefs []ResourceName // Populated during parsing (may contain ResourceKindUnspecified)
 
 	// Only one of these will be non-nil
-	SourceSpec      *runtimev1.SourceSpec
-	ModelSpec       *runtimev1.ModelSpec
-	MetricsViewSpec *runtimev1.MetricsViewSpec
-	ExploreSpec     *runtimev1.ExploreSpec
-	MigrationSpec   *runtimev1.MigrationSpec
-	ReportSpec      *runtimev1.ReportSpec
-	AlertSpec       *runtimev1.AlertSpec
-	ThemeSpec       *runtimev1.ThemeSpec
-	ComponentSpec   *runtimev1.ComponentSpec
-	CanvasSpec      *runtimev1.CanvasSpec
-	APISpec         *runtimev1.APISpec
-	ConnectorSpec   *runtimev1.ConnectorSpec
+	SourceSpec       *runtimev1.SourceSpec
+	ModelSpec        *runtimev1.ModelSpec
+	MetricsViewSpec  *runtimev1.MetricsViewSpec
+	ExploreSpec      *runtimev1.ExploreSpec
+	MigrationSpec    *runtimev1.MigrationSpec
+	ReportSpec       *runtimev1.ReportSpec
+	AlertSpec        *runtimev1.AlertSpec
+	ThemeSpec        *runtimev1.ThemeSpec
+	ComponentSpec    *runtimev1.ComponentSpec
+	CanvasSpec       *runtimev1.CanvasSpec
+	APISpec          *runtimev1.APISpec
+	ConnectorSpec    *runtimev1.ConnectorSpec
+	AgentSpec        *runtimev1.AgentSpec
+	AgentTriggerSpec *runtimev1.AgentTriggerSpec
 }
 
 // ResourceName is a unique identifier for a resource
@@ -90,6 +92,8 @@ const (
 	ResourceKindCanvas
 	ResourceKindAPI
 	ResourceKindConnector
+	ResourceKindAgent
+	ResourceKindAgentTrigger
 )
 
 // ParseResourceKind maps a string to a ResourceKind.
@@ -122,6 +126,10 @@ func ParseResourceKind(kind string) (ResourceKind, error) {
 		return ResourceKindAPI, nil
 	case "connector":
 		return ResourceKindConnector, nil
+	case "agent":
+		return ResourceKindAgent, nil
+	case "agent_trigger", "agenttrigger":
+		return ResourceKindAgentTrigger, nil
 	default:
 		return ResourceKindUnspecified, fmt.Errorf("invalid resource type %q", kind)
 	}
@@ -155,6 +163,10 @@ func (k ResourceKind) String() string {
 		return "API"
 	case ResourceKindConnector:
 		return "Connector"
+	case ResourceKindAgent:
+		return "Agent"
+	case ResourceKindAgentTrigger:
+		return "AgentTrigger"
 	default:
 		panic(fmt.Sprintf("unexpected resource type: %d", k))
 	}
@@ -908,6 +920,10 @@ func (p *Parser) insertResource(kind ResourceKind, name string, paths, tags []st
 		r.APISpec = &runtimev1.APISpec{}
 	case ResourceKindConnector:
 		r.ConnectorSpec = &runtimev1.ConnectorSpec{}
+	case ResourceKindAgent:
+		r.AgentSpec = &runtimev1.AgentSpec{}
+	case ResourceKindAgentTrigger:
+		r.AgentTriggerSpec = &runtimev1.AgentTriggerSpec{}
 	default:
 		panic(fmt.Errorf("unexpected resource type: %s", kind.String()))
 	}

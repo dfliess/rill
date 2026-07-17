@@ -453,6 +453,11 @@ const (
 	MessageTypeCall     MessageType = "call"
 	MessageTypeProgress MessageType = "progress"
 	MessageTypeResult   MessageType = "result"
+	// MessageTypeText is a plain conversation turn that is neither a tool call, a tool result, nor streamed
+	// assistant thinking: a user's opening prompt persisted so the conversation reads as a chat. It is deliberately
+	// distinct from Call (which implies a tool invocation and result correlation) and Result (which the chat UI
+	// hides as tool output). The chat renders it by its RoleUser role, not by this type.
+	MessageTypeText MessageType = "text"
 )
 
 // MessageContentType is the type of content contained in a message.
@@ -530,6 +535,37 @@ type BaseSession struct {
 	messages      []*Message
 	messagesDirty bool
 	subscribers   map[chan *Message]struct{}
+
+	// extraTools holds tools registered for the lifetime of a single run, on top of the runner's fixed registry.
+	// A dynamic agent uses this to inject the tools it discovers from its MCP connectors at run start: they are
+	// not compiled-in, so they cannot live in runner.Tools, and they must not outlive the run. Guarded by its own
+	// mutex (not mu, which guards the message tree) and initialized lazily on first RegisterRunTool.
+	extraToolsMu sync.RWMutex
+	extraTools   map[string]*CompiledTool
+}
+
+// RegisterRunTool adds a tool to this session's per-run registry, resolved by Session.Tool ahead of the runner's
+// fixed tools. It exists for tools that are discovered at run start rather than compiled in (an agent's MCP tools):
+// they live only as long as the session and are never persisted. A later registration under the same name replaces
+// the earlier one.
+func (s *BaseSession) RegisterRunTool(t *CompiledTool) {
+	s.extraToolsMu.Lock()
+	defer s.extraToolsMu.Unlock()
+	if s.extraTools == nil {
+		s.extraTools = make(map[string]*CompiledTool)
+	}
+	s.extraTools[t.Name] = t
+}
+
+// UnregisterRunTool removes a per-run tool registered by RegisterRunTool. It scopes those tools to the run that
+// registered them: the *BaseSession is shared with sub-calls (WithParent), and those sub-calls do not set
+// RestrictToolCalls, so a discovered MCP tool left behind would stay callable (CheckAccess is fixed true) by a
+// later sub-agent or run on the same session. The run's cleanup deletes each name it added. Deleting an absent
+// name is a no-op.
+func (s *BaseSession) UnregisterRunTool(name string) {
+	s.extraToolsMu.Lock()
+	defer s.extraToolsMu.Unlock()
+	delete(s.extraTools, name)
 }
 
 func (s *BaseSession) Flush(ctx context.Context) error {
@@ -921,7 +957,15 @@ func (s *Session) RootID() string {
 }
 
 func (s *Session) Tool(toolName string) (*CompiledTool, bool) {
-	t, ok := s.runner.Tools[toolName]
+	// Per-run tools (e.g. an agent's discovered MCP tools) take precedence over the runner's fixed registry, so a
+	// run can expose tools that are not compiled in without mutating shared state.
+	s.extraToolsMu.RLock()
+	t, ok := s.extraTools[toolName]
+	s.extraToolsMu.RUnlock()
+	if ok {
+		return t, true
+	}
+	t, ok = s.runner.Tools[toolName]
 	return t, ok
 }
 
@@ -1131,6 +1175,16 @@ type CompleteOptions struct {
 	// In some cases, it's desirable to capture these intermediate messages in the parent call's context, in other cases it's better to isolate them and only expose the final result to the parent context.
 	// When UnwrapCall is true, we run the completion loop within the current call, otherwise we wrap the complete loop in a new call to isolate internal messages.
 	UnwrapCall bool
+	// RestrictToolCalls, when true, makes the completion loop reject (fail-closed) any tool call whose name is
+	// not present in Tools, instead of attempting to execute it. It defaults to false, preserving the existing
+	// behavior where a proposed tool is authorized per-tool via CheckAccess only. Dynamic agents set it so the
+	// callable set can never exceed the agent's immutable snapshot, even if the model proposes an unlisted tool.
+	RestrictToolCalls bool
+	// PauseAfterToolCall, when set, is checked after each turn's tool calls are dispatched; if it returns true the loop
+	// stops WITHOUT taking another model turn and WITHOUT producing a final message. A dynamic agent uses it to pause
+	// the instant it captures a governed write for human approval, so the model says nothing before the action is
+	// approved and executed. The caller resumes with a fresh Complete once the action's result is available.
+	PauseAfterToolCall func() bool
 }
 
 // Complete runs LLM completions.
@@ -1159,7 +1213,9 @@ func (s *Session) Complete(ctx context.Context, name string, out any, opts *Comp
 	// Prepare tool definitions.
 	tools := make([]*aiv1.Tool, 0, len(opts.Tools))
 	for _, toolName := range opts.Tools {
-		tool, ok := s.runner.Tools[toolName]
+		// Resolve via s.Tool so per-run tools (an agent's discovered MCP tools) are advertised to the model, not
+		// only the runner's fixed registry. This keeps the advertised set and the executed set the same lookup.
+		tool, ok := s.Tool(toolName)
 		if !ok {
 			return fmt.Errorf("unknown tool %q", toolName)
 		}
@@ -1276,6 +1332,7 @@ func (s *Session) Complete(ctx context.Context, name string, out any, opts *Comp
 
 		// Complete and execute tool calls in a loop.
 		var result *aiv1.CompletionMessage
+		var paused bool
 		for i := range opts.MaxIterations {
 			// Disable tool calls in the last iteration
 			final := i+1 == opts.MaxIterations
@@ -1365,6 +1422,12 @@ func (s *Session) Complete(ctx context.Context, name string, out any, opts *Comp
 					}
 					messages = append(messages, msgPB)
 				case *aiv1.ContentBlock_ToolCall:
+					// Fail-closed enforcement: when RestrictToolCalls is set, the model may only call tools that were
+					// advertised in opts.Tools. This backstops dynamic agents, whose callable set is derived from an
+					// immutable snapshot and must never be exceeded, even if the model proposes an otherwise-accessible tool.
+					if opts.RestrictToolCalls && !slices.Contains(opts.Tools, block.ToolCall.Name) {
+						return nil, fmt.Errorf("model requested tool %q which is not in the allowed set", block.ToolCall.Name)
+					}
 					toolResult, err := s.CallToolWithOptions(ctx, &CallToolOptions{
 						Role: RoleAssistant,
 						Tool: block.ToolCall.Name,
@@ -1393,6 +1456,20 @@ func (s *Session) Complete(ctx context.Context, name string, out any, opts *Comp
 					return nil, fmt.Errorf("unexpected progress block type: %T", block)
 				}
 			}
+
+			// A tool signaled the loop to pause (a governed write captured for human approval): stop here without
+			// letting the model take another turn or produce a final answer, so nothing is said before the action is
+			// approved. The caller resumes the loop (a fresh Complete) after the action executes, injecting its result.
+			if opts.PauseAfterToolCall != nil && opts.PauseAfterToolCall() {
+				paused = true
+				break
+			}
+		}
+
+		// If a tool paused the loop for approval, return with no final message: the run is suspended, not finished, and
+		// the caller resumes it after the action's result is available.
+		if paused {
+			return nil, nil
 		}
 
 		// Handle the final complete result

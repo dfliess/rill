@@ -34,6 +34,8 @@ message Resource {
     Canvas canvas = 14;
     API api = 15;
     ConnectorV2 connector = 16;
+    Agent agent = 18;
+    AgentTrigger agent_trigger = 19;
   }
 }
 
@@ -1032,4 +1034,150 @@ message ConnectorSpec {
 
 message ConnectorState {
   string spec_hash = 1;
+}
+
+// Agent is a declarative agent resource (Kairos Act, experimental).
+// The reconciler only validates the spec; it never executes anything.
+message Agent {
+  AgentSpec spec = 1;
+  AgentState state = 2;
+}
+
+message AgentSpec {
+  string display_name = 1;
+  string description = 2;
+  // Model connector and model name reference an existing AI connector in the project.
+  string model_connector = 3;
+  string model_name = 4;
+  // Instructions is the system prompt for the agent. Required.
+  string instructions = 5;
+  // Tools is an allowlist of the built-in (analytical) tool names the agent may use.
+  repeated string tools = 6;
+  AgentLimits limits = 7;
+  // Mcp declares outbound MCP connectors. Each connector's tools are discovered at run start and offered to
+  // the model under namespaced names (mcp.<name>.<tool>), separate from the built-in tools allowlist above.
+  repeated MCPConnector mcp = 8;
+}
+
+// MCPConnector declares one outbound MCP server the agent may reach (Kairos Act, experimental). It carries
+// only a reference to the bearer credential, never the literal: the executor resolves the secret server-side
+// and the mcpconn client attaches it below the egress guard.
+message MCPConnector {
+  // Name is the local connector name; its discovered tools are namespaced as mcp.<name>.<tool>.
+  string name = 1;
+  // Url is the absolute https endpoint of the remote MCP server.
+  string url = 2;
+  // AuthSecret is the name of the variable/secret holding the bearer token. It is a reference only.
+  string auth_secret = 3;
+  // AllowedHosts is the egress allowlist for this connector.
+  repeated string allowed_hosts = 4;
+  // TrustReadOnlyHint opts the connector in to treating a tool's server-advertised readOnlyHint as meaningful.
+  bool trust_read_only_hint = 5;
+  // Approval is the connector's approval posture for its write tools: "manual" (default, empty means manual) requires
+  // human approval for every action; "auto" auto-approves actions, subject to require_approval. It never affects a
+  // trusted read-only tool, which runs inline regardless.
+  string approval = 6;
+  // RequireApproval lists tool-name glob patterns (e.g. "delete_*") that still require human approval even when
+  // approval is "auto". Matched against the tool's raw name.
+  repeated string require_approval = 7;
+  // AutoApprove lists tool-name glob patterns that skip human approval when approval is "manual" (the default).
+  // Matched against the tool's raw name.
+  repeated string auto_approve = 8;
+}
+
+message AgentLimits {
+  uint32 max_steps = 1;
+  uint32 timeout_seconds = 2;
+}
+
+message AgentState {
+  // Valid spec is a (potentially previous) version of the spec that is known to currently be valid.
+  AgentSpec valid_spec = 1;
+  // Spec hash is a stable hash of the effective spec, used to detect changes.
+  string spec_hash = 2;
+}
+
+// AgentTrigger binds an Agent to a source of events (an alert, a report or a schedule), so a detected
+// condition or a finished report starts an agent run (Kairos Act, experimental). It separates the agent's
+// definition from its activation: one agent may have zero, one or several triggers, and a trigger can be
+// paused without editing the agent.
+//
+// The reconciler only validates it (the referenced agent exists and the source is coherent); it never runs
+// anything. The trigger dispatcher (runtime/act/trigger) matches persisted alert/report execution events
+// against valid triggers out of band, so no LLM call ever happens inside a reconciler.
+message AgentTrigger {
+  AgentTriggerSpec spec = 1;
+  AgentTriggerState state = 2;
+}
+
+message AgentTriggerSpec {
+  // Agent is the name of the Agent resource this trigger starts. Required.
+  string agent = 1;
+  // Source selects which resource's executions activate this trigger and which of their events.
+  AgentTriggerSource source = 2;
+  // Actor is the identity a started run acts as: a user (manual) or a declared service principal (§17.3).
+  AgentTriggerActor actor = 3;
+  // Input is the prompt and static context handed to a started run.
+  AgentTriggerInput input = 4;
+  // Deduplication collapses repeated events for this trigger within a window into a single run.
+  AgentTriggerDeduplication deduplication = 5;
+}
+
+// AgentTriggerSourceKind is the kind of resource whose events drive a trigger.
+enum AgentTriggerSourceKind {
+  AGENT_TRIGGER_SOURCE_KIND_UNSPECIFIED = 0;
+  AGENT_TRIGGER_SOURCE_KIND_ALERT = 1;
+  AGENT_TRIGGER_SOURCE_KIND_REPORT = 2;
+  AGENT_TRIGGER_SOURCE_KIND_SCHEDULE = 3;
+}
+
+message AgentTriggerSource {
+  AgentTriggerSourceKind kind = 1;
+  // Name of the source alert or report. Empty for a schedule trigger, which owns its own clock.
+  string name = 2;
+  // Events is the allowlist of event types that activate this trigger, in short form scoped to the source
+  // kind (e.g. "entered_fail", "recovered", "renotify_due" for an alert; "completed", "failed" for a report).
+  repeated string events = 3;
+  // Cron is the schedule a schedule-kind trigger fires on (standard 5-field cron, optionally prefixed with
+  // "CRON_TZ=<tz>"). Required for a schedule source and must be empty for an alert or report source.
+  string cron = 4;
+}
+
+// AgentTriggerActor is the identity a started run acts as, mirroring an alert's identity model: name a user
+// (user_id/user_email, resolved to attributes via the admin service) or give explicit attributes. The run's subject
+// and service-principal flag are derived from this, so there is no separate mode/service to keep in sync.
+message AgentTriggerActor {
+  reserved 1, 2; // was: mode, service (collapsed into the alert-style identity below)
+  reserved "mode", "service";
+  // Attributes is the security identity a started run executes as: the user attributes its SecurityClaims are built
+  // from (row-level data access and tool authorization), mirroring an alert's query_for_attributes. Explicit
+  // attributes take precedence over user_id/user_email. Empty (and no user reference) means the run carries no claims
+  // and fails closed (it cannot execute tools); set it for an automatic run that must act.
+  google.protobuf.Struct attributes = 3;
+  // UserId names the user whose attributes a started run acts as; the reconciler resolves it to attributes via the
+  // admin service, exactly like an alert's query_for_user_id. Mutually exclusive with user_email.
+  string user_id = 4;
+  // UserEmail names the user (by email) whose attributes a started run acts as; resolved to attributes via the admin
+  // service like an alert's query_for_user_email. Mutually exclusive with user_id.
+  string user_email = 5;
+}
+
+message AgentTriggerInput {
+  // Prompt is the instruction handed to the started run.
+  string prompt = 1;
+  // Context is static key/value context attached to the run (e.g. the source alert name).
+  map<string, string> context = 2;
+}
+
+message AgentTriggerDeduplication {
+  // Window seconds is the period within which repeated events for this trigger collapse into one run.
+  // Zero disables window deduplication (only exact event replays are still deduplicated by identity).
+  uint32 window_seconds = 1;
+}
+
+message AgentTriggerState {
+  // Valid spec is a (potentially previous) version of the spec that is known to currently be valid.
+  AgentTriggerSpec valid_spec = 1;
+  // Spec hash is a stable hash of the effective spec, used to detect changes.
+  string spec_hash = 2;
 }

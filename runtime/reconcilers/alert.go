@@ -984,7 +984,12 @@ func (r *AlertReconciler) popCurrentExecution(ctx context.Context, self *runtime
 		a.State.ExecutionHistory = a.State.ExecutionHistory[:alertExecutionHistoryLimit]
 	}
 
-	return r.C.UpdateState(ctx, self.Meta.Name, self)
+	if err := r.C.UpdateState(ctx, self.Meta.Name, self); err != nil {
+		return err
+	}
+	// Act: announce the persisted execution to the execution observer, which derives trigger events (§9.3). No-op if unset.
+	r.C.Runtime.ObserveExecution(ctx, r.C.InstanceID, self)
+	return nil
 }
 
 // computeInheritedWatermark computes the inherited watermark for the alert.

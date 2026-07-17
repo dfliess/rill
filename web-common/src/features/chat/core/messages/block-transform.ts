@@ -155,6 +155,21 @@ function getBlockRoute(msg: V1Message): BlockRoute {
     return { route: "skip" };
   }
 
+  // A user message is a conversation turn (a prompt), not a tool call, regardless of tool tag. This covers both
+  // the assistant chat (user turns are router_agent calls with role=user) and dynamic agent runs (a plain user
+  // text turn), so the conversation always opens with the instruction.
+  if (msg.role === "user") {
+    return { route: "text" };
+  }
+
+  // A plain text turn is a conversation bubble regardless of role. A dynamic agent run persists its assistant
+  // responses this way — the wrap-up before a governed action and, after the action's result is injected, the
+  // closing answer. Without this route an assistant text turn has no tool tag and falls through to skip, so the
+  // model's answer (the point of the segmented run) would never render.
+  if (msg.type === MessageType.TEXT) {
+    return { route: "text" };
+  }
+
   // Router agent → text (main conversation)
   if (msg.tool === ToolName.ROUTER_AGENT) {
     return { route: "text" };
@@ -187,6 +202,12 @@ function getBlockRoute(msg: V1Message): BlockRoute {
 // as main chat blocks (unless they're feedback-related).
 
 function shouldHideMessage(msg: V1Message): boolean {
+  // The injected action-result turn is an internal prompt that feeds the model on resume (so it can compose a closing);
+  // it is not something the user said. Hide it — the model's own closing answer is what the user reads.
+  if (msg.tool === ToolName.ACTION_RESULT) {
+    return true;
+  }
+
   // Internal tools → rendered in thinking blocks (see tool-registry.ts)
   if (msg.tool !== ToolName.ROUTER_AGENT && isHiddenTool(msg.tool)) {
     return true;

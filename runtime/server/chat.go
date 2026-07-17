@@ -670,9 +670,12 @@ func messageToPB(s *ai.Session, msg *ai.Message) (*runtimev1.Message, error) {
 			role = "tool"
 		}
 	default:
-		if msg.Role == ai.RoleSystem {
+		switch msg.Role {
+		case ai.RoleSystem:
 			role = "system"
-		} else {
+		case ai.RoleUser:
+			role = "user"
+		default:
 			role = "assistant"
 		}
 	}
@@ -695,7 +698,7 @@ func messageToPB(s *ai.Session, msg *ai.Message) (*runtimev1.Message, error) {
 // messageContentToPB converts an ai.Message Content to a aiv1.ContentBlock.
 func messageContentToPB(msg *ai.Message) (*aiv1.ContentBlock, error) {
 	switch msg.Type {
-	case ai.MessageTypeProgress:
+	case ai.MessageTypeProgress, ai.MessageTypeText:
 		return &aiv1.ContentBlock{
 			BlockType: &aiv1.ContentBlock_Text{
 				Text: msg.Content,

@@ -2,6 +2,7 @@
   import { page } from "$app/stores";
   import ContentContainer from "@rilldata/web-common/components/layout/ContentContainer.svelte";
   import DashboardsTable from "@rilldata/web-admin/features/dashboards/listing/DashboardsTable.svelte";
+  import HomePendingApprovals from "@rilldata/web-admin/features/agents/HomePendingApprovals.svelte";
   import InlineChat from "@rilldata/web-common/features/chat/layouts/inline/InlineChat.svelte";
   import DelayedContent from "@rilldata/web-common/features/entity-management/DelayedContent.svelte";
   import { featureFlags } from "@rilldata/web-common/features/feature-flags";
@@ -16,7 +17,7 @@
   import { m } from "@rilldata/web-common/lib/i18n/gen/messages";
   import { escapeHtml } from "@rilldata/web-common/lib/i18n";
 
-  const { chat, personalCanvases } = featureFlags;
+  const { chat, personalCanvases, agents } = featureFlags;
 
   const runtimeClient = useRuntimeClient();
 
@@ -92,6 +93,11 @@
         </div>
       {/if}
     </div>
+
+    <!-- Act: runs waiting on approval (after chat, before dashboards) -->
+    {#if $agents}
+      <HomePendingApprovals {organization} {project} />
+    {/if}
 
     <!-- Dashboards Section -->
     {#if $personalCanvases}

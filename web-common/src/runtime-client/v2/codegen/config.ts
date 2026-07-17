@@ -41,6 +41,15 @@ export const methodOverrides: Record<
   ConnectorService: {
     // All methods are queries (no overrides needed)
   },
+  AgentService: {
+    // Semantically write operations
+    startAgentRun: "mutation",
+    cancelAgentRun: "mutation",
+    approveAgentApproval: "mutation",
+    denyAgentApproval: "mutation",
+    // Streaming (also auto-skipped by MethodKind, listed for clarity)
+    streamAgentRunEvents: "skip",
+  },
 };
 
 /**

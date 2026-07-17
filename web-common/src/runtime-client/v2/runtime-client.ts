@@ -3,6 +3,7 @@ import { createConnectTransport } from "@connectrpc/connect-web";
 import { QueryService } from "../../proto/gen/rill/runtime/v1/queries_connect";
 import { RuntimeService } from "../../proto/gen/rill/runtime/v1/api_connect";
 import { ConnectorService } from "../../proto/gen/rill/runtime/v1/connectors_connect";
+import { AgentService } from "../../proto/gen/rill/runtime/v1/agents_connect";
 import {
   RUNTIME_ACCESS_TOKEN_DEFAULT_TTL,
   JWT_EXPIRY_WARNING_WINDOW,
@@ -28,6 +29,7 @@ export class RuntimeClient {
   private _queryService: Client<typeof QueryService> | null = null;
   private _runtimeService: Client<typeof RuntimeService> | null = null;
   private _connectorService: Client<typeof ConnectorService> | null = null;
+  private _agentService: Client<typeof AgentService> | null = null;
 
   constructor(opts: {
     host: string;
@@ -109,6 +111,10 @@ export class RuntimeClient {
       ConnectorService,
       this.transport,
     ));
+  }
+
+  get agentService() {
+    return (this._agentService ??= createClient(AgentService, this.transport));
   }
 
   /**

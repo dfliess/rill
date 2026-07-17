@@ -19,6 +19,9 @@ const (
 	RequestSourceReport RequestSource = "report"
 	// RequestSourceChat is conversational AI (chat) completion, over both gRPC and the SSE HTTP handler.
 	RequestSourceChat RequestSource = "chat"
+	// RequestSourceAct is Kairos Act traffic: the agent run/approval API and the run-event SSE stream. It covers the
+	// analytical queries an agent run makes on behalf of its actor, so they are billed to Act rather than to the UI.
+	RequestSourceAct RequestSource = "act"
 	// RequestSourceHealth is the internal health check (probe queries); not billable.
 	RequestSourceHealth RequestSource = "health"
 	// RequestSourceInternal is system-driven reconcile work (watermarks, validation, cache keys, model state/partitions); not billable.
