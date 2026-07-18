@@ -1,0 +1,49 @@
+# Kairos-owned CI (additive; NOT part of upstream Rill).
+#
+# Purpose: a CLEAN green/red signal that Kairos changes don't break Rill.
+# Upstream's "Test Go code" (go-test.yml) still runs the full suite, but it is
+# permanently red in this fork because its cloud-integration tests need secrets
+# (Druid/GCS/S3/...) the fork does not carry, so "red" there is ambiguous.
+#
+# This job answers "did a Kairos change break things?" unambiguously:
+#   1. go build ./...  — the WHOLE Rill tree must still compile.
+#   2. go test -short  — the Act/Kairos-owned packages must still pass.
+# It needs no external services, so green means green.
+name: Kairos unit tests
+
+on:
+  pull_request:
+    branches: [kairos-main]
+  push:
+    branches: [kairos-main]
+
+permissions:
+  contents: read
+
+jobs:
+  kairos-unit:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.26.5"
+
+      # duckdb and other drivers need cgo.
+      - name: Whole tree compiles (Kairos must not break any Rill package)
+        run: go build ./...
+        env:
+          CGO_ENABLED: "1"
+
+      - name: Act/Kairos packages pass unit tests
+        run: >-
+          go test -short -count=1 -timeout 20m
+          ./runtime/act/...
+          ./runtime/ai/...
+          ./runtime/parser/...
+          ./runtime/reconcilers/...
+        env:
+          CGO_ENABLED: "1"
