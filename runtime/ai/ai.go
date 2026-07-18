@@ -752,6 +752,13 @@ func (s *BaseSession) LatestMessage(predicates ...Predicate) (*Message, bool) {
 	return nil, false
 }
 
+// LatestFinalAnswer returns the conversation's most recent completed assistant answer, or false if none exists yet
+// (e.g. a run still in progress or paused for approval). See IsFinalAnswer for what qualifies; scanning newest-first
+// naturally returns whichever agent topology produced the later answer.
+func (s *BaseSession) LatestFinalAnswer() (*Message, bool) {
+	return s.LatestMessage(IsFinalAnswer)
+}
+
 func (s *BaseSession) Messages(predicates ...Predicate) []*Message {
 	if len(predicates) == 0 {
 		return slices.Clone(s.messages)
@@ -889,6 +896,21 @@ func FilterByTool(tool string) Predicate {
 	return func(m *Message) bool {
 		return m.Tool == tool
 	}
+}
+
+// IsFinalAnswer reports whether m is a conversation's completed assistant answer:
+// the terminal message a shared or exported view should end on.
+// Two shapes qualify, one per agent topology:
+//   the router agent's result, produced by the built-in Ask flow and by AI reports (which run the analyst through the
+//   router_agent);
+//   a root-level assistant text message, produced by a top-level dynamic agent (Act), which runs unwrapped (there is
+//   no router_agent to wrap its answer) and persists its final turn directly at the session root.
+// It has a Predicate's signature so it can be passed to Message/Messages/LatestMessage directly.
+func IsFinalAnswer(m *Message) bool {
+	if m.Tool == RouterAgentName && m.Type == MessageTypeResult {
+		return true
+	}
+	return m.ParentID == "" && m.Role == RoleAssistant && m.Type == MessageTypeText
 }
 
 // Session wraps a BaseSession with a reference to the current call's parent message.

@@ -242,7 +242,7 @@ func (r *aiResolver) ResolveInteractive(ctx context.Context) (runtime.ResolverRe
 	}
 
 	if r.args.CreateSharedSession {
-		msg, ok := session.LatestMessage([]ai.Predicate{ai.FilterByTool(ai.RouterAgentName), ai.FilterByType(ai.MessageTypeResult)}...)
+		msg, ok := session.LatestFinalAnswer()
 		if !ok {
 			return nil, fmt.Errorf("failed to create shared session: no result message found")
 		}
