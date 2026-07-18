@@ -153,7 +153,8 @@ func cloneSnapshot(s *AgentSnapshot) *AgentSnapshot {
 	snap.Tools = slices.Clone(s.Tools)
 	if s.MCPConnectors != nil {
 		snap.MCPConnectors = make([]MCPConnector, len(s.MCPConnectors))
-		for i, c := range s.MCPConnectors {
+		for i := range s.MCPConnectors {
+			c := s.MCPConnectors[i] // explicit copy: the range value is mutated below and must not alias the original
 			c.AllowedHosts = slices.Clone(c.AllowedHosts)
 			c.RequireApproval = slices.Clone(c.RequireApproval)
 			c.AutoApprove = slices.Clone(c.AutoApprove)

@@ -901,10 +901,12 @@ func FilterByTool(tool string) Predicate {
 // IsFinalAnswer reports whether m is a conversation's completed assistant answer:
 // the terminal message a shared or exported view should end on.
 // Two shapes qualify, one per agent topology:
-//   the router agent's result, produced by the built-in Ask flow and by AI reports (which run the analyst through the
-//   router_agent);
-//   a root-level assistant text message, produced by a top-level dynamic agent (Act), which runs unwrapped (there is
-//   no router_agent to wrap its answer) and persists its final turn directly at the session root.
+//
+//	the router agent's result, produced by the built-in Ask flow and by AI reports (which run the analyst through the
+//	router_agent);
+//	a root-level assistant text message, produced by a top-level dynamic agent (Act), which runs unwrapped (there is
+//	no router_agent to wrap its answer) and persists its final turn directly at the session root.
+//
 // It has a Predicate's signature so it can be passed to Message/Messages/LatestMessage directly.
 func IsFinalAnswer(m *Message) bool {
 	if m.Tool == RouterAgentName && m.Type == MessageTypeResult {

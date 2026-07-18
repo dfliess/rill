@@ -65,7 +65,7 @@ func (fe *FileExporter) ExportSpans(ctx context.Context, spans []trace.ReadOnlyS
 		m := make(map[string]string, len(attributes))
 		spanData.Tags = m
 		for _, attr := range attributes {
-			m[string(attr.Key)] = attr.Value.String()
+			m[string(attr.Key)] = attr.Value.Emit() //nolint:staticcheck // SA1019: Emit and String format slice/float attrs differently; keep upstream's Emit output for exported traces
 		}
 
 		jsonData, err := json.Marshal(spanData)
