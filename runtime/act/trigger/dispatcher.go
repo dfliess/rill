@@ -9,11 +9,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/robfig/cron/v3"
-
 	runtimev1 "github.com/rilldata/rill/proto/gen/rill/runtime/v1"
 	"github.com/rilldata/rill/runtime"
 	"github.com/rilldata/rill/runtime/act"
+	"github.com/robfig/cron/v3"
 )
 
 // maxScheduleCatchUp bounds how many cron boundaries one EnqueueDueSchedules scan enqueues per trigger. A steady poll
@@ -152,7 +151,8 @@ func (d *Dispatcher) EnqueueDueSchedules(ctx context.Context, instanceID string)
 	}
 
 	enqueued := 0
-	for _, tr := range triggers {
+	for i := range triggers {
+		tr := &triggers[i]
 		if tr.SourceKind != resourceKindSchedule || tr.Cron == "" {
 			continue
 		}
@@ -173,7 +173,8 @@ func (d *Dispatcher) EnqueueDueSchedules(ctx context.Context, instanceID string)
 			if ok {
 				enqueued++
 			}
-			if n++; n >= maxScheduleCatchUp {
+			n++
+			if n >= maxScheduleCatchUp {
 				d.logger.Warn("act/trigger: schedule catch-up capped; skipping older boundaries",
 					slog.String("trigger", tr.Name), slog.Int("cap", maxScheduleCatchUp))
 				break
@@ -205,7 +206,8 @@ func (d *Dispatcher) Dispatch(ctx context.Context, instanceID string) (int, erro
 	triggers, err := d.catalog.ListTriggers(ctx, instanceID)
 	if err != nil {
 		// Release the leases so a later poll retries once the catalog is available; drop nothing.
-		for _, e := range events {
+		for i := range events {
+			e := &events[i]
 			if merr := d.store.MarkFailed(ctx, e.ID, err.Error(), d.retryBackoffSeconds); merr != nil {
 				d.logger.Warn("act/trigger: failed to release lease", slog.String("error", merr.Error()))
 			}
@@ -214,8 +216,9 @@ func (d *Dispatcher) Dispatch(ctx context.Context, instanceID string) (int, erro
 	}
 
 	started := 0
-	for _, e := range events {
-		n, err := d.dispatchEvent(ctx, e, triggers)
+	for i := range events {
+		e := &events[i]
+		n, err := d.dispatchEvent(ctx, *e, triggers)
 		if err != nil {
 			d.logger.Warn("act/trigger: failed to dispatch event",
 				slog.String("event_type", e.EventType), slog.String("event_id", e.EventID), slog.String("error", err.Error()))
@@ -237,11 +240,12 @@ func (d *Dispatcher) Dispatch(ctx context.Context, instanceID string) (int, erro
 func (d *Dispatcher) dispatchEvent(ctx context.Context, e OutboxEvent, triggers []TriggerDef) (int, error) {
 	short := shortEventName(e.EventType)
 	started := 0
-	for _, tr := range triggers {
-		if !triggerMatches(tr, e, short) {
+	for i := range triggers {
+		tr := &triggers[i]
+		if !triggerMatches(*tr, e, short) {
 			continue
 		}
-		ok, err := d.dispatchOne(ctx, e, tr)
+		ok, err := d.dispatchOne(ctx, e, *tr)
 		if err != nil {
 			return started, err
 		}

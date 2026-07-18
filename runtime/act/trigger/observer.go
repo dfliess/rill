@@ -71,7 +71,9 @@ func NewObserver(store *Store, logger *slog.Logger) *Observer {
 // non-blocking channel send. A full buffer drops the event with a log rather than blocking reconciliation; loss is
 // acceptable in shadow mode, and §9.6's source re-publish is the backstop.
 func (o *Observer) OnExecution(_ context.Context, ev runtime.ExecutionEvent) {
-	for _, e := range DeriveEvents(ev) {
+	events := DeriveEvents(ev)
+	for i := range events {
+		e := &events[i]
 		// Decide under the read lock (closed check + non-blocking send), but log outside it: the logger's handler is
 		// not ours and could block, and holding the lock across it would let a slow handler stall Close.
 		o.mu.RLock()
@@ -81,7 +83,7 @@ func (o *Observer) OnExecution(_ context.Context, ev runtime.ExecutionEvent) {
 			dropped = "observer closed"
 		default:
 			select {
-			case o.events <- e:
+			case o.events <- *e:
 			default:
 				dropped = "buffer full"
 			}

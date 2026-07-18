@@ -572,9 +572,9 @@ func proposedSummary(rt mcpconn.RemoteTool, args map[string]any) string {
 // stays a single readable line.
 func truncateArgValue(v any) string {
 	s := fmt.Sprintf("%v", v)
-	const max = 40
-	if len(s) > max {
-		return s[:max] + "…"
+	const maxLen = 40
+	if len(s) > maxLen {
+		return s[:maxLen] + "…"
 	}
 	return s
 }

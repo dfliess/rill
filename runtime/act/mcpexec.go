@@ -120,11 +120,11 @@ func externalReference(structured json.RawMessage) string {
 	return ""
 }
 
-// truncate bounds a string to max bytes (max <= 0 means no bound), then drops a trailing partial rune so the result
-// is always valid UTF-8.
-func truncate(s string, max int) string {
-	if max <= 0 || len(s) <= max {
+// truncate bounds a string to maxBytes (maxBytes <= 0 means no bound), then drops a trailing partial rune so the
+// result is always valid UTF-8.
+func truncate(s string, maxBytes int) string {
+	if maxBytes <= 0 || len(s) <= maxBytes {
 		return s
 	}
-	return strings.ToValidUTF8(s[:max], "")
+	return strings.ToValidUTF8(s[:maxBytes], "")
 }

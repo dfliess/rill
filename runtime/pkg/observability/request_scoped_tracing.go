@@ -135,6 +135,6 @@ func attributeValueToString(v attribute.Value) string {
 	case attribute.FLOAT64:
 		return fmt.Sprintf("%g", v.AsFloat64())
 	default:
-		return v.String()
+		return v.Emit() //nolint:staticcheck // SA1019: this default handles slice attrs, where Emit and String differ; keep upstream's Emit output
 	}
 }

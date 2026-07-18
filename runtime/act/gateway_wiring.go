@@ -331,9 +331,10 @@ func mcpConnector(snapshot *ai.AgentSnapshot, name string) (ai.MCPConnector, boo
 	if snapshot == nil {
 		return ai.MCPConnector{}, false
 	}
-	for _, c := range snapshot.MCPConnectors {
+	for i := range snapshot.MCPConnectors {
+		c := &snapshot.MCPConnectors[i]
 		if c.Name == name {
-			return c, true
+			return *c, true
 		}
 	}
 	return ai.MCPConnector{}, false

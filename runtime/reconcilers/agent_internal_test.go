@@ -56,10 +56,10 @@ func TestSpecHashSensitiveToMCP(t *testing.T) {
 
 	// Each of these single-field edits must change the hash.
 	cases := map[string]*runtimev1.MCPConnector{
-		"name":     {Name: "confluence", Url: "https://jira.example.com/mcp", AuthSecret: "JIRA_TOKEN", AllowedHosts: []string{"jira.example.com", "cdn.example.com"}},
-		"url":      {Name: "jira", Url: "https://other.example.com/mcp", AuthSecret: "JIRA_TOKEN", AllowedHosts: []string{"jira.example.com", "cdn.example.com"}},
-		"secret":   {Name: "jira", Url: "https://jira.example.com/mcp", AuthSecret: "OTHER_TOKEN", AllowedHosts: []string{"jira.example.com", "cdn.example.com"}},
-		"hosts":    {Name: "jira", Url: "https://jira.example.com/mcp", AuthSecret: "JIRA_TOKEN", AllowedHosts: []string{"jira.example.com"}},
+		"name":      {Name: "confluence", Url: "https://jira.example.com/mcp", AuthSecret: "JIRA_TOKEN", AllowedHosts: []string{"jira.example.com", "cdn.example.com"}},
+		"url":       {Name: "jira", Url: "https://other.example.com/mcp", AuthSecret: "JIRA_TOKEN", AllowedHosts: []string{"jira.example.com", "cdn.example.com"}},
+		"secret":    {Name: "jira", Url: "https://jira.example.com/mcp", AuthSecret: "OTHER_TOKEN", AllowedHosts: []string{"jira.example.com", "cdn.example.com"}},
+		"hosts":     {Name: "jira", Url: "https://jira.example.com/mcp", AuthSecret: "JIRA_TOKEN", AllowedHosts: []string{"jira.example.com"}},
 		"trustFlag": {Name: "jira", Url: "https://jira.example.com/mcp", AuthSecret: "JIRA_TOKEN", AllowedHosts: []string{"jira.example.com", "cdn.example.com"}, TrustReadOnlyHint: true},
 	}
 	for name, m := range cases {
