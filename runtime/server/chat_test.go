@@ -320,6 +320,70 @@ measures:
 	require.Len(t, get3.Messages, len(res4.Messages))
 }
 
+// TestShareActConversation covers sharing a conversation produced by the Act flow. Unlike the Ask flow, an Act run
+// persists its final answer as a root-level assistant text message (DynamicAgent.Run with UnwrapCall), so there is no
+// router_agent result to bound the shared view; ShareConversation must fall back to that assistant answer. This runs
+// without an LLM: the Act-shaped message tree is built directly.
+func TestShareActConversation(t *testing.T) {
+	rt, instanceID := testruntime.NewInstance(t)
+
+	srv, err := server.NewServer(context.Background(), &server.Options{}, rt, zap.NewNop(), ratelimit.NewNoop(), activity.NewNoopClient())
+	require.NoError(t, err)
+
+	fooClaims := &runtime.SecurityClaims{
+		UserID:      "foo",
+		Permissions: []runtime.Permission{runtime.ReadObjects, runtime.ReadMetrics, runtime.UseAI},
+	}
+	fooCtx := auth.WithClaims(t.Context(), fooClaims)
+
+	// Build an Act-shaped conversation directly: an opening user prompt, the injected action result, and the model's
+	// closing answer, all at the session root (as DynamicAgent.Run persists them). No router_agent result is created.
+	runner := ai.NewRunner(rt, activity.NewNoopClient())
+	sess, err := runner.Session(fooCtx, &ai.SessionOptions{
+		InstanceID: instanceID,
+		Claims:     fooClaims,
+		UserAgent:  "rill/test",
+	})
+	require.NoError(t, err)
+	prompt := sess.AddMessage(&ai.AddMessageOptions{
+		Role: ai.RoleUser, Type: ai.MessageTypeText, ContentType: ai.MessageContentTypeText, Content: "Saluda a Edu",
+	})
+	sess.AddMessage(&ai.AddMessageOptions{
+		Role: ai.RoleUser, Type: ai.MessageTypeText, Tool: "act.action_result", ContentType: ai.MessageContentTypeText, Content: "greeting delivered",
+	})
+	answer := sess.AddMessage(&ai.AddMessageOptions{
+		Role: ai.RoleAssistant, Type: ai.MessageTypeText, ContentType: ai.MessageContentTypeText, Content: "La acción fue aprobada y ejecutada con éxito.",
+	})
+	require.NoError(t, sess.Flush(fooCtx))
+	convID := sess.ID()
+
+	// Default share (empty until_message_id) must succeed and bound the shared view at the assistant answer.
+	_, err = srv.ShareConversation(fooCtx, &runtimev1.ShareConversationRequest{
+		InstanceId:     instanceID,
+		ConversationId: convID,
+	})
+	require.NoError(t, err)
+	reopened, err := runner.Session(fooCtx, &ai.SessionOptions{InstanceID: instanceID, SessionID: convID, Claims: fooClaims})
+	require.NoError(t, err)
+	require.Equal(t, answer.ID, reopened.CatalogSession().SharedUntilMessageID)
+
+	// Sharing explicitly up to the assistant answer is allowed.
+	_, err = srv.ShareConversation(fooCtx, &runtimev1.ShareConversationRequest{
+		InstanceId:     instanceID,
+		ConversationId: convID,
+		UntilMessageId: answer.ID,
+	})
+	require.NoError(t, err)
+
+	// Sharing up to a user turn (not a completed answer) is rejected.
+	_, err = srv.ShareConversation(fooCtx, &runtimev1.ShareConversationRequest{
+		InstanceId:     instanceID,
+		ConversationId: convID,
+		UntilMessageId: prompt.ID,
+	})
+	require.ErrorContains(t, err, "not a completed assistant response")
+}
+
 func TestAnonymousSessionAccess(t *testing.T) {
 	rt, instanceID := testruntime.NewInstance(t)
 	srv, err := server.NewServer(context.Background(), &server.Options{}, rt, zap.NewNop(), ratelimit.NewNoop(), activity.NewNoopClient())
