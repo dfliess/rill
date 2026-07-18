@@ -125,18 +125,22 @@ func (s *Server) ShareConversation(ctx context.Context, req *runtimev1.ShareConv
 		return &runtimev1.ShareConversationResponse{}, nil
 	}
 
-	var preds []ai.Predicate
+	// The conversation is shared up to a boundary message, which must be a completed assistant answer so the shared
+	// view ends on an answer rather than a half-finished turn. What qualifies is topology-specific (the Ask flow and AI
+	// reports produce a router_agent result; an Act run produces a root-level assistant text). ai.LatestFinalAnswer and
+	// ai.IsFinalAnswer centralize that distinction so this handler stays agnostic to which agent ran.
+	var msg *ai.Message
+	var ok bool
 	if req.UntilMessageId == "" {
-		preds = []ai.Predicate{ai.FilterByTool(ai.RouterAgentName), ai.FilterByType(ai.MessageTypeResult)}
+		msg, ok = session.LatestFinalAnswer()
 	} else {
-		preds = []ai.Predicate{ai.FilterByID(req.UntilMessageId)}
+		msg, ok = session.LatestMessage(ai.FilterByID(req.UntilMessageId))
 	}
-	msg, ok := session.LatestMessage(preds...)
 	if !ok {
 		return nil, status.Errorf(codes.NotFound, "message with id %q not found in conversation %q", req.UntilMessageId, req.ConversationId)
 	}
-	if req.UntilMessageId != "" && !(msg.Tool == ai.RouterAgentName && msg.Type == ai.MessageTypeResult) {
-		return nil, status.Errorf(codes.FailedPrecondition, "cannot share incomplete conversation as message with id %q is not a router agent result message", req.UntilMessageId)
+	if req.UntilMessageId != "" && !ai.IsFinalAnswer(msg) {
+		return nil, status.Errorf(codes.FailedPrecondition, "cannot share incomplete conversation as message with id %q is not a completed assistant response", req.UntilMessageId)
 	}
 
 	// now save the session with the shared until message id and flush immediately
