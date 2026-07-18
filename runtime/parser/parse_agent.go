@@ -74,7 +74,8 @@ func (p *Parser) parseAgent(node *Node) error {
 	// URL) belongs to the reconciler via mcpconn.ParseConnectorConfig; the parser only enforces the shape:
 	// a name and url are required, and connector names must be unique so tool namespacing is unambiguous.
 	seenMCP := make(map[string]bool, len(tmp.MCP))
-	for _, m := range tmp.MCP {
+	for i := range tmp.MCP {
+		m := &tmp.MCP[i]
 		if strings.TrimSpace(m.Name) == "" {
 			return fmt.Errorf(`each "mcp" connector must set "name"`)
 		}
@@ -113,8 +114,8 @@ func (p *Parser) parseAgent(node *Node) error {
 	// is inserted, and emitting the agent plus its triggers must be all-or-nothing rather than a half-built set.
 	triggerSpecs := make([]*runtimev1.AgentTriggerSpec, len(tmp.Triggers))
 	triggerNames := make([]string, len(tmp.Triggers))
-	for i, body := range tmp.Triggers {
-		spec, err := buildAgentTriggerSpec(node.Name, body)
+	for i := range tmp.Triggers {
+		spec, err := buildAgentTriggerSpec(node.Name, tmp.Triggers[i])
 		if err != nil {
 			return err
 		}
@@ -155,7 +156,8 @@ func (p *Parser) parseAgent(node *Node) error {
 	}
 	if len(tmp.MCP) > 0 {
 		r.AgentSpec.Mcp = make([]*runtimev1.MCPConnector, len(tmp.MCP))
-		for i, m := range tmp.MCP {
+		for i := range tmp.MCP {
+			m := &tmp.MCP[i]
 			r.AgentSpec.Mcp[i] = &runtimev1.MCPConnector{
 				Name:              m.Name,
 				Url:               m.URL,

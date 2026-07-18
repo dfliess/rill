@@ -610,7 +610,7 @@ func (s *PostgresRunStore) inTx(ctx context.Context, fn func(tx pgx.Tx) error) e
 	if err != nil {
 		return fmt.Errorf("act: begin tx: %w", err)
 	}
-	defer tx.Rollback(ctx) // no-op after a successful Commit
+	defer func() { _ = tx.Rollback(ctx) }() // no-op after a successful Commit
 	if err := fn(tx); err != nil {
 		return err
 	}
