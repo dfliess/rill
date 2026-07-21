@@ -81,6 +81,23 @@ describe("filterResourcesForDisplay", () => {
     expect(result).toHaveLength(1);
   });
 
+  it("keeps Agent resources (Kairos Act)", () => {
+    const resources = [makeResource(ResourceKind.Agent, "revenue_incident")];
+    const result = filterResourcesForDisplay(resources);
+    expect(result).toHaveLength(1);
+    expect(result[0].meta?.name?.name).toBe("revenue_incident");
+  });
+
+  it("filters out AgentTrigger (Kairos Act: the agent's activation binding)", () => {
+    const resources = [
+      makeResource(ResourceKind.Agent, "revenue_incident"),
+      makeResource(ResourceKind.AgentTrigger, "revenue_incident__trigger_0"),
+    ];
+    const result = filterResourcesForDisplay(resources);
+    expect(result).toHaveLength(1);
+    expect(result[0].meta?.name?.name).toBe("revenue_incident");
+  });
+
   it("filters out hidden resources", () => {
     const resources = [
       makeResource(ResourceKind.Source, "visible"),

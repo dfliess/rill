@@ -14,7 +14,7 @@ import File from "@rilldata/web-common/components/icons/File.svelte";
 import SettingsIcon from "@rilldata/web-common/components/icons/SettingsIcon.svelte";
 import { isEnvFile } from "@rilldata/web-common/features/entity-management/actions/protected-files.ts";
 import { extractFileExtension } from "@rilldata/web-common/features/entity-management/file-path-utils";
-import { GraduationCap, Sheet } from "lucide-svelte";
+import { Bot, GraduationCap, Sheet } from "lucide-svelte";
 
 export const resourceIconMapping = {
   [ResourceKind.Source]: TableIcon,
@@ -29,6 +29,7 @@ export const resourceIconMapping = {
   [ResourceKind.Report]: ReportIcon,
   [ResourceKind.Alert]: AlertIcon,
   [ResourceKind.Skill]: GraduationCap,
+  [ResourceKind.Agent]: Bot,
 };
 
 export const resourceLabelMapping = {
@@ -44,6 +45,7 @@ export const resourceLabelMapping = {
   [ResourceKind.Report]: "Report",
   [ResourceKind.Alert]: "Alert",
   [ResourceKind.Skill]: "AI Skill",
+  [ResourceKind.Agent]: "Agent",
 };
 
 export const resourceShorthandMapping = {
@@ -59,6 +61,7 @@ export const resourceShorthandMapping = {
   [ResourceKind.Report]: "report",
   [ResourceKind.Alert]: "alert",
   [ResourceKind.Skill]: "skill",
+  [ResourceKind.Agent]: "agent",
 };
 
 export function getIconComponent(

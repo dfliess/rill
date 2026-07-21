@@ -1,5 +1,14 @@
 import { describe, it, expect } from "vitest";
-import { coerceResourceKind, ResourceKind } from "./resource-selectors";
+import {
+  coerceResourceKind,
+  displayResourceKind,
+  resourceKindStyleName,
+  ResourceKind,
+} from "./resource-selectors";
+import {
+  resourceIconMapping,
+  resourceLabelMapping,
+} from "./resource-icon-mapping";
 import type { V1Resource } from "@rilldata/web-common/runtime-client";
 
 describe("resource-selectors", () => {
@@ -130,6 +139,28 @@ describe("resource-selectors", () => {
       };
       // Even though table name matches, definedAsSource is false
       expect(coerceResourceKind(resource)).toBe(ResourceKind.Model);
+    });
+  });
+
+  // Kairos Act: the Agent is first-class on the Status page. ResourceTypeBadge only
+  // renders when both an icon and a label exist, so a missing mapping shows a blank
+  // Type cell; this guards against that regression.
+  describe("Agent renders as first-class", () => {
+    it("has a display name, style, icon and label", () => {
+      expect(displayResourceKind(ResourceKind.Agent)).toBeTruthy();
+      expect(resourceKindStyleName(ResourceKind.Agent)).toBeTruthy();
+      expect(resourceIconMapping[ResourceKind.Agent]).toBeTruthy();
+      expect(resourceLabelMapping[ResourceKind.Agent]).toBeTruthy();
+    });
+  });
+
+  // An AgentTrigger is the agent's activation binding, an internal trigger like
+  // RefreshTrigger: it stays out of the Status page, so it carries no badge (icon
+  // or label). It keeps a human-readable name for other surfaces.
+  describe("AgentTrigger is internal, not badged", () => {
+    it("has no icon or label", () => {
+      expect(resourceIconMapping[ResourceKind.AgentTrigger]).toBeUndefined();
+      expect(resourceLabelMapping[ResourceKind.AgentTrigger]).toBeUndefined();
     });
   });
 });
