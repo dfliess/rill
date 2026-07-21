@@ -127,6 +127,7 @@ export default {
         Report: oklabString("report"),
         Connector: oklabString("connector"),
         Component: oklabString("component"),
+        Agent: oklabString("agent"),
         dimension: {
           DEFAULT: oklabString("dimension"),
           foreground: oklabString("dimension-foreground"),

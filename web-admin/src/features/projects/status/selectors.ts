@@ -75,7 +75,11 @@ function isDisplayResource(resource: V1Resource): boolean {
     resource?.meta?.name?.kind !== ResourceKind.ProjectParser &&
     resource?.meta?.name?.kind !== ResourceKind.RefreshTrigger &&
     resource?.meta?.name?.kind !== ResourceKind.Component &&
-    resource?.meta?.name?.kind !== ResourceKind.Migration
+    resource?.meta?.name?.kind !== ResourceKind.Migration &&
+    // Kairos Act: an AgentTrigger is the agent's activation binding (an internal
+    // trigger, like RefreshTrigger), not a resource in its own right. The Agent
+    // itself is what belongs on the Status page.
+    resource?.meta?.name?.kind !== ResourceKind.AgentTrigger
   );
 }
 

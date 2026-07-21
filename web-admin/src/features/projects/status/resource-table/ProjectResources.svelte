@@ -58,6 +58,7 @@
     ResourceKind.Alert,
     ResourceKind.API,
     ResourceKind.Connector,
+    ResourceKind.Agent,
   ];
 
   let resources = $derived(useResources(runtimeClient));

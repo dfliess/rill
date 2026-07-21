@@ -33,6 +33,10 @@ export enum ResourceKind {
   API = "rill.runtime.v1.API",
   RefreshTrigger = "rill.runtime.v1.RefreshTrigger",
   Migration = "rill.runtime.v1.Migration",
+  // Kairos Act: agents and their triggers are declarative catalog resources, so
+  // they surface in the project Status page like alerts and reports.
+  Agent = "rill.runtime.v1.Agent",
+  AgentTrigger = "rill.runtime.v1.AgentTrigger",
 }
 
 export function displayResourceKind(kind: ResourceKind | undefined) {
@@ -63,6 +67,10 @@ export function displayResourceKind(kind: ResourceKind | undefined) {
       return "API";
     case ResourceKind.RefreshTrigger:
       return "refresh trigger";
+    case ResourceKind.Agent:
+      return "agent";
+    case ResourceKind.AgentTrigger:
+      return "agent trigger";
     default:
       return undefined;
   }
@@ -92,6 +100,8 @@ export function resourceKindStyleName(kind: ResourceKind | undefined) {
       return "bg-Canvas/15 text-Canvas";
     case ResourceKind.API:
       return "bg-API/15 text-API";
+    case ResourceKind.Agent:
+      return "bg-Agent/15 text-Agent";
     default:
       return undefined;
   }
@@ -102,6 +112,10 @@ export type UserFacingResourceKinds = Exclude<
   | ResourceKind.ProjectParser
   | ResourceKind.RefreshTrigger
   | ResourceKind.Migration
+  // Kairos Act: agents are authored as YAML (or via Rill Developer), not through
+  // the "add new resource" menu, so keep them out of the creation flow.
+  | ResourceKind.Agent
+  | ResourceKind.AgentTrigger
 >;
 
 export const SingletonProjectParserName = "parser";
