@@ -6,8 +6,10 @@
   import ResourceListEmptyState from "@rilldata/web-common/features/resources/ResourceListEmptyState.svelte";
   import { m } from "@rilldata/web-common/lib/i18n/gen/messages";
   import { timeAgo } from "@rilldata/web-common/lib/time/relative-time";
+  import { useRuntimeClient } from "@rilldata/web-common/runtime-client/v2";
   import ApproveDenyButtons from "../approvals/ApproveDenyButtons.svelte";
   import { runDetailPath } from "../run-id";
+  import { useAgents } from "../selectors";
   import type { AgentApprovalData, AgentRunData } from "../types";
   import { agentTriggerLabel, formatDateTime } from "../utils";
   import AgentRunStatusChip from "./AgentRunStatusChip.svelte";
@@ -26,6 +28,23 @@
     project: string;
     approvalsByRun?: Map<string, AgentApprovalData>;
   } = $props();
+
+  // Runs carry the agent's slug (agentName); the catalog carries its human
+  // display name. Resolve the friendly name for the card, falling back to the
+  // slug for agents without a display_name (e.g. ad-hoc test agents).
+  const runtimeClient = useRuntimeClient();
+  const agentsQuery = useAgents(runtimeClient);
+  let displayNameByAgent = $derived(
+    new Map<string, string>(
+      ($agentsQuery.data?.agents ?? []).map((a) => [
+        a.name ?? "",
+        a.displayName ?? "",
+      ]),
+    ),
+  );
+  function agentLabel(run: AgentRunData): string {
+    return displayNameByAgent.get(run.agentName ?? "") || run.agentName || "—";
+  }
 
   function openRun(run: AgentRunData) {
     void goto(runDetailPath(organization, project, run));
@@ -76,9 +95,26 @@
             <span class="shrink-0 text-fg-secondary"><Brain size="15px" /></span
             >
             <div class="flex flex-col gap-y-1 min-w-0">
-              <span class="text-fg-primary text-sm font-semibold truncate">
-                {run.agentName}
-              </span>
+              <!-- Agent + action share the title line: an approval authorizes
+                   this agent to run this specific tool, so the reviewer reads
+                   both as one thing they are deciding on. The action only shows
+                   when there is a pending approval. -->
+              <div class="flex items-center flex-wrap gap-x-2 min-w-0">
+                <span
+                  class="text-fg-primary text-sm font-semibold truncate min-w-0"
+                >
+                  {agentLabel(run)}
+                </span>
+                {#if approval?.toolName}
+                  <span class="text-fg-muted" aria-hidden="true">·</span>
+                  <span
+                    class="font-mono text-xs text-fg-secondary truncate max-w-[16rem]"
+                    title={m.agents_approval_proposed_action()}
+                  >
+                    {approval.toolName}
+                  </span>
+                {/if}
+              </div>
               <div
                 class="flex items-center flex-wrap gap-x-2 gap-y-1 text-fg-secondary text-xs"
               >
