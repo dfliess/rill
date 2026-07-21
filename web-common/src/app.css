@@ -136,6 +136,7 @@
     --alert: oklch(0.7686 0.1647 70.08);
     --report: oklch(0.5876 0.1389 241.97);
     --connector: oklch(45.147% 0.0181 260.735);
+    --agent: oklch(0.61 0.175 312); /* Kairos Act */
 
     --color-theme-50: var(
       --color-theme-light-50,
@@ -326,6 +327,7 @@
     --alert: oklch(0.7686 0.1647 70.08);
     --report: oklch(0.5876 0.1389 241.97);
     --connector: oklch(66.569% 0.02691 265.523);
+    --agent: oklch(0.61 0.175 312); /* Kairos Act */
 
     /* These don't match Figma directly, but are visually close */
     --input: color-mix(
