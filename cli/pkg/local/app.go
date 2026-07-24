@@ -167,29 +167,27 @@ func NewApp(ctx context.Context, opts *AppOptions) (*App, error) {
 	}
 
 	// Sender for sending transactional emails.
-	// We use a noop sender by default, but you can uncomment the SMTP sender to send emails from localhost for testing.
+	// Noop by default; if RILL_RUNTIME_EMAIL_SMTP_HOST is set, send real emails
+	// (e.g. to a local Mailpit) for testing alert notifications from rill start.
 	sender := email.NewNoopSender()
-	// Uncomment to send emails for testing:
-	// err = godotenv.Load()
-	// if err != nil {
-	// 	return nil, fmt.Errorf("failed to load .env file: %w", err)
-	// }
-	// smtpPort, err := strconv.Atoi(os.Getenv("RILL_RUNTIME_EMAIL_SMTP_PORT"))
-	// if err != nil {
-	// 	return nil, fmt.Errorf("failed to get SMTP port: %w", err)
-	// }
-	// sender, err := email.NewSMTPSender(&email.SMTPOptions{
-	// 	SMTPHost:     os.Getenv("RILL_RUNTIME_EMAIL_SMTP_HOST"),
-	// 	SMTPPort:     smtpPort,
-	// 	SMTPUsername: os.Getenv("RILL_RUNTIME_EMAIL_SMTP_USERNAME"),
-	// 	SMTPPassword: os.Getenv("RILL_RUNTIME_EMAIL_SMTP_PASSWORD"),
-	// 	FromEmail:    os.Getenv("RILL_RUNTIME_EMAIL_SENDER_EMAIL"),
-	// 	FromName:     os.Getenv("RILL_RUNTIME_EMAIL_SENDER_NAME"),
-	// 	BCC:          os.Getenv("RILL_RUNTIME_EMAIL_BCC"),
-	// })
-	// if err != nil {
-	// 	return nil, fmt.Errorf("failed to create email sender: %w", err)
-	// }
+	if os.Getenv("RILL_RUNTIME_EMAIL_SMTP_HOST") != "" {
+		smtpPort, err := strconv.Atoi(os.Getenv("RILL_RUNTIME_EMAIL_SMTP_PORT"))
+		if err != nil {
+			return nil, fmt.Errorf("failed to get SMTP port: %w", err)
+		}
+		sender, err = email.NewSMTPSender(&email.SMTPOptions{
+			SMTPHost:     os.Getenv("RILL_RUNTIME_EMAIL_SMTP_HOST"),
+			SMTPPort:     smtpPort,
+			SMTPUsername: os.Getenv("RILL_RUNTIME_EMAIL_SMTP_USERNAME"),
+			SMTPPassword: os.Getenv("RILL_RUNTIME_EMAIL_SMTP_PASSWORD"),
+			FromEmail:    os.Getenv("RILL_RUNTIME_EMAIL_SENDER_EMAIL"),
+			FromName:     os.Getenv("RILL_RUNTIME_EMAIL_SENDER_NAME"),
+			BCC:          os.Getenv("RILL_RUNTIME_EMAIL_BCC"),
+		})
+		if err != nil {
+			return nil, fmt.Errorf("failed to create email sender: %w", err)
+		}
+	}
 	rtOpts := &runtime.Options{
 		ConnectionCacheSize:          100,
 		MetastoreConnector:           "metastore",
