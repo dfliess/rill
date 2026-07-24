@@ -300,11 +300,18 @@ func (d *Dispatcher) dispatchOne(ctx context.Context, e OutboxEvent, tr TriggerD
 	}
 
 	// The run's governed identity: build SecurityClaims from the trigger's run-as attributes (mirrors how an alert
-	// runs its query as query_for_attributes). Nil when the trigger declares none, in which case the run carries no
-	// claims and the session factory fails closed — an automatic run never falls back to a privileged session.
+	// runs its query as query_for_attributes). The attributes scope row-level access; the permission set is the same
+	// one an AI report execution gets (ReadObjects, ReadMetrics, UseAI — see reconcilers/report.go) — without it,
+	// Claims().Can(ReadMetrics) is false and the agent's metrics tools are silently dropped from its callable set
+	// (fail-closed), so every triggered run dies on its first query. Nil when the trigger declares none, in which
+	// case the run carries no claims and the session factory fails closed — an automatic run never falls back to a
+	// privileged session.
 	var claims *runtime.SecurityClaims
 	if len(tr.ActorAttributes) > 0 {
-		claims = &runtime.SecurityClaims{UserAttributes: tr.ActorAttributes}
+		claims = &runtime.SecurityClaims{
+			UserAttributes: tr.ActorAttributes,
+			Permissions:    []runtime.Permission{runtime.ReadObjects, runtime.ReadMetrics, runtime.UseAI},
+		}
 	}
 
 	// Start (or, on a retry, attach to) the run using the FROZEN agent, not tr.Agent, so the composed run id is
