@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"strings"
+	"sync"
 
 	"github.com/mitchellh/mapstructure"
 	"github.com/openai/openai-go/v3"
@@ -21,6 +23,18 @@ import (
 )
 
 const defaultTemperature = 0.1
+
+// reasoningCache retains the reasoning_content returned by thinking-mode
+// OpenAI-compatible providers (e.g. DeepSeek v4), keyed by the ID of the first
+// tool call in the assistant message. DeepSeek v4 rejects tool-loop requests
+// unless reasoning_content is passed back verbatim with the assistant message
+// that made the tool calls ("The `reasoning_content` in the thinking mode must
+// be passed back to the API"). Providers that never return the field are
+// unaffected. See kairosagentica/rill#12.
+var (
+	reasoningCacheMu sync.Mutex
+	reasoningCache   = map[string]string{}
+)
 
 func init() {
 	drivers.Register("openai", driver{})
@@ -329,13 +343,29 @@ func (o *openaiHandle) Complete(ctx context.Context, opts *drivers.CompleteOptio
 
 	// Set response format based on output schema
 	if opts.OutputSchema != nil {
-		params.ResponseFormat = openai.ChatCompletionNewParamsResponseFormatUnion{
-			OfJSONSchema: &openai.ResponseFormatJSONSchemaParam{
-				JSONSchema: openai.ResponseFormatJSONSchemaJSONSchemaParam{
-					Name:   "llm_completion_result",
-					Schema: opts.OutputSchema,
+		// Fallback for OpenAI-compatible providers without json_schema support
+		// (e.g. DeepSeek v4 rejects it with "This response_format type is
+		// unavailable now"): degrade to json_object and inject the schema as an
+		// explicit instruction. Gated by env var, see kairosagentica/rill#12.
+		if os.Getenv("RILL_OPENAI_STRUCTURED_OUTPUT_FALLBACK") == "json_object" {
+			schemaJSON, err := json.Marshal(opts.OutputSchema)
+			if err != nil {
+				return nil, fmt.Errorf("failed to marshal output schema: %w", err)
+			}
+			params.Messages = append(params.Messages, openai.SystemMessage(
+				"Return ONLY a single valid JSON object that conforms exactly to this JSON Schema (no prose, no markdown fences): "+string(schemaJSON)))
+			params.ResponseFormat = openai.ChatCompletionNewParamsResponseFormatUnion{
+				OfJSONObject: &shared.ResponseFormatJSONObjectParam{},
+			}
+		} else {
+			params.ResponseFormat = openai.ChatCompletionNewParamsResponseFormatUnion{
+				OfJSONSchema: &openai.ResponseFormatJSONSchemaParam{
+					JSONSchema: openai.ResponseFormatJSONSchemaJSONSchemaParam{
+						Name:   "llm_completion_result",
+						Schema: opts.OutputSchema,
+					},
 				},
-			},
+			}
 		}
 	}
 
@@ -379,6 +409,7 @@ func messageToOpenAI(msg *aiv1.CompletionMessage) ([]openai.ChatCompletionMessag
 	var regularContent string
 	var toolCalls []openai.ChatCompletionMessageToolCallUnionParam
 	var toolResults []*aiv1.ToolResult
+	var firstToolCallID string
 
 	for _, block := range msg.Content {
 		switch blockType := block.BlockType.(type) {
@@ -388,6 +419,9 @@ func messageToOpenAI(msg *aiv1.CompletionMessage) ([]openai.ChatCompletionMessag
 			openaiToolCall, err := toolCallToOpenAI(blockType.ToolCall)
 			if err != nil {
 				return nil, fmt.Errorf("failed to convert tool call: %w", err)
+			}
+			if firstToolCallID == "" {
+				firstToolCallID = blockType.ToolCall.Id
 			}
 			toolCalls = append(toolCalls, openaiToolCall)
 		case *aiv1.ContentBlock_ToolResult:
@@ -410,6 +444,19 @@ func messageToOpenAI(msg *aiv1.CompletionMessage) ([]openai.ChatCompletionMessag
 			}
 			if len(toolCalls) > 0 {
 				assistantMsg.ToolCalls = toolCalls
+				// DeepSeek v4 thinking mode requires reasoning_content to be
+				// PRESENT on every assistant message that carries tool calls
+				// ("must be passed back to the API"); the API only checks
+				// presence, not content. Replay the cached value for native
+				// tool calls and an empty string for the synthetic tool calls
+				// runtime/ai fabricates (router/agent handoffs). Gated by the
+				// same env var as the json_object fallback.
+				if os.Getenv("RILL_OPENAI_STRUCTURED_OUTPUT_FALLBACK") == "json_object" {
+					reasoningCacheMu.Lock()
+					reasoning := reasoningCache[firstToolCallID]
+					reasoningCacheMu.Unlock()
+					assistantMsg.SetExtraFields(map[string]any{"reasoning_content": reasoning})
+				}
 			}
 			result = append(result, openai.ChatCompletionMessageParamUnion{
 				OfAssistant: &assistantMsg,
@@ -459,6 +506,22 @@ func messageFromOpenAI(message openai.ChatCompletionMessage) (*aiv1.CompletionMe
 				},
 			},
 		})
+	}
+
+	// Cache the provider's reasoning_content (thinking-mode extension field not
+	// modeled by the SDK) so messageToOpenAI can replay it in tool loops.
+	if len(message.ToolCalls) > 0 {
+		if f, ok := message.JSON.ExtraFields["reasoning_content"]; ok {
+			var reasoning string
+			if err := json.Unmarshal([]byte(f.Raw()), &reasoning); err == nil && reasoning != "" {
+				reasoningCacheMu.Lock()
+				if len(reasoningCache) > 4096 {
+					reasoningCache = map[string]string{}
+				}
+				reasoningCache[message.ToolCalls[0].ID] = reasoning
+				reasoningCacheMu.Unlock()
+			}
+		}
 	}
 
 	return &aiv1.CompletionMessage{
