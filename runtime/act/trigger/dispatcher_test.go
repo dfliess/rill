@@ -311,6 +311,11 @@ func TestDispatch_TriggerActorAttributesBecomeRunClaims(t *testing.T) {
 		require.NotNil(t, got.Actor.Claims, "run-as attributes must give the run governed claims")
 		require.Equal(t, "act@kairosagentica.com", got.Actor.Claims.UserAttributes["email"])
 		require.Equal(t, false, got.Actor.Claims.UserAttributes["admin"])
+		require.False(t, got.Actor.Claims.SkipChecks, "governed claims must never skip security checks")
+		for _, p := range []runtime.Permission{runtime.ReadObjects, runtime.ReadMetrics, runtime.UseAI} {
+			require.True(t, got.Actor.Claims.Can(p),
+				"governed run claims must carry %v: without it CheckAccess fails and the agent's metrics tools are silently dropped from its callable set", p)
+		}
 	})
 
 	t.Run("no attributes fails closed with nil claims", func(t *testing.T) {
