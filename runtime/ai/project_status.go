@@ -150,7 +150,7 @@ func (t *ProjectStatus) Handler(ctx context.Context, args *ProjectStatusArgs) (*
 
 		// Truncate long statuses when not filtering by name to keep context manageable.
 		if args.Name == "" && len(status) > 80 {
-			status = status[:80] + "..."
+			status = truncateUTF8(status, 80) + "..."
 		}
 
 		resources = append(resources, map[string]any{
