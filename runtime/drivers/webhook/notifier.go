@@ -31,10 +31,10 @@ const (
 )
 
 const (
-	defaultRetryMax       = 2 // 3 attempts in total
-	defaultRetryWaitMin   = time.Second
-	defaultRetryWaitMax   = 4 * time.Second
-	defaultRequestTimeout = 10 * time.Second
+	defaultRetryMax         = 2 // 3 attempts in total
+	defaultRetryWaitMinimum = time.Second
+	defaultRetryWaitMaximum = 4 * time.Second
+	defaultRequestTimeout   = 10 * time.Second
 )
 
 type notifier struct {
@@ -69,8 +69,8 @@ func newNotifier(config *configProperties, propsMap map[string]any) (*notifier, 
 		headers:        config.Headers,
 		props:          props,
 		retryMax:       defaultRetryMax,
-		retryWaitMin:   defaultRetryWaitMin,
-		retryWaitMax:   defaultRetryWaitMax,
+		retryWaitMin:   defaultRetryWaitMinimum,
+		retryWaitMax:   defaultRetryWaitMaximum,
 		requestTimeout: defaultRequestTimeout,
 		now:            time.Now,
 		newID:          uuid.NewString,
