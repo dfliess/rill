@@ -84,6 +84,12 @@ const config = {
           // events.mapbox.com. See https://docs.mapbox.com/mapbox-gl-js/guides/browsers-and-testing/
           "https://api.mapbox.com",
           "https://events.mapbox.com",
+          // The canvas PDF export inlines the web fonts into the raster, which
+          // html-to-image does by fetching the remote stylesheet. Without this
+          // the fetch is blocked and the PDF is drawn with fallback fonts, so
+          // text laid out with one metric is painted with another and overlaps.
+          // The same origin is already allowed in style-src.
+          "https://fonts.googleapis.com",
           ...(dev ? ["http://localhost:*", "ws://localhost:*"] : []),
         ],
         "font-src": ["self", "https://fonts.gstatic.com"],
