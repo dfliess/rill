@@ -358,7 +358,7 @@ func (e *DBOSExecutor) runAgentWorkflow(ctx dbos.DBOSContext, in AgentRunInput) 
 	if err != nil {
 		if errors.Is(err, &dbos.DBOSError{Code: dbos.TimeoutError}) {
 			res.Status = RunStatusExpired
-			if err := e.recordExpiry(ctx, in, runID, ApprovalIDForRun(runID)); err != nil {
+			if err := e.recordExpiry(ctx, in, runID, ApprovalIDForRun(runID), 0); err != nil {
 				return res, err
 			}
 			return res, nil
@@ -374,7 +374,7 @@ func (e *DBOSExecutor) runAgentWorkflow(ctx dbos.DBOSContext, in AgentRunInput) 
 		if err != nil {
 			return e.fail(ctx, in, runID, res, "load denier", err)
 		}
-		if err := e.emitWithPayload(ctx, in, runID, RunStatusRejected, EventTypeRejected, deciderPayload(denier)); err != nil {
+		if err := e.emitWithPayload(ctx, in, runID, RunStatusRejected, EventTypeRejected, segmentDedupeKey(EventTypeRejected, 0), deciderPayload(denier)); err != nil {
 			return res, err
 		}
 		return res, nil
@@ -386,7 +386,7 @@ func (e *DBOSExecutor) runAgentWorkflow(ctx dbos.DBOSContext, in AgentRunInput) 
 	if err != nil {
 		return e.fail(ctx, in, runID, res, "load approver", err)
 	}
-	if err := e.emitWithPayload(ctx, in, runID, RunStatusRunning, EventTypeResumed, deciderPayload(approver)); err != nil {
+	if err := e.emitWithPayload(ctx, in, runID, RunStatusRunning, EventTypeResumed, segmentDedupeKey(EventTypeResumed, 0), deciderPayload(approver)); err != nil {
 		return res, err
 	}
 
@@ -455,13 +455,14 @@ func (e *DBOSExecutor) persistConversation(ctx dbos.DBOSContext, in AgentRunInpu
 // The step is idempotent in the store (one event per edge), so a crash between the side effect and the checkpoint
 // replays it harmlessly.
 func (e *DBOSExecutor) emit(ctx dbos.DBOSContext, in AgentRunInput, runID string, status RunStatus, eventType string) error {
-	return e.emitWithPayload(ctx, in, runID, status, eventType, nil)
+	return e.emitWithPayload(ctx, in, runID, status, eventType, "", nil)
 }
 
-// emitWithPayload is emit with structured detail attached to the event. The payload must already be redacted: it is
-// stored verbatim and read by the run timeline, which is user-visible (§17.2). A nil payload behaves exactly like emit,
-// so the step name and shape are unchanged for the transitions that carry no detail.
-func (e *DBOSExecutor) emitWithPayload(ctx dbos.DBOSContext, in AgentRunInput, runID string, status RunStatus, eventType string, payload map[string]any) error {
+// emitWithPayload is emit with structured detail attached to the event, deduplicated by dedupeKey (empty keys the
+// edge on its event type alone — once per run). The payload must already be redacted: it is stored verbatim and read
+// by the run timeline, which is user-visible (§17.2). A nil payload behaves exactly like emit, so the step name and
+// shape are unchanged for the transitions that carry no detail.
+func (e *DBOSExecutor) emitWithPayload(ctx dbos.DBOSContext, in AgentRunInput, runID string, status RunStatus, eventType, dedupeKey string, payload map[string]any) error {
 	if e.store == nil {
 		return nil
 	}
@@ -471,6 +472,7 @@ func (e *DBOSExecutor) emitWithPayload(ctx dbos.DBOSContext, in AgentRunInput, r
 			RunID:      runID,
 			Status:     status,
 			EventType:  eventType,
+			DedupeKey:  dedupeKey,
 			Payload:    payload,
 		})
 	}, dbos.WithStepName("emit:"+eventType))
@@ -479,6 +481,13 @@ func (e *DBOSExecutor) emitWithPayload(ctx dbos.DBOSContext, in AgentRunInput, r
 	}
 	return nil
 }
+
+// segmentDedupeKey scopes an approval-cycle event (waiting_approval, resumed, rejected, expired) to the segment whose
+// governed action produced it. The segmented loop pauses once per action, so these edges legitimately repeat within a
+// run; keying them per segment lets the store record each occurrence — moving the status with it — while a replay of
+// the SAME segment's edge still deduplicates. The once-per-run edges keep the strict key (their bare event type), so
+// a stale replay can never regress the run's status. Fixes kairos-cloud#129.
+func segmentDedupeKey(eventType string, seg int) string { return eventType + ":" + strconv.Itoa(seg) }
 
 // deciderPayload is the event detail that attributes an approval decision on the run timeline. It is the only way a
 // reader learns who unblocked (or stopped) a run from the events alone: the ledger records the same subject on the
@@ -561,6 +570,7 @@ func (e *DBOSExecutor) setupApproval(ctx dbos.DBOSContext, in AgentRunInput, run
 			RunID:      runID,
 			Status:     RunStatusWaitingApproval,
 			EventType:  EventTypeWaitingApproval,
+			DedupeKey:  segmentDedupeKey(EventTypeWaitingApproval, 0), // the Fase 1 path has exactly one action: segment 0
 		}); err != nil {
 			return false, err
 		}
@@ -605,8 +615,9 @@ func (e *DBOSExecutor) approvalDeadline() *time.Time {
 
 // recordExpiry records the expired transition and marks the given pending approval expired, in one durable step.
 // Marking the approval tolerates it already being resolved (a decision that raced the timeout) or absent, since the run
-// is ending regardless. approvalID identifies the action that timed out (per segment on the gateway path).
-func (e *DBOSExecutor) recordExpiry(ctx dbos.DBOSContext, in AgentRunInput, runID, approvalID string) error {
+// is ending regardless. approvalID identifies the action that timed out and seg the segment that proposed it (both
+// segment-scoped on the gateway path, so an expiry after earlier approved actions still records its own edge).
+func (e *DBOSExecutor) recordExpiry(ctx dbos.DBOSContext, in AgentRunInput, runID, approvalID string, seg int) error {
 	if e.store == nil {
 		return nil
 	}
@@ -616,6 +627,7 @@ func (e *DBOSExecutor) recordExpiry(ctx dbos.DBOSContext, in AgentRunInput, runI
 			RunID:      runID,
 			Status:     RunStatusExpired,
 			EventType:  EventTypeExpired,
+			DedupeKey:  segmentDedupeKey(EventTypeExpired, seg),
 		}); err != nil {
 			return false, err
 		}
@@ -778,7 +790,7 @@ func (e *DBOSExecutor) governProposedAction(ctx dbos.DBOSContext, in AgentRunInp
 	case PolicyApprovalRequired:
 		// Persist the exact proposal as an approval (keyed per segment so several actions in a run stay distinct) and
 		// suspend on a durable wait.
-		if err := e.setupActionApproval(ctx, in, runID, approvalID, auth, proposal); err != nil {
+		if err := e.setupActionApproval(ctx, in, runID, approvalID, seg, auth, proposal); err != nil {
 			*res, err = e.fail(ctx, in, runID, *res, "await approval setup", err)
 			return nil, true, err
 		}
@@ -786,7 +798,7 @@ func (e *DBOSExecutor) governProposedAction(ctx dbos.DBOSContext, in AgentRunInp
 		if err != nil {
 			if errors.Is(err, &dbos.DBOSError{Code: dbos.TimeoutError}) {
 				res.Status = RunStatusExpired
-				if err := e.recordExpiry(ctx, in, runID, approvalID); err != nil {
+				if err := e.recordExpiry(ctx, in, runID, approvalID, seg); err != nil {
 					return nil, true, err
 				}
 				return nil, true, nil
@@ -806,7 +818,7 @@ func (e *DBOSExecutor) governProposedAction(ctx dbos.DBOSContext, in AgentRunInp
 				*res, err = e.fail(ctx, in, runID, *res, "load denier", err)
 				return nil, true, err
 			}
-			if err := e.emitWithPayload(ctx, in, runID, RunStatusRejected, EventTypeRejected, deciderPayload(denier)); err != nil {
+			if err := e.emitWithPayload(ctx, in, runID, RunStatusRejected, EventTypeRejected, segmentDedupeKey(EventTypeRejected, seg), deciderPayload(denier)); err != nil {
 				return nil, true, err
 			}
 			return nil, true, nil
@@ -829,7 +841,7 @@ func (e *DBOSExecutor) governProposedAction(ctx dbos.DBOSContext, in AgentRunInp
 			*res, err = e.fail(ctx, in, runID, *res, "record approval", err)
 			return nil, true, err
 		}
-		if err := e.emitWithPayload(ctx, in, runID, RunStatusRunning, EventTypeResumed, deciderPayload(decidedBy)); err != nil {
+		if err := e.emitWithPayload(ctx, in, runID, RunStatusRunning, EventTypeResumed, segmentDedupeKey(EventTypeResumed, seg), deciderPayload(decidedBy)); err != nil {
 			return nil, true, err
 		}
 
@@ -919,8 +931,11 @@ func (e *DBOSExecutor) governProposedAction(ctx dbos.DBOSContext, in AgentRunInp
 // setupActionApproval records the waiting_approval transition and persists the gateway's concrete proposal as an
 // approval request, in one durable step. Unlike setupApproval (the Fase 1 simulated variant), the approval carries the
 // real tool, connector, tool call and canonical args hash from the authorization, so the inbox binds to exactly what
-// will execute (§11.2). Idempotent: a replay creates the same approval rather than a second one.
-func (e *DBOSExecutor) setupActionApproval(ctx dbos.DBOSContext, in AgentRunInput, runID, approvalID string, auth Authorization, proposal ToolProposal) error {
+// will execute (§11.2). The transition is deduplicated per segment (seg), so the SECOND governed pause of a run is a
+// real edge — the status returns to waiting_approval and the timeline records it — rather than a silent conflict that
+// left the run stuck on running (kairos-cloud#129). Idempotent: a replay of the same segment creates the same approval
+// and conflicts onto the same event rather than duplicating either.
+func (e *DBOSExecutor) setupActionApproval(ctx dbos.DBOSContext, in AgentRunInput, runID, approvalID string, seg int, auth Authorization, proposal ToolProposal) error {
 	if e.store == nil {
 		return nil
 	}
@@ -930,6 +945,7 @@ func (e *DBOSExecutor) setupActionApproval(ctx dbos.DBOSContext, in AgentRunInpu
 			RunID:      runID,
 			Status:     RunStatusWaitingApproval,
 			EventType:  EventTypeWaitingApproval,
+			DedupeKey:  segmentDedupeKey(EventTypeWaitingApproval, seg),
 		}); err != nil {
 			return false, err
 		}

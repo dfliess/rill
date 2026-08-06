@@ -462,6 +462,106 @@ func TestGatewayFlowSegmentedTwoSequentialActions(t *testing.T) {
 	require.Equal(t, act.ActionSucceeded, a2.Status)
 }
 
+// TestGatewayFlowTwoHumanApprovalsRecordEachPause is the end-to-end regression for kairos-cloud#129: a run with TWO
+// governed actions, each behind a human decision. The old (run_id, event_type) uniqueness swallowed the second
+// waiting_approval, so the run sat parked on its second gate while its status said running — invisible to the Home
+// inbox and to Act's default filter, both of which ask for waiting_approval. It verifies (a) the timeline records both
+// pauses and both resumptions, each resumption attributed to its own decider, and (b) DURING the second wait the run's
+// status is waiting_approval.
+func TestGatewayFlowTwoHumanApprovalsRecordEachPause(t *testing.T) {
+	store := newRunStore(t)
+	exec := &fakeExecutor{result: act.ExecuteResult{Outcome: act.OutcomeSucceeded, ExternalReference: "PROJ-9", Message: "created PROJ-9"}}
+	gateway := &act.Gateway{
+		Registry: act.NewMapToolRegistry(createIssueDescriptor(act.ClassIdempotentNative)),
+		Ledger:   store,
+		Executor: exec,
+	}
+	// Two governed actions on a snapshot with NO auto-approve posture, so each one pauses for a human.
+	runner := &recordingSegmentRunner{actions: 2}
+	dsn, schema := requirePostgres(t)
+	e, err := act.NewDBOSExecutor(t.Context(), act.Config{
+		DatabaseURL: dsn, DatabaseSchema: schema, ApplicationVersion: "act-test-" + uuid.NewString(),
+		Runner: runner, Store: store, Gateway: gateway, Proposer: &sequentialProposer{},
+		ApprovalTimeout: 60 * time.Second, Logger: slog.New(slog.NewTextHandler(io.Discard, nil)),
+	})
+	require.NoError(t, err)
+	t.Cleanup(func() { e.Close(5 * time.Second) })
+
+	const inst = "inst-two-approvals"
+	ctx := t.Context()
+	runID, err := e.Start(ctx, act.AgentRunInput{
+		InstanceID: inst, AgentName: "triage", Prompt: "actua dos veces", IdempotencyKey: "flow-two-appr-" + uuid.NewString(),
+		Actor: act.Actor{Subject: "user:alice"},
+	})
+	require.NoError(t, err)
+
+	// First gate: Bob decides, in the API's order (claim the approval, then deliver the durable resume).
+	firstApproval := act.ApprovalIDForSegment(runID, 0)
+	require.Eventually(t, func() bool {
+		_, gErr := store.GetApproval(ctx, inst, firstApproval)
+		return gErr == nil
+	}, 15*time.Second, 50*time.Millisecond)
+	_, err = store.ResolveApproval(ctx, inst, firstApproval, act.ApprovalStatusApproved, "admin:bob")
+	require.NoError(t, err)
+	require.NoError(t, e.Resume(ctx, runID, act.ApprovalApproved))
+
+	// Second gate: the run pauses again on its next governed action. The approval row is written in the same durable
+	// step as the waiting_approval transition, after it, so once the row is visible the status write has committed.
+	secondApproval := act.ApprovalIDForSegment(runID, 1)
+	require.Eventually(t, func() bool {
+		_, gErr := store.GetApproval(ctx, inst, secondApproval)
+		return gErr == nil
+	}, 15*time.Second, 50*time.Millisecond)
+
+	// (b) The bug: while the second decision is pending, the run must SAY it is waiting — this status is what the Home
+	// inbox and Act's default filter select on, so "running" here is an approval nobody sees.
+	run, err := store.GetRun(ctx, inst, runID)
+	require.NoError(t, err)
+	require.Equal(t, act.RunStatusWaitingApproval, run.Status, "the second pause must move the run back to waiting_approval")
+
+	// Carol, not Bob, decides the second action.
+	_, err = store.ResolveApproval(ctx, inst, secondApproval, act.ApprovalStatusApproved, "admin:carol")
+	require.NoError(t, err)
+	require.NoError(t, e.Resume(ctx, runID, act.ApprovalApproved))
+
+	res, err := e.Result(runID)
+	require.NoError(t, err)
+	require.Equal(t, act.RunStatusSucceeded, res.Status)
+	require.Equal(t, 2, exec.executeCount(), "both approved actions executed")
+
+	// (a) The timeline records every edge of both approval cycles, in order.
+	events, err := store.ListRunEvents(ctx, inst, runID, 0, 100)
+	require.NoError(t, err)
+	require.Equal(t, []string{
+		act.EventTypeQueued,
+		act.EventTypeRunning,
+		act.EventTypeWaitingApproval,
+		act.EventTypeResumed,
+		act.EventTypeWaitingApproval,
+		act.EventTypeResumed,
+		act.EventTypeSucceeded,
+	}, eventTypes(events))
+
+	// Each resumption is attributed to its own decider (#128's decided_by, now for every pause, not just the first).
+	var resumed []*act.RunEvent
+	for _, ev := range events {
+		if ev.EventType == act.EventTypeResumed {
+			resumed = append(resumed, ev)
+		}
+	}
+	require.Len(t, resumed, 2)
+	require.Equal(t, "admin:bob", resumed[0].Payload["decided_by"])
+	require.Equal(t, "admin:carol", resumed[1].Payload["decided_by"])
+
+	// The action ledger agrees, one decider per action.
+	a1, err := store.GetAction(ctx, inst, runID, "call-1")
+	require.NoError(t, err)
+	require.Equal(t, "admin:bob", a1.DecidedBy)
+	a2, err := store.GetAction(ctx, inst, runID, "call-2")
+	require.NoError(t, err)
+	require.Equal(t, "admin:carol", a2.DecidedBy)
+}
+
 // TestGatewayFlowAutoApproveExecutesWithoutHuman proves a connector's approval: auto posture takes effect through the
 // FULL DBOS path: a generic (unclassified) write on an auto-approved connector runs to succeeded with no human gate
 // and no Resume. This is the end-to-end regression guard for the auto-approve wiring — the executor must feed the SAME

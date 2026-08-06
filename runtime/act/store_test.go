@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rilldata/rill/runtime/act"
 	"github.com/stretchr/testify/require"
 )
@@ -167,6 +168,158 @@ func TestRunStoreTransitionGuardsTerminal(t *testing.T) {
 	events, err := store.ListRunEvents(ctx, instanceID, runID, 0, 100)
 	require.NoError(t, err)
 	require.Equal(t, []string{act.EventTypeQueued, act.EventTypeRunning, act.EventTypeSucceeded}, eventTypes(events))
+}
+
+// TestRunStoreTransitionSegmentScopedEdgesRepeat covers the store half of kairos-cloud#129: a run that pauses on a
+// SECOND governed action must record that pause and move back to waiting_approval. The approval edges carry a
+// segment-scoped DedupeKey, so a new segment's edge inserts and updates the status, while a replay of an
+// already-recorded segment (same key) stays a no-op exactly like before.
+func TestRunStoreTransitionSegmentScopedEdgesRepeat(t *testing.T) {
+	store := newRunStore(t)
+	ctx := t.Context()
+
+	const instanceID = "inst-seg-edges"
+	runID := act.ComposeRunID(instanceID, "triage", "k")
+	require.NoError(t, store.CreateRun(ctx, act.NewRun{RunID: runID, InstanceID: instanceID, AgentName: "triage"}))
+	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{InstanceID: instanceID, RunID: runID, Status: act.RunStatusRunning, EventType: act.EventTypeRunning}))
+
+	// Segment 0: pause, then resume.
+	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{
+		InstanceID: instanceID, RunID: runID, Status: act.RunStatusWaitingApproval,
+		EventType: act.EventTypeWaitingApproval, DedupeKey: act.EventTypeWaitingApproval + ":0",
+	}))
+	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{
+		InstanceID: instanceID, RunID: runID, Status: act.RunStatusRunning,
+		EventType: act.EventTypeResumed, DedupeKey: act.EventTypeResumed + ":0",
+	}))
+
+	// Segment 1: the second pause — the edge the old (run_id, event_type) uniqueness silently swallowed, leaving the
+	// run stuck on running while it waited for a decision nobody could see.
+	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{
+		InstanceID: instanceID, RunID: runID, Status: act.RunStatusWaitingApproval,
+		EventType: act.EventTypeWaitingApproval, DedupeKey: act.EventTypeWaitingApproval + ":1",
+	}))
+	run, err := store.GetRun(ctx, instanceID, runID)
+	require.NoError(t, err)
+	require.Equal(t, act.RunStatusWaitingApproval, run.Status, "the second pause must move the status, not conflict into a no-op")
+
+	// A replay of the SAME segment's pause (a re-applied DBOS step) is still idempotent: no event, no status churn.
+	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{
+		InstanceID: instanceID, RunID: runID, Status: act.RunStatusWaitingApproval,
+		EventType: act.EventTypeWaitingApproval, DedupeKey: act.EventTypeWaitingApproval + ":1",
+	}))
+
+	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{
+		InstanceID: instanceID, RunID: runID, Status: act.RunStatusRunning,
+		EventType: act.EventTypeResumed, DedupeKey: act.EventTypeResumed + ":1",
+	}))
+	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{InstanceID: instanceID, RunID: runID, Status: act.RunStatusSucceeded, EventType: act.EventTypeSucceeded}))
+
+	// The timeline shows both pauses and both resumptions, once each, in order.
+	events, err := store.ListRunEvents(ctx, instanceID, runID, 0, 100)
+	require.NoError(t, err)
+	require.Equal(t, []string{
+		act.EventTypeQueued,
+		act.EventTypeRunning,
+		act.EventTypeWaitingApproval,
+		act.EventTypeResumed,
+		act.EventTypeWaitingApproval,
+		act.EventTypeResumed,
+		act.EventTypeSucceeded,
+	}, eventTypes(events))
+}
+
+// TestRunStoreMigrateMovesEventUniquenessToDedupeKey exercises the startup migration against a table with the
+// PRE-dedupe_key shape (idempotency on UNIQUE (run_id, event_type)): the backfill must key existing rows without
+// losing any — suffixing the approval edges with ":0", the segment every pre-migration run implicitly was on — and
+// the moved uniqueness must admit a second segment's pause while still deduplicating a replayed edge.
+func TestRunStoreMigrateMovesEventUniquenessToDedupeKey(t *testing.T) {
+	dsn, _ := requirePostgres(t)
+	ctx := t.Context()
+	pool, err := pgxpool.New(ctx, dsn)
+	require.NoError(t, err)
+	t.Cleanup(pool.Close)
+
+	// Recreate agent_run_events exactly as an earlier build's Migrate left it, seeded with a run parked on its first
+	// approval gate. Postgres names the inline constraint agent_run_events_run_id_event_type_key, the name the
+	// migration drops.
+	schema := "act_test_" + uuid.New().String()[:8]
+	events := schema + ".agent_run_events"
+	_, err = pool.Exec(ctx, `CREATE SCHEMA `+schema)
+	require.NoError(t, err)
+	_, err = pool.Exec(ctx, `CREATE TABLE `+events+` (
+		id bigserial PRIMARY KEY,
+		run_id text NOT NULL,
+		instance_id text NOT NULL,
+		seq bigint NOT NULL,
+		event_type text NOT NULL,
+		status text NOT NULL DEFAULT '',
+		payload jsonb,
+		visibility text NOT NULL DEFAULT 'user',
+		created_on timestamptz NOT NULL DEFAULT now(),
+		UNIQUE (run_id, seq),
+		UNIQUE (run_id, event_type)
+	)`)
+	require.NoError(t, err)
+
+	const instanceID = "inst-migrate"
+	runID := act.ComposeRunID(instanceID, "triage", "k")
+	_, err = pool.Exec(ctx, `INSERT INTO `+events+` (run_id, instance_id, seq, event_type, status) VALUES
+		($1, $2, 1, $3, 'queued'), ($1, $2, 2, $4, 'running'), ($1, $2, 3, $5, 'waiting_approval')`,
+		runID, instanceID, act.EventTypeQueued, act.EventTypeRunning, act.EventTypeWaitingApproval)
+	require.NoError(t, err)
+
+	store, err := act.NewPostgresRunStore(ctx, act.StoreConfig{DatabaseURL: dsn, Schema: schema})
+	require.NoError(t, err)
+	t.Cleanup(func() { store.DropSchemaForTest(ctx); store.Close() })
+	require.NoError(t, store.Migrate(ctx))
+	require.NoError(t, store.Migrate(ctx), "the migration runs on every startup, so it must be re-runnable")
+
+	// Every pre-existing event survived, keyed by its type — the approval edge scoped to segment 0 so a replayed old
+	// edge deduplicates against the keys the new executor emits.
+	rows, err := pool.Query(ctx, `SELECT event_type, dedupe_key FROM `+events+` WHERE run_id=$1 ORDER BY seq`, runID)
+	require.NoError(t, err)
+	defer rows.Close()
+	backfilled := map[string]string{}
+	for rows.Next() {
+		var eventType, dedupeKey string
+		require.NoError(t, rows.Scan(&eventType, &dedupeKey))
+		backfilled[eventType] = dedupeKey
+	}
+	require.NoError(t, rows.Err())
+	require.Equal(t, map[string]string{
+		act.EventTypeQueued:          act.EventTypeQueued,
+		act.EventTypeRunning:         act.EventTypeRunning,
+		act.EventTypeWaitingApproval: act.EventTypeWaitingApproval + ":0",
+	}, backfilled)
+
+	// Re-park the migrated run's row so transitions can run against it (the old build had it waiting on its gate).
+	_, err = pool.Exec(ctx, `INSERT INTO `+schema+`.agent_runs (run_id, instance_id, agent_name, status) VALUES ($1, $2, 'triage', $3)`,
+		runID, instanceID, string(act.RunStatusWaitingApproval))
+	require.NoError(t, err)
+
+	// A replayed pre-migration edge still deduplicates: same segment-0 key, no new event.
+	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{
+		InstanceID: instanceID, RunID: runID, Status: act.RunStatusWaitingApproval,
+		EventType: act.EventTypeWaitingApproval, DedupeKey: act.EventTypeWaitingApproval + ":0",
+	}))
+	migrated, err := store.ListRunEvents(ctx, instanceID, runID, 0, 100)
+	require.NoError(t, err)
+	require.Len(t, migrated, 3, "a replayed old edge must not duplicate after the migration")
+
+	// The run continues where it parked: resume segment 0, then pause on a SECOND action. The second waiting_approval
+	// shares its event_type with the backfilled row, so this insert also proves the old constraint is gone.
+	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{
+		InstanceID: instanceID, RunID: runID, Status: act.RunStatusRunning,
+		EventType: act.EventTypeResumed, DedupeKey: act.EventTypeResumed + ":0",
+	}))
+	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{
+		InstanceID: instanceID, RunID: runID, Status: act.RunStatusWaitingApproval,
+		EventType: act.EventTypeWaitingApproval, DedupeKey: act.EventTypeWaitingApproval + ":1",
+	}))
+	run, err := store.GetRun(ctx, instanceID, runID)
+	require.NoError(t, err)
+	require.Equal(t, act.RunStatusWaitingApproval, run.Status)
 }
 
 // TestRunStoreResolveApprovalRejectsExpired verifies a human decision cannot claim an approval whose window has
