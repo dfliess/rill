@@ -3,15 +3,18 @@
   import MetadataValue from "@rilldata/web-admin/features/scheduled-reports/metadata/MetadataValue.svelte";
   import { m } from "@rilldata/web-common/lib/i18n/gen/messages";
   import { useRuntimeClient } from "@rilldata/web-common/runtime-client/v2";
-  import AgentApprovalStatusChip from "../approvals/AgentApprovalStatusChip.svelte";
-  import ApproveDenyButtons from "../approvals/ApproveDenyButtons.svelte";
-  import { useAgentApprovals, useAgentRun } from "../selectors";
+  import AgentApprovalCard from "../approvals/AgentApprovalCard.svelte";
+  import {
+    useAgentApprovals,
+    useAgentRun,
+    useSubjectNames,
+  } from "../selectors";
   import {
     agentTriggerLabel,
     formatDateTime,
     isApprovalPending,
-    parseProposal,
     runActorLabel,
+    timestampSortKey,
   } from "../utils";
   import AgentRunStatusChip from "./AgentRunStatusChip.svelte";
   import AgentRunTimeline from "./AgentRunTimeline.svelte";
@@ -35,15 +38,26 @@
 
   // A run's proposed action lives on an approval, not on the run. Fetch the run's
   // approvals so the reviewer can approve/deny the proposal here (folded in from
-  // the old standalone approval page).
+  // the old standalone approval page). Resolved ones stay on screen: they are the
+  // run's audit trail (who decided what, and when).
   // svelte-ignore state_referenced_locally
   const approvalsQuery = useAgentApprovals(runtimeClient, { runId });
-  let pendingApproval = $derived(
-    ($approvalsQuery.data?.approvals ?? []).find((a) =>
-      isApprovalPending(a.status),
-    ),
+  // Pending first (they need a decision), then the resolved ones oldest-first, so a
+  // multi-action run reads in the order it happened.
+  let approvals = $derived(
+    [...($approvalsQuery.data?.approvals ?? [])].sort((a, b) => {
+      const aPending = isApprovalPending(a.status);
+      if (aPending !== isApprovalPending(b.status)) return aPending ? -1 : 1;
+      return timestampSortKey(a.createdOn).localeCompare(
+        timestampSortKey(b.createdOn),
+      );
+    }),
   );
-  let proposal = $derived(parseProposal(pendingApproval?.proposal));
+
+  // Names the run's actor and each approval's decider, instead of a raw user id.
+  // svelte-ignore state_referenced_locally
+  const subjectNamesQuery = useSubjectNames(organization, project);
+  let subjectNames = $derived($subjectNamesQuery.data);
 </script>
 
 {#if run}
@@ -83,53 +97,13 @@
       <div class="text-fg-secondary text-xs font-mono">{run.runId}</div>
     </div>
 
-    {#if pendingApproval}
-      <!-- Proposed side-effecting action awaiting a human decision. -->
-      <div
-        class="flex flex-col gap-y-4 border border-amber-300 dark:border-amber-400/30 bg-amber-50 dark:bg-amber-500/10 rounded-lg p-4"
-      >
-        <div class="flex gap-x-2 items-center flex-wrap">
-          <h2 class="text-fg-primary text-base font-semibold">
-            {m.agents_run_approval_required()}
-          </h2>
-          <AgentApprovalStatusChip status={pendingApproval.status} />
-          <div class="grow"></div>
-          <ApproveDenyButtons
-            approvalId={pendingApproval.approvalId ?? ""}
-            argsHash={pendingApproval.argsHash ?? ""}
-          />
-        </div>
-
-        <div class="flex flex-wrap gap-x-16 gap-y-4">
-          <div class="flex flex-col gap-y-2">
-            <MetadataLabel>{m.agents_approval_proposed_action()}</MetadataLabel>
-            <MetadataValue>{pendingApproval.toolName || "—"}</MetadataValue>
-          </div>
-          <div class="flex flex-col gap-y-2">
-            <MetadataLabel>{m.agents_field_connector()}</MetadataLabel>
-            <MetadataValue>{pendingApproval.connector || "—"}</MetadataValue>
-          </div>
-          <div class="flex flex-col gap-y-2">
-            <MetadataLabel>{m.agents_approval_policy()}</MetadataLabel>
-            <MetadataValue>{pendingApproval.policy || "—"}</MetadataValue>
-          </div>
-          <div class="flex flex-col gap-y-2">
-            <MetadataLabel>{m.agents_field_expires()}</MetadataLabel>
-            <MetadataValue
-              >{formatDateTime(pendingApproval.expiresOn)}</MetadataValue
-            >
-          </div>
-        </div>
-
-        {#if proposal.text}
-          <div class="flex flex-col gap-y-2">
-            <MetadataLabel
-              >{m.agents_approval_proposed_action_args()}</MetadataLabel
-            >
-            <pre
-              class="text-xs text-fg-primary whitespace-pre-wrap bg-surface-secondary rounded p-3 border overflow-x-auto">{proposal.text}</pre>
-          </div>
-        {/if}
+    <!-- Each side-effecting action the run proposed: pending ones await a decision,
+         resolved ones record who decided and when. -->
+    {#if approvals.length > 0}
+      <div class="flex flex-col gap-y-4">
+        {#each approvals as approval (approval.approvalId)}
+          <AgentApprovalCard {approval} names={subjectNames} />
+        {/each}
       </div>
     {/if}
 
@@ -141,7 +115,7 @@
       <div class="flex flex-col gap-y-3">
         <!-- The identity the run (and any approved action) executes as. -->
         <MetadataLabel>{m.agents_run_runs_as()}</MetadataLabel>
-        <MetadataValue>{runActorLabel(run)}</MetadataValue>
+        <MetadataValue>{runActorLabel(run, subjectNames)}</MetadataValue>
       </div>
       <div class="flex flex-col gap-y-3">
         <MetadataLabel>{m.agents_run_spec_version()}</MetadataLabel>
@@ -169,7 +143,7 @@
       </div>
     {/if}
 
-    <AgentRunTimeline {runId} />
+    <AgentRunTimeline {runId} names={subjectNames} />
   </div>
 {:else if $runQuery.isError}
   <div class="text-sm text-red-600">

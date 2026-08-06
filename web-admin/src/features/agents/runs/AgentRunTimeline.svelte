@@ -6,11 +6,20 @@
   import {
     agentRunStatusColor,
     agentRunStatusLabel,
+    eventDecidedBy,
     formatDateTime,
     formatJson,
+    subjectLabel,
   } from "../utils";
 
-  let { runId }: { runId: string } = $props();
+  let {
+    runId,
+    names,
+  }: {
+    runId: string;
+    /** Subject -> person, to attribute a decision to a name and not a user id. */
+    names?: Map<string, string>;
+  } = $props();
 
   const runtimeClient = useRuntimeClient();
 
@@ -53,6 +62,16 @@
                 {agentRunStatusLabel(event.status)}
               </Tag>
             {/if}
+            <!-- `run.resumed` / `run.rejected` carry the subject that decided the
+                 approval, so the step says who unblocked (or stopped) the run. -->
+            {#if eventDecidedBy(event.payload)}
+              <span class="text-xs text-fg-secondary">
+                {m.agents_approval_decided_by()}: {subjectLabel(
+                  eventDecidedBy(event.payload),
+                  names,
+                )}
+              </span>
+            {/if}
             <div class="grow"></div>
             <span class="text-xs text-fg-secondary">
               {formatDateTime(event.createdOn)}
@@ -64,7 +83,7 @@
                 {m.agents_timeline_payload()}
               </summary>
               <pre
-                class="text-xs whitespace-pre-wrap bg-surface-secondary rounded p-2 mt-1 overflow-x-auto">{formatJson(
+                class="text-xs whitespace-pre-wrap bg-surface-subtle rounded p-2 mt-1 overflow-x-auto">{formatJson(
                   event.payload,
                 )}</pre>
             </details>

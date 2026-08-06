@@ -23,6 +23,13 @@ const (
 	stepRunAgent            = "run_agent"
 	stepPersistConversation = "persist_conversation"
 	stepApplyAction         = "apply_action"
+	stepLoadApprover        = "load_approver"
+	stepLoadDenier          = "load_denier"
+
+	// payloadKeyDecidedBy carries the subject that decided an approval on the run.resumed / run.rejected events. The
+	// same subject is written to the action ledger's decided_by; the event is what makes it readable through the API,
+	// which does not expose the ledger.
+	payloadKeyDecidedBy = "decided_by"
 
 	// defaultApplicationVersion pins the DBOS application version. It MUST be stable across process restarts:
 	// otherwise every rebuild is a fresh "version" and a restarted worker ignores runs the previous binary started,
@@ -363,14 +370,23 @@ func (e *DBOSExecutor) runAgentWorkflow(ctx dbos.DBOSContext, in AgentRunInput) 
 	}
 	if ApprovalDecision(decision) != ApprovalApproved {
 		res.Status = RunStatusRejected
-		if err := e.emit(ctx, in, runID, RunStatusRejected, EventTypeRejected); err != nil {
+		denier, err := e.loadDecider(ctx, in, ApprovalIDForRun(runID), stepLoadDenier)
+		if err != nil {
+			return e.fail(ctx, in, runID, res, "load denier", err)
+		}
+		if err := e.emitWithPayload(ctx, in, runID, RunStatusRejected, EventTypeRejected, deciderPayload(denier)); err != nil {
 			return res, err
 		}
 		return res, nil
 	}
 
-	// Approved: the run resumes and proceeds to the (approved) external write.
-	if err := e.emit(ctx, in, runID, RunStatusRunning, EventTypeResumed); err != nil {
+	// Approved: the run resumes and proceeds to the (approved) external write. The resumed event carries the real
+	// approver so the timeline attributes the decision without a ledger read.
+	approver, err := e.loadDecider(ctx, in, ApprovalIDForRun(runID), stepLoadApprover)
+	if err != nil {
+		return e.fail(ctx, in, runID, res, "load approver", err)
+	}
+	if err := e.emitWithPayload(ctx, in, runID, RunStatusRunning, EventTypeResumed, deciderPayload(approver)); err != nil {
 		return res, err
 	}
 
@@ -439,6 +455,13 @@ func (e *DBOSExecutor) persistConversation(ctx dbos.DBOSContext, in AgentRunInpu
 // The step is idempotent in the store (one event per edge), so a crash between the side effect and the checkpoint
 // replays it harmlessly.
 func (e *DBOSExecutor) emit(ctx dbos.DBOSContext, in AgentRunInput, runID string, status RunStatus, eventType string) error {
+	return e.emitWithPayload(ctx, in, runID, status, eventType, nil)
+}
+
+// emitWithPayload is emit with structured detail attached to the event. The payload must already be redacted: it is
+// stored verbatim and read by the run timeline, which is user-visible (§17.2). A nil payload behaves exactly like emit,
+// so the step name and shape are unchanged for the transitions that carry no detail.
+func (e *DBOSExecutor) emitWithPayload(ctx dbos.DBOSContext, in AgentRunInput, runID string, status RunStatus, eventType string, payload map[string]any) error {
 	if e.store == nil {
 		return nil
 	}
@@ -448,12 +471,48 @@ func (e *DBOSExecutor) emit(ctx dbos.DBOSContext, in AgentRunInput, runID string
 			RunID:      runID,
 			Status:     status,
 			EventType:  eventType,
+			Payload:    payload,
 		})
 	}, dbos.WithStepName("emit:"+eventType))
 	if err != nil {
 		return fmt.Errorf("act: emit %s: %w", eventType, err)
 	}
 	return nil
+}
+
+// deciderPayload is the event detail that attributes an approval decision on the run timeline. It is the only way a
+// reader learns who unblocked (or stopped) a run from the events alone: the ledger records the same subject on the
+// action, but the ledger is not exposed through the API.
+func deciderPayload(subject string) map[string]any {
+	if subject == "" {
+		return nil
+	}
+	return map[string]any{payloadKeyDecidedBy: subject}
+}
+
+// loadDecider resolves who actually decided an approval, as a durable step. The run initiator (in.Actor.Subject, e.g.
+// Alice) is not necessarily who decided (e.g. Bob, an admin), and the durable resume message carries only the decision,
+// not the decider; the approval row's decided_by was set by the API's claim (ResolveApproval) before the resume was
+// delivered, so it is authoritative here (§11.2, §18.3). Falls back to the initiator when no store is wired (the
+// executor's own unit tests) or when a non-API resume path left decided_by unset — see the Resume TODO above.
+func (e *DBOSExecutor) loadDecider(ctx dbos.DBOSContext, in AgentRunInput, approvalID, stepName string) (string, error) {
+	if e.store == nil {
+		return in.Actor.Subject, nil
+	}
+	loaded, err := dbos.RunAsStep(ctx, func(stepCtx context.Context) (string, error) {
+		ap, gErr := e.store.GetApproval(stepCtx, in.InstanceID, approvalID)
+		if gErr != nil {
+			return "", gErr
+		}
+		return ap.DecidedBy, nil
+	}, dbos.WithStepName(stepName))
+	if err != nil {
+		return "", err
+	}
+	if loaded == "" {
+		return in.Actor.Subject, nil
+	}
+	return loaded, nil
 }
 
 // fail records the run as failed with a sanitized error and returns the original error unchanged. The failed emit is
@@ -739,34 +798,24 @@ func (e *DBOSExecutor) governProposedAction(ctx dbos.DBOSContext, in AgentRunInp
 			return nil, true, err
 		}
 		if ApprovalDecision(decision) != ApprovalApproved {
-			// A human denied the action; it never advances past approval_pending in the ledger and no write runs.
+			// A human denied the action; it never advances past approval_pending in the ledger and no write runs. The
+			// rejected event carries who denied it, so the timeline attributes the stop as it attributes an approval.
 			res.Status = RunStatusRejected
-			if err := e.emit(ctx, in, runID, RunStatusRejected, EventTypeRejected); err != nil {
+			denier, err := e.loadDecider(ctx, in, approvalID, fmt.Sprintf("%s_%d", stepLoadDenier, seg))
+			if err != nil {
+				*res, err = e.fail(ctx, in, runID, *res, "load denier", err)
+				return nil, true, err
+			}
+			if err := e.emitWithPayload(ctx, in, runID, RunStatusRejected, EventTypeRejected, deciderPayload(denier)); err != nil {
 				return nil, true, err
 			}
 			return nil, true, nil
 		}
-		// Step: reload the resolved approval to record the REAL approver on the ledger. The run initiator
-		// (in.Actor.Subject, e.g. Alice) is not necessarily who approved (e.g. Bob, an admin); the durable resume
-		// message only carries the decision, not the decider. The approval row's decided_by was set by the API's claim
-		// (ResolveApproval) before the resume was delivered, so it is authoritative here (§11.2, §18.3). If no store is
-		// wired (the executor's own unit tests), fall back to the initiator.
-		decidedBy := in.Actor.Subject
-		if e.store != nil {
-			loaded, err := dbos.RunAsStep(ctx, func(stepCtx context.Context) (string, error) {
-				ap, gErr := e.store.GetApproval(stepCtx, in.InstanceID, approvalID)
-				if gErr != nil {
-					return "", gErr
-				}
-				return ap.DecidedBy, nil
-			}, dbos.WithStepName(fmt.Sprintf("load_approver_%d", seg)))
-			if err != nil {
-				*res, err = e.fail(ctx, in, runID, *res, "load approver", err)
-				return nil, true, err
-			}
-			if loaded != "" {
-				decidedBy = loaded
-			}
+		// Step: reload the resolved approval to record the REAL approver on the ledger and on the resumed event.
+		decidedBy, err := e.loadDecider(ctx, in, approvalID, fmt.Sprintf("%s_%d", stepLoadApprover, seg))
+		if err != nil {
+			*res, err = e.fail(ctx, in, runID, *res, "load approver", err)
+			return nil, true, err
 		}
 
 		// Step: record the approval on the ledger, bound to the exact args hash the human saw (§11.2). A hash mismatch
@@ -780,7 +829,7 @@ func (e *DBOSExecutor) governProposedAction(ctx dbos.DBOSContext, in AgentRunInp
 			*res, err = e.fail(ctx, in, runID, *res, "record approval", err)
 			return nil, true, err
 		}
-		if err := e.emit(ctx, in, runID, RunStatusRunning, EventTypeResumed); err != nil {
+		if err := e.emitWithPayload(ctx, in, runID, RunStatusRunning, EventTypeResumed, deciderPayload(decidedBy)); err != nil {
 			return nil, true, err
 		}
 
