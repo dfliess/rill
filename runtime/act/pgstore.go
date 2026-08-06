@@ -134,23 +134,42 @@ func (s *PostgresRunStore) Migrate(ctx context.Context) error {
 		// idempotent and safe on both a fresh and a pre-existing table.
 		fmt.Sprintf(`ALTER TABLE %s ADD COLUMN IF NOT EXISTS trigger_ref text NOT NULL DEFAULT ''`, s.t("agent_runs")),
 
+		// dedupe_key is the per-run idempotency key of an event. For the once-per-run lifecycle edges it equals
+		// event_type; for the approval edges the executor scopes it per segment ("run.waiting_approval:1"), so a run
+		// that pauses on several governed actions records every pause while a replayed edge still conflicts onto its
+		// own row. The uniqueness lives on (run_id, dedupe_key) — created as a separate index below so the fresh and
+		// the migrated table converge on the same shape.
 		fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (
 			id bigserial PRIMARY KEY,
 			run_id text NOT NULL,
 			instance_id text NOT NULL,
 			seq bigint NOT NULL,
 			event_type text NOT NULL,
+			dedupe_key text NOT NULL DEFAULT '',
 			status text NOT NULL DEFAULT '',
 			payload jsonb,
 			visibility text NOT NULL DEFAULT 'user',
 			created_on timestamptz NOT NULL DEFAULT now(),
-			UNIQUE (run_id, seq),
-			UNIQUE (run_id, event_type)
+			UNIQUE (run_id, seq)
 		)`, s.t("agent_run_events")),
 
 		// The stream/poll path reads events for one run with id greater than a cursor, in id order; id is the global
 		// monotonic sequence (bigserial), so this index serves both the scoping and the cursor.
 		fmt.Sprintf(`CREATE INDEX IF NOT EXISTS agent_run_events_instance_run_id_idx ON %s (instance_id, run_id, id)`, s.t("agent_run_events")),
+
+		// Migrate an agent_run_events table created by an earlier build, which keyed idempotency on
+		// UNIQUE (run_id, event_type): that uniqueness silently swallowed the second waiting_approval/resumed of a run
+		// with several governed actions, leaving the status stuck on running (kairos-cloud#129). Add dedupe_key, backfill
+		// it from event_type — suffixing the approval edges with ":0", the segment every pre-migration run implicitly
+		// was on, so a replayed old edge still deduplicates against the new keys — then move the uniqueness over and
+		// drop the old constraint. Every statement is idempotent: the backfills match no rows once dedupe_key is
+		// populated (new inserts always carry it), and the index/constraint statements are IF (NOT) EXISTS.
+		fmt.Sprintf(`ALTER TABLE %s ADD COLUMN IF NOT EXISTS dedupe_key text NOT NULL DEFAULT ''`, s.t("agent_run_events")),
+		fmt.Sprintf(`UPDATE %s SET dedupe_key = event_type || ':0' WHERE dedupe_key = '' AND event_type IN ('%s','%s','%s','%s')`,
+			s.t("agent_run_events"), EventTypeWaitingApproval, EventTypeResumed, EventTypeRejected, EventTypeExpired),
+		fmt.Sprintf(`UPDATE %s SET dedupe_key = event_type WHERE dedupe_key = ''`, s.t("agent_run_events")),
+		fmt.Sprintf(`CREATE UNIQUE INDEX IF NOT EXISTS agent_run_events_run_dedupe_idx ON %s (run_id, dedupe_key)`, s.t("agent_run_events")),
+		fmt.Sprintf(`ALTER TABLE %s DROP CONSTRAINT IF EXISTS agent_run_events_run_id_event_type_key`, s.t("agent_run_events")),
 
 		fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (
 			approval_id text PRIMARY KEY,
@@ -255,7 +274,7 @@ func (s *PostgresRunStore) CreateRun(ctx context.Context, run NewRun) error {
 			return nil
 		}
 		// The run was just inserted, so its queued event is always new; the inserted flag cannot be false here.
-		_, err = s.appendEventTx(ctx, tx, run.RunID, run.InstanceID, EventTypeQueued, RunStatusQueued, nil)
+		_, err = s.appendEventTx(ctx, tx, run.RunID, run.InstanceID, EventTypeQueued, "", RunStatusQueued, nil)
 		return err
 	})
 }
@@ -284,10 +303,13 @@ func (s *PostgresRunStore) RecordTransition(ctx context.Context, tr RunTransitio
 			return nil
 		}
 
-		// Append the event first, and let its (run_id, event_type) uniqueness decide idempotency: if this edge was
+		// Append the event first, and let its (run_id, dedupe_key) uniqueness decide idempotency: if this edge was
 		// already recorded, no row is inserted and we must NOT touch the status. This is what stops a re-applied
-		// transition from moving the status a second time (e.g. regressing a run whose later edges already ran).
-		inserted, err := s.appendEventTx(ctx, tx, tr.RunID, tr.InstanceID, tr.EventType, tr.Status, tr.Payload)
+		// transition from moving the status a second time (e.g. regressing a run whose later edges already ran). The
+		// key defaults to the event type (strict once-per-run); the executor scopes the repeatable approval edges per
+		// segment so a second governed pause is a NEW edge — it inserts and moves the status — while a replay of any
+		// recorded edge still carries the same key and stays a no-op.
+		inserted, err := s.appendEventTx(ctx, tx, tr.RunID, tr.InstanceID, tr.EventType, tr.DedupeKey, tr.Status, tr.Payload)
 		if err != nil {
 			return err
 		}
@@ -317,9 +339,13 @@ func (s *PostgresRunStore) RecordTransition(ctx context.Context, tr RunTransitio
 
 // appendEventTx appends one lifecycle event inside an open transaction and reports whether a new row was inserted.
 // The next per-run sequence is computed under the run-row lock the caller holds, and the insert is idempotent on
-// (run_id, event_type): re-appending the same edge after a crash inserts nothing and returns false, which is what
-// lets RecordTransition detect a duplicate edge and leave the run's status untouched.
-func (s *PostgresRunStore) appendEventTx(ctx context.Context, tx pgx.Tx, runID, instanceID, eventType string, status RunStatus, payload map[string]any) (bool, error) {
+// (run_id, dedupe_key) — dedupeKey defaults to eventType when empty: re-appending the same edge after a crash
+// inserts nothing and returns false, which is what lets RecordTransition detect a duplicate edge and leave the
+// run's status untouched.
+func (s *PostgresRunStore) appendEventTx(ctx context.Context, tx pgx.Tx, runID, instanceID, eventType, dedupeKey string, status RunStatus, payload map[string]any) (bool, error) {
+	if dedupeKey == "" {
+		dedupeKey = eventType
+	}
 	var payloadJSON []byte
 	if payload != nil {
 		var err error
@@ -329,10 +355,10 @@ func (s *PostgresRunStore) appendEventTx(ctx context.Context, tx pgx.Tx, runID, 
 		}
 	}
 	ct, err := tx.Exec(ctx, fmt.Sprintf(`
-		INSERT INTO %s (run_id, instance_id, seq, event_type, status, payload, visibility)
-		VALUES ($1, $2, (SELECT COALESCE(MAX(seq),0)+1 FROM %s WHERE run_id=$1), $3, $4, $5, $6)
-		ON CONFLICT (run_id, event_type) DO NOTHING`, s.t("agent_run_events"), s.t("agent_run_events")),
-		runID, instanceID, eventType, string(status), payloadJSON, VisibilityUser)
+		INSERT INTO %s (run_id, instance_id, seq, event_type, dedupe_key, status, payload, visibility)
+		VALUES ($1, $2, (SELECT COALESCE(MAX(seq),0)+1 FROM %s WHERE run_id=$1), $3, $4, $5, $6, $7)
+		ON CONFLICT (run_id, dedupe_key) DO NOTHING`, s.t("agent_run_events"), s.t("agent_run_events")),
+		runID, instanceID, eventType, dedupeKey, string(status), payloadJSON, VisibilityUser)
 	if err != nil {
 		return false, fmt.Errorf("append event: %w", err)
 	}

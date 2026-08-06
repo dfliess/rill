@@ -16,8 +16,11 @@ var ErrApprovalNotFound = errors.New("act: approval not found")
 
 // Event types emitted onto agent_run_events as a run moves through its lifecycle. They are stable strings (not an
 // enum) so the store, the proto API and the frontend agree on the wire value without a shared code generator, and
-// so a new type can be added without a migration. Each fires at most once per run, which is what lets the executor
-// key transition events idempotently (see PostgresRunStore.RecordTransition).
+// so a new type can be added without a migration. The lifecycle edges (queued, running, terminal states) fire at
+// most once per run; the approval edges (waiting_approval, resumed, rejected, expired) fire once per governed
+// action, so the segmented loop repeats them. Idempotency is keyed by RunTransition.DedupeKey (see
+// PostgresRunStore.RecordTransition): the executor scopes the approval edges per segment and leaves the rest keyed
+// by their type alone.
 const (
 	EventTypeQueued          = "run.queued"
 	EventTypeRunning         = "run.running"
@@ -111,9 +114,13 @@ type RunTransition struct {
 	InstanceID string
 	RunID      string
 	Status     RunStatus
-	// EventType is the event to append for this edge (an EventType* constant). It doubles as the idempotency key
-	// within the run: because each fires at most once, re-applying a transition after a mid-step crash is a no-op.
+	// EventType is the event to append for this edge (an EventType* constant).
 	EventType string
+	// DedupeKey is the idempotency key for this edge within the run: re-applying a transition with a key already
+	// recorded is a no-op, which is what stops a mid-step crash replay from moving the status twice. Empty defaults
+	// to EventType (one edge per run, the strict historical behavior); the segmented executor scopes the repeatable
+	// approval edges as "<event_type>:<segment>" so a run that pauses on several governed actions records each pause.
+	DedupeKey string
 	// Error is the sanitized error to store on the run, set only when transitioning to a failed status.
 	Error string
 	// Payload is optional structured detail for the event (redacted). Stored as JSON.
