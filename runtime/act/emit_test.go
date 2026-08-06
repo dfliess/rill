@@ -151,7 +151,8 @@ func TestExecutorEmitsExpiry(t *testing.T) {
 	require.Equal(t, act.ApprovalStatusExpired, approval.Status)
 }
 
-// TestExecutorEmitsRejection verifies a denied run records the rejected transition and performs no external effect.
+// TestExecutorEmitsRejection verifies a denied run records the rejected transition, attributes it to whoever denied it
+// (Bob, not the run's initiator), and performs no external effect.
 func TestExecutorEmitsRejection(t *testing.T) {
 	rt, instanceID := newInstanceWithAgent(t, "Investiga y propon.")
 	store := newRunStore(t)
@@ -170,10 +171,19 @@ func TestExecutorEmitsRejection(t *testing.T) {
 		AgentName:      "triage",
 		Prompt:         "propuesta arriesgada",
 		IdempotencyKey: "run-reject-" + uuid.NewString(),
+		Actor:          act.Actor{Subject: "user:alice"},
 	})
 	require.NoError(t, err)
 
+	// Deny as Bob in the API's order: claim the approval first, then deliver the durable decision.
+	require.Eventually(t, func() bool {
+		_, gErr := store.GetApproval(ctx, instanceID, act.ApprovalIDForRun(runID))
+		return gErr == nil
+	}, 15*time.Second, 50*time.Millisecond)
+	_, err = store.ResolveApproval(ctx, instanceID, act.ApprovalIDForRun(runID), act.ApprovalStatusDenied, "admin:bob")
+	require.NoError(t, err)
 	require.NoError(t, e.Resume(ctx, runID, act.ApprovalRejected))
+
 	res, err := e.Result(runID)
 	require.NoError(t, err)
 	require.Equal(t, act.RunStatusRejected, res.Status)
@@ -181,5 +191,7 @@ func TestExecutorEmitsRejection(t *testing.T) {
 
 	events, err := store.ListRunEvents(ctx, instanceID, runID, 0, 100)
 	require.NoError(t, err)
-	require.Equal(t, act.EventTypeRejected, events[len(events)-1].EventType)
+	rejected := events[len(events)-1]
+	require.Equal(t, act.EventTypeRejected, rejected.EventType)
+	require.Equal(t, "admin:bob", rejected.Payload["decided_by"], "the timeline attributes the denial to the denier")
 }

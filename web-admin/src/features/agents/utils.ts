@@ -107,6 +107,16 @@ export function isApprovalPending(status: string | undefined): boolean {
 }
 
 /**
+ * An approval is resolved once a human (or the deadline) decided it. Resolved
+ * approvals stay on the run: they are its audit trail, so the detail view keeps
+ * showing what was proposed, who decided it and when.
+ */
+export function isApprovalResolved(status: string | undefined): boolean {
+  const s = normalizeStatus(status);
+  return s !== "" && s !== "pending";
+}
+
+/**
  * A run is finished once the backend stamps `finished_on`. This is the terminal
  * marker we key polling and the Cancel affordance off, independent of the status
  * vocabulary.
@@ -125,6 +135,15 @@ export function formatDateTime(value: unknown): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "—";
   return date.toLocaleString();
+}
+
+/**
+ * Sort key for a proto timestamp. Like `formatDateTime`, this accepts `unknown`:
+ * the value arrives as an RFC3339 string even though the static type models the
+ * message shape, and RFC3339 sorts correctly as text. Anything else sorts first.
+ */
+export function timestampSortKey(value: unknown): string {
+  return typeof value === "string" ? value : "";
 }
 
 export interface ParsedProposal {
@@ -163,11 +182,41 @@ export function formatJson(value: unknown): string {
 }
 
 /**
+ * Names the person behind a subject (a user id) using the project's members, and
+ * falls back to the raw subject when it cannot be resolved: a decider who left the
+ * project, a service principal, or a caller without permission to list members. An
+ * unresolvable subject is still a valid audit record, so it is shown as-is.
+ */
+export function subjectLabel(
+  subject: string | undefined,
+  names: Map<string, string> | undefined,
+): string {
+  const raw = subject?.trim() ?? "";
+  if (raw === "") return "—";
+  return names?.get(raw) ?? raw;
+}
+
+/**
  * The identity the proposed action will run as. In v1 runs carry either a user
  * subject or a service principal (see the design's identity model, §6/§14).
  */
-export function runActorLabel(run: AgentRunData | undefined): string {
+export function runActorLabel(
+  run: AgentRunData | undefined,
+  names?: Map<string, string>,
+): string {
   if (!run) return "—";
   if (run.actorServicePrincipal) return m.agents_actor_service_principal();
-  return run.actorSubject || "—";
+  return subjectLabel(run.actorSubject, names);
+}
+
+/**
+ * The subject a lifecycle event attributes its decision to. The executor writes it
+ * onto `run.resumed` / `run.rejected` (payload key `decided_by`), which is the only
+ * place an API reader can learn who unblocked or stopped a run: the action ledger
+ * that stores the same subject is not exposed.
+ */
+export function eventDecidedBy(payload: unknown): string {
+  if (typeof payload !== "object" || payload === null) return "";
+  const value = (payload as Record<string, unknown>).decided_by;
+  return typeof value === "string" ? value : "";
 }

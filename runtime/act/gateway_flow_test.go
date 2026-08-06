@@ -133,9 +133,11 @@ func TestGatewayFlowApproveExecutes(t *testing.T) {
 	require.Equal(t, "PROJ-777", action.ExternalReference)
 }
 
-// TestGatewayFlowRecordsRealApprover proves the action ledger records who APPROVED the action, not who started the run
-// (§11.2, §18.3). Alice starts the run; Bob (an admin) resolves the approval. The reload inside the workflow makes the
-// ledger's decided_by the real approver, Bob, rather than the initiator, Alice.
+// TestGatewayFlowRecordsRealApprover proves the action ledger AND the run timeline record who APPROVED the action, not
+// who started the run (§11.2, §18.3). Alice starts the run; Bob (an admin) resolves the approval. The reload inside the
+// workflow makes both the ledger's decided_by and the resumed event's payload the real approver, Bob, rather than the
+// initiator, Alice. The event matters on its own: the API does not expose the ledger, so it is the only way a reader
+// learns who unblocked the run.
 func TestGatewayFlowRecordsRealApprover(t *testing.T) {
 	exec := &fakeExecutor{
 		result: act.ExecuteResult{Outcome: act.OutcomeSucceeded, ExternalReference: "PROJ-42"},
@@ -166,6 +168,23 @@ func TestGatewayFlowRecordsRealApprover(t *testing.T) {
 	action, err := store.GetAction(t.Context(), instanceID, runID, "call-1")
 	require.NoError(t, err)
 	require.Equal(t, "admin:bob", action.DecidedBy, "the ledger records the approver, not the run initiator")
+
+	events, err := store.ListRunEvents(t.Context(), instanceID, runID, 0, 100)
+	require.NoError(t, err)
+	resumed := lastEventOfType(t, events, act.EventTypeResumed)
+	require.Equal(t, "admin:bob", resumed.Payload["decided_by"], "the timeline attributes the approval to the approver")
+}
+
+// lastEventOfType returns the most recent event of the given type, failing the test when the run never emitted one.
+func lastEventOfType(t *testing.T, events []*act.RunEvent, eventType string) *act.RunEvent {
+	t.Helper()
+	for i := len(events) - 1; i >= 0; i-- {
+		if events[i].EventType == eventType {
+			return events[i]
+		}
+	}
+	require.FailNowf(t, "event not emitted", "no %s event in the run", eventType)
+	return nil
 }
 
 // TestGatewayFlowCancelDuringApprovalPreventsExecution verifies the escape hatch that matters now that approvals do

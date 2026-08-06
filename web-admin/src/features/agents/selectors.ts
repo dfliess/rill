@@ -1,3 +1,4 @@
+import { createAdminServiceListProjectMemberUsers } from "@rilldata/web-admin/client";
 import {
   createAgentServiceApproveAgentApprovalMutation,
   createAgentServiceCancelAgentRunMutation,
@@ -99,6 +100,36 @@ export function useAgentApprovals(
         enabled: !!client.instanceId,
         refetchOnMount: true,
         refetchInterval: LIST_REFETCH_INTERVAL,
+      },
+    },
+  );
+}
+
+// A run's actor and an approval's decider are stored as opaque subjects (the user's
+// id), which says nothing to a human reading an audit trail. Resolve them against the
+// project's members so the UI can name the person. The query is best-effort: a caller
+// without permission to list members, or a decider who is no longer a member, falls
+// back to the raw subject rather than failing the view (see `subjectLabel`).
+export function useSubjectNames(organization: string, project: string) {
+  return createAdminServiceListProjectMemberUsers(
+    organization,
+    project,
+    undefined,
+    {
+      query: {
+        enabled: !!organization && !!project,
+        retry: false,
+        select: (data) => {
+          const names = new Map<string, string>();
+          for (const member of data.members ?? []) {
+            if (!member.userId) continue;
+            names.set(
+              member.userId,
+              member.userName || member.userEmail || member.userId,
+            );
+          }
+          return names;
+        },
       },
     },
   );
