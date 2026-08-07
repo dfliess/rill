@@ -73,17 +73,19 @@
   );
 
   // Pending approvals joined to their run, so a waiting run offers approve/deny
-  // inline. A run does not carry its approval, so we fetch them separately.
+  // inline. A run does not carry its approval, so we fetch them separately. A batch
+  // turn can leave several approvals pending on one run, so the map keeps them all:
+  // the row acts on the first and shows how many more are behind it.
   const approvalsQuery = useAgentApprovals(runtimeClient, {
     status: "pending",
   });
   let approvalsByRun = $derived(
     ($approvalsQuery.data?.approvals ?? []).reduce(
       (map, a: AgentApprovalData) => {
-        if (a.runId && !map.has(a.runId)) map.set(a.runId, a);
+        if (a.runId) map.set(a.runId, [...(map.get(a.runId) ?? []), a]);
         return map;
       },
-      new Map<string, AgentApprovalData>(),
+      new Map<string, AgentApprovalData[]>(),
     ),
   );
 </script>

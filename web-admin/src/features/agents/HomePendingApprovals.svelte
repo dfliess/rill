@@ -16,17 +16,19 @@
   let runs = $derived($runsQuery.data?.runs ?? []);
 
   // Runs blocked on a pending approval. A run waits until a human decides or it is
-  // cancelled, so every pending approval is actionable and belongs in the inbox.
+  // cancelled, so every pending approval is actionable and belongs in the inbox. A
+  // batch turn can leave several approvals pending on one run, so the map keeps them
+  // all: the row acts on the first and shows how many more are behind it.
   const approvalsQuery = useAgentApprovals(runtimeClient, {
     status: "pending",
   });
   let approvalsByRun = $derived(
     ($approvalsQuery.data?.approvals ?? []).reduce(
       (map, a: AgentApprovalData) => {
-        if (a.runId && !map.has(a.runId)) map.set(a.runId, a);
+        if (a.runId) map.set(a.runId, [...(map.get(a.runId) ?? []), a]);
         return map;
       },
-      new Map<string, AgentApprovalData>(),
+      new Map<string, AgentApprovalData[]>(),
     ),
   );
   let pendingRuns = $derived(
