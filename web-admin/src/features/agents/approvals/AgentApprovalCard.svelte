@@ -54,6 +54,7 @@
       <ApproveDenyButtons
         approvalId={approval.approvalId ?? ""}
         argsHash={approval.argsHash ?? ""}
+        runId={approval.runId ?? ""}
       />
     {/if}
   </div>
