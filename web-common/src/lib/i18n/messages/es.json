@@ -6,7 +6,7 @@
   "agents_approval_approved_notification": "Acción aprobada",
   "agents_approval_denied_notification": "Acción rechazada",
   "agents_approval_deny": "Rechazar",
-  "agents_approval_deny_confirm_desc": "La ejecución terminará sin realizar la acción propuesta.",
+  "agents_approval_deny_confirm_desc": "Solo se descarta esta acción: el agente verá el rechazo y continuará con el resto de la ejecución. Si quieres detener la ejecución completa, usa Cancelar ejecución.",
   "agents_approval_deny_confirm_title": "¿Rechazar esta acción?",
   "agents_approval_deny_error": "No se pudo rechazar",
   "agents_approval_decided_by": "Decidida por",

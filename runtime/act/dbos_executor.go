@@ -532,16 +532,49 @@ func (e *DBOSExecutor) fail(ctx dbos.DBOSContext, in AgentRunInput, runID string
 	return res, fmt.Errorf("act: %s: %w", what, err)
 }
 
-// sweepPendingApprovals withdraws any still-pending approvals for a run that reached a terminal state (failed,
-// indeterminate, etc.). It is best-effort and uses context.Background because the workflow context may already be
-// cancelled. A failure to sweep is logged but never fails the run.
+// sweepPendingApprovals withdraws any still-pending approvals AND their ledger actions for a run that reached a
+// terminal state (failed, indeterminate, cancelled). It is best-effort and uses context.Background because the
+// workflow context may already be cancelled. A failure to sweep is logged but never fails the run.
 func (e *DBOSExecutor) sweepPendingApprovals(instanceID, runID string) {
 	if e.store == nil {
 		return
 	}
-	if _, err := e.store.CancelPendingApprovals(context.Background(), instanceID, runID); err != nil && e.logger != nil {
+	ctx := context.Background()
+	if _, err := e.store.CancelPendingApprovals(ctx, instanceID, runID); err != nil && e.logger != nil {
 		e.logger.Warn("act: sweeping pending approvals failed", "run", runID, "err", err)
 	}
+	if ledger := e.ledger(); ledger != nil {
+		if _, err := ledger.WithdrawPendingActions(ctx, instanceID, runID); err != nil && e.logger != nil {
+			e.logger.Warn("act: withdrawing pending actions failed", "run", runID, "err", err)
+		}
+	}
+}
+
+// closeLedgerAction transitions a single ledger action to a terminal status with an optional decider. Best-effort: a
+// failure is logged but never fails the run, since the approval row already records the decision.
+func (e *DBOSExecutor) closeLedgerAction(ctx context.Context, instanceID, runID, toolCallID string, status ActionStatus, decidedBy string) {
+	ledger := e.ledger()
+	if ledger == nil {
+		return
+	}
+	if _, err := ledger.TransitionAction(ctx, ActionTransition{
+		InstanceID: instanceID, RunID: runID, ToolCallID: toolCallID,
+		Status: status, DecidedBy: decidedBy,
+	}); err != nil && e.logger != nil {
+		e.logger.Warn("act: close ledger action failed", "run", runID, "toolCallID", toolCallID, "status", status, "err", err)
+	}
+}
+
+// ledger returns the action ledger for this executor: the gateway's ledger when wired, or the store itself when it
+// implements ActionLedger (production: PostgresRunStore serves both). Returns nil when neither is available.
+func (e *DBOSExecutor) ledger() ActionLedger {
+	if e.gateway != nil {
+		return e.gateway.Ledger
+	}
+	if l, ok := e.store.(ActionLedger); ok {
+		return l
+	}
+	return nil
 }
 
 // interruptedAwaitingApproval wraps a cancelled-context error from the approval wait. A cancelled context there means
@@ -839,6 +872,7 @@ func (e *DBOSExecutor) processOneAction(ctx dbos.DBOSContext, in AgentRunInput, 
 				actionDedupeKey(EventTypeRejected, proposal.ToolCallID), deciderPayload(denier)); err != nil {
 				return nil, true, err
 			}
+			e.closeLedgerAction(ctx, in.InstanceID, runID, proposal.ToolCallID, ActionRejected, denier)
 			return &ai.InjectedResult{
 				ToolCallID: proposal.ToolCallID, Tool: proposal.Tool, IsError: true,
 				Message: "This action was rejected by the operator.",
