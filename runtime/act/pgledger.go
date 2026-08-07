@@ -253,6 +253,17 @@ func (s *PostgresRunStore) ListActions(ctx context.Context, instanceID, runID st
 	return out, rows.Err()
 }
 
+func (s *PostgresRunStore) WithdrawPendingActions(ctx context.Context, instanceID, runID string) (int64, error) {
+	tag, err := s.pool.Exec(ctx, fmt.Sprintf(
+		`UPDATE %s SET status=$3, updated_on=now() WHERE instance_id=$1 AND run_id=$2 AND status=$4`,
+		s.t("agent_actions")),
+		instanceID, runID, string(ActionWithdrawn), string(ActionApprovalPending))
+	if err != nil {
+		return 0, fmt.Errorf("act: withdraw pending actions: %w", err)
+	}
+	return tag.RowsAffected(), nil
+}
+
 // selectActionSQL is the column list and source for an action projection, in the order scanAction expects.
 func (s *PostgresRunStore) selectActionSQL() string {
 	return fmt.Sprintf(`

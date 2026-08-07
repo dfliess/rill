@@ -49,13 +49,20 @@ const (
 	// ActionVerified marks a succeeded action whose effect a verification tool subsequently confirmed in the target
 	// system (§16.1). It is the strongest terminal state.
 	ActionVerified ActionStatus = "verified"
+	// ActionRejected is terminal: a human denied the proposed action. No external effect ran; the model receives the
+	// rejection as an error result and adapts. DecidedBy records who denied it.
+	ActionRejected ActionStatus = "rejected"
+	// ActionWithdrawn is terminal: the run reached a terminal state (cancelled, failed) before this action was decided
+	// or executed. It is the ledger counterpart of ApprovalStatusCancelled: the approval was withdrawn, so the action
+	// never advanced past approval_pending.
+	ActionWithdrawn ActionStatus = "withdrawn"
 )
 
 // IsTerminal reports whether an action can no longer transition. A terminal action's row is never mutated again, so a
 // replayed transition targeting it is a no-op.
 func (s ActionStatus) IsTerminal() bool {
 	switch s {
-	case ActionPolicyRejected, ActionFailed, ActionIndeterminate, ActionVerified:
+	case ActionPolicyRejected, ActionFailed, ActionIndeterminate, ActionVerified, ActionRejected, ActionWithdrawn:
 		return true
 	default:
 		return false
@@ -73,7 +80,9 @@ var actionEdges = map[ActionStatus]map[ActionStatus]bool{
 		ActionApproved:        true,
 	},
 	ActionApprovalPending: {
-		ActionApproved: true,
+		ActionApproved:  true,
+		ActionRejected:  true,
+		ActionWithdrawn: true,
 	},
 	ActionApproved: {
 		ActionExecuting: true,
@@ -231,4 +240,8 @@ type ActionLedger interface {
 	GetAction(ctx context.Context, instanceID, runID, toolCallID string) (*Action, error)
 	// ListActions returns a run's actions, newest first, for the audit view and the approval inbox.
 	ListActions(ctx context.Context, instanceID, runID string) ([]*Action, error)
+	// WithdrawPendingActions transitions every approval_pending action of a run to withdrawn, in one statement. It is
+	// the ledger counterpart of CancelPendingApprovals: when a run reaches a terminal state, actions that were never
+	// decided must not stay in approval_pending. Idempotent: a run with no pending actions withdraws zero rows.
+	WithdrawPendingActions(ctx context.Context, instanceID, runID string) (int64, error)
 }

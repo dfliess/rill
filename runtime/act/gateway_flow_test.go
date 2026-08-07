@@ -253,7 +253,7 @@ func TestGatewayFlowRejectionSkipsWrite(t *testing.T) {
 
 	action, err := store.GetAction(t.Context(), instanceID, runID, "call-1")
 	require.NoError(t, err)
-	require.Equal(t, act.ActionApprovalPending, action.Status)
+	require.Equal(t, act.ActionRejected, action.Status, "the ledger closes the rejected action")
 }
 
 // autoApproveRunner is a mock Runner that returns a snapshot whose jira_ops connector is approval: auto plus a captured
@@ -881,6 +881,15 @@ func TestBatchPartialRejection(t *testing.T) {
 	require.Len(t, injected, 2)
 	require.True(t, injected[0].IsError, "first result is the rejection")
 	require.False(t, injected[1].IsError, "second result is the executed action")
+
+	// The ledger reflects the outcomes: the rejected action is closed as rejected (not stuck in approval_pending),
+	// and the approved action reached succeeded.
+	a1, err := store.GetAction(ctx, inst, runID, "tc-1")
+	require.NoError(t, err)
+	require.Equal(t, act.ActionRejected, a1.Status, "rejected action's ledger row must be closed as rejected")
+	a2, err := store.GetAction(ctx, inst, runID, "tc-2")
+	require.NoError(t, err)
+	require.Equal(t, act.ActionSucceeded, a2.Status, "approved action's ledger row must reach succeeded")
 }
 
 // TestBatchStatusStaysWaitingWhileDecisionsPending is the regression for the intermediate-state bug: when a batch has
@@ -1027,7 +1036,12 @@ func TestBatchFailSweepsSiblingApprovals(t *testing.T) {
 	require.Equal(t, act.RunStatusFailed, res.Status)
 
 	// The sibling's approval (action 2) must be swept to cancelled, not left pending.
-	a2, err := store.GetApproval(ctx, inst, act.ApprovalIDForToolCall(runID, "tc-2"))
+	a2appr, err := store.GetApproval(ctx, inst, act.ApprovalIDForToolCall(runID, "tc-2"))
 	require.NoError(t, err)
-	require.Equal(t, act.ApprovalStatusCancelled, a2.Status, "sibling approval must be swept to cancelled on run failure")
+	require.Equal(t, act.ApprovalStatusCancelled, a2appr.Status, "sibling approval must be swept to cancelled on run failure")
+
+	// The sibling's ledger row must also be closed: withdrawn, not stuck in approval_pending.
+	a2action, err := store.GetAction(ctx, inst, runID, "tc-2")
+	require.NoError(t, err)
+	require.Equal(t, act.ActionWithdrawn, a2action.Status, "sibling action's ledger row must be withdrawn on run failure")
 }
