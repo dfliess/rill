@@ -10,6 +10,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// seedRun inserts a minimal parent run so child-table operations (actions, events, approvals) satisfy the FK
+// constraint on run_id. CreateRun is idempotent (ON CONFLICT DO NOTHING), so calling it twice is harmless.
+func seedRun(t *testing.T, store *act.PostgresRunStore, instanceID, runID string) {
+	t.Helper()
+	require.NoError(t, store.CreateRun(t.Context(), act.NewRun{
+		RunID: runID, InstanceID: instanceID, AgentName: "seed",
+	}))
+}
+
 // newRunStore returns a migrated PostgresRunStore on a schema unique to this test, so tests never see each other's
 // rows and a rerun starts clean. It reuses the same Postgres as the DBOS spike (requirePostgres skips if it is down).
 func newRunStore(t *testing.T) *act.PostgresRunStore {
@@ -242,10 +251,33 @@ func TestRunStoreMigrateMovesEventUniquenessToDedupeKey(t *testing.T) {
 
 	// Recreate agent_run_events exactly as an earlier build's Migrate left it, seeded with a run parked on its first
 	// approval gate. Postgres names the inline constraint agent_run_events_run_id_event_type_key, the name the
-	// migration drops.
+	// migration drops. agent_runs is also created (any real older build had it) so the events are not orphans — the FK
+	// migration cleans up orphan rows before validating the constraint.
 	schema := "act_test_" + uuid.New().String()[:8]
+	runs := schema + ".agent_runs"
 	events := schema + ".agent_run_events"
 	_, err = pool.Exec(ctx, `CREATE SCHEMA `+schema)
+	require.NoError(t, err)
+	_, err = pool.Exec(ctx, `CREATE TABLE `+runs+` (
+		run_id text PRIMARY KEY,
+		instance_id text NOT NULL,
+		organization_id text,
+		project_id text,
+		agent_name text NOT NULL,
+		spec_hash text NOT NULL DEFAULT '',
+		trigger text NOT NULL DEFAULT '',
+		trigger_ref text NOT NULL DEFAULT '',
+		idempotency_key text NOT NULL DEFAULT '',
+		conversation_id text NOT NULL DEFAULT '',
+		actor_subject text NOT NULL DEFAULT '',
+		actor_service_principal boolean NOT NULL DEFAULT false,
+		status text NOT NULL,
+		error text NOT NULL DEFAULT '',
+		created_on timestamptz NOT NULL DEFAULT now(),
+		updated_on timestamptz NOT NULL DEFAULT now(),
+		started_on timestamptz,
+		finished_on timestamptz
+	)`)
 	require.NoError(t, err)
 	_, err = pool.Exec(ctx, `CREATE TABLE `+events+` (
 		id bigserial PRIMARY KEY,
@@ -264,6 +296,9 @@ func TestRunStoreMigrateMovesEventUniquenessToDedupeKey(t *testing.T) {
 
 	const instanceID = "inst-migrate"
 	runID := act.ComposeRunID(instanceID, "triage", "k")
+	_, err = pool.Exec(ctx, `INSERT INTO `+runs+` (run_id, instance_id, agent_name, status) VALUES ($1, $2, 'triage', $3)`,
+		runID, instanceID, string(act.RunStatusWaitingApproval))
+	require.NoError(t, err)
 	_, err = pool.Exec(ctx, `INSERT INTO `+events+` (run_id, instance_id, seq, event_type, status) VALUES
 		($1, $2, 1, $3, 'queued'), ($1, $2, 2, $4, 'running'), ($1, $2, 3, $5, 'waiting_approval')`,
 		runID, instanceID, act.EventTypeQueued, act.EventTypeRunning, act.EventTypeWaitingApproval)
@@ -292,11 +327,6 @@ func TestRunStoreMigrateMovesEventUniquenessToDedupeKey(t *testing.T) {
 		act.EventTypeRunning:         act.EventTypeRunning,
 		act.EventTypeWaitingApproval: act.EventTypeWaitingApproval + ":0",
 	}, backfilled)
-
-	// Re-park the migrated run's row so transitions can run against it (the old build had it waiting on its gate).
-	_, err = pool.Exec(ctx, `INSERT INTO `+schema+`.agent_runs (run_id, instance_id, agent_name, status) VALUES ($1, $2, 'triage', $3)`,
-		runID, instanceID, string(act.RunStatusWaitingApproval))
-	require.NoError(t, err)
 
 	// A replayed pre-migration edge still deduplicates: same segment-0 key, no new event.
 	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{

@@ -55,6 +55,9 @@ func TestMigrateBackfillsLeaseColumns(t *testing.T) {
 	require.NoError(t, store.Migrate(ctx))
 	require.NoError(t, store.Migrate(ctx))
 
+	// Seed the parent run so the FK on agent_actions.run_id is satisfied.
+	require.NoError(t, store.CreateRun(ctx, NewRun{RunID: "r", InstanceID: "i", AgentName: "seed"}))
+
 	// A full propose -> approve -> claim cycle now works, proving the restored columns are present and usable.
 	require.NoError(t, store.ProposeAction(ctx, NewAction{
 		ToolCallID: "c", RunID: "r", InstanceID: "i", Tool: "t", Connector: "k",

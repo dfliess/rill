@@ -241,6 +241,56 @@ func (s *PostgresRunStore) Migrate(ctx context.Context) error {
 		// Backfill the action's redacted text result onto a table created before this column existed (same rationale as
 		// the lease columns above): a tool that returns only text lands here, distinct from the structured redacted_result.
 		fmt.Sprintf(`ALTER TABLE %s ADD COLUMN IF NOT EXISTS redacted_message text NOT NULL DEFAULT ''`, s.t("agent_actions")),
+
+		// Referential integrity: every child table's run_id must point to an existing agent_runs row. Each FK is added
+		// NOT VALID (short AccessExclusive lock, no full-table scan), orphan rows are cleaned up (they are unreachable
+		// through any API path since no parent run exists — today there is no delete path for runs, so orphans should
+		// only come from manual database cleanup or test harnesses), and then the constraint is validated
+		// (ShareUpdateExclusive, concurrent DML proceeds). Every step is idempotent: the DO block checks
+		// pg_constraint so ADD CONSTRAINT runs at most once, the DELETE is a no-op when no orphans remain, and
+		// VALIDATE on an already-valid constraint is a no-op.
+
+		// -- agent_run_events.run_id → agent_runs.run_id
+		fmt.Sprintf(`DO $$ BEGIN
+			IF NOT EXISTS (
+				SELECT 1 FROM pg_constraint c JOIN pg_namespace n ON n.oid = c.connamespace
+				WHERE c.conname = 'agent_run_events_run_id_fkey' AND n.nspname = '%s'
+			) THEN
+				ALTER TABLE %s ADD CONSTRAINT agent_run_events_run_id_fkey
+					FOREIGN KEY (run_id) REFERENCES %s (run_id) ON DELETE CASCADE NOT VALID;
+			END IF;
+		END $$`, s.schema, s.t("agent_run_events"), s.t("agent_runs")),
+		fmt.Sprintf(`DELETE FROM %s WHERE NOT EXISTS (SELECT 1 FROM %s r WHERE r.run_id = %s.run_id)`,
+			s.t("agent_run_events"), s.t("agent_runs"), s.t("agent_run_events")),
+		fmt.Sprintf(`ALTER TABLE %s VALIDATE CONSTRAINT agent_run_events_run_id_fkey`, s.t("agent_run_events")),
+
+		// -- agent_approvals.run_id → agent_runs.run_id
+		fmt.Sprintf(`DO $$ BEGIN
+			IF NOT EXISTS (
+				SELECT 1 FROM pg_constraint c JOIN pg_namespace n ON n.oid = c.connamespace
+				WHERE c.conname = 'agent_approvals_run_id_fkey' AND n.nspname = '%s'
+			) THEN
+				ALTER TABLE %s ADD CONSTRAINT agent_approvals_run_id_fkey
+					FOREIGN KEY (run_id) REFERENCES %s (run_id) ON DELETE CASCADE NOT VALID;
+			END IF;
+		END $$`, s.schema, s.t("agent_approvals"), s.t("agent_runs")),
+		fmt.Sprintf(`DELETE FROM %s WHERE NOT EXISTS (SELECT 1 FROM %s r WHERE r.run_id = %s.run_id)`,
+			s.t("agent_approvals"), s.t("agent_runs"), s.t("agent_approvals")),
+		fmt.Sprintf(`ALTER TABLE %s VALIDATE CONSTRAINT agent_approvals_run_id_fkey`, s.t("agent_approvals")),
+
+		// -- agent_actions.run_id → agent_runs.run_id
+		fmt.Sprintf(`DO $$ BEGIN
+			IF NOT EXISTS (
+				SELECT 1 FROM pg_constraint c JOIN pg_namespace n ON n.oid = c.connamespace
+				WHERE c.conname = 'agent_actions_run_id_fkey' AND n.nspname = '%s'
+			) THEN
+				ALTER TABLE %s ADD CONSTRAINT agent_actions_run_id_fkey
+					FOREIGN KEY (run_id) REFERENCES %s (run_id) ON DELETE CASCADE NOT VALID;
+			END IF;
+		END $$`, s.schema, s.t("agent_actions"), s.t("agent_runs")),
+		fmt.Sprintf(`DELETE FROM %s WHERE NOT EXISTS (SELECT 1 FROM %s r WHERE r.run_id = %s.run_id)`,
+			s.t("agent_actions"), s.t("agent_runs"), s.t("agent_actions")),
+		fmt.Sprintf(`ALTER TABLE %s VALIDATE CONSTRAINT agent_actions_run_id_fkey`, s.t("agent_actions")),
 	}
 
 	for _, stmt := range stmts {
