@@ -36,8 +36,6 @@ type ActConfig struct {
 	ProductSchema string
 	// DispatchInterval is how often the trigger dispatcher polls each instance's outbox. Defaults to 10s.
 	DispatchInterval time.Duration
-	// ApprovalTimeout bounds how long a run parks waiting for a human decision. Zero lets the executor default (30m).
-	ApprovalTimeout time.Duration
 	// ApplicationVersion pins the DBOS worker version. DBOS only recovers workflows that match it, so pinning it
 	// across a rolling deploy keeps a new worker from recovering an incompatible in-flight run. Empty lets the
 	// executor default; tests set a unique value to isolate their runs on the shared DBOS schema.
@@ -118,9 +116,8 @@ func (s *Server) BootstrapAct(ctx context.Context, cfg ActConfig) (io.Closer, er
 		Runner:             runner,
 		Store:              runStore,
 		Gateway:            act.NewMCPGateway(s.runtime, runStore, logger),
-		Proposer:           act.NewCapturedProposer(),
-		ApprovalTimeout:    cfg.ApprovalTimeout,
-		Logger:             logger,
+		Proposer: act.NewCapturedProposer(),
+		Logger:   logger,
 	})
 	if err != nil {
 		return fail(fmt.Errorf("act: build executor: %w", err))

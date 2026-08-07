@@ -42,7 +42,7 @@ describe("eventDecidedBy", () => {
 
 describe("isApprovalResolved", () => {
   it("treats every terminal status as resolved", () => {
-    for (const status of ["approved", "denied", "expired", "cancelled"]) {
+    for (const status of ["approved", "denied", "cancelled"]) {
       expect(isApprovalResolved(status)).toBe(true);
     }
   });

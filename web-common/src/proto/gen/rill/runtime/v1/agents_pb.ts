@@ -379,11 +379,6 @@ export class AgentApproval extends Message<AgentApproval> {
   decidedBy = "";
 
   /**
-   * @generated from field: google.protobuf.Timestamp expires_on = 13;
-   */
-  expiresOn?: Timestamp;
-
-  /**
    * @generated from field: google.protobuf.Timestamp created_on = 14;
    */
   createdOn?: Timestamp;
@@ -392,6 +387,20 @@ export class AgentApproval extends Message<AgentApproval> {
    * @generated from field: google.protobuf.Timestamp decided_on = 15;
    */
   decidedOn?: Timestamp;
+
+  /**
+   * position is the 1-based index of this action within its batch (e.g. 1 of 3). Zero for single-action turns.
+   *
+   * @generated from field: int32 position = 16;
+   */
+  position = 0;
+
+  /**
+   * total is the number of actions in the batch.
+   *
+   * @generated from field: int32 total = 17;
+   */
+  total = 0;
 
   constructor(data?: PartialMessage<AgentApproval>) {
     super();
@@ -413,9 +422,10 @@ export class AgentApproval extends Message<AgentApproval> {
     { no: 10, name: "status", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 11, name: "requested_by", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 12, name: "decided_by", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 13, name: "expires_on", kind: "message", T: Timestamp },
     { no: 14, name: "created_on", kind: "message", T: Timestamp },
     { no: 15, name: "decided_on", kind: "message", T: Timestamp },
+    { no: 16, name: "position", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 17, name: "total", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): AgentApproval {

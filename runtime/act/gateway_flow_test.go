@@ -2,6 +2,7 @@ package act_test
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -44,13 +45,13 @@ func (gatewayFlowRunner) RunSegment(_ context.Context, in act.RunSegmentInput) (
 	if sessionID == "" {
 		sessionID = "sess-" + in.Snapshot.Name
 	}
-	if in.Resume != nil {
+	if len(in.Resume) > 0 {
 		return act.RunSegmentResult{Response: "Hecho, creé el ticket.", SessionID: sessionID}, nil
 	}
 	return act.RunSegmentResult{
 		Response:  "Propongo crear un ticket.",
 		SessionID: sessionID,
-		Proposed:  &ai.ProposedAction{Tool: "jira.create_issue", Connector: "jira_ops"},
+		Proposed:  []*ai.ProposedAction{{Tool: "jira.create_issue", Connector: "jira_ops"}},
 	}, nil
 }
 
@@ -84,7 +85,6 @@ func newGatewayExecutor(t *testing.T, exec act.ActionExecutor, desc act.ToolDesc
 		Store:              store,
 		Gateway:            gateway,
 		Proposer:           proposer,
-		ApprovalTimeout:    60 * time.Second,
 		Logger:             slog.New(slog.NewTextHandler(io.Discard, nil)),
 	})
 	require.NoError(t, err)
@@ -118,7 +118,7 @@ func TestGatewayFlowApproveExecutes(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	require.NoError(t, e.Resume(t.Context(), runID, act.ApprovalApproved))
+	require.NoError(t, e.Resume(t.Context(), runID, act.ApprovalApproved, "call-1"))
 	res, err := e.Result(runID)
 	require.NoError(t, err)
 	require.Equal(t, act.RunStatusSucceeded, res.Status)
@@ -154,12 +154,12 @@ func TestGatewayFlowRecordsRealApprover(t *testing.T) {
 	// Wait for the run to reach the approval gate, then resolve it as Bob and deliver the durable resume — mirroring
 	// the API's claim-then-send order.
 	require.Eventually(t, func() bool {
-		_, gErr := store.GetApproval(t.Context(), instanceID, act.ApprovalIDForRun(runID))
+		_, gErr := store.GetApproval(t.Context(), instanceID, act.ApprovalIDForToolCall(runID, "call-1"))
 		return gErr == nil
 	}, 15*time.Second, 50*time.Millisecond)
-	_, err = store.ResolveApproval(t.Context(), instanceID, act.ApprovalIDForRun(runID), act.ApprovalStatusApproved, "admin:bob")
+	_, err = store.ResolveApproval(t.Context(), instanceID, act.ApprovalIDForToolCall(runID, "call-1"), act.ApprovalStatusApproved, "admin:bob")
 	require.NoError(t, err)
-	require.NoError(t, e.Resume(t.Context(), runID, act.ApprovalApproved))
+	require.NoError(t, e.Resume(t.Context(), runID, act.ApprovalApproved, "call-1"))
 
 	res, err := e.Result(runID)
 	require.NoError(t, err)
@@ -206,14 +206,14 @@ func TestGatewayFlowCancelDuringApprovalPreventsExecution(t *testing.T) {
 
 	// Wait until the run parks on the approval gate (the approval row exists).
 	require.Eventually(t, func() bool {
-		_, gErr := store.GetApproval(t.Context(), instanceID, act.ApprovalIDForRun(runID))
+		_, gErr := store.GetApproval(t.Context(), instanceID, act.ApprovalIDForToolCall(runID, "call-1"))
 		return gErr == nil
 	}, 15*time.Second, 50*time.Millisecond)
 
 	// Cancel the parked run, then — racing a late approver — try to deliver an approval. Neither call should drive the
 	// external write. Resume may error (a cancelled workflow refuses the send); that is fine, we only require no write.
 	require.NoError(t, e.Cancel(t.Context(), instanceID, runID))
-	_ = e.Resume(t.Context(), runID, act.ApprovalApproved)
+	_ = e.Resume(t.Context(), runID, act.ApprovalApproved, "call-1")
 
 	// The governed action must NOT execute, even given time for a wrongly-resumed workflow to reach the executor.
 	require.Never(t, func() bool { return exec.executeCount() > 0 }, 3*time.Second, 100*time.Millisecond,
@@ -227,13 +227,14 @@ func TestGatewayFlowCancelDuringApprovalPreventsExecution(t *testing.T) {
 
 	// Cancelling the run also withdrew its pending approval, so the inbox stops offering a decision on a run that will
 	// never resume (the approval panel is gated on the pending status).
-	appr, err := store.GetApproval(t.Context(), instanceID, act.ApprovalIDForRun(runID))
+	appr, err := store.GetApproval(t.Context(), instanceID, act.ApprovalIDForToolCall(runID, "call-1"))
 	require.NoError(t, err)
 	require.Equal(t, act.ApprovalStatusCancelled, appr.Status, "cancelling a run must withdraw its pending approval")
 }
 
-// TestGatewayFlowRejectionSkipsWrite verifies a human denial ends the run rejected and never reaches the executor; the
-// action stays approval_pending on the ledger.
+// TestGatewayFlowRejectionSkipsWrite verifies a human denial injects the rejection as a result (the model can adapt)
+// and never executes the proposed action; the action stays approval_pending on the ledger. The run succeeds because
+// the model sees the rejection and closes: in the per-tool-call model rejection is per-action, not per-run.
 func TestGatewayFlowRejectionSkipsWrite(t *testing.T) {
 	exec := &fakeExecutor{result: act.ExecuteResult{Outcome: act.OutcomeSucceeded, ExternalReference: "PROJ-1"}}
 	e, store, instanceID := newGatewayExecutor(t, exec, createIssueDescriptor(act.ClassIdempotentNative), nil, fixedProposer{proposal: flowProposal(), ok: true})
@@ -243,10 +244,10 @@ func TestGatewayFlowRejectionSkipsWrite(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	require.NoError(t, e.Resume(t.Context(), runID, act.ApprovalRejected))
+	require.NoError(t, e.Resume(t.Context(), runID, act.ApprovalRejected, "call-1"))
 	res, err := e.Result(runID)
 	require.NoError(t, err)
-	require.Equal(t, act.RunStatusRejected, res.Status)
+	require.Equal(t, act.RunStatusSucceeded, res.Status, "rejection is per-action: the model sees it and closes")
 	require.False(t, res.ActionTaken)
 	require.Equal(t, 0, exec.executeCount())
 
@@ -278,21 +279,19 @@ func (autoApproveRunner) RunSegment(_ context.Context, in act.RunSegmentInput) (
 	}
 	// Second segment: the model has seen the executed action's result injected and closes, proposing nothing further,
 	// so the segmented loop finishes. Without this branch the mock would re-propose forever.
-	if in.Resume != nil {
+	if len(in.Resume) > 0 {
 		return act.RunSegmentResult{Response: "Listo, creé el ticket.", SessionID: sessionID}, nil
 	}
-	// First segment: propose the governed write on the auto-approved connector.
 	return act.RunSegmentResult{
 		Response:  "Propongo crear un ticket.",
 		SessionID: sessionID,
-		Proposed: &ai.ProposedAction{
+		Proposed: []*ai.ProposedAction{{
 			Connector: "jira_ops", Tool: "jira.create_issue",
 			Args: map[string]any{"summary": "coste alto"}, Summary: "crear ticket P2",
-		},
+		}},
 	}, nil
 }
 
-// ApplyAction is unused on the gateway path (the gateway performs the write); present only to satisfy act.Runner.
 func (autoApproveRunner) ApplyAction(context.Context, act.ActionRequest) (act.ActionResult, error) {
 	return act.ActionResult{}, nil
 }
@@ -325,8 +324,8 @@ func (r *recordingSegmentRunner) RunSegment(_ context.Context, in act.RunSegment
 		sessionID = "sess-" + in.Snapshot.Name
 	}
 	r.mu.Lock()
-	if in.Resume != nil {
-		r.resumes = append(r.resumes, *in.Resume)
+	for _, res := range in.Resume {
+		r.resumes = append(r.resumes, *res)
 	}
 	propose := r.proposed < r.actions
 	if propose {
@@ -339,7 +338,7 @@ func (r *recordingSegmentRunner) RunSegment(_ context.Context, in act.RunSegment
 	return act.RunSegmentResult{
 		Response:  "Propongo una acción.",
 		SessionID: sessionID,
-		Proposed:  &ai.ProposedAction{Tool: "jira.create_issue", Connector: "jira_ops", Args: map[string]any{"summary": "coste alto"}},
+		Proposed:  []*ai.ProposedAction{{Tool: "jira.create_issue", Connector: "jira_ops", Args: map[string]any{"summary": "coste alto"}}},
 	}, nil
 }
 
@@ -395,7 +394,6 @@ func TestGatewayFlowSegmentedInjectsResult(t *testing.T) {
 	e, err := act.NewDBOSExecutor(t.Context(), act.Config{
 		DatabaseURL: dsn, DatabaseSchema: schema, ApplicationVersion: "act-test-" + uuid.NewString(),
 		Runner: runner, Store: store, Gateway: gateway, Proposer: act.NewCapturedProposer(),
-		ApprovalTimeout: 60 * time.Second, Logger: slog.New(slog.NewTextHandler(io.Discard, nil)),
 	})
 	require.NoError(t, err)
 	t.Cleanup(func() { e.Close(5 * time.Second) })
@@ -435,7 +433,6 @@ func TestGatewayFlowSegmentedTwoSequentialActions(t *testing.T) {
 	e, err := act.NewDBOSExecutor(t.Context(), act.Config{
 		DatabaseURL: dsn, DatabaseSchema: schema, ApplicationVersion: "act-test-" + uuid.NewString(),
 		Runner: runner, Store: store, Gateway: gateway, Proposer: &sequentialProposer{},
-		ApprovalTimeout: 60 * time.Second, Logger: slog.New(slog.NewTextHandler(io.Discard, nil)),
 	})
 	require.NoError(t, err)
 	t.Cleanup(func() { e.Close(5 * time.Second) })
@@ -482,7 +479,6 @@ func TestGatewayFlowTwoHumanApprovalsRecordEachPause(t *testing.T) {
 	e, err := act.NewDBOSExecutor(t.Context(), act.Config{
 		DatabaseURL: dsn, DatabaseSchema: schema, ApplicationVersion: "act-test-" + uuid.NewString(),
 		Runner: runner, Store: store, Gateway: gateway, Proposer: &sequentialProposer{},
-		ApprovalTimeout: 60 * time.Second, Logger: slog.New(slog.NewTextHandler(io.Discard, nil)),
 	})
 	require.NoError(t, err)
 	t.Cleanup(func() { e.Close(5 * time.Second) })
@@ -496,33 +492,28 @@ func TestGatewayFlowTwoHumanApprovalsRecordEachPause(t *testing.T) {
 	require.NoError(t, err)
 
 	// First gate: Bob decides, in the API's order (claim the approval, then deliver the durable resume).
-	firstApproval := act.ApprovalIDForSegment(runID, 0)
+	firstApproval := act.ApprovalIDForToolCall(runID, "call-1")
 	require.Eventually(t, func() bool {
 		_, gErr := store.GetApproval(ctx, inst, firstApproval)
 		return gErr == nil
 	}, 15*time.Second, 50*time.Millisecond)
 	_, err = store.ResolveApproval(ctx, inst, firstApproval, act.ApprovalStatusApproved, "admin:bob")
 	require.NoError(t, err)
-	require.NoError(t, e.Resume(ctx, runID, act.ApprovalApproved))
+	require.NoError(t, e.Resume(ctx, runID, act.ApprovalApproved, "call-1"))
 
-	// Second gate: the run pauses again on its next governed action. The approval row is written in the same durable
-	// step as the waiting_approval transition, after it, so once the row is visible the status write has committed.
-	secondApproval := act.ApprovalIDForSegment(runID, 1)
+	secondApproval := act.ApprovalIDForToolCall(runID, "call-2")
 	require.Eventually(t, func() bool {
 		_, gErr := store.GetApproval(ctx, inst, secondApproval)
 		return gErr == nil
 	}, 15*time.Second, 50*time.Millisecond)
 
-	// (b) The bug: while the second decision is pending, the run must SAY it is waiting — this status is what the Home
-	// inbox and Act's default filter select on, so "running" here is an approval nobody sees.
 	run, err := store.GetRun(ctx, inst, runID)
 	require.NoError(t, err)
 	require.Equal(t, act.RunStatusWaitingApproval, run.Status, "the second pause must move the run back to waiting_approval")
 
-	// Carol, not Bob, decides the second action.
 	_, err = store.ResolveApproval(ctx, inst, secondApproval, act.ApprovalStatusApproved, "admin:carol")
 	require.NoError(t, err)
-	require.NoError(t, e.Resume(ctx, runID, act.ApprovalApproved))
+	require.NoError(t, e.Resume(ctx, runID, act.ApprovalApproved, "call-2"))
 
 	res, err := e.Result(runID)
 	require.NoError(t, err)
@@ -582,7 +573,6 @@ func TestGatewayFlowAutoApproveExecutesWithoutHuman(t *testing.T) {
 	e, err := act.NewDBOSExecutor(t.Context(), act.Config{
 		DatabaseURL: dsn, DatabaseSchema: schema, ApplicationVersion: "act-test-" + uuid.NewString(),
 		Runner: autoApproveRunner{}, Store: store, Gateway: gateway, Proposer: act.NewCapturedProposer(),
-		ApprovalTimeout: 60 * time.Second, Logger: slog.New(slog.NewTextHandler(io.Discard, nil)),
 	})
 	require.NoError(t, err)
 	t.Cleanup(func() { e.Close(5 * time.Second) })
@@ -647,7 +637,6 @@ func TestGatewayFlowPolicyDenyFailsRun(t *testing.T) {
 	e, err := act.NewDBOSExecutor(t.Context(), act.Config{
 		DatabaseURL: dsn, DatabaseSchema: schema, ApplicationVersion: "act-test-" + uuid.NewString(),
 		Runner: runner, Store: store, Gateway: gateway, Proposer: fixedProposer{proposal: flowProposal(), ok: true},
-		ApprovalTimeout: 60 * time.Second, Logger: slog.New(slog.NewTextHandler(io.Discard, nil)),
 	})
 	require.NoError(t, err)
 	t.Cleanup(func() { e.Close(5 * time.Second) })
@@ -659,11 +648,386 @@ func TestGatewayFlowPolicyDenyFailsRun(t *testing.T) {
 
 	res, err := e.Result(runID)
 	require.NoError(t, err)
-	require.Equal(t, act.RunStatusFailed, res.Status)
+	require.Equal(t, act.RunStatusSucceeded, res.Status, "policy denial is per-action: the model sees the denial and closes")
 	require.False(t, res.ActionTaken)
 	require.Equal(t, 0, exec.executeCount())
 
 	action, err := store.GetAction(t.Context(), instanceID, runID, "call-1")
 	require.NoError(t, err)
 	require.Equal(t, act.ActionPolicyRejected, action.Status)
+}
+
+// batchSegmentRunner proposes N actions in a SINGLE segment (one model turn with N tool calls), then closes on resume.
+// This is the core scenario of #131: all actions are captured in one pass and governed together.
+type batchSegmentRunner struct {
+	n int
+
+	mu      sync.Mutex
+	resumes []ai.InjectedResult
+}
+
+var _ act.Runner = (*batchSegmentRunner)(nil)
+
+func (r *batchSegmentRunner) LoadSnapshot(_ context.Context, _, agentName string) (*ai.AgentSnapshot, error) {
+	return &ai.AgentSnapshot{Name: agentName, Instructions: "batch test"}, nil
+}
+
+func (r *batchSegmentRunner) RunSegment(_ context.Context, in act.RunSegmentInput) (act.RunSegmentResult, error) {
+	sessionID := in.SessionID
+	if sessionID == "" {
+		sessionID = "sess-batch"
+	}
+	r.mu.Lock()
+	for _, res := range in.Resume {
+		r.resumes = append(r.resumes, *res)
+	}
+	r.mu.Unlock()
+	if len(in.Resume) > 0 {
+		return act.RunSegmentResult{Response: "Done, all actions processed.", SessionID: sessionID}, nil
+	}
+	proposals := make([]*ai.ProposedAction, r.n)
+	for i := range proposals {
+		proposals[i] = &ai.ProposedAction{
+			ToolCallID: fmt.Sprintf("tc-%d", i+1),
+			Tool:       "jira.create_issue",
+			Connector:  "jira_ops",
+			Args:       map[string]any{"summary": fmt.Sprintf("issue %d", i+1)},
+		}
+	}
+	return act.RunSegmentResult{
+		Response:  "Proposing batch.",
+		SessionID: sessionID,
+		Proposed:  proposals,
+	}, nil
+}
+
+func (r *batchSegmentRunner) ApplyAction(context.Context, act.ActionRequest) (act.ActionResult, error) {
+	return act.ActionResult{}, nil
+}
+
+func (r *batchSegmentRunner) injectedResults() []ai.InjectedResult {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	return append([]ai.InjectedResult(nil), r.resumes...)
+}
+
+// batchProposer surfaces the captured action's own identity, so N actions captured in one segment produce N distinct
+// tool proposals with the tool_call_id the runner assigned.
+type batchProposer struct{}
+
+func (batchProposer) Propose(_ context.Context, in act.ProposeInput) (act.ToolProposal, bool, error) {
+	if in.Captured == nil {
+		return act.ToolProposal{}, false, nil
+	}
+	return act.ToolProposal{
+		ToolCallID: in.Captured.ToolCallID,
+		Tool:       in.Captured.Tool,
+		Connector:  in.Captured.Connector,
+		Args:       in.Captured.Args,
+		Summary:    fmt.Sprintf("create issue %s", in.Captured.ToolCallID),
+	}, true, nil
+}
+
+// TestBatchApprovalsAllCreatedAtOnce is the core #131 test: a segment proposes 3 actions in one turn, all 3 approvals
+// are created at once and visible in the inbox, and the operator can decide them in any order while execution follows
+// the model's proposal order.
+func TestBatchApprovalsAllCreatedAtOnce(t *testing.T) {
+	store := newRunStore(t)
+	exec := &fakeExecutor{result: act.ExecuteResult{Outcome: act.OutcomeSucceeded, ExternalReference: "PROJ-X", Message: "done"}}
+	gateway := &act.Gateway{
+		Registry: act.NewMapToolRegistry(createIssueDescriptor(act.ClassIdempotentNative)),
+		Ledger:   store,
+		Executor: exec,
+	}
+	runner := &batchSegmentRunner{n: 3}
+	dsn, schema := requirePostgres(t)
+	e, err := act.NewDBOSExecutor(t.Context(), act.Config{
+		DatabaseURL: dsn, DatabaseSchema: schema, ApplicationVersion: "act-test-" + uuid.NewString(),
+		Runner: runner, Store: store, Gateway: gateway, Proposer: batchProposer{},
+	})
+	require.NoError(t, err)
+	t.Cleanup(func() { e.Close(5 * time.Second) })
+
+	const inst = "inst-batch"
+	ctx := t.Context()
+	runID, err := e.Start(ctx, act.AgentRunInput{
+		InstanceID: inst, AgentName: "triage", Prompt: "batch test", IdempotencyKey: "batch-" + uuid.NewString(),
+		Actor: act.Actor{Subject: "user:alice"},
+	})
+	require.NoError(t, err)
+
+	// All 3 approvals must be visible at once.
+	for i := 1; i <= 3; i++ {
+		approvalID := act.ApprovalIDForToolCall(runID, fmt.Sprintf("tc-%d", i))
+		require.Eventually(t, func() bool {
+			_, gErr := store.GetApproval(ctx, inst, approvalID)
+			return gErr == nil
+		}, 15*time.Second, 50*time.Millisecond, "approval %d must be created", i)
+	}
+
+	// Verify all 3 have position/total set.
+	approvals, err := store.ListApprovals(ctx, act.ListApprovalsFilter{InstanceID: inst, RunID: runID})
+	require.NoError(t, err)
+	require.Len(t, approvals, 3)
+	for _, a := range approvals {
+		require.Equal(t, 3, a.Total, "each approval records the batch size")
+		require.True(t, a.Position >= 1 && a.Position <= 3, "position is in range")
+	}
+
+	// Decide in REVERSE order (3, 2, 1) — execution must still follow proposal order.
+	for i := 3; i >= 1; i-- {
+		tcID := fmt.Sprintf("tc-%d", i)
+		approvalID := act.ApprovalIDForToolCall(runID, tcID)
+		_, err = store.ResolveApproval(ctx, inst, approvalID, act.ApprovalStatusApproved, fmt.Sprintf("admin:approver-%d", i))
+		require.NoError(t, err)
+		require.NoError(t, e.Resume(ctx, runID, act.ApprovalApproved, tcID))
+	}
+
+	res, err := e.Result(runID)
+	require.NoError(t, err)
+	require.Equal(t, act.RunStatusSucceeded, res.Status)
+	require.True(t, res.ActionTaken)
+	require.Equal(t, 3, exec.executeCount(), "all 3 actions executed")
+
+	// The model received all 3 results on resume.
+	injected := runner.injectedResults()
+	require.Len(t, injected, 3, "the model was resumed with all 3 results")
+
+	// Timeline: 3 waiting_approval events, 3 resumed events with distinct deciders.
+	events, err := store.ListRunEvents(ctx, inst, runID, 0, 100)
+	require.NoError(t, err)
+	types := eventTypes(events)
+	waitCount := 0
+	resumeCount := 0
+	for _, et := range types {
+		if et == act.EventTypeWaitingApproval {
+			waitCount++
+		}
+		if et == act.EventTypeResumed {
+			resumeCount++
+		}
+	}
+	require.Equal(t, 3, waitCount, "3 waiting_approval events in the timeline")
+	require.Equal(t, 3, resumeCount, "3 resumed events in the timeline")
+
+	// Each resumed event carries a distinct decider.
+	var resumedEvents []*act.RunEvent
+	for _, ev := range events {
+		if ev.EventType == act.EventTypeResumed {
+			resumedEvents = append(resumedEvents, ev)
+		}
+	}
+	deciders := map[string]bool{}
+	for _, ev := range resumedEvents {
+		d, _ := ev.Payload["decided_by"].(string)
+		deciders[d] = true
+	}
+	require.Len(t, deciders, 3, "each resumed event has a distinct decider")
+}
+
+// TestBatchPartialRejection tests the partial rejection scenario: one action is rejected, the others are approved.
+// The rejected action injects an error result; the approved ones execute. The run succeeds because the model adapts.
+func TestBatchPartialRejection(t *testing.T) {
+	store := newRunStore(t)
+	exec := &fakeExecutor{result: act.ExecuteResult{Outcome: act.OutcomeSucceeded, ExternalReference: "PROJ-X", Message: "done"}}
+	gateway := &act.Gateway{
+		Registry: act.NewMapToolRegistry(createIssueDescriptor(act.ClassIdempotentNative)),
+		Ledger:   store,
+		Executor: exec,
+	}
+	runner := &batchSegmentRunner{n: 2}
+	dsn, schema := requirePostgres(t)
+	e, err := act.NewDBOSExecutor(t.Context(), act.Config{
+		DatabaseURL: dsn, DatabaseSchema: schema, ApplicationVersion: "act-test-" + uuid.NewString(),
+		Runner: runner, Store: store, Gateway: gateway, Proposer: batchProposer{},
+	})
+	require.NoError(t, err)
+	t.Cleanup(func() { e.Close(5 * time.Second) })
+
+	const inst = "inst-partial"
+	ctx := t.Context()
+	runID, err := e.Start(ctx, act.AgentRunInput{
+		InstanceID: inst, AgentName: "triage", Prompt: "partial reject", IdempotencyKey: "partial-" + uuid.NewString(),
+		Actor: act.Actor{Subject: "user:alice"},
+	})
+	require.NoError(t, err)
+
+	// Wait for both approvals.
+	for i := 1; i <= 2; i++ {
+		approvalID := act.ApprovalIDForToolCall(runID, fmt.Sprintf("tc-%d", i))
+		require.Eventually(t, func() bool {
+			_, gErr := store.GetApproval(ctx, inst, approvalID)
+			return gErr == nil
+		}, 15*time.Second, 50*time.Millisecond)
+	}
+
+	// Reject action 1, approve action 2.
+	_, err = store.ResolveApproval(ctx, inst, act.ApprovalIDForToolCall(runID, "tc-1"), act.ApprovalStatusDenied, "admin:bob")
+	require.NoError(t, err)
+	require.NoError(t, e.Resume(ctx, runID, act.ApprovalRejected, "tc-1"))
+
+	_, err = store.ResolveApproval(ctx, inst, act.ApprovalIDForToolCall(runID, "tc-2"), act.ApprovalStatusApproved, "admin:carol")
+	require.NoError(t, err)
+	require.NoError(t, e.Resume(ctx, runID, act.ApprovalApproved, "tc-2"))
+
+	res, err := e.Result(runID)
+	require.NoError(t, err)
+	require.Equal(t, act.RunStatusSucceeded, res.Status, "partial rejection does not abort the run")
+	require.True(t, res.ActionTaken, "action 2 was approved and executed")
+	require.Equal(t, 1, exec.executeCount(), "only the approved action executed")
+
+	// The model received 2 injected results: one rejection, one success.
+	injected := runner.injectedResults()
+	require.Len(t, injected, 2)
+	require.True(t, injected[0].IsError, "first result is the rejection")
+	require.False(t, injected[1].IsError, "second result is the executed action")
+}
+
+// TestBatchStatusStaysWaitingWhileDecisionsPending is the regression for the intermediate-state bug: when a batch has
+// two manual actions and the operator approves the FIRST one, the run must stay in waiting_approval (not running)
+// while the second approval is still pending. Otherwise the pending approval becomes invisible to the Home inbox and
+// Act's default filter, which both select on waiting_approval. The symmetric case is also tested: rejecting the LAST
+// manual action in a batch must NOT leave the run stuck in waiting_approval.
+func TestBatchStatusStaysWaitingWhileDecisionsPending(t *testing.T) {
+	store := newRunStore(t)
+	exec := &fakeExecutor{result: act.ExecuteResult{Outcome: act.OutcomeSucceeded, ExternalReference: "PROJ-X", Message: "done"}}
+	gateway := &act.Gateway{
+		Registry: act.NewMapToolRegistry(createIssueDescriptor(act.ClassIdempotentNative)),
+		Ledger:   store,
+		Executor: exec,
+	}
+	runner := &batchSegmentRunner{n: 2}
+	dsn, schema := requirePostgres(t)
+	e, err := act.NewDBOSExecutor(t.Context(), act.Config{
+		DatabaseURL: dsn, DatabaseSchema: schema, ApplicationVersion: "act-test-" + uuid.NewString(),
+		Runner: runner, Store: store, Gateway: gateway, Proposer: batchProposer{},
+	})
+	require.NoError(t, err)
+	t.Cleanup(func() { e.Close(5 * time.Second) })
+
+	const inst = "inst-wait-status"
+	ctx := t.Context()
+	runID, err := e.Start(ctx, act.AgentRunInput{
+		InstanceID: inst, AgentName: "triage", Prompt: "two manual", IdempotencyKey: "wait-status-" + uuid.NewString(),
+		Actor: act.Actor{Subject: "user:alice"},
+	})
+	require.NoError(t, err)
+
+	// Wait for both approvals to be created.
+	for i := 1; i <= 2; i++ {
+		approvalID := act.ApprovalIDForToolCall(runID, fmt.Sprintf("tc-%d", i))
+		require.Eventually(t, func() bool {
+			_, gErr := store.GetApproval(ctx, inst, approvalID)
+			return gErr == nil
+		}, 15*time.Second, 50*time.Millisecond)
+	}
+
+	// Approve action 1 IN ORDER (not reverse). The executor processes it and blocks on action 2's Recv.
+	_, err = store.ResolveApproval(ctx, inst, act.ApprovalIDForToolCall(runID, "tc-1"), act.ApprovalStatusApproved, "admin:bob")
+	require.NoError(t, err)
+	require.NoError(t, e.Resume(ctx, runID, act.ApprovalApproved, "tc-1"))
+
+	// The bug: while action 2's decision is pending, the run MUST be in waiting_approval, not running. The resumed
+	// event for action 1 carries waiting_approval (because a later manual action remains), so the status reflects the
+	// true state of the workflow and the inbox/filter see the pending approval.
+	require.Eventually(t, func() bool {
+		events, gErr := store.ListRunEvents(ctx, inst, runID, 0, 100)
+		if gErr != nil {
+			return false
+		}
+		for _, ev := range events {
+			if ev.EventType == act.EventTypeResumed {
+				return true
+			}
+		}
+		return false
+	}, 15*time.Second, 50*time.Millisecond, "the resumed event for action 1 must be emitted")
+
+	run, err := store.GetRun(ctx, inst, runID)
+	require.NoError(t, err)
+	require.Equal(t, act.RunStatusWaitingApproval, run.Status,
+		"while the second approval is pending, the run must stay in waiting_approval, not running")
+
+	// Action 2's approval must still be pending and findable.
+	appr2, err := store.GetApproval(ctx, inst, act.ApprovalIDForToolCall(runID, "tc-2"))
+	require.NoError(t, err)
+	require.Equal(t, act.ApprovalStatusPending, appr2.Status)
+
+	// Now approve action 2 and let the run finish.
+	_, err = store.ResolveApproval(ctx, inst, act.ApprovalIDForToolCall(runID, "tc-2"), act.ApprovalStatusApproved, "admin:carol")
+	require.NoError(t, err)
+	require.NoError(t, e.Resume(ctx, runID, act.ApprovalApproved, "tc-2"))
+
+	res, err := e.Result(runID)
+	require.NoError(t, err)
+	require.Equal(t, act.RunStatusSucceeded, res.Status)
+	require.Equal(t, 2, exec.executeCount())
+
+	// Verify the event timeline: the resumed event for action 1 carries waiting_approval (not running), because
+	// action 2 was still pending. The resumed event for action 2 carries running (no more manual gates).
+	events, err := store.ListRunEvents(ctx, inst, runID, 0, 100)
+	require.NoError(t, err)
+	var resumedStatuses []act.RunStatus
+	for _, ev := range events {
+		if ev.EventType == act.EventTypeResumed {
+			resumedStatuses = append(resumedStatuses, ev.Status)
+		}
+	}
+	require.Len(t, resumedStatuses, 2)
+	require.Equal(t, act.RunStatusWaitingApproval, resumedStatuses[0],
+		"first resumed carries waiting_approval because action 2 is still pending")
+	require.Equal(t, act.RunStatusRunning, resumedStatuses[1],
+		"second resumed carries running because no more manual gates")
+}
+
+// TestBatchFailSweepsSiblingApprovals verifies that when one action in a batch fails during execution, any still-pending
+// sibling approvals are swept to cancelled — they will never be decided, so they must not linger in the inbox.
+func TestBatchFailSweepsSiblingApprovals(t *testing.T) {
+	store := newRunStore(t)
+	exec := &fakeExecutor{execErr: errors.New("simulated execution failure")}
+	gateway := &act.Gateway{
+		Registry: act.NewMapToolRegistry(createIssueDescriptor(act.ClassIdempotentNative)),
+		Ledger:   store,
+		Executor: exec,
+	}
+	runner := &batchSegmentRunner{n: 2}
+	dsn, schema := requirePostgres(t)
+	e, err := act.NewDBOSExecutor(t.Context(), act.Config{
+		DatabaseURL: dsn, DatabaseSchema: schema, ApplicationVersion: "act-test-" + uuid.NewString(),
+		Runner: runner, Store: store, Gateway: gateway, Proposer: batchProposer{},
+		Logger: slog.New(slog.NewTextHandler(io.Discard, nil)),
+	})
+	require.NoError(t, err)
+	t.Cleanup(func() { e.Close(5 * time.Second) })
+
+	const inst = "inst-fail-sweep"
+	ctx := t.Context()
+	runID, err := e.Start(ctx, act.AgentRunInput{
+		InstanceID: inst, AgentName: "triage", Prompt: "fail sweep", IdempotencyKey: "fail-sweep-" + uuid.NewString(),
+		Actor: act.Actor{Subject: "user:alice"},
+	})
+	require.NoError(t, err)
+
+	// Wait for both approvals to appear.
+	for i := 1; i <= 2; i++ {
+		approvalID := act.ApprovalIDForToolCall(runID, fmt.Sprintf("tc-%d", i))
+		require.Eventually(t, func() bool {
+			_, gErr := store.GetApproval(ctx, inst, approvalID)
+			return gErr == nil
+		}, 15*time.Second, 50*time.Millisecond)
+	}
+
+	// Approve action 1. The gateway execute step will fail (fakeExecutor.execErr is set).
+	_, err = store.ResolveApproval(ctx, inst, act.ApprovalIDForToolCall(runID, "tc-1"), act.ApprovalStatusApproved, "admin:bob")
+	require.NoError(t, err)
+	require.NoError(t, e.Resume(ctx, runID, act.ApprovalApproved, "tc-1"))
+
+	res, err := e.Result(runID)
+	require.NoError(t, err)
+	require.Equal(t, act.RunStatusFailed, res.Status)
+
+	// The sibling's approval (action 2) must be swept to cancelled, not left pending.
+	a2, err := store.GetApproval(ctx, inst, act.ApprovalIDForToolCall(runID, "tc-2"))
+	require.NoError(t, err)
+	require.Equal(t, act.ApprovalStatusCancelled, a2.Status, "sibling approval must be swept to cancelled on run failure")
 }

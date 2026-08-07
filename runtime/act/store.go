@@ -17,7 +17,7 @@ var ErrApprovalNotFound = errors.New("act: approval not found")
 // Event types emitted onto agent_run_events as a run moves through its lifecycle. They are stable strings (not an
 // enum) so the store, the proto API and the frontend agree on the wire value without a shared code generator, and
 // so a new type can be added without a migration. The lifecycle edges (queued, running, terminal states) fire at
-// most once per run; the approval edges (waiting_approval, resumed, rejected, expired) fire once per governed
+// most once per run; the approval edges (waiting_approval, resumed, rejected) fire once per governed
 // action, so the segmented loop repeats them. Idempotency is keyed by RunTransition.DedupeKey (see
 // PostgresRunStore.RecordTransition): the executor scopes the approval edges per segment and leaves the rest keyed
 // by their type alone.
@@ -29,7 +29,6 @@ const (
 	EventTypeSucceeded       = "run.succeeded"
 	EventTypeFailed          = "run.failed"
 	EventTypeRejected        = "run.rejected"
-	EventTypeExpired         = "run.expired"
 	EventTypeCancelled       = "run.cancelled"
 )
 
@@ -48,10 +47,9 @@ const (
 	ApprovalStatusPending  = "pending"
 	ApprovalStatusApproved = "approved"
 	ApprovalStatusDenied   = "denied"
-	ApprovalStatusExpired  = "expired"
-	// ApprovalStatusCancelled marks an approval withdrawn because its run was cancelled, not decided by a human. It is
-	// terminal like approved/denied/expired, so the inbox (which shows only pending approvals) stops offering a
-	// decision on a run that will never resume.
+	// ApprovalStatusCancelled marks an approval withdrawn because its run reached a terminal state without deciding it
+	// (cancelled, failed, or a sibling action that terminated the run). It is terminal like approved/denied, so the
+	// inbox (which shows only pending approvals) stops offering a decision on a run that will never resume.
 	ApprovalStatusCancelled = "cancelled"
 )
 
@@ -165,7 +163,11 @@ type NewApproval struct {
 	Policy string
 	// RequestedBy is the actor subject on whose behalf the run proposed the action.
 	RequestedBy string
-	ExpiresOn   *time.Time
+	// Position is the 1-based index of this action within its batch (e.g. 1 of 3). Zero when the action is the only
+	// one in the turn or when the caller does not track ordering.
+	Position int
+	// Total is the number of actions in the batch (e.g. 3 when three writes were proposed in one turn).
+	Total int
 }
 
 // Approval is the stored, queryable state of an approval request.
@@ -182,9 +184,10 @@ type Approval struct {
 	Status      string
 	RequestedBy string
 	DecidedBy   string
-	ExpiresOn   *time.Time
 	CreatedOn   time.Time
 	DecidedOn   *time.Time
+	Position    int
+	Total       int
 }
 
 // ListRunsFilter scopes and narrows a run listing. InstanceID is mandatory: every query is scoped to one instance
@@ -238,7 +241,7 @@ type RunStore interface {
 	GetApproval(ctx context.Context, instanceID, approvalID string) (*Approval, error)
 	// ListApprovals returns approvals matching the filter, newest first.
 	ListApprovals(ctx context.Context, f ListApprovalsFilter) ([]*Approval, error)
-	// ResolveApproval atomically claims a pending approval, moving it to status (approved/denied/expired) and
+	// ResolveApproval atomically claims a pending approval, moving it to status (approved/denied) and
 	// recording the decider. It transitions only from pending, so two concurrent decisions on one approval yield a
 	// single winner: the loser gets ErrApprovalNotResolvable. This is the guard behind double-submit safety.
 	ResolveApproval(ctx context.Context, instanceID, approvalID, status, decidedBy string) (*Approval, error)
@@ -250,5 +253,5 @@ type RunStore interface {
 }
 
 // ErrApprovalNotResolvable is returned by ResolveApproval when the approval is not pending (already decided or
-// expired). It lets the API reject a double-submit with FailedPrecondition rather than silently re-deciding.
+// cancelled). It lets the API reject a double-submit with FailedPrecondition rather than silently re-deciding.
 var ErrApprovalNotResolvable = errors.New("act: approval is not pending")

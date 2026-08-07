@@ -58,8 +58,9 @@ func (r *SessionRunner) RunSegment(ctx context.Context, in RunSegmentInput) (Run
 	// Capture the session ID up front: the segment executes inside this AISession, and the executor links the run to it.
 	sessionID := s.ID()
 
-	// A fresh DynamicAgent per segment: its captured-proposal state must start empty, and the pause/resume state lives
-	// in the session tree and in.Resume, not in the agent struct.
+	// A fresh DynamicAgent per segment: its captured-proposal slice must start empty, and the pause/resume state lives
+	// in the session tree and in.Resume, not in the agent struct. With multiple proposals per turn this is even more
+	// important — a leftover slice from a prior segment would miscount the actions in the next one.
 	agent := &ai.DynamicAgent{Snapshot: in.Snapshot}
 	// Flush the session trace even when the segment errors: a failed run is exactly the one whose trace matters for
 	// auditing. The flush is best-effort, so a flush error only surfaces when the segment itself succeeded and must not

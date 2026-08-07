@@ -102,7 +102,7 @@ func (f *fakeAgentExecutor) Start(ctx context.Context, in act.AgentRunInput) (st
 	return runID, nil
 }
 
-func (f *fakeAgentExecutor) Resume(_ context.Context, runID string, decision act.ApprovalDecision) error {
+func (f *fakeAgentExecutor) Resume(_ context.Context, runID string, decision act.ApprovalDecision, _ string) error {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	if f.resumeErr != nil {

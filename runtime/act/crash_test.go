@@ -124,7 +124,6 @@ func runCrashWorker() {
 		ApplicationVersion: os.Getenv("ACT_APP_VERSION"),
 		Runner:             runner,
 		Store:              store,
-		ApprovalTimeout:    60 * time.Second,
 		Logger:             slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelError})),
 	})
 	if err != nil {
@@ -143,7 +142,7 @@ func runCrashWorker() {
 		}
 		// Approve now (durable); the run consumes it when it reaches the approval wait. Then release run_agent, so
 		// it only completes once the approval is buffered.
-		if err := e.Resume(context.Background(), workflowID, act.ApprovalApproved); err != nil {
+		if err := e.Resume(context.Background(), workflowID, act.ApprovalApproved, ""); err != nil {
 			fmt.Fprintln(os.Stderr, "resume:", err)
 			os.Exit(3)
 		}
@@ -192,7 +191,7 @@ func runCrashWorker() {
 	case "recover-approve":
 		// Building the executor above already launched DBOS recovery, which re-runs the parked workflow and re-enters
 		// its approval Recv. Deliver the (durable) approval and wait for the recovered run to finish.
-		if err := e.Resume(context.Background(), workflowID, act.ApprovalApproved); err != nil {
+		if err := e.Resume(context.Background(), workflowID, act.ApprovalApproved, ""); err != nil {
 			fmt.Fprintln(os.Stderr, "resume:", err)
 			os.Exit(3)
 		}

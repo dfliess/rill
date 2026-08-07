@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
-	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -166,7 +165,7 @@ func (s *PostgresRunStore) Migrate(ctx context.Context) error {
 		// populated (new inserts always carry it), and the index/constraint statements are IF (NOT) EXISTS.
 		fmt.Sprintf(`ALTER TABLE %s ADD COLUMN IF NOT EXISTS dedupe_key text NOT NULL DEFAULT ''`, s.t("agent_run_events")),
 		fmt.Sprintf(`UPDATE %s SET dedupe_key = event_type || ':0' WHERE dedupe_key = '' AND event_type IN ('%s','%s','%s','%s')`,
-			s.t("agent_run_events"), EventTypeWaitingApproval, EventTypeResumed, EventTypeRejected, EventTypeExpired),
+			s.t("agent_run_events"), EventTypeWaitingApproval, EventTypeResumed, EventTypeRejected, "run.expired"),
 		fmt.Sprintf(`UPDATE %s SET dedupe_key = event_type WHERE dedupe_key = ''`, s.t("agent_run_events")),
 		fmt.Sprintf(`CREATE UNIQUE INDEX IF NOT EXISTS agent_run_events_run_dedupe_idx ON %s (run_id, dedupe_key)`, s.t("agent_run_events")),
 		fmt.Sprintf(`ALTER TABLE %s DROP CONSTRAINT IF EXISTS agent_run_events_run_id_event_type_key`, s.t("agent_run_events")),
@@ -184,7 +183,6 @@ func (s *PostgresRunStore) Migrate(ctx context.Context) error {
 			status text NOT NULL,
 			requested_by text NOT NULL DEFAULT '',
 			decided_by text NOT NULL DEFAULT '',
-			expires_on timestamptz,
 			created_on timestamptz NOT NULL DEFAULT now(),
 			decided_on timestamptz
 		)`, s.t("agent_approvals")),
@@ -241,6 +239,19 @@ func (s *PostgresRunStore) Migrate(ctx context.Context) error {
 		// Backfill the action's redacted text result onto a table created before this column existed (same rationale as
 		// the lease columns above): a tool that returns only text lands here, distinct from the structured redacted_result.
 		fmt.Sprintf(`ALTER TABLE %s ADD COLUMN IF NOT EXISTS redacted_message text NOT NULL DEFAULT ''`, s.t("agent_actions")),
+
+		// Backfill position/total columns for per-tool-call approvals: position is the 1-based index of the action within
+		// its batch, total is the batch size. Zero defaults are fine for old single-action approvals.
+		fmt.Sprintf(`ALTER TABLE %s ADD COLUMN IF NOT EXISTS position int NOT NULL DEFAULT 0`, s.t("agent_approvals")),
+		fmt.Sprintf(`ALTER TABLE %s ADD COLUMN IF NOT EXISTS total int NOT NULL DEFAULT 0`, s.t("agent_approvals")),
+
+		// Drop the approval expiry column: approval deadlines have been removed. The column is no longer written or
+		// read, and historical rows that carried an expiry date lose nothing of value (the deadline was never enforced
+		// in production). Normalize any historical "expired" statuses to "cancelled" so consumers see only the active
+		// vocabulary.
+		fmt.Sprintf(`ALTER TABLE %s DROP COLUMN IF EXISTS expires_on`, s.t("agent_approvals")),
+		fmt.Sprintf(`UPDATE %s SET status='cancelled' WHERE status='expired'`, s.t("agent_approvals")),
+		fmt.Sprintf(`UPDATE %s SET status='cancelled' WHERE status='expired'`, s.t("agent_runs")),
 
 		// Referential integrity: every child table's run_id must point to an existing agent_runs row. Each FK is added
 		// NOT VALID (short AccessExclusive lock, no full-table scan), orphan rows are cleaned up (they are unreachable
@@ -522,11 +533,11 @@ func (s *PostgresRunStore) CreateApproval(ctx context.Context, a NewApproval) er
 	}
 	_, err := s.pool.Exec(ctx, fmt.Sprintf(`
 		INSERT INTO %s (approval_id, run_id, instance_id, tool_name, connector, tool_call_id, args_hash, proposal,
-			policy, status, requested_by, expires_on)
-		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+			policy, status, requested_by, position, total)
+		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
 		ON CONFLICT (approval_id) DO NOTHING`, s.t("agent_approvals")),
 		a.ApprovalID, a.RunID, a.InstanceID, a.ToolName, a.Connector, a.ToolCallID, a.ArgsHash, a.Proposal,
-		a.Policy, ApprovalStatusPending, a.RequestedBy, a.ExpiresOn)
+		a.Policy, ApprovalStatusPending, a.RequestedBy, a.Position, a.Total)
 	if err != nil {
 		return fmt.Errorf("act: create approval: %w", err)
 	}
@@ -576,19 +587,16 @@ func (s *PostgresRunStore) ListApprovals(ctx context.Context, f ListApprovalsFil
 }
 
 func (s *PostgresRunStore) ResolveApproval(ctx context.Context, instanceID, approvalID, status, decidedBy string) (*Approval, error) {
-	if status != ApprovalStatusApproved && status != ApprovalStatusDenied && status != ApprovalStatusExpired {
+	if status != ApprovalStatusApproved && status != ApprovalStatusDenied {
 		return nil, fmt.Errorf("act: invalid approval resolution %q", status)
 	}
 	var a *Approval
 	err := s.inTx(ctx, func(tx pgx.Tx) error {
 		// Claim the approval under a row lock: only a pending approval can be resolved, so two concurrent decisions
 		// serialize and the second sees a non-pending status. This is the guard behind double-submit safety.
-		var (
-			current   string
-			expiresOn *time.Time
-		)
-		err := tx.QueryRow(ctx, fmt.Sprintf(`SELECT status, expires_on FROM %s WHERE approval_id=$1 AND instance_id=$2 FOR UPDATE`, s.t("agent_approvals")),
-			approvalID, instanceID).Scan(&current, &expiresOn)
+		var current string
+		err := tx.QueryRow(ctx, fmt.Sprintf(`SELECT status FROM %s WHERE approval_id=$1 AND instance_id=$2 FOR UPDATE`, s.t("agent_approvals")),
+			approvalID, instanceID).Scan(&current)
 		if errors.Is(err, pgx.ErrNoRows) {
 			return ErrApprovalNotFound
 		}
@@ -596,12 +604,6 @@ func (s *PostgresRunStore) ResolveApproval(ctx context.Context, instanceID, appr
 			return fmt.Errorf("lock approval: %w", err)
 		}
 		if current != ApprovalStatusPending {
-			return ErrApprovalNotResolvable
-		}
-		// A human decision (approve/deny) cannot claim an approval whose window has already elapsed: the run either
-		// has expired or is about to, so honoring the decision would resume a run past its deadline. The expiry path
-		// (status == expired) is exactly what marks such an approval, so it is exempt from this check.
-		if status != ApprovalStatusExpired && expiresOn != nil && !expiresOn.After(time.Now()) {
 			return ErrApprovalNotResolvable
 		}
 		_, err = tx.Exec(ctx, fmt.Sprintf(`UPDATE %s SET status=$3, decided_by=$4, decided_on=now() WHERE approval_id=$1 AND instance_id=$2`, s.t("agent_approvals")),
@@ -645,7 +647,7 @@ func (s *PostgresRunStore) selectRunSQL() string {
 func (s *PostgresRunStore) selectApprovalSQL() string {
 	return fmt.Sprintf(`
 		SELECT approval_id, run_id, instance_id, tool_name, connector, tool_call_id, args_hash, proposal, policy,
-			status, requested_by, decided_by, expires_on, created_on, decided_on
+			status, requested_by, decided_by, created_on, decided_on, position, total
 		FROM %s`, s.t("agent_approvals"))
 }
 
@@ -673,7 +675,8 @@ func scanRun(row rowScanner) (*Run, error) {
 func scanApproval(row rowScanner) (*Approval, error) {
 	var a Approval
 	err := row.Scan(&a.ApprovalID, &a.RunID, &a.InstanceID, &a.ToolName, &a.Connector, &a.ToolCallID, &a.ArgsHash,
-		&a.Proposal, &a.Policy, &a.Status, &a.RequestedBy, &a.DecidedBy, &a.ExpiresOn, &a.CreatedOn, &a.DecidedOn)
+		&a.Proposal, &a.Policy, &a.Status, &a.RequestedBy, &a.DecidedBy, &a.CreatedOn, &a.DecidedOn,
+		&a.Position, &a.Total)
 	if err != nil {
 		return nil, err
 	}

@@ -351,7 +351,7 @@ func (s *Server) claimAndResume(ctx context.Context, approval *act.Approval, dec
 	default:
 		return nil, status.Errorf(codes.FailedPrecondition, "approval %q is already resolved and cannot be set to %s", approval.ApprovalID, storeStatus)
 	}
-	if err := s.agentExecutor.Resume(ctx, approval.RunID, decision); err != nil {
+	if err := s.agentExecutor.Resume(ctx, approval.RunID, decision, approval.ToolCallID); err != nil {
 		return nil, err
 	}
 	return resolved, nil
@@ -605,9 +605,10 @@ func approvalToPB(a *act.Approval) *runtimev1.AgentApproval {
 		Status:      a.Status,
 		RequestedBy: a.RequestedBy,
 		DecidedBy:   a.DecidedBy,
-		ExpiresOn:   tsToPB(a.ExpiresOn),
 		CreatedOn:   timestamppb.New(a.CreatedOn),
 		DecidedOn:   tsToPB(a.DecidedOn),
+		Position:    int32(a.Position),
+		Total:       int32(a.Total),
 	}
 }
 

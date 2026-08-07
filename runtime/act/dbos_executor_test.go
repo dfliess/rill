@@ -4,7 +4,6 @@ import (
 	"context"
 	"sync"
 	"testing"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/rilldata/rill/runtime"
@@ -32,7 +31,7 @@ func TestExecutorStartApproveRunsActionOnce(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, act.ComposeRunID(instanceID, "triage", key), runID)
 
-	require.NoError(t, e.Resume(t.Context(), runID, act.ApprovalApproved))
+	require.NoError(t, e.Resume(t.Context(), runID, act.ApprovalApproved, ""))
 
 	res, err := e.Result(runID)
 	require.NoError(t, err)
@@ -61,7 +60,7 @@ func TestExecutorRejectionSkipsAction(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	require.NoError(t, e.Resume(t.Context(), runID, act.ApprovalRejected))
+	require.NoError(t, e.Resume(t.Context(), runID, act.ApprovalRejected, ""))
 
 	res, err := e.Result(runID)
 	require.NoError(t, err)
@@ -91,7 +90,7 @@ func TestExecutorDedupsByIdempotencyKey(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, id1, id2)
 
-	require.NoError(t, e.Resume(t.Context(), id1, act.ApprovalApproved))
+	require.NoError(t, e.Resume(t.Context(), id1, act.ApprovalApproved, ""))
 
 	res, err := e.Result(id1)
 	require.NoError(t, err)
@@ -154,7 +153,7 @@ func TestExecutorLinksRunToConversation(t *testing.T) {
 		Actions:  &recordingSink{},
 	}
 	runner := &recordingRunner{Runner: base}
-	e := newStoreExecutor(t, runner, store, 60*time.Second)
+	e := newStoreExecutor(t, runner, store)
 	ctx := t.Context()
 
 	runID, err := e.Start(ctx, act.AgentRunInput{
@@ -165,7 +164,7 @@ func TestExecutorLinksRunToConversation(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	require.NoError(t, e.Resume(ctx, runID, act.ApprovalApproved))
+	require.NoError(t, e.Resume(ctx, runID, act.ApprovalApproved, ""))
 	res, err := e.Result(runID)
 	require.NoError(t, err)
 	require.Equal(t, act.RunStatusSucceeded, res.Status)
@@ -215,7 +214,7 @@ func TestExecutorUsesSnapshotFromRunStart(t *testing.T) {
 	require.NoError(t, err)
 	require.Contains(t, snapNow.Instructions, "EDITED")
 
-	require.NoError(t, e.Resume(t.Context(), runID, act.ApprovalApproved))
+	require.NoError(t, e.Resume(t.Context(), runID, act.ApprovalApproved, ""))
 	res, err := e.Result(runID)
 	require.NoError(t, err)
 	require.Equal(t, act.RunStatusSucceeded, res.Status)
@@ -257,7 +256,7 @@ func TestExecutorBindsActorToRun(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	require.NoError(t, e.Resume(t.Context(), runID, act.ApprovalApproved))
+	require.NoError(t, e.Resume(t.Context(), runID, act.ApprovalApproved, ""))
 	res, err := e.Result(runID)
 	require.NoError(t, err)
 	require.Equal(t, act.RunStatusSucceeded, res.Status)
