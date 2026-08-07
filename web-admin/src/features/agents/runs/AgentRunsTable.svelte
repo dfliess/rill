@@ -20,13 +20,15 @@
     project,
     // Pending approvals keyed by run id, so a waiting run offers approve/deny
     // inline without opening the detail. A run's approval does not travel on the
-    // run itself.
+    // run itself. A batch turn can leave several approvals pending on one run: the
+    // row acts on the first (execution order is proposal order) and shows how many
+    // more are behind it.
     approvalsByRun = new Map(),
   }: {
     data: AgentRunData[];
     organization: string;
     project: string;
-    approvalsByRun?: Map<string, AgentApprovalData>;
+    approvalsByRun?: Map<string, AgentApprovalData[]>;
   } = $props();
 
   // Runs carry the agent's slug (agentName); the catalog carries its human
@@ -76,7 +78,8 @@
 {:else}
   <ul class="flex flex-col rounded-lg border divide-y overflow-hidden">
     {#each data as run (run.runId)}
-      {@const approval = approvalsByRun.get(run.runId ?? "")}
+      {@const approvals = approvalsByRun.get(run.runId ?? "") ?? []}
+      {@const approval = approvals[0]}
       {@const started = startedLabel(run)}
       <li>
         <div
@@ -113,6 +116,13 @@
                   >
                     {approval.toolName}
                   </span>
+                  {#if approvals.length > 1}
+                    <span class="text-xs text-fg-muted whitespace-nowrap">
+                      {m.agents_approval_and_n_more({
+                        count: approvals.length - 1,
+                      })}
+                    </span>
+                  {/if}
                 {/if}
               </div>
               <div

@@ -1,6 +1,7 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "agents_actor_service_principal": "Service principal",
+  "agents_approval_and_n_more": "and {count} more",
   "agents_approval_approve": "Approve",
   "agents_approval_approve_error": "Failed to approve",
   "agents_approval_approved_notification": "Action approved",
