@@ -1,32 +1,49 @@
 <script lang="ts">
-  import { Confirmation } from "@rilldata/web-common/components/alert-dialog";
+  import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogTitle,
+  } from "@rilldata/web-common/components/alert-dialog/index.js";
   import { Button } from "@rilldata/web-common/components/button";
   import { m } from "@rilldata/web-common/lib/i18n/gen/messages";
   import { eventBus } from "@rilldata/web-common/lib/event-bus/event-bus";
   import { useRuntimeClient } from "@rilldata/web-common/runtime-client/v2";
   import {
     getAgentServiceGetAgentApprovalQueryKey,
+    getAgentServiceGetAgentRunQueryKey,
     getAgentServiceListAgentApprovalsQueryKey,
     getAgentServiceListAgentRunsQueryKey,
   } from "@rilldata/web-common/runtime-client/v2/gen/agent-service";
   import { useQueryClient } from "@tanstack/svelte-query";
-  import { useApproveAgentApproval, useDenyAgentApproval } from "../selectors";
+  import {
+    useApproveAgentApproval,
+    useCancelAgentRun,
+    useDenyAgentApproval,
+  } from "../selectors";
 
   let {
     approvalId,
     // The hash the approver saw; the server rejects the decision if the proposal
     // changed underneath them.
     argsHash,
-  }: { approvalId: string; argsHash: string } = $props();
+    runId,
+  }: { approvalId: string; argsHash: string; runId: string } = $props();
 
   const runtimeClient = useRuntimeClient();
   const queryClient = useQueryClient();
   const approve = useApproveAgentApproval(runtimeClient);
   const deny = useDenyAgentApproval(runtimeClient);
+  const cancelRun = useCancelAgentRun(runtimeClient);
 
   let denyConfirmOpen = $state(false);
 
-  let pending = $derived($approve.isPending || $deny.isPending);
+  let pending = $derived(
+    $approve.isPending || $deny.isPending || $cancelRun.isPending,
+  );
 
   async function invalidate() {
     await queryClient.invalidateQueries({
@@ -40,10 +57,24 @@
         runtimeClient.instanceId,
       ),
     });
-    // A decision flips the run out of waiting_approval, so refresh the run lists
-    // (Act tab + Home inbox) too.
     await queryClient.invalidateQueries({
       queryKey: getAgentServiceListAgentRunsQueryKey(runtimeClient.instanceId),
+    });
+  }
+
+  async function invalidateRun() {
+    await queryClient.invalidateQueries({
+      queryKey: getAgentServiceGetAgentRunQueryKey(runtimeClient.instanceId, {
+        runId,
+      }),
+    });
+    await queryClient.invalidateQueries({
+      queryKey: getAgentServiceListAgentRunsQueryKey(runtimeClient.instanceId),
+    });
+    await queryClient.invalidateQueries({
+      queryKey: getAgentServiceListAgentApprovalsQueryKey(
+        runtimeClient.instanceId,
+      ),
     });
   }
 
@@ -56,7 +87,6 @@
         type: "success",
       });
     } catch (e) {
-      // Refresh so a stale approval drops out of the lists on failure.
       await invalidate();
       eventBus.emit("notification", {
         message:
@@ -75,11 +105,27 @@
         type: "success",
       });
     } catch (e) {
-      // Refresh so a stale approval drops out of the lists on failure.
       await invalidate();
       eventBus.emit("notification", {
         message:
           e instanceof Error ? e.message : m.agents_approval_deny_error(),
+        type: "error",
+      });
+    }
+  }
+
+  async function handleCancelRun() {
+    denyConfirmOpen = false;
+    try {
+      await $cancelRun.mutateAsync({ runId });
+      await invalidateRun();
+      eventBus.emit("notification", {
+        message: m.agents_run_cancelled_notification(),
+        type: "success",
+      });
+    } catch (e) {
+      eventBus.emit("notification", {
+        message: e instanceof Error ? e.message : m.agents_run_cancel_error(),
         type: "error",
       });
     }
@@ -99,12 +145,45 @@
   </Button>
 </div>
 
-<Confirmation
+<AlertDialog
   open={denyConfirmOpen}
   onOpenChange={(open: boolean) => (denyConfirmOpen = open)}
-  title={m.agents_approval_deny_confirm_title()}
-  description={m.agents_approval_deny_confirm_desc()}
-  confirmLabel={m.agents_approval_deny()}
-  confirmType="secondary"
-  onConfirm={handleDeny}
-/>
+>
+  <AlertDialogContent>
+    <AlertDialogTitle
+      >{m.agents_approval_deny_confirm_title()}</AlertDialogTitle
+    >
+    <AlertDialogDescription>
+      {m.agents_approval_deny_confirm_desc()}
+    </AlertDialogDescription>
+    <AlertDialogFooter>
+      <div class="flex w-full items-center">
+        <Button
+          large
+          type="secondary-destructive"
+          onClick={handleCancelRun}
+          disabled={$cancelRun.isPending}
+        >
+          {m.agents_approval_deny_cancel_run()}
+        </Button>
+        <div class="grow"></div>
+        <div class="flex gap-x-2">
+          <AlertDialogCancel>
+            {#snippet child({ props })}
+              <Button {...props} large type="secondary">
+                {m.agents_approval_deny_close()}
+              </Button>
+            {/snippet}
+          </AlertDialogCancel>
+          <AlertDialogAction>
+            {#snippet child({ props })}
+              <Button {...props} large type="primary" onClick={handleDeny}>
+                {m.agents_approval_deny()}
+              </Button>
+            {/snippet}
+          </AlertDialogAction>
+        </div>
+      </div>
+    </AlertDialogFooter>
+  </AlertDialogContent>
+</AlertDialog>

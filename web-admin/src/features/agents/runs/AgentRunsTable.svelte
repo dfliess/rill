@@ -131,6 +131,7 @@
               <ApproveDenyButtons
                 approvalId={approval.approvalId ?? ""}
                 argsHash={approval.argsHash ?? ""}
+                runId={run.runId ?? ""}
               />
             {/if}
             {#if run.conversationId}
