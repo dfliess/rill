@@ -164,6 +164,7 @@ func TestGatewayProposeRecordsLedger(t *testing.T) {
 	exec := &fakeExecutor{}
 	g, ledger := newGateway(t, exec, createIssueDescriptor(act.ClassIdempotentNative), nil)
 	const inst, run = "inst-propose", "run-1"
+	seedRun(t, ledger, inst, run)
 
 	auth, err := g.Propose(t.Context(), act.ProposeActionInput{
 		InstanceID: inst, RunID: run, AgentName: "triage", Actor: act.Actor{Subject: "user:alice"}, Proposal: createIssueProposal(),
@@ -185,6 +186,7 @@ func TestGatewayUnknownToolRejectedAndAudited(t *testing.T) {
 	exec := &fakeExecutor{}
 	g, ledger := newGateway(t, exec, createIssueDescriptor(act.ClassIdempotentNative), nil)
 	const inst, run = "inst-unknown", "run-1"
+	seedRun(t, ledger, inst, run)
 
 	auth, err := g.Propose(t.Context(), act.ProposeActionInput{
 		InstanceID: inst, RunID: run, AgentName: "triage", Actor: act.Actor{Subject: "user:alice"},
@@ -208,6 +210,7 @@ func TestGatewayApproveExecuteSucceeds(t *testing.T) {
 	}
 	g, ledger := newGateway(t, exec, createIssueDescriptor(act.ClassIdempotentNative), nil)
 	const inst, run = "inst-happy", "run-1"
+	seedRun(t, ledger, inst, run)
 	proposal := createIssueProposal()
 
 	auth, report := approveAndExecute(t, g, inst, run, proposal)
@@ -232,8 +235,9 @@ func TestGatewayApproveExecuteSucceeds(t *testing.T) {
 // external write. The ledger short-circuit returns the recorded outcome and the executor is called exactly once.
 func TestGatewayExecuteIsIdempotent(t *testing.T) {
 	exec := &fakeExecutor{result: act.ExecuteResult{Outcome: act.OutcomeSucceeded, ExternalReference: "PROJ-1"}}
-	g, _ := newGateway(t, exec, createIssueDescriptor(act.ClassIdempotentNative), nil)
+	g, ledger := newGateway(t, exec, createIssueDescriptor(act.ClassIdempotentNative), nil)
 	const inst, run = "inst-idem", "run-1"
+	seedRun(t, ledger, inst, run)
 	proposal := createIssueProposal()
 
 	approveAndExecute(t, g, inst, run, proposal)
@@ -252,6 +256,7 @@ func TestGatewayIndeterminateNotRetried(t *testing.T) {
 	exec := &fakeExecutor{result: act.ExecuteResult{Outcome: act.OutcomeIndeterminate}}
 	g, ledger := newGateway(t, exec, createIssueDescriptor(act.ClassNonIdempotent), nil)
 	const inst, run = "inst-indeterminate", "run-1"
+	seedRun(t, ledger, inst, run)
 	proposal := createIssueProposal()
 	ctx := t.Context()
 
@@ -278,8 +283,9 @@ func TestGatewayIndeterminateNotRetried(t *testing.T) {
 // args hash than the action holds is refused, forcing a fresh approval for a changed argument.
 func TestGatewayApprovalBoundToArgsHash(t *testing.T) {
 	exec := &fakeExecutor{}
-	g, _ := newGateway(t, exec, createIssueDescriptor(act.ClassIdempotentNative), nil)
+	g, ledger := newGateway(t, exec, createIssueDescriptor(act.ClassIdempotentNative), nil)
 	const inst, run = "inst-bind", "run-1"
+	seedRun(t, ledger, inst, run)
 	proposal := createIssueProposal()
 	ctx := t.Context()
 
@@ -306,6 +312,7 @@ func TestGatewayResolvesSecretsAndRedacts(t *testing.T) {
 	}}
 	g, ledger := newGateway(t, exec, createIssueDescriptor(act.ClassIdempotentNative), testSecrets{"jira_token": secret})
 	const inst, run = "inst-secret", "run-1"
+	seedRun(t, ledger, inst, run)
 	proposal := act.ToolProposal{
 		ToolCallID: "call-1", Tool: "jira.create_issue", Connector: "jira_ops",
 		Args:    map[string]any{"summary": "coste alto", "auth": "{{ secret.jira_token }}"},
@@ -340,6 +347,7 @@ func TestGatewayExecutesFrozenLedgerArgs(t *testing.T) {
 	}
 	g, ledger := newGateway(t, exec, desc, nil)
 	const inst, run = "inst-freeze", "run-1"
+	seedRun(t, ledger, inst, run)
 	ctx := t.Context()
 
 	// The caller holds this map and keeps mutating it after proposing (a buggy or hostile Proposer). count is an int.
@@ -395,6 +403,7 @@ func TestGatewayScrubsConnectorTokenAndRejectsLeakedReference(t *testing.T) {
 	}}
 	g, ledger := newGateway(t, exec, createIssueDescriptorWithAuth(act.ClassIdempotentNative, "jira_bearer"), testSecrets{"jira_bearer": token})
 	const inst, run = "inst-token", "run-1"
+	seedRun(t, ledger, inst, run)
 	proposal := createIssueProposal()
 
 	_, report := approveAndExecute(t, g, inst, run, proposal)
@@ -419,6 +428,7 @@ func TestGatewayRejectsMalformedExternalReference(t *testing.T) {
 	}}
 	g, ledger := newGateway(t, exec, createIssueDescriptor(act.ClassIdempotentNative), nil)
 	const inst, run = "inst-badref", "run-1"
+	seedRun(t, ledger, inst, run)
 
 	_, report := approveAndExecute(t, g, inst, run, createIssueProposal())
 	require.Equal(t, act.OutcomeSucceeded, report.Outcome)
@@ -437,6 +447,7 @@ func TestGatewayInterruptedNonIdempotentGoesIndeterminate(t *testing.T) {
 	exec := &fakeExecutor{result: act.ExecuteResult{Outcome: act.OutcomeSucceeded, ExternalReference: "X"}}
 	g, ledger := newGateway(t, exec, createIssueDescriptor(act.ClassNonIdempotent), nil)
 	const inst, run = "inst-interrupted", "run-1"
+	seedRun(t, ledger, inst, run)
 	proposal := createIssueProposal()
 	ctx := t.Context()
 
@@ -487,8 +498,9 @@ func (r *revocableRegistry) revoke() {
 // ErrLeaseHeld (if the winner's lease is still live), so the executor runs exactly once.
 func TestGatewayClaimIsExclusive(t *testing.T) {
 	exec := &fakeExecutor{result: act.ExecuteResult{Outcome: act.OutcomeSucceeded, ExternalReference: "PROJ-1"}}
-	g, _ := newGateway(t, exec, createIssueDescriptor(act.ClassIdempotentNative), nil)
+	g, ledger := newGateway(t, exec, createIssueDescriptor(act.ClassIdempotentNative), nil)
 	const inst, run = "inst-claim", "run-1"
+	seedRun(t, ledger, inst, run)
 	proposal := createIssueProposal()
 	ctx := t.Context()
 
@@ -537,6 +549,7 @@ func TestGatewayReauthorizationDenies(t *testing.T) {
 	reg := &revocableRegistry{inner: act.NewMapToolRegistry(createIssueDescriptor(act.ClassIdempotentNative))}
 	g := &act.Gateway{Registry: reg, Ledger: ledger, Executor: exec}
 	const inst, run = "inst-reauth", "run-1"
+	seedRun(t, ledger, inst, run)
 	proposal := createIssueProposal()
 	ctx := t.Context()
 
@@ -563,6 +576,7 @@ func TestGatewayRebindMismatchRefuses(t *testing.T) {
 	exec := &fakeExecutor{}
 	g, ledger := newGateway(t, exec, createIssueDescriptor(act.ClassIdempotentNative), nil)
 	const inst, run = "inst-rebind", "run-1"
+	seedRun(t, ledger, inst, run)
 	proposal := createIssueProposal()
 	ctx := t.Context()
 
@@ -595,6 +609,7 @@ func TestGatewayVerifyRedactsReturnedDetail(t *testing.T) {
 	}
 	g, ledger := newGateway(t, exec, createIssueDescriptorWithAuth(act.ClassIdempotentNative, "jira_bearer"), testSecrets{"jira_bearer": token})
 	const inst, run = "inst-verify-redact", "run-1"
+	seedRun(t, ledger, inst, run)
 	proposal := createIssueProposal()
 	ctx := t.Context()
 
@@ -620,6 +635,7 @@ func TestGatewayWriteFailsClosedOnUnresolvableConnectorSecret(t *testing.T) {
 	// The descriptor declares a connector credential the resolver does not know: redaction cannot be guaranteed.
 	g, ledger := newGateway(t, exec, createIssueDescriptorWithAuth(act.ClassIdempotentNative, "missing_bearer"), testSecrets{"other": "x"})
 	const inst, run = "inst-nosecret", "run-1"
+	seedRun(t, ledger, inst, run)
 	proposal := createIssueProposal()
 
 	_, report := approveAndExecute(t, g, inst, run, proposal)
@@ -638,6 +654,7 @@ func TestGatewayReauthorizePreservesAutoApprove(t *testing.T) {
 	exec := &fakeExecutor{result: act.ExecuteResult{Outcome: act.OutcomeSucceeded, ExternalReference: "PROJ-1"}}
 	g, ledger := newGateway(t, exec, createIssueDescriptor(act.ClassIdempotentNative), nil)
 	const inst, run = "inst-autoapprove", "run-1"
+	seedRun(t, ledger, inst, run)
 	proposal := createIssueProposal()
 	autoApprove := map[string]bool{"jira.create_issue": true}
 	ctx := t.Context()
@@ -671,6 +688,7 @@ func TestGatewayAutoApproveExecutesUnclassified(t *testing.T) {
 	exec := &fakeExecutor{result: act.ExecuteResult{Outcome: act.OutcomeSucceeded, ExternalReference: "PROJ-1"}}
 	g, ledger := newGateway(t, exec, createIssueDescriptor(act.ClassUnknown), nil)
 	const inst, run = "inst-autoapprove-unknown", "run-1"
+	seedRun(t, ledger, inst, run)
 	proposal := createIssueProposal()
 	autoApprove := map[string]bool{"jira.create_issue": true}
 	ctx := t.Context()
@@ -718,6 +736,7 @@ func TestGatewayCapsOversizedExecutorOutput(t *testing.T) {
 		MaxOutputBytes: 256, // a tight cap so the 4 KiB output and message are over it
 	}
 	const inst, run = "inst-cap", "run-1"
+	seedRun(t, ledger, inst, run)
 	proposal := createIssueProposal()
 
 	_, report := approveAndExecute(t, g, inst, run, proposal)
@@ -738,6 +757,7 @@ func TestGatewayCapsOversizedExecutorOutput(t *testing.T) {
 func TestGatewayKillSwitchDenies(t *testing.T) {
 	exec := &fakeExecutor{}
 	ledger := newRunStore(t)
+	seedRun(t, ledger, "inst-kill", "run-1")
 	kill := act.NewMapKillSwitch()
 	kill.DisableInstance("inst-kill", "incident response")
 	g := &act.Gateway{

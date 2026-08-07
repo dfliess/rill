@@ -42,6 +42,7 @@ func TestLedgerHappyPath(t *testing.T) {
 	ledger := newRunStore(t)
 	ctx := t.Context()
 	const inst, run, call = "inst-ledger", "run-1", "call-1"
+	seedRun(t, ledger, inst, run)
 	proposeAction(t, ledger, inst, run, call)
 
 	got, err := ledger.GetAction(ctx, inst, run, call)
@@ -77,6 +78,7 @@ func TestLedgerProposeIdempotent(t *testing.T) {
 	ledger := newRunStore(t)
 	ctx := t.Context()
 	const inst, run, call = "inst-idem", "run-1", "call-1"
+	seedRun(t, ledger, inst, run)
 	proposeAction(t, ledger, inst, run, call)
 	_, err := transition(t, ledger, inst, run, call, act.ActionApprovalPending)
 	require.NoError(t, err)
@@ -93,6 +95,7 @@ func TestLedgerProposeIdempotent(t *testing.T) {
 func TestLedgerRejectsIllegalTransition(t *testing.T) {
 	ledger := newRunStore(t)
 	const inst, run, call = "inst-illegal", "run-1", "call-1"
+	seedRun(t, ledger, inst, run)
 	proposeAction(t, ledger, inst, run, call)
 
 	_, err := transition(t, ledger, inst, run, call, act.ActionExecuting)
@@ -104,6 +107,7 @@ func TestLedgerRejectsIllegalTransition(t *testing.T) {
 func TestLedgerSameStatusIsNoop(t *testing.T) {
 	ledger := newRunStore(t)
 	const inst, run, call = "inst-noop", "run-1", "call-1"
+	seedRun(t, ledger, inst, run)
 	proposeAction(t, ledger, inst, run, call)
 	for _, s := range []act.ActionStatus{act.ActionApprovalPending, act.ActionApproved, act.ActionExecuting} {
 		_, err := transition(t, ledger, inst, run, call, s)
@@ -120,6 +124,7 @@ func TestLedgerSameStatusIsNoop(t *testing.T) {
 func TestLedgerTerminalGuard(t *testing.T) {
 	ledger := newRunStore(t)
 	const inst, run, call = "inst-terminal", "run-1", "call-1"
+	seedRun(t, ledger, inst, run)
 	proposeAction(t, ledger, inst, run, call)
 	rejected, err := transition(t, ledger, inst, run, call, act.ActionPolicyRejected)
 	require.NoError(t, err)
@@ -136,6 +141,7 @@ func TestLedgerScopingIsolatesTenants(t *testing.T) {
 	ledger := newRunStore(t)
 	ctx := t.Context()
 	const instA, instB, run, call = "inst-a", "inst-b", "run-1", "call-1"
+	seedRun(t, ledger, instA, run)
 	proposeAction(t, ledger, instA, run, call)
 
 	_, err := ledger.GetAction(ctx, instB, run, call)

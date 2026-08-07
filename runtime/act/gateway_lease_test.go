@@ -71,6 +71,7 @@ func TestGatewayLiveLeaseNotReclaimedSingleEffect(t *testing.T) {
 	}
 	g, ledger := newGateway(t, exec, createIssueDescriptor(act.ClassIdempotentNative), nil)
 	const inst, run = "inst-live-lease", "run-1"
+	seedRun(t, ledger, inst, run)
 	proposal := createIssueProposal()
 	ctx := t.Context()
 	proposeAndApprove(t, g, inst, run, proposal)
@@ -124,6 +125,7 @@ func TestGatewayExpiredLeaseReclaimedToIndeterminate(t *testing.T) {
 	exec := &fakeExecutor{result: act.ExecuteResult{Outcome: act.OutcomeSucceeded, ExternalReference: "PROJ-1"}}
 	g, ledger := newGateway(t, exec, createIssueDescriptor(act.ClassNonIdempotent), nil)
 	const inst, run = "inst-expired-lease", "run-1"
+	seedRun(t, ledger, inst, run)
 	proposal := createIssueProposal()
 	ctx := t.Context()
 	proposeAndApprove(t, g, inst, run, proposal)
@@ -152,6 +154,7 @@ func TestGatewayLiveLeaseDoesNotTerminalizeRun(t *testing.T) {
 	exec := &fakeExecutor{result: act.ExecuteResult{Outcome: act.OutcomeSucceeded, ExternalReference: "PROJ-1"}}
 	g, ledger := newGateway(t, exec, createIssueDescriptor(act.ClassNonIdempotent), nil)
 	const inst, run = "inst-live-lease-no-terminal", "run-1"
+	seedRun(t, ledger, inst, run)
 	proposal := createIssueProposal()
 	ctx := t.Context()
 	proposeAndApprove(t, g, inst, run, proposal)
