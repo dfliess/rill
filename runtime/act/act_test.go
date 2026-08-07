@@ -208,7 +208,6 @@ func newExecutorWithRunner(t *testing.T, runner act.Runner) *act.DBOSExecutor {
 		DatabaseSchema:     schema,
 		ApplicationVersion: "act-test-" + uuid.NewString(),
 		Runner:             runner,
-		ApprovalTimeout:    60 * time.Second,
 		Logger:             slog.New(slog.NewTextHandler(io.Discard, nil)),
 	})
 	require.NoError(t, err)

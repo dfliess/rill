@@ -112,8 +112,6 @@ const (
 	RunStatusFailed RunStatus = "failed"
 	// RunStatusRejected is a run a human denied at the approval gate; no external effect ran.
 	RunStatusRejected RunStatus = "rejected"
-	// RunStatusExpired is a run whose approval wait elapsed before a decision arrived.
-	RunStatusExpired RunStatus = "expired"
 	// RunStatusCancelled is a run stopped by an operator.
 	RunStatusCancelled RunStatus = "cancelled"
 )
@@ -122,7 +120,7 @@ const (
 // one; the API never transitions a run out of one.
 func (s RunStatus) IsTerminal() bool {
 	switch s {
-	case RunStatusSucceeded, RunStatusFailed, RunStatusRejected, RunStatusExpired, RunStatusCancelled:
+	case RunStatusSucceeded, RunStatusFailed, RunStatusRejected, RunStatusCancelled:
 		return true
 	default:
 		return false
@@ -136,8 +134,11 @@ type AgentExecutor interface {
 	// Start launches a run for in.IdempotencyKey and returns its run ID. Calling it again with the same
 	// IdempotencyKey is a no-op that returns the same run ID (idempotent by construction).
 	Start(ctx context.Context, in AgentRunInput) (runID string, err error)
-	// Resume delivers a human approval decision to a run that is waiting for one.
-	Resume(ctx context.Context, runID string, decision ApprovalDecision) error
+	// Resume delivers a human approval decision to a run that is waiting for one. toolCallID identifies the specific
+	// action being decided: when non-empty, the decision is routed to the per-action DBOS topic so the executor
+	// matches it to the right governed call; when empty, it falls back to the legacy single-topic path (Fase 1 runs
+	// and old segment-based approvals).
+	Resume(ctx context.Context, runID string, decision ApprovalDecision, toolCallID string) error
 	// Cancel stops a run in the given instance. instanceID scopes the cancellation so a caller can only stop a run in
 	// the instance it addresses, and lets the executor record the terminal state against the right tenant.
 	Cancel(ctx context.Context, instanceID, runID string) error
@@ -190,9 +191,9 @@ type RunSegmentInput struct {
 	// opened ID back from RunSegmentResult; non-empty reopens that session so the resumed segment reconstructs the
 	// conversation from its persisted message tree, under the same checkpointed claims.
 	SessionID string
-	// Resume carries the executed action's result to inject as the turn the model reacts to before it runs again. Nil
-	// on the first segment (there is no prior action).
-	Resume *ai.InjectedResult
+	// Resume carries the executed actions' results to inject as the turns the model reacts to before it runs again.
+	// Nil on the first segment (there are no prior actions).
+	Resume []*ai.InjectedResult
 }
 
 // RunSegmentResult is the checkpointed outcome of one segment.
@@ -203,9 +204,9 @@ type RunSegmentResult struct {
 	// Response is the segment's final model text (a wrap-up when the segment paused on a write, the closing answer
 	// when it did not).
 	Response string
-	// Proposed is the write action the segment paused on, or nil when the segment produced a final answer and the run
-	// is done. A non-nil Proposed is the pause point the workflow governs, executes, and injects the result of.
-	Proposed *ai.ProposedAction
+	// Proposed is the list of write actions the segment paused on, empty when the segment produced a final answer and
+	// the run is done. A non-empty slice is the pause point: the workflow governs and executes all of them in order.
+	Proposed []*ai.ProposedAction
 }
 
 // Runner performs the non-deterministic, side-effecting work of a run. The durable workflow invokes each method

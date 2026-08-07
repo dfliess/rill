@@ -2,7 +2,6 @@ package act_test
 
 import (
 	"testing"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -352,33 +351,6 @@ func TestRunStoreMigrateMovesEventUniquenessToDedupeKey(t *testing.T) {
 	require.Equal(t, act.RunStatusWaitingApproval, run.Status)
 }
 
-// TestRunStoreResolveApprovalRejectsExpired verifies a human decision cannot claim an approval whose window has
-// already elapsed, while the expiry path that marks it expired stays exempt.
-func TestRunStoreResolveApprovalRejectsExpired(t *testing.T) {
-	store := newRunStore(t)
-	ctx := t.Context()
-
-	const instanceID = "inst-appr-exp"
-	runID := act.ComposeRunID(instanceID, "triage", "k")
-	require.NoError(t, store.CreateRun(ctx, act.NewRun{RunID: runID, InstanceID: instanceID, AgentName: "triage"}))
-
-	past := time.Now().Add(-time.Minute)
-	approvalID := act.ApprovalIDForRun(runID)
-	require.NoError(t, store.CreateApproval(ctx, act.NewApproval{
-		ApprovalID: approvalID, RunID: runID, InstanceID: instanceID,
-		ArgsHash: act.HashArgs("x"), Proposal: "x", RequestedBy: "user:alice", ExpiresOn: &past,
-	}))
-
-	// The approval is still pending, but its deadline passed: approving it is rejected.
-	_, err := store.ResolveApproval(ctx, instanceID, approvalID, act.ApprovalStatusApproved, "admin:bob")
-	require.ErrorIs(t, err, act.ErrApprovalNotResolvable)
-
-	// The expiry marking is exempt: it is exactly what resolves a lapsed approval.
-	resolved, err := store.ResolveApproval(ctx, instanceID, approvalID, act.ApprovalStatusExpired, "")
-	require.NoError(t, err)
-	require.Equal(t, act.ApprovalStatusExpired, resolved.Status)
-}
-
 // TestRunStoreCancelPendingApprovals verifies that cancelling a run withdraws its pending approval (so the inbox stops
 // offering a decision) while leaving an already-decided approval, and another run's approval, untouched.
 func TestRunStoreCancelPendingApprovals(t *testing.T) {
@@ -500,7 +472,6 @@ func TestRunStoreApprovalLifecycle(t *testing.T) {
 	runID := act.ComposeRunID(instanceID, "triage", "k")
 	require.NoError(t, store.CreateRun(ctx, act.NewRun{RunID: runID, InstanceID: instanceID, AgentName: "triage"}))
 
-	expires := time.Now().Add(time.Hour)
 	approvalID := act.ApprovalIDForRun(runID)
 	require.NoError(t, store.CreateApproval(ctx, act.NewApproval{
 		ApprovalID:  approvalID,
@@ -510,7 +481,6 @@ func TestRunStoreApprovalLifecycle(t *testing.T) {
 		ArgsHash:    act.HashArgs("crear ticket P2"),
 		Proposal:    "crear ticket P2",
 		RequestedBy: "user:alice",
-		ExpiresOn:   &expires,
 	}))
 
 	got, err := store.GetApproval(ctx, instanceID, approvalID)

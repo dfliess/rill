@@ -23,6 +23,9 @@
 
   let pending = $derived(isApprovalPending(approval.status));
   let proposal = $derived(parseProposal(approval.proposal));
+  let showPosition = $derived(
+    typeof approval.total === "number" && approval.total > 1,
+  );
 </script>
 
 <!-- A pending approval is a call to action (amber, with the decision buttons); a
@@ -38,6 +41,14 @@
       {pending ? m.agents_run_approval_required() : m.agents_approval_title()}
     </h2>
     <AgentApprovalStatusChip status={approval.status} />
+    {#if showPosition}
+      <span class="text-xs text-fg-muted">
+        {m.agents_approval_position({
+          position: approval.position ?? 0,
+          total: approval.total ?? 0,
+        })}
+      </span>
+    {/if}
     <div class="grow"></div>
     {#if pending}
       <ApproveDenyButtons
@@ -60,14 +71,9 @@
       <MetadataLabel>{m.agents_approval_policy()}</MetadataLabel>
       <MetadataValue>{approval.policy || "—"}</MetadataValue>
     </div>
-    {#if pending}
-      <div class="flex flex-col gap-y-2">
-        <MetadataLabel>{m.agents_field_expires()}</MetadataLabel>
-        <MetadataValue>{formatDateTime(approval.expiresOn)}</MetadataValue>
-      </div>
-    {:else}
+    {#if !pending}
       <!-- The audit pair: who decided and when. `decidedBy` is empty for a decision
-           no human made (an expired or cancelled approval), so it renders as "—". -->
+           no human made (a cancelled approval), so it renders as "—". -->
       <div class="flex flex-col gap-y-2">
         <MetadataLabel>{m.agents_approval_decided_by()}</MetadataLabel>
         <MetadataValue>{subjectLabel(approval.decidedBy, names)}</MetadataValue>

@@ -56,7 +56,7 @@
         type: "success",
       });
     } catch (e) {
-      // Refresh so a stale/expired approval drops out of the lists on failure.
+      // Refresh so a stale approval drops out of the lists on failure.
       await invalidate();
       eventBus.emit("notification", {
         message:
@@ -75,7 +75,7 @@
         type: "success",
       });
     } catch (e) {
-      // Refresh so a stale/expired approval drops out of the lists on failure.
+      // Refresh so a stale approval drops out of the lists on failure.
       await invalidate();
       eventBus.emit("notification", {
         message:

@@ -16,10 +16,19 @@
     runActorLabel,
     timestampSortKey,
   } from "../utils";
+  import * as Tooltip from "@rilldata/web-common/components/tooltip-v2";
   import AgentRunStatusChip from "./AgentRunStatusChip.svelte";
   import AgentRunTimeline from "./AgentRunTimeline.svelte";
   import CancelAgentRunButton from "./CancelAgentRunButton.svelte";
   import StartAgentRunDialog from "./StartAgentRunDialog.svelte";
+
+  let runIdCopied = $state(false);
+  async function copyRunId() {
+    if (!run?.runId) return;
+    await navigator.clipboard.writeText(run.runId);
+    runIdCopied = true;
+    setTimeout(() => (runIdCopied = false), 1500);
+  }
 
   let {
     organization,
@@ -94,7 +103,42 @@
         {/if}
         <CancelAgentRunButton {runId} {run} />
       </div>
-      <div class="text-fg-secondary text-xs font-mono">{run.runId}</div>
+      <!-- Run ID hidden from the first plane; available via copy for support. -->
+      <div class="flex items-center gap-x-1">
+        <Tooltip.Root>
+          <Tooltip.Trigger>
+            <button
+              class="text-fg-muted hover:text-fg-secondary text-xs flex items-center gap-x-1 cursor-pointer"
+              onclick={copyRunId}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 16 16"
+                fill="currentColor"
+                class="size-3.5"
+              >
+                {#if runIdCopied}
+                  <path
+                    fill-rule="evenodd"
+                    d="M12.416 3.376a.75.75 0 0 1 .208 1.04l-5 7.5a.75.75 0 0 1-1.154.114l-3-3a.75.75 0 0 1 1.06-1.06l2.353 2.353 4.493-6.74a.75.75 0 0 1 1.04-.207Z"
+                    clip-rule="evenodd"
+                  />
+                {:else}
+                  <path
+                    fill-rule="evenodd"
+                    d="M10.986 3H12a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h1.014A2.25 2.25 0 0 1 7.25 1h1.5a2.25 2.25 0 0 1 2.236 2ZM7.25 2.5a.75.75 0 0 0 0 1.5h1.5a.75.75 0 0 0 0-1.5h-1.5Z"
+                    clip-rule="evenodd"
+                  />
+                {/if}
+              </svg>
+              {runIdCopied ? m.agents_run_id_copied() : m.agents_run_id_copy()}
+            </button>
+          </Tooltip.Trigger>
+          <Tooltip.Content>
+            <span class="font-mono text-xs break-all">{run.runId}</span>
+          </Tooltip.Content>
+        </Tooltip.Root>
+      </div>
     </div>
 
     <!-- Each side-effecting action the run proposed: pending ones await a decision,
@@ -116,12 +160,6 @@
         <!-- The identity the run (and any approved action) executes as. -->
         <MetadataLabel>{m.agents_run_runs_as()}</MetadataLabel>
         <MetadataValue>{runActorLabel(run, subjectNames)}</MetadataValue>
-      </div>
-      <div class="flex flex-col gap-y-3">
-        <MetadataLabel>{m.agents_run_spec_version()}</MetadataLabel>
-        <MetadataValue>
-          <span class="font-mono text-xs">{run.specHash || "—"}</span>
-        </MetadataValue>
       </div>
       <div class="flex flex-col gap-y-3">
         <MetadataLabel>{m.agents_field_started()}</MetadataLabel>

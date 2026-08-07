@@ -40,10 +40,12 @@ const InjectedActionResultTool = "act.action_result"
 type DynamicAgent struct {
 	Snapshot *AgentSnapshot
 
-	// proposed holds the first write (non-read-only) tool call the loop captured instead of executing (see
-	// ProposedAction). It is nil for a pure read-only investigation. The capturing handler that compileProposedMCPTool
-	// installs sets it; Run reads it after the loop. The loop is single-goroutine, so no synchronization is needed.
-	proposed *ProposedAction
+	// proposed holds every write (non-read-only) tool call the loop captured instead of executing (see ProposedAction).
+	// It is empty for a pure read-only investigation. The capturing handler that compileProposedMCPTool installs appends
+	// to it; Run reads it after the loop. The loop is single-goroutine, so no synchronization is needed. The slice
+	// preserves the model's emission order: the first element is the first tool call the model proposed, and the executor
+	// governs and executes them in that order.
+	proposed []*ProposedAction
 }
 
 // ProposedAction is a write tool call the agent chose to make, captured instead of executed. In the governed action
@@ -74,10 +76,11 @@ type ProposedAction struct {
 type DynamicAgentResult struct {
 	Response string `json:"response"`
 	Agent    string `json:"agent"`
-	// Proposed is the write action the agent proposed (captured, not executed), or nil for a pure investigation or a
-	// segment that produced a final answer. A non-nil Proposed is the pause point: the durable workflow governs and
-	// executes it, then resumes the run so the model sees the result.
-	Proposed *ProposedAction `json:"-"`
+	// Proposed is the list of write actions the agent proposed in this segment (captured, not executed), empty for a pure
+	// investigation or a segment that produced a final answer. A non-empty Proposed is the pause point: the durable
+	// workflow governs and executes all of them (in the order the model emitted them), then resumes the run so the model
+	// sees all the results.
+	Proposed []*ProposedAction `json:"-"`
 }
 
 // InjectedResult is the outcome of a governed action, fed back into the loop so the model can react to the effect it
@@ -111,12 +114,12 @@ func RunDynamicAgent(ctx context.Context, s *Session, provider AgentDefinitionPr
 	return agent.Run(ctx, s, prompt, nil)
 }
 
-// Run executes one segment of the agent's model/tool loop over the session and returns its response and the action it
+// Run executes one segment of the agent's model/tool loop over the session and returns its response and the actions it
 // paused on (if any). resume is nil for the first segment (a fresh run seeded by prompt); for a resumed segment it
-// carries the executed action's result, and the conversation is reconstructed from the session's persisted message
+// carries the executed actions' results, and the conversation is reconstructed from the session's persisted message
 // tree, so the caller must hand Run the same session the prior segment ran on (in production the workflow reopens it
 // by ID across the pause). This mirrors how the built-in agents rebuild model context from the tree (router_agent).
-func (a *DynamicAgent) Run(ctx context.Context, s *Session, prompt string, resume *InjectedResult) (*DynamicAgentResult, error) {
+func (a *DynamicAgent) Run(ctx context.Context, s *Session, prompt string, resume []*InjectedResult) (*DynamicAgentResult, error) {
 	if a.Snapshot == nil {
 		return nil, fmt.Errorf("dynamic agent has no snapshot")
 	}
@@ -164,7 +167,7 @@ func (a *DynamicAgent) Run(ctx context.Context, s *Session, prompt string, resum
 	// keeps it for the UI and any later segment; the system prompt is not persisted (it is regenerated per segment), so
 	// it is prepended fresh. This is the pattern the built-in agents use to rebuild context from the tree (router_agent).
 	var messages []*aiv1.CompletionMessage
-	if resume == nil {
+	if len(resume) == 0 {
 		messages = []*aiv1.CompletionMessage{
 			NewTextCompletionMessage(RoleSystem, a.systemPrompt(s)),
 			NewTextCompletionMessage(RoleUser, prompt),
@@ -176,13 +179,15 @@ func (a *DynamicAgent) Run(ctx context.Context, s *Session, prompt string, resum
 			Content:     prompt,
 		})
 	} else {
-		s.AddMessage(&AddMessageOptions{
-			Role:        RoleUser,
-			Type:        MessageTypeText,
-			Tool:        InjectedActionResultTool,
-			ContentType: MessageContentTypeText,
-			Content:     resumeResultMessage(resume),
-		})
+		for _, r := range resume {
+			s.AddMessage(&AddMessageOptions{
+				Role:        RoleUser,
+				Type:        MessageTypeText,
+				Tool:        InjectedActionResultTool,
+				ContentType: MessageContentTypeText,
+				Content:     resumeResultMessage(r),
+			})
+		}
 		messages = []*aiv1.CompletionMessage{NewTextCompletionMessage(RoleSystem, a.systemPrompt(s))}
 		messages = append(messages, s.NewCompletionMessages(s.MessagesWithResults(FilterByRoot()))...)
 	}
@@ -199,9 +204,9 @@ func (a *DynamicAgent) Run(ctx context.Context, s *Session, prompt string, resum
 		MaxIterations:     maxSteps,
 		RestrictToolCalls: true,
 		UnwrapCall:        true,
-		// Pause the loop the instant a governed write is captured, so the model does not close over the pending proposal
-		// (no premature answer before approval). The workflow governs and executes the action, then resumes this loop.
-		PauseAfterToolCall: func() bool { return a.proposed != nil },
+		// Pause the loop the instant a governed write is captured, so the model does not close over the pending proposals
+		// (no premature answer before approval). The workflow governs and executes the actions, then resumes this loop.
+		PauseAfterToolCall: func() bool { return len(a.proposed) > 0 },
 	})
 	if err != nil {
 		return nil, err
@@ -472,9 +477,9 @@ func compileRemoteMCPTool(client mcpconn.MCPClient, name string, rt mcpconn.Remo
 }
 
 // compileProposedMCPTool adapts a write (non-read-only) MCP tool into a CompiledTool that, when the model calls it,
-// captures the intended call as the agent's ProposedAction and returns a placeholder result instead of executing it.
-// The first proposed call wins: a second is not queued, and the model is told an action is already pending, so a run
-// proposes at most one action. The real, idempotent execution happens post-approval in the action gateway, never here.
+// captures the intended call as a ProposedAction and returns a placeholder result instead of executing it. Every
+// governed call in a turn is captured (appended to the agent's proposed slice), preserving the model's emission order.
+// The real, idempotent execution happens post-approval in the action gateway, never here.
 func (a *DynamicAgent) compileProposedMCPTool(name string, rt mcpconn.RemoteTool) *CompiledTool {
 	spec := &mcp.Tool{
 		Name:        name,
@@ -502,37 +507,32 @@ func (a *DynamicAgent) compileProposedMCPTool(name string, rt mcpconn.RemoteTool
 			return json.RawMessage(content), nil
 		},
 		JSONHandler: func(ctx context.Context, input json.RawMessage) (json.RawMessage, error) {
-			if a.proposed != nil {
-				// One action per run: keep the first proposal and tell the model this call was not queued.
-				return json.Marshal(map[string]string{
-					"status": "an action is already pending approval; do not propose another",
-				})
-			}
 			var args map[string]any
 			if len(input) > 0 {
 				if err := json.Unmarshal(input, &args); err != nil {
 					return nil, err
 				}
 			}
-			// The handler runs in the call's own message scope (s.Call sets the session's parent to the call message), so
-			// GetSession(ctx).ParentID is this tool-call's message ID: the model-facing call identity and the parent the
-			// resume path attaches the executed result under. Fall back to the tool name only if the scope is somehow
+			// The handler runs in the call's own message scope (s.Call sets the session's parent to the call message),
+			// so GetSession(ctx).ParentID is this tool-call's message ID: the model-facing call identity and the parent
+			// the resume path attaches the executed result under. Fall back to the tool name only if the scope is somehow
 			// unset, so the action always has a non-empty identity for the ledger.
 			toolCallID := rt.Name
 			if sess := GetSession(ctx); sess != nil && sess.ParentID != "" {
 				toolCallID = sess.ParentID
 			}
-			a.proposed = &ProposedAction{
+			a.proposed = append(a.proposed, &ProposedAction{
 				ToolCallID: toolCallID,
 				Connector:  rt.Connector,
 				Tool:       rt.Name,
 				Args:       args,
 				SchemaHash: rt.SchemaHash,
 				Summary:    proposedSummary(rt, args),
-			}
-			// The tool did not run: the effect is deferred to human approval, and the loop pauses here (PauseAfterToolCall)
-			// so the model takes no further turn until the action is executed. This placeholder is the call's result in the
-			// message tree; the model only sees it on resume, alongside the injected real result, so it reads neutrally.
+			})
+			// The tool did not run: the effect is deferred to human approval, and the loop pauses after all tool calls
+			// in this turn are processed (PauseAfterToolCall checks len(a.proposed) > 0), so the model takes no further
+			// turn until all actions are governed and executed. This placeholder is the call's result in the message
+			// tree; the model only sees it on resume, alongside the injected real result, so it reads neutrally.
 			return json.Marshal(map[string]string{
 				"status": "This action was proposed and is awaiting human approval; it has not been executed yet.",
 			})

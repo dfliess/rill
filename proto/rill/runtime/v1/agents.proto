@@ -145,9 +145,14 @@ message AgentApproval {
   string status = 10;
   string requested_by = 11;
   string decided_by = 12;
-  google.protobuf.Timestamp expires_on = 13;
+  reserved 13;
+  reserved "expires_on";
   google.protobuf.Timestamp created_on = 14;
   google.protobuf.Timestamp decided_on = 15;
+  // position is the 1-based index of this action within its batch (e.g. 1 of 3). Zero for single-action turns.
+  int32 position = 16;
+  // total is the number of actions in the batch.
+  int32 total = 17;
 }
 
 message ListAgentsRequest {

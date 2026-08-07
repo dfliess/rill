@@ -30,7 +30,6 @@ const APPROVAL_STATUS_COLORS: Record<string, Color> = {
   pending: "amber",
   approved: "green",
   denied: "red",
-  expired: "gray",
   cancelled: "gray",
   canceled: "gray",
 };
@@ -81,8 +80,6 @@ export function agentApprovalStatusLabel(status: string | undefined): string {
       return m.agents_approval_status_approved();
     case "denied":
       return m.agents_approval_status_denied();
-    case "expired":
-      return m.agents_approval_status_expired();
     case "cancelled":
     case "canceled":
       return m.agents_approval_status_cancelled();
@@ -107,9 +104,9 @@ export function isApprovalPending(status: string | undefined): boolean {
 }
 
 /**
- * An approval is resolved once a human (or the deadline) decided it. Resolved
- * approvals stay on the run: they are its audit trail, so the detail view keeps
- * showing what was proposed, who decided it and when.
+ * An approval is resolved once a human decided it (or the run was cancelled).
+ * Resolved approvals stay on the run: they are its audit trail, so the detail
+ * view keeps showing what was proposed, who decided it and when.
  */
 export function isApprovalResolved(status: string | undefined): boolean {
   const s = normalizeStatus(status);

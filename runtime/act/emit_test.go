@@ -14,7 +14,7 @@ import (
 // newStoreExecutor builds an in-process executor wired to a real RunStore, so a test can observe the run state and
 // event stream the executor emits as a run progresses. The DBOS system tables and the product store live in separate
 // schemas of the same Postgres, exactly as production separates them (§15.2).
-func newStoreExecutor(t *testing.T, runner act.Runner, store act.RunStore, approvalTimeout time.Duration) *act.DBOSExecutor {
+func newStoreExecutor(t *testing.T, runner act.Runner, store act.RunStore) *act.DBOSExecutor {
 	t.Helper()
 	dsn, schema := requirePostgres(t)
 	e, err := act.NewDBOSExecutor(t.Context(), act.Config{
@@ -23,7 +23,6 @@ func newStoreExecutor(t *testing.T, runner act.Runner, store act.RunStore, appro
 		ApplicationVersion: "act-test-" + uuid.NewString(),
 		Runner:             runner,
 		Store:              store,
-		ApprovalTimeout:    approvalTimeout,
 		Logger:             slog.New(slog.NewTextHandler(io.Discard, nil)),
 	})
 	require.NoError(t, err)
@@ -52,7 +51,7 @@ func TestExecutorEmitsLifecycleEventsOnApproval(t *testing.T) {
 		Sessions: scriptedSessionFactory(rt, llm),
 		Actions:  sink,
 	}
-	e := newStoreExecutor(t, runner, store, 60*time.Second)
+	e := newStoreExecutor(t, runner, store)
 	ctx := t.Context()
 
 	key := "run-emit-" + uuid.NewString()
@@ -70,7 +69,7 @@ func TestExecutorEmitsLifecycleEventsOnApproval(t *testing.T) {
 	require.NoError(t, err)
 	require.Contains(t, []act.RunStatus{act.RunStatusQueued, act.RunStatusRunning, act.RunStatusWaitingApproval}, run.Status)
 
-	require.NoError(t, e.Resume(ctx, runID, act.ApprovalApproved))
+	require.NoError(t, e.Resume(ctx, runID, act.ApprovalApproved, ""))
 	res, err := e.Result(runID)
 	require.NoError(t, err)
 	require.Equal(t, act.RunStatusSucceeded, res.Status)
@@ -103,54 +102,6 @@ func TestExecutorEmitsLifecycleEventsOnApproval(t *testing.T) {
 	require.Equal(t, "user:alice", approvals[0].RequestedBy)
 }
 
-// TestExecutorEmitsExpiry verifies the approval-timeout path: with no decision, the run expires, the store records
-// the expired transition, and the pending approval is marked expired rather than left dangling.
-func TestExecutorEmitsExpiry(t *testing.T) {
-	rt, instanceID := newInstanceWithAgent(t, "Investiga y propon.")
-	store := newRunStore(t)
-	llm := &scriptedAI{response: "propuesta que caducara"}
-	sink := &recordingSink{}
-	runner := &act.SessionRunner{
-		Provider: act.NewCatalogAgentProvider(rt),
-		Sessions: scriptedSessionFactory(rt, llm),
-		Actions:  sink,
-	}
-	// A short approval timeout so the run expires quickly without a decision.
-	e := newStoreExecutor(t, runner, store, 2*time.Second)
-	ctx := t.Context()
-
-	runID, err := e.Start(ctx, act.AgentRunInput{
-		InstanceID:     instanceID,
-		AgentName:      "triage",
-		Prompt:         "sin aprobacion",
-		IdempotencyKey: "run-expiry-" + uuid.NewString(),
-	})
-	require.NoError(t, err)
-
-	res, err := e.Result(runID) // blocks until the approval wait elapses
-	require.NoError(t, err)
-	require.Equal(t, act.RunStatusExpired, res.Status)
-	require.False(t, res.ActionTaken)
-	require.Empty(t, sink.snapshot(), "no external effect on an expired run")
-
-	run, err := store.GetRun(ctx, instanceID, runID)
-	require.NoError(t, err)
-	require.Equal(t, act.RunStatusExpired, run.Status)
-
-	events, err := store.ListRunEvents(ctx, instanceID, runID, 0, 100)
-	require.NoError(t, err)
-	require.Equal(t, []string{
-		act.EventTypeQueued,
-		act.EventTypeRunning,
-		act.EventTypeWaitingApproval,
-		act.EventTypeExpired,
-	}, eventTypes(events))
-
-	approval, err := store.GetApproval(ctx, instanceID, act.ApprovalIDForRun(runID))
-	require.NoError(t, err)
-	require.Equal(t, act.ApprovalStatusExpired, approval.Status)
-}
-
 // TestExecutorEmitsRejection verifies a denied run records the rejected transition, attributes it to whoever denied it
 // (Bob, not the run's initiator), and performs no external effect.
 func TestExecutorEmitsRejection(t *testing.T) {
@@ -163,7 +114,7 @@ func TestExecutorEmitsRejection(t *testing.T) {
 		Sessions: scriptedSessionFactory(rt, llm),
 		Actions:  sink,
 	}
-	e := newStoreExecutor(t, runner, store, 60*time.Second)
+	e := newStoreExecutor(t, runner, store)
 	ctx := t.Context()
 
 	runID, err := e.Start(ctx, act.AgentRunInput{
@@ -182,7 +133,7 @@ func TestExecutorEmitsRejection(t *testing.T) {
 	}, 15*time.Second, 50*time.Millisecond)
 	_, err = store.ResolveApproval(ctx, instanceID, act.ApprovalIDForRun(runID), act.ApprovalStatusDenied, "admin:bob")
 	require.NoError(t, err)
-	require.NoError(t, e.Resume(ctx, runID, act.ApprovalRejected))
+	require.NoError(t, e.Resume(ctx, runID, act.ApprovalRejected, ""))
 
 	res, err := e.Result(runID)
 	require.NoError(t, err)

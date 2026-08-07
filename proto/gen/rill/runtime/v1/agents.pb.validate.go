@@ -609,35 +609,6 @@ func (m *AgentApproval) validate(all bool) error {
 	// no validation rules for DecidedBy
 
 	if all {
-		switch v := interface{}(m.GetExpiresOn()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, AgentApprovalValidationError{
-					field:  "ExpiresOn",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, AgentApprovalValidationError{
-					field:  "ExpiresOn",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetExpiresOn()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return AgentApprovalValidationError{
-				field:  "ExpiresOn",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
-	if all {
 		switch v := interface{}(m.GetCreatedOn()).(type) {
 		case interface{ ValidateAll() error }:
 			if err := v.ValidateAll(); err != nil {
@@ -694,6 +665,10 @@ func (m *AgentApproval) validate(all bool) error {
 			}
 		}
 	}
+
+	// no validation rules for Position
+
+	// no validation rules for Total
 
 	if len(errors) > 0 {
 		return AgentApprovalMultiError(errors)

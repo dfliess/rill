@@ -549,13 +549,13 @@ func TestDynamicAgentProposesWriteTool(t *testing.T) {
 	require.Empty(t, rec.calls(), "a proposed write must not be executed inline")
 
 	// The proposal was captured with the dotted effective name and the model's arguments.
-	require.NotNil(t, res.Proposed)
-	require.Equal(t, "demo", res.Proposed.Connector)
-	require.Equal(t, "mcp.demo.create_issue", res.Proposed.Tool)
-	require.Equal(t, "OPS", res.Proposed.Args["project"])
-	require.Equal(t, "Disk full", res.Proposed.Args["summary"])
-	require.Contains(t, res.Proposed.Summary, "create_issue")
-	require.NotEmpty(t, res.Proposed.SchemaHash, "the proposal pins the tool schema discovered at run start")
+	require.Len(t, res.Proposed, 1)
+	require.Equal(t, "demo", res.Proposed[0].Connector)
+	require.Equal(t, "mcp.demo.create_issue", res.Proposed[0].Tool)
+	require.Equal(t, "OPS", res.Proposed[0].Args["project"])
+	require.Equal(t, "Disk full", res.Proposed[0].Args["summary"])
+	require.Contains(t, res.Proposed[0].Summary, "create_issue")
+	require.NotEmpty(t, res.Proposed[0].SchemaHash, "the proposal pins the tool schema discovered at run start")
 }
 
 // TestDynamicAgentResumesAfterAction is the core of the segmented durable loop: a first segment proposes a governed
@@ -592,22 +592,22 @@ func TestDynamicAgentResumesAfterAction(t *testing.T) {
 	// Segment 1: the model proposes the write; the run pauses with the proposal captured and no inline effect.
 	seg1, err := (&ai.DynamicAgent{Snapshot: snap}).Run(t.Context(), s, "Open a ticket: disk full on OPS.", nil)
 	require.NoError(t, err)
-	require.NotNil(t, seg1.Proposed, "segment 1 pauses on a governed write")
-	require.Equal(t, "mcp.demo.create_issue", seg1.Proposed.Tool)
-	require.NotEmpty(t, seg1.Proposed.ToolCallID, "the proposal carries the model's tool-call identity")
+	require.Len(t, seg1.Proposed, 1, "segment 1 pauses on a governed write")
+	require.Equal(t, "mcp.demo.create_issue", seg1.Proposed[0].Tool)
+	require.NotEmpty(t, seg1.Proposed[0].ToolCallID, "the proposal carries the model's tool-call identity")
 	require.Empty(t, seg1.Response, "segment 1 pauses at the tool call and answers nothing before approval")
 	require.Empty(t, rec.calls(), "a proposed write is never executed inline")
 
 	// Segment 2: resume on the same session with the executed result injected. A fresh DynamicAgent (its captured-proposal
 	// state starts empty) reconstructs the conversation from the session's tree, so the model sees the outcome and closes,
 	// proposing nothing further.
-	seg2, err := (&ai.DynamicAgent{Snapshot: snap}).Run(t.Context(), s, "", &ai.InjectedResult{
-		ToolCallID: seg1.Proposed.ToolCallID,
-		Tool:       seg1.Proposed.Tool,
+	seg2, err := (&ai.DynamicAgent{Snapshot: snap}).Run(t.Context(), s, "", []*ai.InjectedResult{{
+		ToolCallID: seg1.Proposed[0].ToolCallID,
+		Tool:       seg1.Proposed[0].Tool,
 		Message:    "created PROJ-42",
-	})
+	}})
 	require.NoError(t, err)
-	require.Nil(t, seg2.Proposed, "the resumed segment closes without proposing another action")
+	require.Empty(t, seg2.Proposed, "the resumed segment closes without proposing another action")
 	require.Equal(t, "Done! I created the issue: PROJ-42.", seg2.Response)
 	require.Empty(t, rec.calls(), "resuming must not re-execute the write inline")
 
