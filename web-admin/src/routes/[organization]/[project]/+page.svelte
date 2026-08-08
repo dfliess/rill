@@ -8,6 +8,8 @@
   import { featureFlags } from "@rilldata/web-common/features/feature-flags";
   import { createRuntimeServiceGetInstance } from "@rilldata/web-common/runtime-client";
   import { useRuntimeClient } from "@rilldata/web-common/runtime-client/v2";
+  import HomeRecentAlerts from "@rilldata/web-admin/features/kairos-home/HomeRecentAlerts.svelte";
+  import KairosHomeCanvas from "@rilldata/web-admin/features/kairos-home/KairosHomeCanvas.svelte";
   import PersonalCanvasesList from "@rilldata/web-admin/features/personal-files/canvas/PersonalCanvasesList.svelte";
   import CreatePersonalCanvasDialog from "@rilldata/web-admin/features/personal-files/canvas/CreatePersonalCanvasDialog.svelte";
   import { getPersonalFilteredResources } from "@rilldata/web-admin/features/personal-files/selectors.ts";
@@ -58,6 +60,10 @@
 
 <ContentContainer maxWidth={900}>
   <div class="flex flex-col gap-y-8 py-12">
+    <!-- Kairos: canvases annotated with kairos_home (executive numbers strip,
+         top edge per the executive cockpit layout) -->
+    <KairosHomeCanvas />
+
     <!-- Welcome Section with Chat Input -->
     <div class="flex flex-col gap-y-6">
       <div class="flex flex-col gap-y-4">
@@ -105,6 +111,10 @@
     {#if $agents}
       <HomePendingApprovals {organization} {project} />
     {/if}
+
+    <!-- Kairos: recently triggered alerts (awareness feed, after the
+         actionable approvals) -->
+    <HomeRecentAlerts {organization} {project} />
 
     <!-- Dashboards Section -->
     {#if $personalCanvases}
