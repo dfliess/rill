@@ -224,7 +224,9 @@
 </script>
 
 <svelte:head>
-  <title>{canvasTitle || `${canvasName} - Rill`}</title>
+  {#if !isolated && urlStateOverride === undefined}
+    <title>{canvasTitle || `${canvasName} - Rill`}</title>
+  {/if}
 </svelte:head>
 
 <slot {ready} {reconcileErrorMessage} {isLoading} {isReconciling} />
