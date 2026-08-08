@@ -58,8 +58,10 @@ export function useDashboards(
       query: {
         select: (data) =>
           data.resources?.filter((res) => {
-            if (res.canvas)
-              return isManagedOrShared(res.canvas?.state?.validSpec ?? {});
+            if (res.canvas) {
+              const spec = res.canvas?.state?.validSpec ?? {};
+              return !isKairosHome(spec) && isManagedOrShared(spec);
+            }
             return !!res.explore;
           }) ?? [],
         enabled: !!client.instanceId,
@@ -75,6 +77,16 @@ function isManagedOrShared({
   annotations?: Record<string, string>;
 }) {
   return !annotations?.admin_managed || annotations?.admin_shared === "true";
+}
+
+// Canvases marked with the kairos_home annotation render on the project home
+// (see KairosHomeCanvas.svelte) and are excluded from the dashboards listing.
+export function isKairosHome({
+  annotations,
+}: {
+  annotations?: Record<string, string>;
+}) {
+  return annotations?.kairos_home === "true";
 }
 
 /**

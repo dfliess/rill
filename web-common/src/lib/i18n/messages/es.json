@@ -191,6 +191,8 @@
   "alert_whenever_data_refreshes": "Cada vez que tus datos se actualizan",
   "alerts_empty_action": "Crea {alertsLink} desde cualquier dashboard o {codeLink}.",
   "alerts_empty_message": "Aún no tienes alertas",
+  "alerts_home_recent_heading": "Últimas alertas",
+  "alerts_home_view_all": "Ver todas",
   "alerts_link_text": "alertas",
   "alerts_via_code": "por código",
   "auth_access_requested": "Acceso solicitado",
