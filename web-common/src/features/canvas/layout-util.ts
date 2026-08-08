@@ -39,6 +39,9 @@ export const initialHeights: Record<CanvasComponentType, number> = {
 // short, e.g. a low row limit) don't reserve their full initial height.
 export const minHeights: Partial<Record<CanvasComponentType, number>> = {
   pivot: 224,
+  // Custom charts can be compact (e.g. KPI-style stat cards); let explicit
+  // short row heights win over the tall chart default.
+  custom_chart: 120,
 };
 
 export const MIN_HEIGHT = 40;
