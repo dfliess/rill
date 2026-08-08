@@ -35,6 +35,9 @@ export function useAgents(client: RuntimeClient, enabled = true) {
 export function useAgentRuns(
   client: RuntimeClient,
   filters: { agentName?: string; status?: string } = {},
+  // The Act tab polls fast (live operations); passive surfaces like Home
+  // pass a gentler interval to keep background request volume down.
+  refetchInterval: number = LIST_REFETCH_INTERVAL,
 ) {
   return createAgentServiceListAgentRuns(
     client,
@@ -43,7 +46,7 @@ export function useAgentRuns(
       query: {
         enabled: !!client.instanceId,
         refetchOnMount: true,
-        refetchInterval: LIST_REFETCH_INTERVAL,
+        refetchInterval,
       },
     },
   );
@@ -91,6 +94,8 @@ export function useAgentRun(client: RuntimeClient, runId: string) {
 export function useAgentApprovals(
   client: RuntimeClient,
   filters: { status?: string; runId?: string } = {},
+  // See useAgentRuns: passive surfaces pass a gentler polling interval.
+  refetchInterval: number = LIST_REFETCH_INTERVAL,
 ) {
   return createAgentServiceListAgentApprovals(
     client,
@@ -99,7 +104,7 @@ export function useAgentApprovals(
       query: {
         enabled: !!client.instanceId,
         refetchOnMount: true,
-        refetchInterval: LIST_REFETCH_INTERVAL,
+        refetchInterval,
       },
     },
   );
