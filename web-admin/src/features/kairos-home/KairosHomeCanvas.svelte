@@ -28,12 +28,10 @@
 
 {#each homeCanvases as canvasName (canvasName)}
   {#key `${runtimeClient.instanceId}::${canvasName}`}
-    <!-- Negative top margin pulls the strip toward the top edge, compensating
-         most of the page's standard py-12 without touching the page itself.
-         The fixed height crops the canvas chrome on desktop only: below md the
+    <!-- The fixed height crops the canvas chrome on desktop only: below md the
          canvas stacks the cards into one column (RowWrapper container query),
          so the strip must grow to its natural height. -->
-    <div class="kairos-home-strip md:h-[156px] md:overflow-hidden -mt-10">
+    <div class="kairos-home-strip md:h-[156px] md:overflow-hidden">
       <CanvasProvider
         {canvasName}
         instanceId={runtimeClient.instanceId}
