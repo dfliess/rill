@@ -3,7 +3,7 @@
 </script>
 
 <svelte:head>
-  <title>Rill | Project graph</title>
+  <title>Kairos | Project graph</title>
 </svelte:head>
 
 <GraphWorkspace />
