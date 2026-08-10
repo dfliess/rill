@@ -104,7 +104,7 @@
 </script>
 
 <svelte:head>
-  <title>{exploreTitle || `${exploreName} - Rill`}</title>
+  <title>{exploreTitle || `${exploreName} - Kairos`}</title>
 </svelte:head>
 
 {#if $explore.isSuccess}

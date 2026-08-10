@@ -8,7 +8,7 @@
 </script>
 
 <svelte:head>
-  <title>Rill | {table}</title>
+  <title>Kairos | {table}</title>
 </svelte:head>
 
 <TablePreviewWorkspace connector={name} {databaseSchema} {table} />

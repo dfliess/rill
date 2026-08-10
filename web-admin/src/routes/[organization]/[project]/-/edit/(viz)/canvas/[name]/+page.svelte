@@ -14,7 +14,7 @@
 </script>
 
 <svelte:head>
-  <title>Rill | {canvasName}</title>
+  <title>Kairos | {canvasName}</title>
 </svelte:head>
 
 {#key client.instanceId}
