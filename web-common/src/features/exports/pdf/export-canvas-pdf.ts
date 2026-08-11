@@ -1,6 +1,7 @@
 import { get } from "svelte/store";
 import { queryClient } from "@rilldata/web-common/lib/svelte-query/globalQueryClient";
 import { getCanvasStore } from "@rilldata/web-common/features/canvas/state-managers/state-managers";
+import { themeControl } from "@rilldata/web-common/features/themes/theme-control";
 import { assemblePdf, TITLE_BAND_PT } from "./assemble";
 import { captureCanvasBlocks } from "./capture";
 import { buildPdfFilename } from "./filename";
@@ -20,6 +21,11 @@ export async function exportCanvasPdf(
   opts: ExportCanvasPdfOptions,
 ): Promise<void> {
   const { canvasEntity } = getCanvasStore(opts.canvasName, opts.instanceId);
+
+  // Always export light; a dark dashboard prints as a wall of ink. Switched
+  // before the export view mounts so its charts render light from the start.
+  // The live dashboard visibly flips for the duration of the export.
+  const restoreThemeMode = themeControl.forceLight();
 
   // Mount the off-screen export render (see CanvasPdfExportView) and force-enable
   // every component's data query; the tick() inside prepareCanvasForCapture
@@ -69,5 +75,7 @@ export async function exportCanvasPdf(
     opts.onProgress?.({ phase: "assembling", ratio: 1 });
   } finally {
     canvasEntity.exportMode.set(false);
+    // After assemblePdf, which reads the title/footer colors from the theme.
+    restoreThemeMode();
   }
 }

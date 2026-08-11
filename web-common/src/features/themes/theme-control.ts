@@ -71,6 +71,17 @@ class ThemeControl {
     },
   };
 
+  /**
+   * Switches to light mode and returns a function restoring the previous mode,
+   * leaving the persisted preference alone. Both the class and `current` have to
+   * flip: some components read the class, others subscribe to the store.
+   */
+  public forceLight(): () => void {
+    if (get(this.current) === "light") return () => {};
+    this.removeDark();
+    return () => this.setDark();
+  }
+
   private setDark() {
     this.current.set("dark");
     document.documentElement.classList.add("dark");
