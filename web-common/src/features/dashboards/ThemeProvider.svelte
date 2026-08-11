@@ -33,7 +33,7 @@
 </script>
 
 <div
-  class="dashboard-theme-boundary flex flex-col overflow-hidden"
+  class="dashboard-theme-boundary relative flex flex-col overflow-hidden"
   class:w-full={applyLayout && $dynamicHeight}
   class:size-full={applyLayout && !$dynamicHeight}
   bind:this={themeBoundary}
