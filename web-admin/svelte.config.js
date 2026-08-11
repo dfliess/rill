@@ -59,7 +59,7 @@ const config = {
         ],
         // style-src keeps 'unsafe-inline': runtime style injection from
         // CodeMirror and other libraries cannot be hash-attributed.
-        "style-src": ["self", "unsafe-inline", "https://fonts.googleapis.com"],
+        "style-src": ["self", "unsafe-inline"],
         "img-src": [...(dev ? ["http:"] : []), "https:", "data:", "blob:"],
         "frame-src": [
           "self",
@@ -79,15 +79,12 @@ const config = {
           "https://docs.google.com",
           "https://storage.googleapis.com",
           "https://cdn.prod.website-files.com",
-          // The canvas PDF export inlines the web fonts into the raster, which
-          // html-to-image does by fetching the remote stylesheet. Without this
-          // the fetch is blocked and the PDF is drawn with fallback fonts, so
-          // text laid out with one metric is painted with another and overlaps.
-          // The same origin is already allowed in style-src.
-          "https://fonts.googleapis.com",
           ...(dev ? ["http://localhost:*", "ws://localhost:*"] : []),
         ],
-        "font-src": ["self", "https://fonts.gstatic.com"],
+        // Brand faces are served from our own origin (see
+        // web-common/static/fonts/kairos.css), so no third-party font
+        // origin is needed.
+        "font-src": ["self"],
       },
     },
     adapter: adapter({
