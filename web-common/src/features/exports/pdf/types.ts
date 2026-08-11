@@ -3,6 +3,9 @@ export type PdfPageFormat = "a4" | "letter";
 // "auto" resolves to landscape for wide canvases and portrait otherwise.
 export type PdfOrientation = "portrait" | "landscape" | "auto";
 
+// A document, not a screenshot: white, not the dashboard's surface colour.
+export const PDF_BACKGROUND_COLOR = "#ffffff";
+
 export const DEFAULT_PDF_PAGE_FORMAT: PdfPageFormat = "a4";
 export const DEFAULT_PDF_ORIENTATION: PdfOrientation = "auto";
 
