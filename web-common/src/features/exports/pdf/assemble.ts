@@ -1,3 +1,4 @@
+import { m } from "@rilldata/web-common/lib/i18n/gen/messages";
 import { jsPDF } from "jspdf";
 import chroma from "chroma-js";
 import { resolveCSSVariable } from "@rilldata/web-common/features/components/charts/util";
@@ -121,9 +122,9 @@ function drawFooter(
 ): void {
   const contentLeftPt = result.marginPt + result.contentOffsetPt;
   const yPt = result.pageHeightPt - 10;
-  const generatedText = `Generated ${meta.generatedAt}`;
-  const linkPrefix = "Open the live dashboard: ";
-  const linkText = "View in Rill";
+  const generatedText = m.dashboard_generated({ time: meta.generatedAt });
+  const linkPrefix = m.pdf_footer_open_dashboard();
+  const linkText = m.pdf_footer_view_link();
 
   doc.setFontSize(8);
   setTextColor(doc, FOOTER_TEXT_COLOR);
