@@ -1509,6 +1509,8 @@
   "org_tab_settings": "Settings",
   "org_tab_users": "Users",
   "organizations_overview_page_title": "{title} overview - Kairos",
+  "pdf_footer_view_link": "View in web",
+  "pdf_footer_open_dashboard": "Open the live dashboard: ",
   "pivot_apis_failed": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],

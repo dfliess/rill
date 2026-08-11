@@ -1518,6 +1518,8 @@
   "org_tab_settings": "Configuración",
   "org_tab_users": "Usuarios",
   "organizations_overview_page_title": "Resumen de {title} - Kairos",
+  "pdf_footer_view_link": "Ver en la web",
+  "pdf_footer_open_dashboard": "Abre el dashboard en vivo: ",
   "pivot_apis_failed": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],
