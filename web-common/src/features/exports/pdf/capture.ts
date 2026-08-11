@@ -1,6 +1,7 @@
 import { getFontEmbedCSS, toJpeg } from "html-to-image";
 import {
   FILTER_BAR_ID,
+  PDF_BACKGROUND_COLOR,
   FILTER_BAR_ROW_INDEX,
   type CapturedBlock,
 } from "./types";
@@ -197,7 +198,9 @@ export async function captureCanvasBlocks(
 
   const contentRect = rowContainer.getBoundingClientRect();
   const contentWidthPx = rowContainer.clientWidth;
-  const backgroundColor = getComputedStyle(exportView).backgroundColor;
+  // Also fills the transparent corners the cards' rounded borders leave
+  // behind, which is why it has to match the page rather than the card.
+  const backgroundColor = PDF_BACKGROUND_COLOR;
 
   const targets = captureTargetsIn(rowContainer);
 
