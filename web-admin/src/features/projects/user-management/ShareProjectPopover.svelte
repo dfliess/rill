@@ -50,7 +50,9 @@
           <Share size="16px" class="sm:hidden" />
           <span class="hidden sm:inline">{m.project_share()}</span>
         </Button>
-        <TooltipContent slot="tooltip-content">{m.project_share_tooltip()}</TooltipContent>
+        <TooltipContent slot="tooltip-content"
+          >{m.project_share_tooltip()}</TooltipContent
+        >
       </Tooltip>
     {/snippet}
   </PopoverTrigger>
