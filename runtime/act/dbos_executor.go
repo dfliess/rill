@@ -65,7 +65,7 @@ type Config struct {
 	// Gateway's Ledger should share the same Postgres as Store (its agent_actions table lives in the product schema).
 	Gateway  *Gateway
 	Proposer Proposer
-	Logger *slog.Logger
+	Logger   *slog.Logger
 }
 
 // DBOSExecutor is the DBOS-backed AgentExecutor. It both embeds the worker (it registers the workflow and runs
@@ -73,14 +73,14 @@ type Config struct {
 // dev topology (§20.1). In production the worker and the runtime that drives it are separate processes sharing the
 // same Postgres; the split does not change this code, only which side holds the dbos.Client.
 type DBOSExecutor struct {
-	ctx             dbos.DBOSContext
-	client          dbos.Client
-	runner          Runner
-	store           RunStore
-	gateway         *Gateway
-	proposer        Proposer
-	version string
-	logger  *slog.Logger
+	ctx      dbos.DBOSContext
+	client   dbos.Client
+	runner   Runner
+	store    RunStore
+	gateway  *Gateway
+	proposer Proposer
+	version  string
+	logger   *slog.Logger
 }
 
 var _ AgentExecutor = (*DBOSExecutor)(nil)
@@ -112,13 +112,13 @@ func NewDBOSExecutor(ctx context.Context, cfg Config) (*DBOSExecutor, error) {
 	}
 
 	e := &DBOSExecutor{
-		ctx:             dctx,
-		runner:          cfg.Runner,
-		store:           cfg.Store,
-		gateway:         cfg.Gateway,
-		proposer:        cfg.Proposer,
-		version: version,
-		logger:  cfg.Logger,
+		ctx:      dctx,
+		runner:   cfg.Runner,
+		store:    cfg.Store,
+		gateway:  cfg.Gateway,
+		proposer: cfg.Proposer,
+		version:  version,
+		logger:   cfg.Logger,
 	}
 
 	// Register the ONE generic workflow. It is a bound method so the workflow body reaches the runner (and, in
@@ -760,7 +760,8 @@ func (e *DBOSExecutor) governProposedActions(ctx dbos.DBOSContext, in AgentRunIn
 	// moment the run pauses. Auto-approved and policy-denied actions skip approval creation.
 	if e.store != nil {
 		_, err := dbos.RunAsStep(ctx, func(stepCtx context.Context) (bool, error) {
-			for i, a := range actions {
+			for i := range actions {
+				a := &actions[i]
 				if a.auth.Decision != PolicyApprovalRequired {
 					continue
 				}
@@ -784,7 +785,7 @@ func (e *DBOSExecutor) governProposedActions(ctx dbos.DBOSContext, in AgentRunIn
 					Proposal:    a.proposal.Summary,
 					Policy:      string(a.auth.Decision),
 					RequestedBy: in.Actor.Subject,
-					Position: i + 1,
+					Position:    i + 1,
 					Total:       n,
 				}); err != nil {
 					return false, err
@@ -803,19 +804,19 @@ func (e *DBOSExecutor) governProposedActions(ctx dbos.DBOSContext, in AgentRunIn
 	// correctly. A rejection or policy denial injects an error result for that call; the run continues to the next
 	// action. An indeterminate or workflow error is terminal.
 	results := make([]*ai.InjectedResult, n)
-	for i, a := range actions {
+	for i := range actions {
 		// hasMoreManual tells processOneAction whether a later action in the batch still needs a human decision. When
 		// true, the post-decision status stays waiting_approval (so the run remains visible in the inbox and the Home
 		// pending filter); when false, it moves to running (no more gates ahead). This is a pure function of the batch
 		// structure, deterministic, and recovery-safe.
 		hasMoreManual := false
-		for _, later := range actions[i+1:] {
-			if later.auth.Decision == PolicyApprovalRequired {
+		for j := i + 1; j < len(actions); j++ {
+			if actions[j].auth.Decision == PolicyApprovalRequired {
 				hasMoreManual = true
 				break
 			}
 		}
-		result, terminal, err := e.processOneAction(ctx, in, runID, res, a, seg, i, hasMoreManual)
+		result, terminal, err := e.processOneAction(ctx, in, runID, res, actions[i], seg, i, hasMoreManual)
 		if err != nil {
 			e.sweepPendingApprovals(in.InstanceID, runID)
 			return nil, true, err
@@ -965,6 +966,8 @@ func (e *DBOSExecutor) processOneAction(ctx dbos.DBOSContext, in AgentRunInput, 
 // real edge — the status returns to waiting_approval and the timeline records it — rather than a silent conflict that
 // left the run stuck on running (kairos-cloud#129). Idempotent: a replay of the same segment creates the same approval
 // and conflicts onto the same event rather than duplicating either.
+//
+//nolint:unused // called by the pending approval-audit stack (kairos-cloud#128/#129); keep it until that lands.
 func (e *DBOSExecutor) setupActionApproval(ctx dbos.DBOSContext, in AgentRunInput, runID, approvalID string, seg int, auth Authorization, proposal ToolProposal) error {
 	if e.store == nil {
 		return nil
