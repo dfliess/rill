@@ -11,6 +11,9 @@
   import { createLocalServiceGetMetadata } from "@rilldata/web-common/runtime-client/local-service";
   import RuntimeTrafficLights from "@rilldata/web-common/features/entity-management/RuntimeTrafficLights.svelte";
   import GithubStarButton from "@rilldata/web-common/features/github-star/GithubStarButton.svelte";
+  import { featureFlags } from "@rilldata/web-common/features/feature-flags";
+
+  const { whiteLabel } = featureFlags;
 
   const metadataQuery = createLocalServiceGetMetadata();
 
@@ -52,7 +55,9 @@
       </div></a
     >
   {/each}
-  <GithubStarButton />
+  {#if !$whiteLabel}
+    <GithubStarButton />
+  {/if}
   <div
     class="px-4 py-1 text-fg-secondary flex items-center flex-row w-full gap-x-2 truncate line-clamp-1"
     style:font-size="10px"
