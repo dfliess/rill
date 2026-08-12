@@ -959,48 +959,6 @@ func (e *DBOSExecutor) processOneAction(ctx dbos.DBOSContext, in AgentRunInput, 
 	}
 }
 
-// setupActionApproval records the waiting_approval transition and persists the gateway's concrete proposal as an
-// approval request, in one durable step. Unlike setupApproval (the Fase 1 simulated variant), the approval carries the
-// real tool, connector, tool call and canonical args hash from the authorization, so the inbox binds to exactly what
-// will execute (§11.2). The transition is deduplicated per segment (seg), so the SECOND governed pause of a run is a
-// real edge — the status returns to waiting_approval and the timeline records it — rather than a silent conflict that
-// left the run stuck on running (kairos-cloud#129). Idempotent: a replay of the same segment creates the same approval
-// and conflicts onto the same event rather than duplicating either.
-//
-//nolint:unused // called by the pending approval-audit stack (kairos-cloud#128/#129); keep it until that lands.
-func (e *DBOSExecutor) setupActionApproval(ctx dbos.DBOSContext, in AgentRunInput, runID, approvalID string, seg int, auth Authorization, proposal ToolProposal) error {
-	if e.store == nil {
-		return nil
-	}
-	_, err := dbos.RunAsStep(ctx, func(stepCtx context.Context) (bool, error) {
-		if err := e.store.RecordTransition(stepCtx, RunTransition{
-			InstanceID: in.InstanceID,
-			RunID:      runID,
-			Status:     RunStatusWaitingApproval,
-			EventType:  EventTypeWaitingApproval,
-			DedupeKey:  segmentDedupeKey(EventTypeWaitingApproval, seg),
-		}); err != nil {
-			return false, err
-		}
-		return true, e.store.CreateApproval(stepCtx, NewApproval{
-			ApprovalID:  approvalID,
-			RunID:       runID,
-			InstanceID:  in.InstanceID,
-			ToolName:    proposal.Tool,
-			Connector:   proposal.Connector,
-			ToolCallID:  proposal.ToolCallID,
-			ArgsHash:    auth.ArgsHash,
-			Proposal:    proposal.Summary,
-			Policy:      string(auth.Decision),
-			RequestedBy: in.Actor.Subject,
-		})
-	}, dbos.WithStepName("setup_approval"))
-	if err != nil {
-		return fmt.Errorf("act: setup action approval: %w", err)
-	}
-	return nil
-}
-
 // emitFailedReason records a failed run transition carrying a sanitized reason, as a durable step, and returns nil on
 // success. Unlike fail(), it is for a business-terminal failure (policy denied, action failed/indeterminate) that
 // ends the run without a workflow error, so DBOS does not retry it.
