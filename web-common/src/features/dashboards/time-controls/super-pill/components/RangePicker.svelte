@@ -66,7 +66,9 @@
   >
     <!-- Side-by-side panels need 448px; on phones they stack and scroll
          vertically instead of the calendar being clipped by the popover cap. -->
-    <div class="flex flex-col sm:flex-row max-h-[70vh] sm:max-h-none overflow-y-auto sm:overflow-y-visible">
+    <div
+      class="flex flex-col sm:flex-row max-h-[70vh] sm:max-h-none overflow-y-auto sm:overflow-y-visible"
+    >
       <div class="flex flex-col w-full sm:w-48 p-1">
         <TimeRangeMenu
           {ranges}

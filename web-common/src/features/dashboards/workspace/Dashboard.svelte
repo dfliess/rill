@@ -182,7 +182,9 @@
             class="flex flex-col sm:flex-row relative justify-between gap-x-4 gap-y-2 py-4 pb-2 sm:pb-6 px-4"
           >
             <Filters {timeRanges} {metricsViewName} {hasTimeSeries} />
-            <div class="self-end sm:absolute sm:bottom-0 sm:right-0 flex flex-col">
+            <div
+              class="self-end sm:absolute sm:bottom-0 sm:right-0 flex flex-col"
+            >
               <TabBar {hidePivot} {exploreName} onPivot={$showPivot} />
             </div>
           </section>

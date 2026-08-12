@@ -150,8 +150,7 @@
   onOpenChange={(open: boolean) => (denyConfirmOpen = open)}
 >
   <AlertDialogContent>
-    <AlertDialogTitle
-      >{m.agents_approval_deny_confirm_title()}</AlertDialogTitle
+    <AlertDialogTitle>{m.agents_approval_deny_confirm_title()}</AlertDialogTitle
     >
     <AlertDialogDescription>
       {m.agents_approval_deny_confirm_desc()}

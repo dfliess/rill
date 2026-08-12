@@ -139,7 +139,9 @@
     <div
       class="flex flex-col sm:flex-row max-h-[70vh] sm:max-h-none overflow-y-auto sm:overflow-y-visible"
     >
-      <div class="flex flex-col border-b sm:border-b-0 sm:border-r w-full sm:w-48 p-1">
+      <div
+        class="flex flex-col border-b sm:border-b-0 sm:border-r w-full sm:w-48 p-1"
+      >
         {#each timeComparisonOptionsState as option (option.name)}
           {@const preset = TIME_COMPARISON[option.name]}
           {@const selected = selectedLabel === option.name}
