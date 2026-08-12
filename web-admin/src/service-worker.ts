@@ -1,11 +1,30 @@
 /// <reference types="@sveltejs/kit" />
-/// <reference no-default-lib="true"/>
-/// <reference lib="esnext" />
-/// <reference lib="webworker" />
 
 import { build, files, version } from "$service-worker";
 
-const sw = self as unknown as ServiceWorkerGlobalScope;
+// Typed locally instead of via `/// <reference lib="webworker" />` with
+// no-default-lib: those directives apply to the whole tsc program, and the
+// repo-root tsconfig compiles every workspace's .ts files in one program, so
+// they silently dropped DOM.Iterable for unrelated files. Only the surface
+// this worker actually uses is declared here; everything else it touches
+// (caches, fetch, Request, Response, URL) is already in the DOM lib.
+type ExtendableEvent = Event & { waitUntil(p: Promise<unknown>): void };
+type FetchEvent = ExtendableEvent & {
+  readonly request: Request;
+  respondWith(r: Promise<Response> | Response): void;
+};
+type ServiceWorkerScope = {
+  addEventListener(
+    type: "install" | "activate",
+    listener: (event: ExtendableEvent) => void,
+  ): void;
+  addEventListener(type: "fetch", listener: (event: FetchEvent) => void): void;
+  skipWaiting(): Promise<void>;
+  clients: { claim(): Promise<void> };
+  location: Location;
+};
+
+const sw = self as unknown as ServiceWorkerScope;
 
 // Conservative caching strategy for a multi-tenant BI app:
 // - HTML is NEVER cached: navigations always hit the network, so deploys
