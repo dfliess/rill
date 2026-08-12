@@ -1,4 +1,4 @@
-import type { Color } from "@rilldata/web-common/components/tag/Tag.svelte";
+import type { Color } from "@rilldata/web-common/components/tag/types";
 import { m } from "@rilldata/web-common/lib/i18n/gen/messages";
 import type { AgentRunData } from "./types";
 
