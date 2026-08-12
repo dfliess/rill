@@ -1,14 +1,6 @@
 <script context="module" lang="ts">
-  export type Color =
-    | "gray"
-    | "magenta"
-    | "green"
-    | "red"
-    | "dark orange"
-    | "orange"
-    | "amber"
-    | "blue"
-    | "purple";
+  import type { Color } from "./types";
+  export type { Color };
 </script>
 
 <script lang="ts">
