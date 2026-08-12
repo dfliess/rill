@@ -116,8 +116,8 @@ func (s *Server) BootstrapAct(ctx context.Context, cfg ActConfig) (io.Closer, er
 		Runner:             runner,
 		Store:              runStore,
 		Gateway:            act.NewMCPGateway(s.runtime, runStore, logger),
-		Proposer: act.NewCapturedProposer(),
-		Logger:   logger,
+		Proposer:           act.NewCapturedProposer(),
+		Logger:             logger,
 	})
 	if err != nil {
 		return fail(fmt.Errorf("act: build executor: %w", err))
