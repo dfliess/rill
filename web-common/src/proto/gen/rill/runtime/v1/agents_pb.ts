@@ -5,6 +5,7 @@
 
 import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialMessage, PlainMessage } from "@bufbuild/protobuf";
 import { Message, proto3, protoInt64, Struct, Timestamp } from "@bufbuild/protobuf";
+import { AnalystAgentContext } from "./api_pb.js";
 
 /**
  * AgentDefinition is a declarative agent's effective definition, projected from its validated spec in the resource catalog.
@@ -638,6 +639,19 @@ export class StartAgentRunRequest extends Message<StartAgentRunRequest> {
    */
   trigger = "";
 
+  /**
+   * dashboard_context is the state of the surface that started the run: which dashboard, the selected time range and
+   * the filters in force. A run started from a dashboard should reason over what the user is looking at, not the whole
+   * project. It reuses AnalystAgentContext so a caller builds the same object the AI-Chat already sends from a canvas.
+   *
+   * The server folds it into the run's prompt at start time rather than storing it beside the run: the prompt is the
+   * dynamic agent's whole input contract, and a self-contained prompt is what makes a durable run resumable without
+   * re-resolving a UI state that has since moved on.
+   *
+   * @generated from field: rill.runtime.v1.AnalystAgentContext dashboard_context = 7;
+   */
+  dashboardContext?: AnalystAgentContext;
+
   constructor(data?: PartialMessage<StartAgentRunRequest>) {
     super();
     proto3.util.initPartial(data, this);
@@ -652,6 +666,7 @@ export class StartAgentRunRequest extends Message<StartAgentRunRequest> {
     { no: 4, name: "prompt", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 5, name: "conversation_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 6, name: "trigger", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 7, name: "dashboard_context", kind: "message", T: AnalystAgentContext },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): StartAgentRunRequest {

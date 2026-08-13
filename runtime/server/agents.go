@@ -4,8 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
+	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -19,6 +22,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -113,7 +117,7 @@ func (s *Server) StartAgentRun(ctx context.Context, req *runtimev1.StartAgentRun
 	runID, err := s.agentExecutor.Start(ctx, act.AgentRunInput{
 		InstanceID:     req.InstanceId,
 		AgentName:      req.Name,
-		Prompt:         req.Prompt,
+		Prompt:         promptWithDashboardContext(req.Prompt, req.DashboardContext),
 		IdempotencyKey: idempotencyKey,
 		Trigger:        "manual",
 		ConversationID: req.ConversationId,
@@ -136,6 +140,64 @@ func (s *Server) StartAgentRun(ctx context.Context, req *runtimev1.StartAgentRun
 		AgentName: run.AgentName,
 		SpecHash:  run.SpecHash,
 	}, nil
+}
+
+// promptWithDashboardContext folds the calling surface's state into the run's prompt.
+//
+// A dynamic agent's whole input contract is its prompt, so the structured context has to become text somewhere; doing
+// it here, once, keeps the API typed for callers and leaves the stored run self-contained, which is what lets a durable
+// run resume without re-resolving a dashboard state that has since moved on.
+//
+// The rendering is deterministic (filters are emitted in sorted order): callers derive their idempotency key from the
+// same context, so an unchanged dashboard must produce a byte-identical prompt or the key would promise reuse that the
+// stored run does not deliver.
+func promptWithDashboardContext(prompt string, dc *runtimev1.AnalystAgentContext) string {
+	if dc == nil {
+		return prompt
+	}
+
+	var b strings.Builder
+	if dc.Canvas != "" {
+		fmt.Fprintf(&b, "dashboard: %s\n", dc.Canvas)
+	}
+	if dc.Explore != "" {
+		fmt.Fprintf(&b, "dashboard: %s\n", dc.Explore)
+	}
+	if dc.TimeStart != nil && dc.TimeEnd != nil {
+		fmt.Fprintf(&b, "time range: %s to %s\n",
+			dc.TimeStart.AsTime().Format(time.RFC3339),
+			dc.TimeEnd.AsTime().Format(time.RFC3339))
+	}
+	if len(dc.Dimensions) > 0 {
+		fmt.Fprintf(&b, "dimensions: %s\n", strings.Join(dc.Dimensions, ", "))
+	}
+	if len(dc.Measures) > 0 {
+		fmt.Fprintf(&b, "measures: %s\n", strings.Join(dc.Measures, ", "))
+	}
+	if len(dc.WherePerMetricsView) > 0 {
+		metricsViews := make([]string, 0, len(dc.WherePerMetricsView))
+		for mv := range dc.WherePerMetricsView {
+			metricsViews = append(metricsViews, mv)
+		}
+		sort.Strings(metricsViews)
+
+		b.WriteString("filters in force (JSON, one per metrics view):\n")
+		for _, mv := range metricsViews {
+			expr, err := protojson.Marshal(dc.WherePerMetricsView[mv])
+			if err != nil {
+				continue // A filter we cannot render is dropped rather than failing the run: the note degrades, it does not break.
+			}
+			fmt.Fprintf(&b, "  %s: %s\n", mv, expr)
+		}
+	}
+
+	if b.Len() == 0 {
+		return prompt
+	}
+	return fmt.Sprintf(
+		"The user is looking at this dashboard state. Scope your answer to it and say so if a filter changes what you would otherwise report.\n\n%s\n%s",
+		b.String(), prompt,
+	)
 }
 
 // ListAgentRuns lists an instance's runs, newest first, optionally filtered by agent and status.

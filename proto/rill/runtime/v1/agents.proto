@@ -4,6 +4,7 @@ package rill.runtime.v1;
 import "google/api/annotations.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
+import "rill/runtime/v1/api.proto";
 import "validate/validate.proto";
 
 // AgentService is the control and query surface of Kairos Act: it lists declarative agents, starts and tracks their
@@ -182,6 +183,14 @@ message StartAgentRunRequest {
   string conversation_id = 5;
   // trigger records what started the run (defaults to "manual").
   string trigger = 6;
+  // dashboard_context is the state of the surface that started the run: which dashboard, the selected time range and
+  // the filters in force. A run started from a dashboard should reason over what the user is looking at, not the whole
+  // project. It reuses AnalystAgentContext so a caller builds the same object the AI-Chat already sends from a canvas.
+  //
+  // The server folds it into the run's prompt at start time rather than storing it beside the run: the prompt is the
+  // dynamic agent's whole input contract, and a self-contained prompt is what makes a durable run resumable without
+  // re-resolving a UI state that has since moved on.
+  AnalystAgentContext dashboard_context = 7;
 }
 
 message StartAgentRunResponse {
