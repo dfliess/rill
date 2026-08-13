@@ -56,6 +56,23 @@
     background: transparent;
   }
 
+  /* The embed insets its content twice horizontally: 8px on the scroll container
+     and another 10px on every item. On a canvas page that gutter is the frame,
+     but here it makes the strip 18px narrower per side than every other block on
+     the home (the ask box, the approvals inbox, the dashboard listing), which
+     reads as a misaligned edge rather than as padding. Drop the outer inset and
+     pull the row out by one item gutter, so the strip's edge lines up with its
+     siblings while the 20px between one card and the next is untouched. The
+     vertical padding stays: it is what separates the strip from the heading. */
+  .kairos-home-strip :global(#canvas-scroll-container) {
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .kairos-home-strip :global(.canvas-row) {
+    margin-left: -10px;
+    margin-right: -10px;
+  }
+
   /* Below md the canvas stacks the cards into one column; compact them so the
      strip doesn't push the welcome half a screen down. 120px is the floor for
      the card's pixel-positioned text block (title/number/delta/caption).
