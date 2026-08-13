@@ -157,6 +157,10 @@
     <ul class="flex flex-col rounded-lg border divide-y overflow-hidden">
       {#each triggered as alert (alert.name)}
         <li>
+          <!-- Two lines, matching the pending-approvals inbox and the dashboards
+               listing: title on its own line, status and context below it. A
+               single line made the four fields fight for the width, and on a
+               phone the title was the one that lost. -->
           <a
             href={`${base}/${alert.name}`}
             class="flex items-center gap-x-2.5 px-4 py-3 group hover:bg-surface-hover"
@@ -164,23 +168,32 @@
             <span class="shrink-0 text-fg-secondary">
               <AlertIcon size="15px" />
             </span>
-            <span
-              class="text-fg-primary text-sm font-semibold truncate min-w-0 group-hover:text-accent-primary-action"
-            >
-              {alert.title}
-            </span>
-            {#if alert.summary}
-              <span class="text-fg-secondary text-sm truncate min-w-0 shrink">
-                {alert.summary}
+            <div class="flex flex-col gap-y-1 min-w-0 grow">
+              <span
+                class="text-fg-primary text-sm font-semibold truncate min-w-0 group-hover:text-accent-primary-action"
+              >
+                {alert.title}
               </span>
-            {/if}
-            <Tag color="blue">{m.alert_status_triggered()}</Tag>
-            <span
-              class="ml-auto shrink-0 text-fg-secondary text-xs"
-              title={formatRunDate(alert.firedOn, alert.timeZone)}
-            >
-              {timeAgo(new Date(alert.firedOn))}
-            </span>
+              <!-- The status line does not wrap: the fail row summary is the
+                   only field that can run long, so it absorbs the squeeze by
+                   truncating and the row stays two lines on a phone. Wrapping
+                   instead left the tag stranded on a line of its own. -->
+              <div
+                class="flex items-center gap-x-2 text-fg-secondary text-xs min-w-0"
+              >
+                <Tag color="blue">{m.alert_status_triggered()}</Tag>
+                {#if alert.summary}
+                  <span class="truncate min-w-0">{alert.summary}</span>
+                  <span class="shrink-0" aria-hidden="true">·</span>
+                {/if}
+                <span
+                  class="shrink-0 whitespace-nowrap"
+                  title={formatRunDate(alert.firedOn, alert.timeZone)}
+                >
+                  {timeAgo(new Date(alert.firedOn))}
+                </span>
+              </div>
+            </div>
           </a>
         </li>
       {/each}
