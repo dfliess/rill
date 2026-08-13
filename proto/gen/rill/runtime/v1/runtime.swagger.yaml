@@ -1,10 +1,10 @@
 swagger: "2.0"
 info:
-  title: rill/runtime/v1/agents.proto
+  title: rill/runtime/v1/schema.proto
   version: version not set
 tags:
-  - name: AgentService
   - name: RuntimeService
+  - name: AgentService
   - name: ConnectorService
   - name: QueryService
 consumes:
@@ -719,6 +719,16 @@ paths:
               trigger:
                 type: string
                 description: trigger records what started the run (defaults to "manual").
+              dashboardContext:
+                $ref: '#/definitions/v1AnalystAgentContext'
+                description: |-
+                  dashboard_context is the state of the surface that started the run: which dashboard, the selected time range and
+                  the filters in force. A run started from a dashboard should reason over what the user is looking at, not the whole
+                  project. It reuses AnalystAgentContext so a caller builds the same object the AI-Chat already sends from a canvas.
+
+                  The server folds it into the run's prompt at start time rather than storing it beside the run: the prompt is the
+                  dynamic agent's whole input contract, and a self-contained prompt is what makes a durable run resumable without
+                  re-resolving a UI state that has since moved on.
       tags:
         - AgentService
   /v1/instances/{instanceId}/ai/complete:
@@ -4550,15 +4560,20 @@ definitions:
         type: string
       decidedBy:
         type: string
-      expiresOn:
-        type: string
-        format: date-time
       createdOn:
         type: string
         format: date-time
       decidedOn:
         type: string
         format: date-time
+      position:
+        type: integer
+        format: int32
+        description: position is the 1-based index of this action within its batch (e.g. 1 of 3). Zero for single-action turns.
+      total:
+        type: integer
+        format: int32
+        description: total is the number of actions in the batch.
     description: AgentApproval is a human-approval request captured when a run suspends at the approval gate.
   v1AgentDefinition:
     type: object
