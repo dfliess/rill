@@ -35,9 +35,6 @@
   $: agent = spec?.agent ?? "";
   $: prompt = spec?.prompt ?? "";
   $: autoRun = spec?.auto_run !== false;
-  // How many lines survive the clamp. A row declares its own budget because the canvas cannot size to
-  // content: three lines fit a 150px row but overflow the 110px home strip.
-  $: lines = Math.max(1, Math.round(spec?.lines ?? 3));
   $: configured = agent.trim().length > 0 && prompt.trim().length > 0;
 
   // The state the reader is looking at, built from the same canvas stores the AI-Chat reads (see
@@ -154,25 +151,26 @@
       bind:this={noteEl}
       class="agent-note select-text cursor-text"
       class:is-collapsed={!expanded}
-      style:--agent-note-lines={lines}
+      class:is-clipped={overflows && !expanded}
     >
       {#await renderPromise then html}
         {@html DOMPurify.sanitize(html)}
       {/await}
-      {#if overflows || expanded}
-        <!-- Sits over the tail of the last visible line rather than on a line of its own, so the row
-             spends its height on the note instead of on chrome. -->
-        <button
-          type="button"
-          class="agent-note-toggle"
-          on:click={() => (expanded = !expanded)}
-        >
-          {expanded
-            ? m.canvas_agent_note_show_less()
-            : m.canvas_agent_note_show_more()}
-        </button>
-      {/if}
     </div>
+    {#if overflows || expanded}
+      <!-- Outside the note: the fade is a mask, and a mask applies to descendants, so a toggle nested in
+           the text would fade out with it. Sits over the faded tail rather than on a line of its own, so
+           the row spends its height on the note instead of on chrome. -->
+      <button
+        type="button"
+        class="agent-note-toggle"
+        on:click={() => (expanded = !expanded)}
+      >
+        {expanded
+          ? m.canvas_agent_note_show_less()
+          : m.canvas_agent_note_show_more()}
+      </button>
+    {/if}
     <button
       type="button"
       class="agent-note-regenerate"
@@ -197,14 +195,29 @@
   .agent-note {
     @apply text-fg-primary flex-1 min-h-0 overflow-y-auto relative pr-7;
   }
-  /* line-clamp gives a clean cut at a line boundary and suppresses the scrollbar, so the collapsed note
-     never looks like a scroll container. Expanding swaps it for the overflow the class was hiding. */
+  /* Collapsed, the note simply fills the row and hides the rest: the cut is whatever the row's height
+     allows, so no line count has to be guessed or configured per row. Expanding hands the same overflow
+     back as a scroll. */
   .agent-note.is-collapsed {
     @apply overflow-hidden;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: var(--agent-note-lines, 3);
-    line-clamp: var(--agent-note-lines, 3);
+  }
+
+  /* The last visible line fades out. A hard edge mid-sentence reads as broken; a fade reads as "continues",
+     which is the honest signal, and it works at any row height. Masked rather than overlaid so it fades
+     the text itself, whatever sits behind it. */
+  .agent-note.is-clipped {
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      #000 0,
+      #000 calc(100% - 1.5rem),
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      #000 0,
+      #000 calc(100% - 1.5rem),
+      transparent 100%
+    );
   }
   :global(.agent-note p) {
     font-size: 14px;
@@ -246,13 +259,8 @@
   /* Rides the tail of the last visible line. The gradient keeps the clamped text from running under the
      label without reserving a line for it. */
   .agent-note-toggle {
-    @apply absolute bottom-0 right-0 pl-6 text-xs leading-normal text-accent-primary-action;
+    @apply absolute bottom-2 right-3 text-xs leading-normal text-accent-primary-action;
     @apply hover:underline;
-    background: linear-gradient(
-      to right,
-      transparent 0,
-      var(--surface-card, transparent) 1.5rem
-    );
   }
 
   /* Same affordance the canvas toolbars use: absent until the component is hovered, so a note at rest is
