@@ -1,4 +1,5 @@
 <script lang="ts">
+  import RefreshIcon from "@rilldata/web-common/components/icons/RefreshIcon.svelte";
   import { extractErrorMessage } from "@rilldata/web-common/lib/errors";
   import { m } from "@rilldata/web-common/lib/i18n/gen/messages";
   import { queryClient } from "@rilldata/web-common/lib/svelte-query/globalQueryClient";
@@ -7,6 +8,7 @@
   import { createQuery } from "@tanstack/svelte-query";
   import DOMPurify from "dompurify";
   import { marked } from "marked";
+  import { onMount, tick } from "svelte";
   import type { AgentNoteCanvasComponent } from "./";
   import {
     agentNoteIdempotencyKey,
@@ -97,17 +99,39 @@
     expanded = false;
   }
 
-  // A fresh answer starts collapsed, and a note that fits needs no affordance at all: compare the rendered
-  // height against the clamp once the DOM has it.
+  // A note that fits needs no affordance at all. The measurement has to wait for the markdown to paint:
+  // `renderPromise` resolves in an await block, so reading the height in a plain reactive statement
+  // measures the previous content and reports overflow for a note that is one line long.
   let noteEl: HTMLDivElement | undefined;
   let overflows = false;
-  $: if (noteEl && note) {
-    void note;
-    overflows = noteEl.scrollHeight - noteEl.clientHeight > 4;
+
+  async function measureOverflow() {
+    await tick();
+    requestAnimationFrame(() => {
+      if (!noteEl) return;
+      overflows = noteEl.scrollHeight - noteEl.clientHeight > 2;
+    });
   }
+
+  $: if (noteEl && note !== undefined) {
+    void note;
+    void expanded;
+    void measureOverflow();
+  }
+
+  // The row keeps a fixed height but its width changes with the viewport, and rewrapping changes the line
+  // count, so the same text can start and stop overflowing without the note itself changing.
+  onMount(() => {
+    if (typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(() => void measureOverflow());
+    if (noteEl) observer.observe(noteEl);
+    return () => observer.disconnect();
+  });
 </script>
 
-<div class="size-full flex flex-col bg-surface-card px-3 py-2 overflow-y-auto">
+<div
+  class="agent-note-root group size-full flex flex-col bg-surface-card px-3 py-2 relative"
+>
   {#if !configured}
     <p class="agent-note-hint">{m.canvas_agent_note_unconfigured()}</p>
   {:else if $noteQuery?.isFetching}
@@ -131,19 +155,29 @@
       {#await renderPromise then html}
         {@html DOMPurify.sanitize(html)}
       {/await}
-    </div>
-    <div class="agent-note-footer">
       {#if overflows || expanded}
-        <button type="button" on:click={() => (expanded = !expanded)}>
+        <!-- Sits over the tail of the last visible line rather than on a line of its own, so the row
+             spends its height on the note instead of on chrome. -->
+        <button
+          type="button"
+          class="agent-note-toggle"
+          on:click={() => (expanded = !expanded)}
+        >
           {expanded
             ? m.canvas_agent_note_show_less()
             : m.canvas_agent_note_show_more()}
         </button>
       {/if}
-      <button type="button" on:click={regenerate}>
-        {m.canvas_agent_note_regenerate()}
-      </button>
     </div>
+    <button
+      type="button"
+      class="agent-note-regenerate"
+      title={m.canvas_agent_note_regenerate()}
+      aria-label={m.canvas_agent_note_regenerate()}
+      on:click={regenerate}
+    >
+      <RefreshIcon size="14px" />
+    </button>
   {:else}
     <div class="agent-note-idle">
       <button type="button" on:click={regenerate}>
@@ -203,10 +237,35 @@
   .agent-note-error {
     @apply text-sm text-fg-secondary;
   }
-  .agent-note-footer {
-    @apply pt-1 flex gap-x-3 shrink-0;
+  /* Rides the tail of the last visible line. The gradient keeps the clamped text from running under the
+     label without reserving a line for it. */
+  .agent-note-toggle {
+    @apply absolute bottom-0 right-0 pl-6 text-xs text-accent-primary-action hover:underline;
+    background: linear-gradient(
+      to right,
+      transparent 0,
+      var(--surface-card, transparent) 1.5rem
+    );
   }
-  button {
+  .agent-note.is-collapsed .agent-note-toggle {
+    @apply bottom-0;
+  }
+
+  /* Same affordance the canvas toolbars use: absent until the component is hovered, so a note at rest is
+     only its text. Focus reveals it too, or it would be unreachable by keyboard. */
+  .agent-note-regenerate {
+    @apply absolute top-1.5 right-2 p-1 rounded text-fg-secondary opacity-0 transition-opacity;
+    @apply hover:text-fg-primary hover:bg-surface-subtle;
+  }
+  .agent-note-root:hover .agent-note-regenerate,
+  .agent-note-regenerate:focus-visible {
+    @apply opacity-100;
+  }
+
+  .agent-note-error button {
+    @apply text-xs text-accent-primary-action hover:underline;
+  }
+  .agent-note-idle button {
     @apply text-xs text-accent-primary-action hover:underline;
   }
 </style>
