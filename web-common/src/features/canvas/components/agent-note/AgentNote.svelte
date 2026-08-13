@@ -4,12 +4,12 @@
   import { extractErrorMessage } from "@rilldata/web-common/lib/errors";
   import { m } from "@rilldata/web-common/lib/i18n/gen/messages";
   import { queryClient } from "@rilldata/web-common/lib/svelte-query/globalQueryClient";
-  import type { V1AnalystAgentContext } from "@rilldata/web-common/runtime-client";
   import { useRuntimeClient } from "@rilldata/web-common/runtime-client/v2";
   import { createQuery } from "@tanstack/svelte-query";
   import type { AgentNoteCanvasComponent } from "./";
   import {
     agentNoteIdempotencyKey,
+    buildDashboardContext,
     dashboardContextKey,
     runAgentNote,
   } from "./util";
@@ -33,27 +33,25 @@
   // The state the reader is looking at, built from the same canvas stores the AI-Chat reads (see
   // features/canvas/chat-context.ts). The parent entity is to hand here, so there is no store lookup by name.
   $: filterMapStore = component?.parent?.filterManager?.filterMapStore;
-  $: intervalStore = component?.parent?.timeManager?.state?.interval;
   $: filterMap = filterMapStore ? $filterMapStore : undefined;
-  $: interval = intervalStore ? $intervalStore : undefined;
 
-  $: dashboardContext = ((): V1AnalystAgentContext | undefined => {
-    const ctx: V1AnalystAgentContext = {};
-    if (component?.parent?.name) ctx.canvas = component.parent.name;
-    if (interval?.isValid) {
-      ctx.timeStart = interval.start.toUTC().toISO() ?? undefined;
-      ctx.timeEnd = interval.end.toUTC().toISO() ?? undefined;
-    }
-    if (filterMap?.size) {
-      const where: NonNullable<V1AnalystAgentContext["wherePerMetricsView"]> =
-        {};
-      filterMap.forEach((expr, metricsView) => {
-        if (expr?.cond?.exprs?.length) where[metricsView] = expr;
-      });
-      if (Object.keys(where).length) ctx.wherePerMetricsView = where;
-    }
-    return Object.keys(ctx).length ? ctx : undefined;
-  })();
+  // `time_filters` pins the note to its own window, which is what lets a weekly note sit under monthly
+  // cards. The canvas resolves that into a local time state per component, but its usual reader,
+  // BaseCanvasComponent's timeAndFilterStore, returns the canvas window before it ever consults the local
+  // one unless the component declares a `metrics_view` (see BaseCanvasComponent.ts:271). A note narrates a
+  // whole dashboard and so names no single metrics view, hence the choice is made here, on the same
+  // condition that component uses.
+  $: globalIntervalStore = component?.parent?.timeManager?.state?.interval;
+  $: localIntervalStore = component?.localTimeControls?.interval;
+  $: globalInterval = globalIntervalStore ? $globalIntervalStore : undefined;
+  $: localInterval = localIntervalStore ? $localIntervalStore : undefined;
+  $: interval = spec?.time_filters ? localInterval : globalInterval;
+
+  $: dashboardContext = buildDashboardContext({
+    canvas: component?.parent?.name,
+    interval,
+    filterMap,
+  });
 
   $: idempotencyKey = agentNoteIdempotencyKey({
     agent,

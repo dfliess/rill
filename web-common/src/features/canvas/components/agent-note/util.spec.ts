@@ -1,6 +1,14 @@
-import type { V1AnalystAgentContext } from "@rilldata/web-common/runtime-client";
+import type {
+  V1AnalystAgentContext,
+  V1Expression,
+} from "@rilldata/web-common/runtime-client";
+import { DateTime, Interval } from "luxon";
 import { describe, expect, it } from "vitest";
-import { agentNoteIdempotencyKey, dashboardContextKey } from "./util";
+import {
+  agentNoteIdempotencyKey,
+  buildDashboardContext,
+  dashboardContextKey,
+} from "./util";
 
 function ctxWithFilters(order: string[]): V1AnalystAgentContext {
   const wherePerMetricsView: NonNullable<
@@ -13,6 +21,65 @@ function ctxWithFilters(order: string[]): V1AnalystAgentContext {
   }
   return { canvas: "direccion_canvas", wherePerMetricsView };
 }
+
+function monthInterval(month: number): Interval<true> {
+  return Interval.fromDateTimes(
+    DateTime.fromObject({ year: 2026, month, day: 1 }, { zone: "utc" }),
+    DateTime.fromObject(
+      { year: 2026, month: month + 1, day: 1 },
+      {
+        zone: "utc",
+      },
+    ),
+  ) as Interval<true>;
+}
+
+describe("buildDashboardContext", () => {
+  it("is undefined when there is nothing to say", () => {
+    expect(buildDashboardContext({})).toBeUndefined();
+  });
+
+  it("carries the window the reader is looking at, in UTC", () => {
+    const ctx = buildDashboardContext({
+      canvas: "home_ejecutivo",
+      interval: monthInterval(7),
+    });
+
+    expect(ctx?.canvas).toBe("home_ejecutivo");
+    expect(ctx?.timeStart).toBe("2026-07-01T00:00:00.000Z");
+    expect(ctx?.timeEnd).toBe("2026-08-01T00:00:00.000Z");
+  });
+
+  it("distinguishes a note pinned to its own window from the canvas one", () => {
+    // What a component's `time_filters` buys: the same canvas and filters, a different period, and
+    // therefore a different run rather than the canvas-wide note served back.
+    const canvasWide = buildDashboardContext({
+      canvas: "home_ejecutivo",
+      interval: monthInterval(7),
+    });
+    const pinned = buildDashboardContext({
+      canvas: "home_ejecutivo",
+      interval: monthInterval(6),
+    });
+
+    expect(dashboardContextKey(pinned)).not.toBe(
+      dashboardContextKey(canvasWide),
+    );
+  });
+
+  it("drops filters that carry no expressions", () => {
+    // A dashboard whose filters were set and then cleared holds an empty condition. Sending it would read
+    // as a different context and pay for a second completion that answers the same question.
+    const filterMap = new Map<string, V1Expression>([
+      ["sales_metrics", { cond: { op: "OPERATION_AND", exprs: [] } }],
+    ]);
+
+    expect(
+      buildDashboardContext({ canvas: "home_ejecutivo", filterMap })
+        ?.wherePerMetricsView,
+    ).toBeUndefined();
+  });
+});
 
 describe("dashboardContextKey", () => {
   it("is empty without context", () => {
