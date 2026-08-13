@@ -18,6 +18,12 @@ export interface AgentNoteSpec extends ComponentCommonProperties {
    * on costs one completion per context rather than one per page load. Turn it off to require a click.
    */
   auto_run?: boolean;
+  /**
+   * Pins the note to its own time window, in the same encoding the other components use, so a note can
+   * read a shorter period than the canvas around it (a weekly pulse under monthly cards, say). Only the
+   * time window is overridable here: dimension filters always come from the canvas.
+   */
+  time_filters?: string;
 }
 
 export class AgentNoteCanvasComponent extends BaseCanvasComponent<AgentNoteSpec> {
