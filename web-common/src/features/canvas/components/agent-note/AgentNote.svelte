@@ -35,6 +35,9 @@
   $: agent = spec?.agent ?? "";
   $: prompt = spec?.prompt ?? "";
   $: autoRun = spec?.auto_run !== false;
+  // How many lines survive the clamp. A row declares its own budget because the canvas cannot size to
+  // content: three lines fit a 150px row but overflow the 110px home strip.
+  $: lines = Math.max(1, Math.round(spec?.lines ?? 3));
   $: configured = agent.trim().length > 0 && prompt.trim().length > 0;
 
   // The state the reader is looking at, built from the same canvas stores the AI-Chat reads (see
@@ -151,6 +154,7 @@
       bind:this={noteEl}
       class="agent-note select-text cursor-text"
       class:is-collapsed={!expanded}
+      style:--agent-note-lines={lines}
     >
       {#await renderPromise then html}
         {@html DOMPurify.sanitize(html)}
@@ -188,8 +192,10 @@
 </div>
 
 <style lang="postcss">
+  /* Positioning context for the toggle: without it the toggle anchors to the card and hangs below the
+     text, outside the box. The right gutter keeps the hover icon off the first line. */
   .agent-note {
-    @apply text-fg-primary flex-1 min-h-0 overflow-y-auto;
+    @apply text-fg-primary flex-1 min-h-0 overflow-y-auto relative pr-7;
   }
   /* line-clamp gives a clean cut at a line boundary and suppresses the scrollbar, so the collapsed note
      never looks like a scroll container. Expanding swaps it for the overflow the class was hiding. */
@@ -197,8 +203,8 @@
     @apply overflow-hidden;
     display: -webkit-box;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
-    line-clamp: 3;
+    -webkit-line-clamp: var(--agent-note-lines, 3);
+    line-clamp: var(--agent-note-lines, 3);
   }
   :global(.agent-note p) {
     font-size: 14px;
@@ -240,15 +246,13 @@
   /* Rides the tail of the last visible line. The gradient keeps the clamped text from running under the
      label without reserving a line for it. */
   .agent-note-toggle {
-    @apply absolute bottom-0 right-0 pl-6 text-xs text-accent-primary-action hover:underline;
+    @apply absolute bottom-0 right-0 pl-6 text-xs leading-normal text-accent-primary-action;
+    @apply hover:underline;
     background: linear-gradient(
       to right,
       transparent 0,
       var(--surface-card, transparent) 1.5rem
     );
-  }
-  .agent-note.is-collapsed .agent-note-toggle {
-    @apply bottom-0;
   }
 
   /* Same affordance the canvas toolbars use: absent until the component is hovered, so a note at rest is

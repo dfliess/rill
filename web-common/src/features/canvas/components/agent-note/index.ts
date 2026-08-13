@@ -18,6 +18,11 @@ export interface AgentNoteSpec extends ComponentCommonProperties {
    * on costs one completion per context rather than one per page load. Turn it off to require a click.
    */
   auto_run?: boolean;
+  /**
+   * Lines shown before the note is clamped (default 3). The canvas cannot size a row to its content, so
+   * the row that hosts the note declares how many lines it has room for.
+   */
+  lines?: number;
 }
 
 export class AgentNoteCanvasComponent extends BaseCanvasComponent<AgentNoteSpec> {
@@ -66,6 +71,13 @@ export class AgentNoteCanvasComponent extends BaseCanvasComponent<AgentNoteSpec>
           showInUI: true,
           label: m.canvas_agent_note_auto_run_label(),
           description: m.canvas_agent_note_auto_run_description(),
+        },
+        lines: {
+          type: "number",
+          optional: true,
+          showInUI: true,
+          label: m.canvas_agent_note_lines_label(),
+          description: m.canvas_agent_note_lines_description(),
         },
       },
       filter: {},

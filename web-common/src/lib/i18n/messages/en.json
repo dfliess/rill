@@ -442,6 +442,8 @@
   "canvas_agent_note_auto_run_label": "Generate on load",
   "canvas_agent_note_generate": "Generate note",
   "canvas_agent_note_generating": "Reading the dashboard…",
+  "canvas_agent_note_lines_description": "How many lines to show before the note is clamped. Give the row room for them.",
+  "canvas_agent_note_lines_label": "Lines shown",
   "canvas_agent_note_prompt_description": "What the agent is asked to do with this dashboard.",
   "canvas_agent_note_prompt_label": "Prompt",
   "canvas_agent_note_regenerate": "Regenerate",

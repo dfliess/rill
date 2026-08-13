@@ -442,6 +442,8 @@
   "canvas_agent_note_auto_run_label": "Generar al abrir",
   "canvas_agent_note_generate": "Generar nota",
   "canvas_agent_note_generating": "Leyendo el cuadro de mando…",
+  "canvas_agent_note_lines_description": "Cuántas líneas se muestran antes de recortar la nota. Dale altura suficiente a la fila.",
+  "canvas_agent_note_lines_label": "Líneas visibles",
   "canvas_agent_note_prompt_description": "Qué le pedís al agente que haga con este cuadro de mando.",
   "canvas_agent_note_prompt_label": "Instrucción",
   "canvas_agent_note_regenerate": "Regenerar",
