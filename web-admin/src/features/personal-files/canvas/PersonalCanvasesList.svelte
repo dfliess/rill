@@ -66,15 +66,22 @@
 
 {#if personalCanvases.length || $personalCanvasesQuery.isPending}
   <section class="flex flex-col gap-3">
-    <header class="flex items-center justify-between">
-      <div class="flex items-center gap-2">
-        <Lock size="16px" />
-        <h2 class="text-lg font-medium">{m.personal_files_canvases_title()}</h2>
-        <span class="text-sm text-fg-secondary">
+    <!-- Wraps rather than squeezes: on a narrow screen the create button drops
+         to its own line and the heading keeps its width, instead of the title
+         breaking mid-phrase to make room for it. -->
+    <header class="flex items-center justify-between flex-wrap gap-x-3 gap-y-2">
+      <div class="flex items-center gap-2 min-w-0">
+        <span class="shrink-0"><Lock size="16px" /></span>
+        <h2 class="text-lg font-medium whitespace-nowrap">
+          {m.personal_files_canvases_title()}
+        </h2>
+        <span class="text-sm text-fg-secondary truncate min-w-0">
           {m.personal_files_canvases_visibility_hint()}
         </span>
       </div>
-      <CreatePersonalCanvasDialog {org} {project} />
+      <div class="ml-auto shrink-0">
+        <CreatePersonalCanvasDialog {org} {project} />
+      </div>
     </header>
 
     {#if $personalCanvasesQuery.isPending}
