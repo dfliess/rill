@@ -23,6 +23,11 @@
   let nonce = 0;
   let requested = false;
 
+  // Collapsed the note is clamped to a few lines with no scrollbar, which is what keeps a dashboard row
+  // from turning into a scroll container by default. Expanding does not grow the box (canvas rows are a
+  // fixed height) but hands the overflow back to the reader as a scroll.
+  let expanded = false;
+
   $: specStore = component?.specStore;
   $: spec = specStore ? $specStore : undefined;
   $: agent = spec?.agent ?? "";
@@ -89,6 +94,16 @@
   function regenerate() {
     nonce += 1;
     requested = true;
+    expanded = false;
+  }
+
+  // A fresh answer starts collapsed, and a note that fits needs no affordance at all: compare the rendered
+  // height against the clamp once the DOM has it.
+  let noteEl: HTMLDivElement | undefined;
+  let overflows = false;
+  $: if (noteEl && note) {
+    void note;
+    overflows = noteEl.scrollHeight - noteEl.clientHeight > 4;
   }
 </script>
 
@@ -108,12 +123,23 @@
       </button>
     </div>
   {:else if note}
-    <div class="agent-note select-text cursor-text">
+    <div
+      bind:this={noteEl}
+      class="agent-note select-text cursor-text"
+      class:is-collapsed={!expanded}
+    >
       {#await renderPromise then html}
         {@html DOMPurify.sanitize(html)}
       {/await}
     </div>
     <div class="agent-note-footer">
+      {#if overflows || expanded}
+        <button type="button" on:click={() => (expanded = !expanded)}>
+          {expanded
+            ? m.canvas_agent_note_show_less()
+            : m.canvas_agent_note_show_more()}
+        </button>
+      {/if}
       <button type="button" on:click={regenerate}>
         {m.canvas_agent_note_regenerate()}
       </button>
@@ -129,7 +155,16 @@
 
 <style lang="postcss">
   .agent-note {
-    @apply text-fg-primary flex-1 min-h-min;
+    @apply text-fg-primary flex-1 min-h-0 overflow-y-auto;
+  }
+  /* line-clamp gives a clean cut at a line boundary and suppresses the scrollbar, so the collapsed note
+     never looks like a scroll container. Expanding swaps it for the overflow the class was hiding. */
+  .agent-note.is-collapsed {
+    @apply overflow-hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
   }
   :global(.agent-note p) {
     font-size: 14px;
@@ -169,7 +204,7 @@
     @apply text-sm text-fg-secondary;
   }
   .agent-note-footer {
-    @apply pt-1;
+    @apply pt-1 flex gap-x-3 shrink-0;
   }
   button {
     @apply text-xs text-accent-primary-action hover:underline;

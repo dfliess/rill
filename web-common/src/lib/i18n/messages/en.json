@@ -445,6 +445,8 @@
   "canvas_agent_note_prompt_description": "What the agent is asked to do with this dashboard.",
   "canvas_agent_note_prompt_label": "Prompt",
   "canvas_agent_note_regenerate": "Regenerate",
+  "canvas_agent_note_show_less": "Show less",
+  "canvas_agent_note_show_more": "Show more",
   "canvas_agent_note_unconfigured": "Pick an agent and write a prompt to generate this note.",
   "canvas_ai_generating_chart": "AI is generating chart",
   "canvas_ai_hint": "Opens the AI assistant to edit this chart",
