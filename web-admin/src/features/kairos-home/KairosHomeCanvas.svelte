@@ -28,10 +28,11 @@
 
 {#each homeCanvases as canvasName (canvasName)}
   {#key `${runtimeClient.instanceId}::${canvasName}`}
-    <!-- The fixed height crops the canvas chrome on desktop only: below md the
-         canvas stacks the cards into one column (RowWrapper container query),
-         so the strip must grow to its natural height. -->
-    <div class="kairos-home-strip md:h-[156px] md:overflow-hidden">
+    <!-- A minimum, not a fixed height: 156px is one 140px card row plus the embed's padding, which is all the
+         original numbers strip ever held. Clamping it hid anything a home canvas put in a second row (an
+         agent note, say) with no sign that content was there. Below md the canvas stacks the cards into one
+         column (RowWrapper container query) and grows on its own. -->
+    <div class="kairos-home-strip md:min-h-[156px]">
       <CanvasProvider
         {canvasName}
         instanceId={runtimeClient.instanceId}
