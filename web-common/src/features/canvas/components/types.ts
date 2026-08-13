@@ -3,6 +3,7 @@ import type { CircularCanvasChartSpec } from "@rilldata/web-common/features/canv
 import type { ScatterPlotCanvasChartSpec } from "@rilldata/web-common/features/canvas/components/charts/variants/ScatterPlotChart";
 import type { KPIGridSpec } from "@rilldata/web-common/features/canvas/components/kpi-grid";
 import type { ChartType } from "../../components/charts/types";
+import type { AgentNoteSpec } from "./agent-note";
 import type { ImageSpec } from "./image";
 import type { KPISpec } from "./kpi";
 import type { LeaderboardSpec } from "./leaderboard";
@@ -21,7 +22,11 @@ export type ComponentWithMetricsView =
   | LeaderboardSpec
   | CustomChart;
 
-export type ComponentSpec = ComponentWithMetricsView | ImageSpec | MarkdownSpec;
+export type ComponentSpec =
+  | ComponentWithMetricsView
+  | ImageSpec
+  | MarkdownSpec
+  | AgentNoteSpec;
 
 export interface ComponentCommonProperties {
   title?: string;
@@ -54,6 +59,7 @@ export interface ComponentSize {
 export type CanvasComponentType =
   | ChartType
   | "markdown"
+  | "agent_note"
   | "kpi_grid"
   | "image"
   | "pivot"

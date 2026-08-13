@@ -33,6 +33,8 @@ func ValidateRendererProperties(renderer string, props map[string]any, metricsVi
 		return validateComboChart(props, metricsViews)
 	case "markdown":
 		return validateMarkdown(props)
+	case "agent_note":
+		return validateAgentNote(props)
 	case "image":
 		return validateImage(props)
 	case "kpi":
@@ -231,6 +233,21 @@ func validateMarkdown(props map[string]any) error {
 	content, ok := pathutil.GetPathString(props, "content")
 	if !ok || strings.TrimSpace(content) == "" {
 		return errors.New("renderer properties for markdown must include a non-empty string 'content' property")
+	}
+	return nil
+}
+
+// validateAgentNote validates properties for agent_note.
+// The agent is resolved at run time by the Act plane, so only the reference itself is checked here:
+// the component's refs are added by the parser, and an agent may reconcile after the canvas does.
+func validateAgentNote(props map[string]any) error {
+	agent, ok := pathutil.GetPathString(props, "agent")
+	if !ok || strings.TrimSpace(agent) == "" {
+		return errors.New("renderer properties for agent_note must include a non-empty string 'agent' property")
+	}
+	prompt, ok := pathutil.GetPathString(props, "prompt")
+	if !ok || strings.TrimSpace(prompt) == "" {
+		return errors.New("renderer properties for agent_note must include a non-empty string 'prompt' property")
 	}
 	return nil
 }
