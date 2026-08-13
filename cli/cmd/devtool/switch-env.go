@@ -3,6 +3,8 @@ package devtool
 import (
 	"context"
 	"fmt"
+	"slices"
+	"strings"
 
 	"github.com/rilldata/rill/cli/cmd/auth"
 	"github.com/rilldata/rill/cli/pkg/adminenv"
@@ -16,7 +18,7 @@ import (
 
 func SwitchEnvCmd(ch *cmdutil.Helper) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "switch-env [prod|stage|test|dev]",
+		Use:   "switch-env [prod|stage|test|dev|kairos-dev|kairos-prod]",
 		Short: "Switch between admin environments",
 		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -44,6 +46,15 @@ func SwitchEnvCmd(ch *cmdutil.Helper) *cobra.Command {
 				if err != nil {
 					return err
 				}
+			}
+
+			// switchEnv parks the current token, then overwrites the active one, and only then resolves the target
+			// URL, where AdminURL panics on an unknown env. A typo therefore blanks the active token and crashes
+			// before it can be restored. Validate first: an access token is not something a typo should destroy.
+			if _, ok := adminenv.EnvURLs[toEnv]; !ok {
+				envs := maps.Keys(adminenv.EnvURLs)
+				slices.Sort(envs)
+				return fmt.Errorf("unknown environment %q (options: %s)", toEnv, strings.Join(envs, ", "))
 			}
 
 			err = switchEnv(ch, fromEnv, toEnv)
