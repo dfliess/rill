@@ -1,13 +1,12 @@
 <script lang="ts">
   import RefreshIcon from "@rilldata/web-common/components/icons/RefreshIcon.svelte";
+  import Markdown from "@rilldata/web-common/components/markdown/Markdown.svelte";
   import { extractErrorMessage } from "@rilldata/web-common/lib/errors";
   import { m } from "@rilldata/web-common/lib/i18n/gen/messages";
   import { queryClient } from "@rilldata/web-common/lib/svelte-query/globalQueryClient";
   import type { V1AnalystAgentContext } from "@rilldata/web-common/runtime-client";
   import { useRuntimeClient } from "@rilldata/web-common/runtime-client/v2";
   import { createQuery } from "@tanstack/svelte-query";
-  import DOMPurify from "dompurify";
-  import { marked } from "marked";
   import type { AgentNoteCanvasComponent } from "./";
   import {
     agentNoteIdempotencyKey,
@@ -82,7 +81,6 @@
   $: noteQuery = createQuery(queryOptions, queryClient);
 
   $: note = $noteQuery?.data ?? "";
-  $: renderPromise = marked(note || "");
   $: errorMessage = $noteQuery?.error
     ? extractErrorMessage($noteQuery.error)
     : "";
@@ -114,13 +112,11 @@
     <!-- Scrolls, like the markdown component: a canvas row is a fixed height and Rill's own text
          component does not dress that up. How much there is to read is governed where it belongs, in the
          agent's instructions and the row's height. -->
-    <!-- `canvas-markdown` is the markdown component's typography, applied here so an agent's markdown
-         renders the same as an authored block: headings, tables, links and code all come styled instead
-         of falling back to browser defaults, and there is one place to change how markdown looks. -->
-    <div class="agent-note canvas-markdown select-text cursor-text">
-      {#await renderPromise then html}
-        {@html DOMPurify.sanitize(html)}
-      {/await}
+    <!-- The shared markdown renderer, the same one the chat uses for an assistant's reply. This component
+         does not parse or sanitise anything itself; it owns the box and scrolls, like Rill's markdown
+         component does, since a canvas row is a fixed height. -->
+    <div class="agent-note select-text cursor-text">
+      <Markdown content={note} />
     </div>
     <button
       type="button"
@@ -141,19 +137,10 @@
 </div>
 
 <style lang="postcss">
-  /* Typography comes from `canvas-markdown`; this only owns the box. The right gutter keeps the hover
-     icon off the first line. */
+  /* Typography belongs to the shared markdown component; this only owns the box. The right gutter keeps
+     the hover icon off the first line. */
   .agent-note {
     @apply flex-1 min-h-0 overflow-y-auto pr-7;
-  }
-
-  /* A note is a summary in a dashboard row, not a document: the shared typography leads with generous
-     paragraph spacing that wastes a short row's height. */
-  :global(.agent-note p:first-child) {
-    @apply mt-0;
-  }
-  :global(.agent-note p:last-child) {
-    @apply mb-0;
   }
 
   .agent-note-hint,
