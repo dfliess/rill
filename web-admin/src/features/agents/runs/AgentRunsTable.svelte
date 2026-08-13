@@ -101,23 +101,33 @@
               <!-- Agent + action share the title line: an approval authorizes
                    this agent to run this specific tool, so the reviewer reads
                    both as one thing they are deciding on. The action only shows
-                   when there is a pending approval. -->
-              <div class="flex items-center flex-wrap gap-x-2 min-w-0">
+                   when there is a pending approval. The line never wraps —
+                   both halves truncate instead, so on a phone the pair stays
+                   one line rather than stranding the separator at the end of
+                   the title with the tool name orphaned below it. -->
+              <div class="flex items-center gap-x-2 min-w-0">
                 <span
                   class="text-fg-primary text-sm font-semibold truncate min-w-0"
                 >
                   {agentLabel(run)}
                 </span>
                 {#if approval?.toolName}
-                  <span class="text-fg-muted" aria-hidden="true">·</span>
+                  <span class="text-fg-muted shrink-0" aria-hidden="true"
+                    >·</span
+                  >
+                  <!-- Yields the width first: on a narrow screen the agent is
+                       what identifies the row, and the full tool name is one
+                       tap away in the run detail. -->
                   <span
-                    class="font-mono text-xs text-fg-secondary truncate max-w-[16rem]"
+                    class="font-mono text-xs text-fg-secondary truncate min-w-0 max-w-[16rem] shrink-[4]"
                     title={m.agents_approval_proposed_action()}
                   >
                     {approval.toolName}
                   </span>
                   {#if approvals.length > 1}
-                    <span class="text-xs text-fg-muted whitespace-nowrap">
+                    <span
+                      class="text-xs text-fg-muted whitespace-nowrap shrink-0"
+                    >
                       {m.agents_approval_and_n_more({
                         count: approvals.length - 1,
                       })}
@@ -129,9 +139,14 @@
                 class="flex items-center flex-wrap gap-x-2 gap-y-1 text-fg-secondary text-xs"
               >
                 <AgentRunStatusChip status={run.status} />
-                <span>{agentTriggerLabel(run.trigger)}</span>
-                <span aria-hidden="true">·</span>
-                <span title={started.title}>{started.text}</span>
+                <!-- Trigger and time travel together: when the chip and the
+                     rest no longer fit side by side, the whole phrase drops to
+                     the next line instead of leaving the separator behind. -->
+                <span class="flex items-center gap-x-2 whitespace-nowrap">
+                  <span>{agentTriggerLabel(run.trigger)}</span>
+                  <span aria-hidden="true">·</span>
+                  <span title={started.title}>{started.text}</span>
+                </span>
               </div>
             </div>
           </div>
