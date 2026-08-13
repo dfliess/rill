@@ -30,6 +30,7 @@ import {
 } from "@rilldata/web-common/runtime-client";
 import { readable } from "svelte/store";
 import type { CanvasEntity, ComponentPath } from "../stores/canvas-entity";
+import { AgentNoteCanvasComponent } from "./agent-note";
 import type { BaseCanvasComponent } from "./BaseCanvasComponent";
 import { ImageComponent } from "./image";
 import { LeaderboardComponent } from "./leaderboard";
@@ -115,6 +116,7 @@ const CHART_TYPES = [
 ] as const;
 const NON_CHART_TYPES = [
   "markdown",
+  "agent_note",
   "kpi",
   "kpi_grid",
   "image",
@@ -149,6 +151,7 @@ export interface BaseCanvasComponentConstructor<
 // Component type to class mapping
 const baseComponentMap = {
   markdown: MarkdownCanvasComponent,
+  agent_note: AgentNoteCanvasComponent,
   kpi_grid: KPIGridComponent,
   image: ImageComponent,
   leaderboard: LeaderboardComponent,
@@ -159,6 +162,7 @@ const baseComponentMap = {
 } as const;
 const IconMap = {
   markdown: TextIcon,
+  agent_note: TextIcon,
   kpi_grid: BigNumberIcon,
   leaderboard: LeaderboardIcon,
   table: TableIcon,
@@ -178,6 +182,7 @@ export const COMPONENT_CLASS_MAP = {
 const baseDisplayMap = {
   kpi_grid: "KPI Grid",
   markdown: "Markdown",
+  agent_note: "Agent Note",
   table: "Table",
   pivot: "Pivot",
   image: "Image",
