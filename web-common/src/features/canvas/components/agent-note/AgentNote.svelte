@@ -153,7 +153,7 @@
     @apply flex items-center gap-x-2 text-sm text-fg-muted;
   }
   .agent-note-pulse {
-    @apply size-2 rounded-full bg-primary-solid;
+    @apply size-2 rounded-full bg-accent-primary;
     animation: agent-note-pulse 1.2s ease-in-out infinite;
   }
   @keyframes agent-note-pulse {
@@ -172,6 +172,6 @@
     @apply pt-1;
   }
   button {
-    @apply text-xs text-primary-solid hover:underline;
+    @apply text-xs text-accent-primary-action hover:underline;
   }
 </style>
