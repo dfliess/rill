@@ -445,8 +445,6 @@
   "canvas_agent_note_prompt_description": "Qué le pedís al agente que haga con este cuadro de mando.",
   "canvas_agent_note_prompt_label": "Instrucción",
   "canvas_agent_note_regenerate": "Regenerar",
-  "canvas_agent_note_show_less": "Ver menos",
-  "canvas_agent_note_show_more": "Ver más",
   "canvas_agent_note_unconfigured": "Elegí un agente y escribí una instrucción para generar esta nota.",
   "canvas_ai_generating_chart": "La IA está generando el gráfico",
   "canvas_ai_hint": "Abre el asistente de IA para editar este gráfico",

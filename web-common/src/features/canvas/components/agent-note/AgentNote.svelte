@@ -8,7 +8,6 @@
   import { createQuery } from "@tanstack/svelte-query";
   import DOMPurify from "dompurify";
   import { marked } from "marked";
-  import { onMount, tick } from "svelte";
   import type { AgentNoteCanvasComponent } from "./";
   import {
     agentNoteIdempotencyKey,
@@ -24,11 +23,6 @@
   // completed one. Without it a re-read would return the same cached answer.
   let nonce = 0;
   let requested = false;
-
-  // Collapsed the note is clamped to a few lines with no scrollbar, which is what keeps a dashboard row
-  // from turning into a scroll container by default. Expanding does not grow the box (canvas rows are a
-  // fixed height) but hands the overflow back to the reader as a scroll.
-  let expanded = false;
 
   $: specStore = component?.specStore;
   $: spec = specStore ? $specStore : undefined;
@@ -96,37 +90,7 @@
   function regenerate() {
     nonce += 1;
     requested = true;
-    expanded = false;
   }
-
-  // A note that fits needs no affordance at all. The measurement has to wait for the markdown to paint:
-  // `renderPromise` resolves in an await block, so reading the height in a plain reactive statement
-  // measures the previous content and reports overflow for a note that is one line long.
-  let noteEl: HTMLDivElement | undefined;
-  let overflows = false;
-
-  async function measureOverflow() {
-    await tick();
-    requestAnimationFrame(() => {
-      if (!noteEl) return;
-      overflows = noteEl.scrollHeight - noteEl.clientHeight > 2;
-    });
-  }
-
-  $: if (noteEl && note !== undefined) {
-    void note;
-    void expanded;
-    void measureOverflow();
-  }
-
-  // The row keeps a fixed height but its width changes with the viewport, and rewrapping changes the line
-  // count, so the same text can start and stop overflowing without the note itself changing.
-  onMount(() => {
-    if (typeof ResizeObserver === "undefined") return;
-    const observer = new ResizeObserver(() => void measureOverflow());
-    if (noteEl) observer.observe(noteEl);
-    return () => observer.disconnect();
-  });
 </script>
 
 <div
@@ -147,30 +111,17 @@
       </button>
     </div>
   {:else if note}
-    <div
-      bind:this={noteEl}
-      class="agent-note select-text cursor-text"
-      class:is-collapsed={!expanded}
-      class:is-clipped={overflows && !expanded}
-    >
+    <!-- Scrolls, like the markdown component: a canvas row is a fixed height and Rill's own text
+         component does not dress that up. How much there is to read is governed where it belongs, in the
+         agent's instructions and the row's height. -->
+    <!-- `canvas-markdown` is the markdown component's typography, applied here so an agent's markdown
+         renders the same as an authored block: headings, tables, links and code all come styled instead
+         of falling back to browser defaults, and there is one place to change how markdown looks. -->
+    <div class="agent-note canvas-markdown select-text cursor-text">
       {#await renderPromise then html}
         {@html DOMPurify.sanitize(html)}
       {/await}
     </div>
-    {#if overflows || expanded}
-      <!-- Outside the note: the fade is a mask, and a mask applies to descendants, so a toggle nested in
-           the text would fade out with it. Sits over the faded tail rather than on a line of its own, so
-           the row spends its height on the note instead of on chrome. -->
-      <button
-        type="button"
-        class="agent-note-toggle"
-        on:click={() => (expanded = !expanded)}
-      >
-        {expanded
-          ? m.canvas_agent_note_show_less()
-          : m.canvas_agent_note_show_more()}
-      </button>
-    {/if}
     <button
       type="button"
       class="agent-note-regenerate"
@@ -190,47 +141,19 @@
 </div>
 
 <style lang="postcss">
-  /* Positioning context for the toggle: without it the toggle anchors to the card and hangs below the
-     text, outside the box. The right gutter keeps the hover icon off the first line. */
+  /* Typography comes from `canvas-markdown`; this only owns the box. The right gutter keeps the hover
+     icon off the first line. */
   .agent-note {
-    @apply text-fg-primary flex-1 min-h-0 overflow-y-auto relative pr-7;
-  }
-  /* Collapsed, the note simply fills the row and hides the rest: the cut is whatever the row's height
-     allows, so no line count has to be guessed or configured per row. Expanding hands the same overflow
-     back as a scroll. */
-  .agent-note.is-collapsed {
-    @apply overflow-hidden;
+    @apply flex-1 min-h-0 overflow-y-auto pr-7;
   }
 
-  /* The last visible line fades out. A hard edge mid-sentence reads as broken; a fade reads as "continues",
-     which is the honest signal, and it works at any row height. Masked rather than overlaid so it fades
-     the text itself, whatever sits behind it. */
-  .agent-note.is-clipped {
-    -webkit-mask-image: linear-gradient(
-      to bottom,
-      #000 0,
-      #000 calc(100% - 1.5rem),
-      transparent 100%
-    );
-    mask-image: linear-gradient(
-      to bottom,
-      #000 0,
-      #000 calc(100% - 1.5rem),
-      transparent 100%
-    );
+  /* A note is a summary in a dashboard row, not a document: the shared typography leads with generous
+     paragraph spacing that wastes a short row's height. */
+  :global(.agent-note p:first-child) {
+    @apply mt-0;
   }
-  :global(.agent-note p) {
-    font-size: 14px;
-    @apply my-1;
-  }
-  :global(.agent-note ul) {
-    @apply list-disc pl-6 my-2;
-  }
-  :global(.agent-note li) {
-    @apply text-sm my-1;
-  }
-  :global(.agent-note strong) {
-    @apply font-medium;
+  :global(.agent-note p:last-child) {
+    @apply mb-0;
   }
 
   .agent-note-hint,
@@ -256,13 +179,6 @@
   .agent-note-error {
     @apply text-sm text-fg-secondary;
   }
-  /* Rides the tail of the last visible line. The gradient keeps the clamped text from running under the
-     label without reserving a line for it. */
-  .agent-note-toggle {
-    @apply absolute bottom-2 right-3 text-xs leading-normal text-accent-primary-action;
-    @apply hover:underline;
-  }
-
   /* Same affordance the canvas toolbars use: absent until the component is hovered, so a note at rest is
      only its text. Focus reveals it too, or it would be unreachable by keyboard. */
   .agent-note-regenerate {
