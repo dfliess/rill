@@ -19,8 +19,12 @@ const THEME_SESSION_STORAGE_KEY = "rill:embed:theme-mode";
 class ThemeControl {
   public current = writable<"light" | "dark">("light");
   private darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
+  // Kairos: oscuro por defecto en los dos, app y embed. Cuando cambiamos el
+  // de la app (3f6ee1c39) nos dejamos este, así que un embed sin theme_mode
+  // salía claro dentro de un producto oscuro. Quien embeba en una página clara
+  // pasa theme_mode=light, igual que hasta ahora tenía que pasar dark.
   private preferenceStore = isEmbedEnvironment()
-    ? sessionStorageStore<ThemeMode>(THEME_SESSION_STORAGE_KEY, "light")
+    ? sessionStorageStore<ThemeMode>(THEME_SESSION_STORAGE_KEY, "dark")
     : explicitLocalStorageStore<ThemeMode>(THEME_LOCAL_STORAGE_KEY, "dark");
 
   public subscribe = this.current.subscribe;
