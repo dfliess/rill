@@ -10,6 +10,27 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+func TestScopeKeyToActorSeparatesUsers(t *testing.T) {
+	const key = "agent-note-1f2e3d4c"
+
+	// The point of the whole exercise: one dashboard, one note, two readers, two runs. Sharing one would serve
+	// the second reader an answer computed under the first one's access.
+	require.NotEqual(t, scopeKeyToActor("user-a", key), scopeKeyToActor("user-b", key))
+
+	// And the same reader must still deduplicate, or every revisit would pay for a fresh completion.
+	require.Equal(t, scopeKeyToActor("user-a", key), scopeKeyToActor("user-a", key))
+}
+
+func TestScopeKeyToActorIsInjective(t *testing.T) {
+	// Without the length prefix these two would both render as "a/b/c" and collide onto one run, handing one
+	// user the other's answer. The key is caller-supplied, so it is attacker-shaped: assume it contains anything.
+	require.NotEqual(t, scopeKeyToActor("a", "b/c"), scopeKeyToActor("a/b", "c"))
+
+	// An anonymous reader of a public project has no id to scope by, so those readers keep sharing one run.
+	require.Equal(t, scopeKeyToActor("", "k"), scopeKeyToActor("", "k"))
+	require.NotEqual(t, scopeKeyToActor("", "k"), scopeKeyToActor("someone", "k"))
+}
+
 func TestPromptWithDashboardContextPassesThroughWithoutContext(t *testing.T) {
 	require.Equal(t, "narra el cuadro", promptWithDashboardContext("narra el cuadro", nil))
 

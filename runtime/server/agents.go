@@ -104,10 +104,13 @@ func (s *Server) StartAgentRun(ctx context.Context, req *runtimev1.StartAgentRun
 	}
 
 	// A manual run without a caller-supplied key gets a fresh one: the run still starts, it just is not deduplicated.
-	// A caller that wants OAOO (e.g. a form submit guard) supplies a stable idempotency_key.
+	// A caller that wants OAOO (e.g. a form submit guard) supplies a stable idempotency_key, which is scoped to the
+	// user it acts for before it can deduplicate anything.
 	idempotencyKey := req.IdempotencyKey
 	if idempotencyKey == "" {
 		idempotencyKey = uuid.NewString()
+	} else {
+		idempotencyKey = scopeKeyToActor(claims.UserID, idempotencyKey)
 	}
 
 	// This is the public manual-trigger API, so the run is always recorded as "manual": we ignore any caller-
@@ -140,6 +143,22 @@ func (s *Server) StartAgentRun(ctx context.Context, req *runtimev1.StartAgentRun
 		AgentName: run.AgentName,
 		SpecHash:  run.SpecHash,
 	}, nil
+}
+
+// scopeKeyToActor namespaces a caller-supplied idempotency key by the user the run acts for.
+//
+// A run executes with its caller's claims (§17.3), so the same agent, prompt and dashboard state can yield
+// materially different answers per user: an access policy narrows what each of them may read. Deduplicating across
+// users would hand the second caller an answer computed under the first one's access, which the session owner check
+// in runtime/ai then refuses to serve them, so they would get a permission error where an answer should be.
+//
+// An empty user id, an anonymous reader of a public project, namespaces to nothing, and those readers go on sharing
+// one run. That is the same trade-off runtime/ai makes when it skips the owner check on a session nobody owns.
+//
+// Length-prefixed like ComposeRunID, and for the same reason: without the prefix ("a","b/c") and ("a/b","c") would
+// render alike and collide onto one run.
+func scopeKeyToActor(userID, idempotencyKey string) string {
+	return fmt.Sprintf("%d:%s/%s", len(userID), userID, idempotencyKey)
 }
 
 // promptWithDashboardContext folds the calling surface's state into the run's prompt.
