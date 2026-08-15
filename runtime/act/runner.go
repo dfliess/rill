@@ -75,7 +75,13 @@ func (r *SessionRunner) RunSegment(ctx context.Context, in RunSegmentInput) (Run
 	return RunSegmentResult{SessionID: sessionID, Response: res.Response, Proposed: res.Proposed}, nil
 }
 
+// ApplyAction performs the external write through the configured sink. A runner with no sink falls back to the
+// fail-closed one rather than dereferencing nil: reaching here means an action already passed policy and approval,
+// so the failure mode of a misconfigured runner must be a refusal that says so, not a panic in the run step.
 func (r *SessionRunner) ApplyAction(ctx context.Context, req ActionRequest) (ActionResult, error) {
+	if r.Actions == nil {
+		return NewDenyActionSink().Apply(ctx, req)
+	}
 	return r.Actions.Apply(ctx, req)
 }
 
