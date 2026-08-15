@@ -16,9 +16,13 @@
   // lleva al portal de Orb. La nuestra no depende de Orb: muestra el consumo
   // que mide la propia plataforma, embebido desde el proyecto de métricas
   // (ADR-0017), así que vale para cualquier organización.
+  //
+  // Facturación se retira: sin Orb no hay suscripción que leer y la página cae
+  // en su plan por defecto, que enseña la tarifa comercial de Rill en dólares
+  // como si fuera la nuestra. La cobramos nosotros y fuera de la plataforma,
+  // así que la pestaña sobra hasta que exista un plan Kairos que enseñar.
   let navItems = $derived([
     { label: m.settings_nav_general(), route: "", hasPermission: true },
-    { label: m.settings_nav_billing(), route: "/billing", hasPermission: true },
     { label: m.settings_nav_usage(), route: "/usage", hasPermission: true },
   ]);
 </script>
