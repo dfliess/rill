@@ -112,6 +112,19 @@ func publicLinkAdminCtx() context.Context {
 	})
 }
 
+// embedAdminCtx returns claims shaped like an EMBED token whose integrator declared admin: true, and which
+// carries no exclusive rule to confine it. This is the residual we accept on the access side — the built-in
+// rule keys on the attribute, the same posture upstream takes for alerts and reports — so this principal does
+// see agents. It exists to pin the line that residual must not cross: seeing an agent is not signing for it,
+// so every gate past access has to deny it.
+func embedAdminCtx() context.Context {
+	return auth.WithClaims(context.Background(), &runtime.SecurityClaims{
+		UserID:         "",
+		UserAttributes: map[string]any{"admin": true},
+		Permissions:    []runtime.Permission{runtime.ReadObjects, runtime.ReadMetrics, runtime.ReadAPI, runtime.UseAI},
+	})
+}
+
 // publicLinkCtx returns a context carrying claims shaped like a magic auth (public link) token's: full
 // instance permissions (they all get UseAI) plus an exclusive access rule for one explore, which the engine
 // expands into "deny everything else".
@@ -399,6 +412,49 @@ func TestAgentSecurityApprovalByGroup(t *testing.T) {
 	deny, err := srv.DenyAgentApproval(adminCtx, &runtimev1.DenyAgentApprovalRequest{InstanceId: instanceID, ApprovalId: approval2})
 	require.NoError(t, err)
 	require.Equal(t, act.ApprovalStatusDenied, deny.Approval.Status)
+}
+
+// TestAgentApprovalDeniedToInheritedAdminAttribute covers the gap between the two halves of the admin
+// attribute. An embed or share link copies attrs["admin"] from its creator but never gets EditTrigger, so a
+// gate that reads the attribute is forgeable by anyone an admin ever shared with. On the access side that is
+// the accepted residual; on the approve side it would let a shared link sign a write to the outside world.
+//
+// The agent here declares access: "true" and no approve:, which is the default posture and the one most
+// projects will have. The token therefore reaches the approval — and must still be refused at it.
+func TestAgentApprovalDeniedToInheritedAdminAttribute(t *testing.T) {
+	srv, store, exec, instanceID := newActSecurityServer(t)
+
+	opsCtx := userCtx("usr_marta", []any{"operaciones"}, false)
+	start, err := srv.StartAgentRun(opsCtx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "abierta", IdempotencyKey: "k1"})
+	require.NoError(t, err)
+	approvalID := act.ApprovalIDForRun(start.RunId)
+	require.NoError(t, store.CreateApproval(context.Background(), act.NewApproval{
+		ApprovalID: approvalID, RunID: start.RunId, InstanceID: instanceID,
+		ToolName: "mcp.crm.create_crm_task", Connector: "crm",
+		ArgsHash: act.HashArgs("crear tarea"), Proposal: "crear tarea", RequestedBy: "usr_marta",
+	}))
+
+	// The token does reach the approval, because access is open. That is the point: the denial has to come
+	// from the approve gate, not from the token failing to see the agent.
+	inbox, err := srv.ListAgentApprovals(embedAdminCtx(), &runtimev1.ListAgentApprovalsRequest{InstanceId: instanceID, Status: act.ApprovalStatusPending})
+	require.NoError(t, err)
+	require.Len(t, inbox.Approvals, 1)
+	require.False(t, inbox.Approvals[0].CanDecide, "an inherited admin attribute must not present itself as able to decide")
+
+	_, err = srv.ApproveAgentApproval(embedAdminCtx(), &runtimev1.ApproveAgentApprovalRequest{
+		InstanceId: instanceID, ApprovalId: approvalID, ArgsHash: act.HashArgs("crear tarea"),
+	})
+	require.Equal(t, codes.PermissionDenied, status.Code(err))
+	_, err = srv.DenyAgentApproval(embedAdminCtx(), &runtimev1.DenyAgentApprovalRequest{InstanceId: instanceID, ApprovalId: approvalID})
+	require.Equal(t, codes.PermissionDenied, status.Code(err))
+	require.Empty(t, exec.resumeCalls(), "no decision may have reached the executor")
+
+	// A real project admin holds the permission, not just the attribute, and decides the same approval.
+	approve, err := srv.ApproveAgentApproval(userCtx("usr_admin", []any{}, true, runtime.EditTrigger), &runtimev1.ApproveAgentApprovalRequest{
+		InstanceId: instanceID, ApprovalId: approvalID, ArgsHash: act.HashArgs("crear tarea"),
+	})
+	require.NoError(t, err)
+	require.Equal(t, act.ApprovalStatusApproved, approve.Approval.Status)
 }
 
 // TestAgentApprovalCanDecidePerAction covers the issue #135 example that makes approval authority a property
