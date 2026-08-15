@@ -28,16 +28,18 @@ var (
 
 // resourceKindToDefinitionKey maps a ResourceKind to its key in project.schema.yaml.
 var resourceKindToDefinitionKey = map[ResourceKind]string{
-	ResourceKindSource:      "sources",
-	ResourceKindModel:       "models",
-	ResourceKindMetricsView: "metrics-views",
-	ResourceKindExplore:     "explore-dashboards",
-	ResourceKindAlert:       "alerts",
-	ResourceKindTheme:       "themes",
-	ResourceKindComponent:   "components",
-	ResourceKindCanvas:      "canvas-dashboards",
-	ResourceKindAPI:         "apis",
-	ResourceKindConnector:   "connectors",
+	ResourceKindSource:       "sources",
+	ResourceKindModel:        "models",
+	ResourceKindMetricsView:  "metrics-views",
+	ResourceKindExplore:      "explore-dashboards",
+	ResourceKindAlert:        "alerts",
+	ResourceKindTheme:        "themes",
+	ResourceKindComponent:    "components",
+	ResourceKindCanvas:       "canvas-dashboards",
+	ResourceKindAPI:          "apis",
+	ResourceKindConnector:    "connectors",
+	ResourceKindAgent:        "agents",
+	ResourceKindAgentTrigger: "agent-triggers",
 }
 
 // JSONSchemaForRillYAML returns the JSON schema for validating rill.yaml files.
