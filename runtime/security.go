@@ -346,6 +346,23 @@ func (p *securityEngine) resolveSecurity(ctx context.Context, instanceID, enviro
 // NOTE: The default behavior is to deny access unless there is a rule that grants it (and no other rule explicitly denies it).
 func (p *securityEngine) resolveRules(claims *SecurityClaims, rules []*runtimev1.SecurityRule, r *runtimev1.Resource) []*runtimev1.SecurityRule {
 	switch r.Meta.Name.Kind {
+	// Admins can always access an agent; for other users, access is determined by the security rules declared
+	// on the agent, and an agent that declares none is admin-only. An agent's definition (its instructions) and
+	// its runs carry prompts and proposed actions, so an agent is opened deliberately, never by default.
+	case ResourceKindAgent:
+		spec := r.GetAgent().State.ValidSpec
+		if spec == nil {
+			spec = r.GetAgent().Spec // Not ideal, but better than giving access to the full resource
+		}
+		rule := p.builtInAgentSecurityRule(r.Meta.Name, claims)
+		if rule != nil {
+			// The admin allow intentionally REPLACES the declared rules: an agent is never hidden from the
+			// people who administer (and can read) the project that defines it, even by a deny-all policy.
+			// Prepend so any exclusive rule from the claims (e.g. a magic auth token's) still applies after it.
+			rules = append([]*runtimev1.SecurityRule{rule}, rules...)
+		} else {
+			rules = append(rules, spec.SecurityRules...)
+		}
 	// Admins and creators/recipients can access an alert.
 	case ResourceKindAlert:
 		spec := r.GetAlert().Spec
@@ -624,6 +641,28 @@ func (p *securityEngine) builtInCanvasSecurityRule(canvasRes *runtimev1.Resource
 		}
 	}
 
+	return nil
+}
+
+// builtInAgentSecurityRule returns a built-in security rule to apply to an agent.
+// Returns nil if the caller is not an admin, so the caller of resolveRules falls back to the rules declared on
+// the agent itself (and to a deny when it declares none).
+//
+// NOTE: Unlike the alert/report/canvas rules, this one never merges into an exclusive access rule from the
+// claims: a share link's or embed's exclusive rule must keep denying agents, so the built-in allow is returned
+// as a separate rule that an exclusive rule evaluated after it overrides.
+func (p *securityEngine) builtInAgentSecurityRule(agentRes *runtimev1.ResourceName, claims *SecurityClaims) *runtimev1.SecurityRule {
+	// Allow if the user is an admin
+	if claims.Admin() {
+		return &runtimev1.SecurityRule{
+			Rule: &runtimev1.SecurityRule_Access{
+				Access: &runtimev1.SecurityRuleAccess{
+					Allow:              true,
+					ConditionResources: []*runtimev1.ResourceName{agentRes},
+				},
+			},
+		}
+	}
 	return nil
 }
 

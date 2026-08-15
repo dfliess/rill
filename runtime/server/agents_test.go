@@ -127,10 +127,15 @@ func (f *fakeAgentExecutor) resumeCalls() []resumeCall {
 	return append([]resumeCall(nil), f.resumes...)
 }
 
-// agentProjectFiles is a minimal project with one agent named "triage".
+// agentProjectFiles is a minimal project with one agent named "triage". The agents feature flag is on: it is
+// the Act kill switch and the handlers enforce it, so a project without it has no Act API at all.
 func agentProjectFiles() map[string]string {
 	return map[string]string{
-		"rill.yaml": `ai_instructions: "Menciona la residencia de datos cuando sea relevante."`,
+		"rill.yaml": `
+ai_instructions: "Menciona la residencia de datos cuando sea relevante."
+features:
+  agents: true
+`,
 		"triage.yaml": `
 type: agent
 display_name: Ticket Triage

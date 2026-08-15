@@ -172,22 +172,27 @@ type NewApproval struct {
 
 // Approval is the stored, queryable state of an approval request.
 type Approval struct {
-	ApprovalID  string
-	RunID       string
-	InstanceID  string
-	ToolName    string
-	Connector   string
-	ToolCallID  string
-	ArgsHash    string
-	Proposal    string
-	Policy      string
-	Status      string
-	RequestedBy string
-	DecidedBy   string
-	CreatedOn   time.Time
-	DecidedOn   *time.Time
-	Position    int
-	Total       int
+	ApprovalID string
+	RunID      string
+	InstanceID string
+	// AgentName and RunActorSubject are read from the approval's run (every approval has one), not stored on
+	// the approval row. They are what lets a reader resolve the approve policy for this concrete approval
+	// (who may decide it discriminates by action and by the run's actor) without a second lookup.
+	AgentName       string
+	RunActorSubject string
+	ToolName        string
+	Connector       string
+	ToolCallID      string
+	ArgsHash        string
+	Proposal        string
+	Policy          string
+	Status          string
+	RequestedBy     string
+	DecidedBy       string
+	CreatedOn       time.Time
+	DecidedOn       *time.Time
+	Position        int
+	Total           int
 }
 
 // ListRunsFilter scopes and narrows a run listing. InstanceID is mandatory: every query is scoped to one instance
@@ -196,7 +201,13 @@ type ListRunsFilter struct {
 	InstanceID string
 	AgentName  string    // optional: only runs of this agent
 	Status     RunStatus // optional: only runs in this status
-	Limit      int       // optional: caps the page size (a store default applies when zero)
+	// AccessibleAgents, when non-nil, restricts the listing to runs of these agents. It is the read-side access
+	// filter (issue #135): the API resolves which agents the caller may access, once per agent, and pushes the
+	// allow-list down here so the restriction lands in the WHERE clause; filtering the page in memory instead
+	// would make pagination lie. A non-nil empty slice matches nothing. Nil applies no restriction and is
+	// reserved for callers whose access is unrestricted (an admin, or internal machinery).
+	AccessibleAgents []string
+	Limit            int // optional: caps the page size (a store default applies when zero)
 }
 
 // ListApprovalsFilter scopes and narrows an approval listing. Like runs, InstanceID is mandatory.
@@ -204,7 +215,10 @@ type ListApprovalsFilter struct {
 	InstanceID string
 	RunID      string // optional: only approvals for this run
 	Status     string // optional: only approvals in this status (e.g. "pending" for the inbox)
-	Limit      int
+	// AccessibleAgents mirrors ListRunsFilter.AccessibleAgents. An approval does not carry its agent, so the
+	// store resolves it through the approval's run.
+	AccessibleAgents []string
+	Limit            int
 }
 
 // RunStore is the durable, queryable home of runs, run events and approvals: the product's state plane, separate

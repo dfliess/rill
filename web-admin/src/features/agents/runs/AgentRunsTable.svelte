@@ -80,6 +80,10 @@
     {#each data as run (run.runId)}
       {@const approvals = approvalsByRun.get(run.runId ?? "") ?? []}
       {@const approval = approvals[0]}
+      <!-- can_decide is per approval (authority can discriminate by tool), so the
+           inline buttons act on the first approval this caller may decide, which
+           is not necessarily the first of the batch. -->
+      {@const decidable = approvals.find((a) => !!a.canDecide)}
       {@const started = startedLabel(run)}
       <li>
         <div
@@ -152,10 +156,10 @@
           </div>
 
           <div class="flex items-center gap-x-2 shrink-0 ml-auto">
-            {#if approval}
+            {#if decidable}
               <ApproveDenyButtons
-                approvalId={approval.approvalId ?? ""}
-                argsHash={approval.argsHash ?? ""}
+                approvalId={decidable.approvalId ?? ""}
+                argsHash={decidable.argsHash ?? ""}
                 runId={run.runId ?? ""}
               />
             {/if}

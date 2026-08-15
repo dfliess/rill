@@ -1057,6 +1057,17 @@ message AgentSpec {
   // Mcp declares outbound MCP connectors. Each connector's tools are discovered at run start and offered to
   // the model under namespaced names (mcp.<name>.<tool>), separate from the built-in tools allowlist above.
   repeated MCPConnector mcp = 8;
+  // Security rules to apply to the agent: who can see it, its runs and their approvals. Produced from the
+  // agent's `security:` block (its `access:` key). Empty means only admins have access (the built-in rule in
+  // the security engine), which is also the behavior when there is no `security:` block at all.
+  repeated SecurityRule security_rules = 9;
+  // Launch expression is a templated boolean expression deciding who may start a run of the agent.
+  // Empty inherits the resolved access. Launching is a subset of access by construction.
+  string launch_expression = 10;
+  // Approve expression is a templated boolean expression deciding who may decide an approval that the
+  // connector's approval posture marked as needed. Beyond `.user`, it may reference `.action.tool`,
+  // `.action.connector` and `.run.actor`. Empty means only admins. Deciding is a subset of access.
+  string approve_expression = 11;
 }
 
 // MCPConnector declares one outbound MCP server the agent may reach (Kairos Act, experimental). It carries

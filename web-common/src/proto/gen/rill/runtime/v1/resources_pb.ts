@@ -6270,6 +6270,32 @@ export class AgentSpec extends Message<AgentSpec> {
    */
   mcp: MCPConnector[] = [];
 
+  /**
+   * Security rules to apply to the agent: who can see it, its runs and their approvals. Produced from the
+   * agent's `security:` block (its `access:` key). Empty means only admins have access (the built-in rule in
+   * the security engine), which is also the behavior when there is no `security:` block at all.
+   *
+   * @generated from field: repeated rill.runtime.v1.SecurityRule security_rules = 9;
+   */
+  securityRules: SecurityRule[] = [];
+
+  /**
+   * Launch expression is a templated boolean expression deciding who may start a run of the agent.
+   * Empty inherits the resolved access. Launching is a subset of access by construction.
+   *
+   * @generated from field: string launch_expression = 10;
+   */
+  launchExpression = "";
+
+  /**
+   * Approve expression is a templated boolean expression deciding who may decide an approval that the
+   * connector's approval posture marked as needed. Beyond `.user`, it may reference `.action.tool`,
+   * `.action.connector` and `.run.actor`. Empty means only admins. Deciding is a subset of access.
+   *
+   * @generated from field: string approve_expression = 11;
+   */
+  approveExpression = "";
+
   constructor(data?: PartialMessage<AgentSpec>) {
     super();
     proto3.util.initPartial(data, this);
@@ -6286,6 +6312,9 @@ export class AgentSpec extends Message<AgentSpec> {
     { no: 6, name: "tools", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
     { no: 7, name: "limits", kind: "message", T: AgentLimits },
     { no: 8, name: "mcp", kind: "message", T: MCPConnector, repeated: true },
+    { no: 9, name: "security_rules", kind: "message", T: SecurityRule, repeated: true },
+    { no: 10, name: "launch_expression", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 11, name: "approve_expression", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): AgentSpec {

@@ -71,6 +71,8 @@ func (m *AgentDefinition) validate(all bool) error {
 
 	// no validation rules for TimeoutSeconds
 
+	// no validation rules for CanLaunch
+
 	if len(errors) > 0 {
 		return AgentDefinitionMultiError(errors)
 	}
@@ -314,6 +316,8 @@ func (m *AgentRun) validate(all bool) error {
 			}
 		}
 	}
+
+	// no validation rules for CanCancel
 
 	if len(errors) > 0 {
 		return AgentRunMultiError(errors)
@@ -669,6 +673,8 @@ func (m *AgentApproval) validate(all bool) error {
 	// no validation rules for Position
 
 	// no validation rules for Total
+
+	// no validation rules for CanDecide
 
 	if len(errors) > 0 {
 		return AgentApprovalMultiError(errors)

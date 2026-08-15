@@ -26,8 +26,10 @@ type agentTriggerBodyYAML struct {
 		// query_for_attributes. Explicit attributes take precedence over user_id/user_email. Empty (and no user) means
 		// the run carries no claims and fails closed; the reconciler validates the rest.
 		Attributes map[string]any `yaml:"attributes"`
-		// UserID / UserEmail name the user whose attributes the run acts as; the reconciler resolves them via admin,
-		// exactly like an alert's for.user_id / for.user_email. Mutually exclusive.
+		// UserID names the user whose attributes the run acts as; the reconciler resolves it via admin, like an
+		// alert's for.user_id. UserEmail is kept only so its use fails with an explanatory error: naming the actor
+		// by email binds the trigger to an address that can change or leave, at which point the trigger would
+		// silently stop resolving an identity and every run would fail closed.
 		UserID    string `yaml:"user_id"`
 		UserEmail string `yaml:"user_email"`
 	} `yaml:"actor"`
@@ -95,21 +97,18 @@ func buildAgentTriggerSpec(agent string, body agentTriggerBodyYAML) (*runtimev1.
 		return nil, err
 	}
 
-	// Identity is declared at most one way, like an alert's for.{user_id|user_email|query_for_attributes}: mixing a
-	// nominal user with explicit attributes would run under the attributes while the audit subject still reads as the
-	// named user. None is allowed too (a service run that fails closed for want of claims).
-	identityForms := 0
-	if strings.TrimSpace(body.Actor.UserID) != "" {
-		identityForms++
-	}
+	// Naming the actor by email is rejected: an address can change or leave the org, at which point the trigger
+	// would silently stop resolving an identity and every run would fail closed with nobody noticing at edit time.
+	// A user_id is stable across those events, and attributes declare a service identity explicitly.
 	if strings.TrimSpace(body.Actor.UserEmail) != "" {
-		identityForms++
+		return nil, fmt.Errorf(`"actor.user_email" is not supported: an email address can change or leave the org, silently breaking the trigger; use "actor.user_id" (stable) or "actor.attributes" instead`)
 	}
-	if len(body.Actor.Attributes) > 0 {
-		identityForms++
-	}
-	if identityForms > 1 {
-		return nil, fmt.Errorf(`"actor" must set at most one of "user_id", "user_email" or "attributes"`)
+
+	// Identity is declared at most one way, like an alert's for.{user_id|query_for_attributes}: mixing a nominal
+	// user with explicit attributes would run under the attributes while the audit subject still reads as the
+	// named user. None is allowed too (a service run that fails closed for want of claims).
+	if strings.TrimSpace(body.Actor.UserID) != "" && len(body.Actor.Attributes) > 0 {
+		return nil, fmt.Errorf(`"actor" must set at most one of "user_id" or "attributes"`)
 	}
 
 	// The actor's run-as attributes become the run's SecurityClaims (mirrors an alert's query_for_attributes). Convert
@@ -151,7 +150,6 @@ func buildAgentTriggerSpec(agent string, body agentTriggerBodyYAML) (*runtimev1.
 		Actor: &runtimev1.AgentTriggerActor{
 			Attributes: actorAttributes,
 			UserId:     body.Actor.UserID,
-			UserEmail:  body.Actor.UserEmail,
 		},
 		Input: &runtimev1.AgentTriggerInput{
 			Prompt:  body.Input.Prompt,

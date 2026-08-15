@@ -333,19 +333,20 @@ source:
   events: [entered_fail]
 actor:
   user_id: usr_1
-  user_email: act@kairosagentica.com
+  attributes:
+    email: explicit@kairosagentica.com
 `,
 		},
 	})
 	testruntime.ReconcileParserAndWait(t, rt, id)
-	// user_id and user_email are two forms of the one identity; declaring both is rejected at parse (the resource is
-	// never created), like an alert's for.{user_id|user_email}.
+	// Mixing a named user with explicit attributes is rejected at parse (the resource is never created): it
+	// would audit the run as one user while it executes with a different identity's attributes.
 	testruntime.RequireParseErrors(t, rt, id, map[string]string{
 		"/triggers/on_fail.yaml": "at most one",
 	})
 }
 
-func TestAgentTriggerActorUserEmailFallsBackWithoutAdmin(t *testing.T) {
+func TestAgentTriggerActorUserIDFallsBackWithoutAdmin(t *testing.T) {
 	rt, id := testruntime.NewInstanceWithOptions(t, testruntime.InstanceOptions{
 		Files: map[string]string{
 			"rill.yaml": "",
@@ -353,7 +354,7 @@ func TestAgentTriggerActorUserEmailFallsBackWithoutAdmin(t *testing.T) {
 type: agent
 instructions: Investigate.
 `,
-			// user_email names the run-as user, resolved via admin. With no admin service (the test's noop admin), it
+			// user_id names the run-as user, resolved via admin. With no admin service (the test's noop admin), it
 			// falls back to no attributes — the trigger still validates, and the run fails closed until an identity
 			// resolves. It must NOT fail the reconcile.
 			"triggers/on_fail.yaml": `
@@ -363,7 +364,7 @@ source:
   kind: alert
   events: [entered_fail]
 actor:
-  user_email: act@kairosagentica.com
+  user_id: usr_act
 `,
 		},
 	})
@@ -372,11 +373,11 @@ actor:
 	res := testruntime.GetResource(t, rt, id, runtime.ResourceKindAgentTrigger, "on_fail")
 	require.Empty(t, res.Meta.ReconcileError)
 	require.NotNil(t, res.GetAgentTrigger().State.ValidSpec)
-	require.Equal(t, "act@kairosagentica.com", res.GetAgentTrigger().State.ValidSpec.Actor.UserEmail)
+	require.Equal(t, "usr_act", res.GetAgentTrigger().State.ValidSpec.Actor.UserId)
 	require.Nil(t, res.GetAgentTrigger().State.ValidSpec.Actor.Attributes, "no admin resolution => nil attributes (fail closed)")
 }
 
-func TestAgentTriggerActorRejectsMixedIdentity(t *testing.T) {
+func TestAgentTriggerActorRejectsUserEmail(t *testing.T) {
 	rt, id := testruntime.NewInstanceWithOptions(t, testruntime.InstanceOptions{
 		Files: map[string]string{
 			"rill.yaml": "",
@@ -384,8 +385,8 @@ func TestAgentTriggerActorRejectsMixedIdentity(t *testing.T) {
 type: agent
 instructions: Investigate.
 `,
-			// Mixing a named user with explicit attributes is rejected: it would audit the run as one user while it
-			// executes with a different identity's attributes. Identity must be declared at most one way, like an alert's.
+			// Naming the actor by email is rejected: the address can change or leave the org, at which point the
+			// trigger silently stops resolving an identity and every run fails closed with nobody noticing.
 			"triggers/on_fail.yaml": `
 type: agent_trigger
 agent: incident
@@ -394,15 +395,13 @@ source:
   events: [entered_fail]
 actor:
   user_email: other@kairosagentica.com
-  attributes:
-    email: explicit@kairosagentica.com
 `,
 		},
 	})
 	testruntime.ReconcileParserAndWait(t, rt, id)
 	// A rejected identity is a parse error (the resource never reaches the reconciler), like an invalid alert.
 	testruntime.RequireParseErrors(t, rt, id, map[string]string{
-		"/triggers/on_fail.yaml": `at most one`,
+		"/triggers/on_fail.yaml": `"actor.user_email" is not supported`,
 	})
 }
 

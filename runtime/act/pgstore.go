@@ -465,13 +465,16 @@ func (s *PostgresRunStore) ListRuns(ctx context.Context, f ListRunsFilter) ([]*R
 		limit = defaultListLimit
 	}
 	// Optional filters are folded into the WHERE via NULL-guards so the query text is fixed: an empty AgentName or
-	// Status matches everything, which keeps the prepared statement stable and the index usable.
+	// Status matches everything, which keeps the prepared statement stable and the index usable. The access
+	// allow-list rides the same way: a nil slice arrives as SQL NULL (no restriction), a non-nil one restricts in
+	// the WHERE itself so the page is full of rows the caller may actually see.
 	rows, err := s.pool.Query(ctx, s.selectRunSQL()+`
 		WHERE instance_id=$1
 		  AND ($2='' OR agent_name=$2)
 		  AND ($3='' OR status=$3)
+		  AND ($4::text[] IS NULL OR agent_name = ANY($4))
 		ORDER BY created_on DESC
-		LIMIT $4`, f.InstanceID, f.AgentName, string(f.Status), limit)
+		LIMIT $5`, f.InstanceID, f.AgentName, string(f.Status), f.AccessibleAgents, limit)
 	if err != nil {
 		return nil, fmt.Errorf("act: list runs: %w", err)
 	}
@@ -545,7 +548,7 @@ func (s *PostgresRunStore) CreateApproval(ctx context.Context, a NewApproval) er
 }
 
 func (s *PostgresRunStore) GetApproval(ctx context.Context, instanceID, approvalID string) (*Approval, error) {
-	row := s.pool.QueryRow(ctx, s.selectApprovalSQL()+` WHERE approval_id=$1 AND instance_id=$2`, approvalID, instanceID)
+	row := s.pool.QueryRow(ctx, s.selectApprovalSQL()+` WHERE a.approval_id=$1 AND a.instance_id=$2`, approvalID, instanceID)
 	a, err := scanApproval(row)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, ErrApprovalNotFound
@@ -564,12 +567,15 @@ func (s *PostgresRunStore) ListApprovals(ctx context.Context, f ListApprovalsFil
 	if limit <= 0 {
 		limit = defaultListLimit
 	}
+	// The access allow-list resolves through the approval's run (an approval row does not carry its agent, but
+	// the projection already joins it), still inside the WHERE so pagination stays truthful; see ListRuns.
 	rows, err := s.pool.Query(ctx, s.selectApprovalSQL()+`
-		WHERE instance_id=$1
-		  AND ($2='' OR run_id=$2)
-		  AND ($3='' OR status=$3)
-		ORDER BY created_on DESC
-		LIMIT $4`, f.InstanceID, f.RunID, f.Status, limit)
+		WHERE a.instance_id=$1
+		  AND ($2='' OR a.run_id=$2)
+		  AND ($3='' OR a.status=$3)
+		  AND ($4::text[] IS NULL OR r.agent_name = ANY($4))
+		ORDER BY a.created_on DESC
+		LIMIT $5`, f.InstanceID, f.RunID, f.Status, f.AccessibleAgents, limit)
 	if err != nil {
 		return nil, fmt.Errorf("act: list approvals: %w", err)
 	}
@@ -611,7 +617,7 @@ func (s *PostgresRunStore) ResolveApproval(ctx context.Context, instanceID, appr
 		if err != nil {
 			return fmt.Errorf("update approval: %w", err)
 		}
-		a, err = scanApproval(tx.QueryRow(ctx, s.selectApprovalSQL()+` WHERE approval_id=$1 AND instance_id=$2`, approvalID, instanceID))
+		a, err = scanApproval(tx.QueryRow(ctx, s.selectApprovalSQL()+` WHERE a.approval_id=$1 AND a.instance_id=$2`, approvalID, instanceID))
 		if err != nil {
 			return fmt.Errorf("reload approval: %w", err)
 		}
@@ -644,11 +650,17 @@ func (s *PostgresRunStore) selectRunSQL() string {
 		FROM %s`, s.t("agent_runs"))
 }
 
+// selectApprovalSQL is the column list and source for an approval projection. It joins the approval's run
+// (every approval has one, enforced by the FK) to carry the agent name and the run's actor: the pair a reader
+// needs to resolve the approve policy for this concrete approval. Consumers must qualify shared column names
+// (a.run_id, a.instance_id, a.status) in their WHERE clauses.
 func (s *PostgresRunStore) selectApprovalSQL() string {
 	return fmt.Sprintf(`
-		SELECT approval_id, run_id, instance_id, tool_name, connector, tool_call_id, args_hash, proposal, policy,
-			status, requested_by, decided_by, created_on, decided_on, position, total
-		FROM %s`, s.t("agent_approvals"))
+		SELECT a.approval_id, a.run_id, a.instance_id, r.agent_name, r.actor_subject, a.tool_name, a.connector,
+			a.tool_call_id, a.args_hash, a.proposal, a.policy, a.status, a.requested_by, a.decided_by, a.created_on,
+			a.decided_on, a.position, a.total
+		FROM %s a JOIN %s r ON r.run_id = a.run_id AND r.instance_id = a.instance_id`,
+		s.t("agent_approvals"), s.t("agent_runs"))
 }
 
 // rowScanner is the read surface shared by pgx.Row (single-row) and pgx.Rows (iterated), so one scan helper serves
@@ -674,9 +686,9 @@ func scanRun(row rowScanner) (*Run, error) {
 
 func scanApproval(row rowScanner) (*Approval, error) {
 	var a Approval
-	err := row.Scan(&a.ApprovalID, &a.RunID, &a.InstanceID, &a.ToolName, &a.Connector, &a.ToolCallID, &a.ArgsHash,
-		&a.Proposal, &a.Policy, &a.Status, &a.RequestedBy, &a.DecidedBy, &a.CreatedOn, &a.DecidedOn,
-		&a.Position, &a.Total)
+	err := row.Scan(&a.ApprovalID, &a.RunID, &a.InstanceID, &a.AgentName, &a.RunActorSubject, &a.ToolName,
+		&a.Connector, &a.ToolCallID, &a.ArgsHash, &a.Proposal, &a.Policy, &a.Status, &a.RequestedBy, &a.DecidedBy,
+		&a.CreatedOn, &a.DecidedOn, &a.Position, &a.Total)
 	if err != nil {
 		return nil, err
 	}

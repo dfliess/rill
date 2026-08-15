@@ -68,6 +68,10 @@ var defaultFeatureFlags = map[string]string{
 	"custom_charts": "false",
 	// Controls visibility of the personal canvas feature (per-user owner-only canvases stored as virtual files)
 	"personal_canvases": "false",
+	// Controls the Kairos Act plane: the agents tab in the UI and, unlike most flags, also the AgentService API
+	// handlers, which enforce it as the kill switch. Off by default; a project enables it in rill.yaml, and can
+	// point it at a variable to turn Act off per project and environment without a redeploy.
+	"agents": "false",
 }
 
 // ResolveFeatureFlags resolves feature flags for the given instance and the provided user attributes.

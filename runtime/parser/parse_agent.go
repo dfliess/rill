@@ -5,8 +5,10 @@ import (
 	"math"
 	"path"
 	"strings"
+	"text/template"
 
 	runtimev1 "github.com/rilldata/rill/proto/gen/rill/runtime/v1"
+	"gopkg.in/yaml.v3"
 )
 
 // AgentYAML is the raw structure of an Agent resource defined in YAML (does not include common fields).
@@ -42,6 +44,27 @@ type AgentYAML struct {
 	// (which is this agent): the parser desugars it into a standalone AgentTrigger resource. The triggers live
 	// outside AgentSpec on purpose, so editing when the agent fires never changes its spec_hash (what it does).
 	Triggers []agentTriggerBodyYAML `yaml:"triggers"`
+	// Security declares who can see the agent (access), start a run of it (launch) and decide the approvals its
+	// actions request (approve). Absent means only admins. It is deliberately NOT folded into spec_hash-relevant
+	// behavior snapshots: policy is read live, so tightening it reaches approvals that are already waiting.
+	Security *AgentSecurityYAML `yaml:"security"`
+}
+
+// AgentSecurityYAML is the security block of an agent. It embeds SecurityPolicyYAML so `access:` shares the
+// grammar, validation and errors of a dashboard's security policy, and adds the two agent verbs on top:
+//   - launch: who may start a run. Absent inherits access (a run is inert until an action passes the approval gate).
+//   - approve: who may decide an approval the connector's posture marked as needed. Absent means only admins:
+//     the asymmetry with launch is deliberate, approving touches the outside world.
+//
+// Both are templated boolean expressions over `.user`; approve may additionally reference `.action.tool`,
+// `.action.connector` and `.run.actor`.
+type AgentSecurityYAML struct {
+	SecurityPolicyYAML `yaml:",inline"`
+	Launch             string `yaml:"launch"`
+	Approve            string `yaml:"approve"`
+	// Execute is reserved for a future per-action execution gate. Setting it is an error rather than an unknown
+	// key, so the reserved meaning cannot be squatted by accident.
+	Execute yaml.Node `yaml:"execute"`
 }
 
 // parseAgent parses an agent definition and adds the resulting resource to p.Resources.
@@ -109,6 +132,16 @@ func (p *Parser) parseAgent(node *Node) error {
 		}
 	}
 
+	// Parse and validate the security block (also before any insert: the parser must not error afterwards).
+	var securityRules []*runtimev1.SecurityRule
+	var launchExpr, approveExpr string
+	if tmp.Security != nil {
+		securityRules, launchExpr, approveExpr, err = parseAgentSecurity(tmp.Security)
+		if err != nil {
+			return err
+		}
+	}
+
 	// Desugar the inline triggers (ADR-0016) into standalone AgentTrigger specs. Build and name them, and dry-run their
 	// resource names for collisions, all BEFORE inserting anything: the parser must not return an error once a resource
 	// is inserted, and emitting the agent plus its triggers must be all-or-nothing rather than a half-built set.
@@ -170,6 +203,9 @@ func (p *Parser) parseAgent(node *Node) error {
 			}
 		}
 	}
+	r.AgentSpec.SecurityRules = securityRules
+	r.AgentSpec.LaunchExpression = launchExpr
+	r.AgentSpec.ApproveExpression = approveExpr
 
 	// Emit the desugared AgentTrigger resources. They are NOT added to AgentSpec (so the agent's spec_hash is untouched
 	// by construction); each is a sibling resource that refs the agent and carries the agent's own paths and tags. The
@@ -185,4 +221,121 @@ func (p *Parser) parseAgent(node *Node) error {
 	}
 
 	return nil
+}
+
+// parseAgentSecurity validates an agent's security block and maps it to the spec's fields: the access rules
+// (through SecurityPolicyYAML.Proto, so `access:` gets the same validation and deny-all-when-absent default as
+// a dashboard policy) and the launch/approve gate expressions.
+func parseAgentSecurity(sec *AgentSecurityYAML) (rules []*runtimev1.SecurityRule, launch, approve string, err error) {
+	// The reserved key fails loudly instead of decoding as unknown, so its future meaning cannot be squatted.
+	if !sec.Execute.IsZero() {
+		return nil, "", "", fmt.Errorf(`invalid 'security': 'execute' is reserved and not implemented; use 'launch' to control who may start a run and the connector's approval posture to control which actions need a decision`)
+	}
+
+	// The embedded policy members that only make sense on a queryable resource are rejected rather than silently
+	// accepted: an agent has no fields to include/exclude and no rows to filter, so their presence is a mistake.
+	if sec.RowFilter != "" {
+		return nil, "", "", fmt.Errorf(`invalid 'security': 'row_filter' is not supported on agents (an agent has no rows); only 'access', 'launch' and 'approve' apply`)
+	}
+	if len(sec.Include) > 0 || len(sec.Exclude) > 0 {
+		return nil, "", "", fmt.Errorf(`invalid 'security': 'include'/'exclude' are not supported on agents (an agent has no fields); only 'access', 'launch' and 'approve' apply`)
+	}
+	if len(sec.Rules) > 0 {
+		return nil, "", "", fmt.Errorf(`invalid 'security': 'rules' is not supported on agents; only 'access', 'launch' and 'approve' apply`)
+	}
+
+	// The approval-time context is only in scope while deciding an approval: in access/launch it would resolve
+	// to nothing at request time, silently turning the policy into a constant, so referencing it is an error.
+	for key, expr := range map[string]string{"access": sec.Access, "launch": sec.Launch} {
+		refs, err := templateContextRefs(expr, "action", "run")
+		if err != nil {
+			return nil, "", "", fmt.Errorf(`invalid 'security': %q templating is not valid: %w`, key, err)
+		}
+		if len(refs) > 0 {
+			return nil, "", "", fmt.Errorf(`invalid 'security': %q cannot reference %q: the action context exists only while deciding an approval, so it is available only in 'approve'`, key, "."+refs[0])
+		}
+	}
+
+	// In approve, the action context is exactly the identity of the proposed action plus the run's actor. The
+	// action's arguments are model-chosen, so exposing them would let the prompt influence who may approve; an
+	// unknown field is rejected instead of resolving empty.
+	approveRefs, err := templateContextRefs(sec.Approve, "action", "run")
+	if err != nil {
+		return nil, "", "", fmt.Errorf(`invalid 'security': 'approve' templating is not valid: %w`, err)
+	}
+	for _, ref := range approveRefs {
+		switch ref {
+		case "action.tool", "action.connector", "run.actor":
+		default:
+			return nil, "", "", fmt.Errorf(`invalid 'security': 'approve' cannot reference %q: beyond '.user', only '.action.tool', '.action.connector' and '.run.actor' are available (the action's arguments are model-chosen and must never select the approver)`, "."+ref)
+		}
+	}
+
+	// Validate that launch and approve render and evaluate as booleans, exactly like `access:` (approve gets
+	// sample values for its extra context, so a valid reference does not fail the dry run).
+	if sec.Launch != "" {
+		if err := validateAgentGateExpression("launch", sec.Launch, nil); err != nil {
+			return nil, "", "", err
+		}
+	}
+	if sec.Approve != "" {
+		extra := map[string]any{
+			"action": map[string]any{"tool": "dummy_tool", "connector": "dummy_connector"},
+			"run":    map[string]any{"actor": "dummy_actor"},
+		}
+		if err := validateAgentGateExpression("approve", sec.Approve, extra); err != nil {
+			return nil, "", "", err
+		}
+	}
+
+	// Delegate access to the shared policy parser: it validates the template, validates that it evaluates as a
+	// boolean, and emits the deny-all rule when `security:` is present without `access:`.
+	rules, err = sec.SecurityPolicyYAML.Proto()
+	if err != nil {
+		return nil, "", "", err
+	}
+	return rules, sec.Launch, sec.Approve, nil
+}
+
+// validateAgentGateExpression dry-runs a gate expression with sample template data, mirroring how
+// SecurityPolicyYAML.Proto validates `access:`.
+func validateAgentGateExpression(key, expr string, extra map[string]any) error {
+	data := validationTemplateData
+	data.ExtraProps = extra
+	tmp, err := ResolveTemplate(expr, data, false)
+	if err != nil {
+		return fmt.Errorf(`invalid 'security': %q templating is not valid: %w`, key, err)
+	}
+	_, err = EvaluateBoolExpression(tmp)
+	if err != nil {
+		return fmt.Errorf(`invalid 'security': %q expression error: %w`, key, err)
+	}
+	return nil
+}
+
+// templateContextRefs returns the field references in expr that address one of the given context roots (e.g.
+// "action" matches both ".action" and ".action.tool"). It only parses the template, never executes it, so a
+// reference outside the sample data is reported by name instead of failing as a template execution error.
+func templateContextRefs(expr string, roots ...string) ([]string, error) {
+	if expr == "" {
+		return nil, nil
+	}
+	// The func map only needs the names to exist for parsing; none of the functions run here.
+	funcMap := newFuncMap("", nil)
+	for _, name := range []string{"configure", "dependency", "ref", "lookup", "env"} {
+		funcMap[name] = func(...string) (string, error) { return "", nil }
+	}
+	t, err := template.New("").Funcs(funcMap).Option("missingkey=default").Parse(expr)
+	if err != nil {
+		return nil, err
+	}
+	var refs []string
+	for _, v := range extractVariablesFromTemplate(t.Tree) {
+		for _, root := range roots {
+			if v == root || strings.HasPrefix(v, root+".") {
+				refs = append(refs, v)
+			}
+		}
+	}
+	return refs, nil
 }

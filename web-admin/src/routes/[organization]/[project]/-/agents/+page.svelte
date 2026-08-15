@@ -46,6 +46,14 @@
   let agentNames = $derived(
     ($agentsQuery.data?.agents ?? []).map((a) => a.name ?? "").filter(Boolean),
   );
+  // The server resolves can_launch per agent; the dialog only offers what the
+  // caller can actually start, and disappears entirely when that is nothing.
+  let launchableAgentNames = $derived(
+    ($agentsQuery.data?.agents ?? [])
+      .filter((a) => !!a.canLaunch)
+      .map((a) => a.name ?? "")
+      .filter(Boolean),
+  );
 
   // Agent + status are server-side filters, so bridge the runes filter state into
   // a store the query subscribes to; the search box narrows client-side. Seed the
@@ -94,7 +102,13 @@
   <div class="flex flex-col gap-y-6">
     <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
       <p class="text-fg-secondary text-sm">{m.agents_page_description()}</p>
-      <StartAgentRunDialog agents={agentNames} {organization} {project} />
+      {#if launchableAgentNames.length > 0}
+        <StartAgentRunDialog
+          agents={launchableAgentNames}
+          {organization}
+          {project}
+        />
+      {/if}
     </div>
 
     <AgentRunFilters
