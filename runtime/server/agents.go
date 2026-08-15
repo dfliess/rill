@@ -606,7 +606,12 @@ func (s *Server) resolveApprovalDecision(ctx context.Context, instanceID string,
 	}
 
 	allowed, err = s.runtime.ResolveAgentApprove(ctx, instanceID, claims, res, runtime.AgentActionContext{
-		Tool:      approval.ToolName,
+		// The RAW tool name, not the mcp.<connector>.<tool> form the ledger stores. An approve expression is written
+		// by the same author who wrote the connector's auto_approve globs a few lines above it in the same file, and
+		// those match the raw name; binding the prefixed form here would mean two naming conventions in one YAML.
+		// It also fails in the dangerous direction: `eq .action.tool "delete_account"` would silently never match, so
+		// a rule meant to reserve deletions for one group would hand them to everyone the fallback clause allows.
+		Tool:      act.RawToolName(approval.ToolName, approval.Connector),
 		Connector: approval.Connector,
 		RunActor:  approval.RunActorSubject,
 	})

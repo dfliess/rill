@@ -75,7 +75,7 @@ func matchKillSpec(spec string, scope KillScope) (bool, string, error) {
 				return true, fmt.Sprintf("agent %q is disabled", value), nil
 			}
 		case "tool":
-			if scope.Tool == value || rawToolName(scope.Tool, scope.Connector) == value {
+			if scope.Tool == value || RawToolName(scope.Tool, scope.Connector) == value {
 				return true, fmt.Sprintf("tool %q is disabled", value), nil
 			}
 		case "connector":
