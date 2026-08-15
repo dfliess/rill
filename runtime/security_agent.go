@@ -86,10 +86,15 @@ func (r *Runtime) ResolveAgentApprove(ctx context.Context, instanceID string, cl
 // resolveAgentApprove evaluates the approve gate for a caller that is already known to have access.
 func (r *Runtime) resolveAgentApprove(ctx context.Context, instanceID string, claims *SecurityClaims, res *runtimev1.Resource, spec *runtimev1.AgentSpec, action AgentActionContext) (bool, error) {
 	if spec.ApproveExpression == "" {
-		// An absent approve means only admins: deciding an action touches the outside world, so unlike launch
-		// it does not inherit access. EditTrigger keeps working as the operator's gate here, matching the
-		// pre-policy behavior of the approval endpoints.
-		return claims.Admin() || claims.Can(EditTrigger), nil
+		// An absent approve means only project admins: deciding an action touches the outside world, so unlike
+		// launch it does not inherit access. The gate is the EditTrigger permission, matching the pre-policy
+		// behavior of the approval endpoints.
+		//
+		// It is deliberately NOT claims.Admin(). That reads the "admin" user attribute, which a magic-link or
+		// embed token copies from whoever created it, so an admin sharing a dashboard would mint a token that
+		// signs actions. Access may still be granted by the attribute (the built-in rule in resolveRules, same
+		// posture upstream takes for alerts and reports), but seeing an agent must not imply signing for it.
+		return claims.Can(EditTrigger), nil
 	}
 
 	extra := map[string]any{
