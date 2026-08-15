@@ -318,7 +318,10 @@ func NewMCPGateway(rt *runtime.Runtime, ledger ActionLedger, logger *slog.Logger
 		Ledger:   ledger,
 		Executor: &runtimeActionExecutor{resolver: resolver},
 		Secrets:  &mcpSecretResolver{rt: rt},
-		Logger:   logger,
+		// The kill switch reads the project variable, so an operator engages it without git and without a
+		// redeploy, per project and per environment. See killswitch.go.
+		KillSwitch: NewVariableKillSwitch(rt),
+		Logger:     logger,
 	}
 }
 
