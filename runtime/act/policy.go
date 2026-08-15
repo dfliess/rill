@@ -125,10 +125,6 @@ type PolicyInput struct {
 	// boundary (§16.3).
 	ReadOnlyHint  bool
 	TrustReadOnly bool
-	// GlobalPolicy and TenantPolicy are override maps keyed by tool name. Each may only harden the base decision; a
-	// looser override is ignored. This is the minimum floor no project can relax (§17.2, open question 8).
-	GlobalPolicy map[string]PolicyDecision
-	TenantPolicy map[string]PolicyDecision
 	// KillSwitch, when true, denies every action: the platform, tenant or agent switch is engaged (§17.2).
 	KillSwitch bool
 }
@@ -178,24 +174,6 @@ func Evaluate(in PolicyInput) PolicyResult {
 	// unclassified, so this exemption is what makes a connector's approval.auto / auto_approve posture take effect.
 	if decision == PolicyAllow && !autoApproved && !in.Class.known() {
 		decision, reason = PolicyApprovalRequired, "unclassified tool cannot auto-execute"
-	}
-
-	// Global then tenant policy may only harden. An override naming a looser decision is a no-op; a stricter one wins
-	// and records why. A corrupt override value sorts as deny (see strictness), so it fails closed.
-	for _, layer := range []struct {
-		name      string
-		overrides map[string]PolicyDecision
-	}{
-		{name: "global", overrides: in.GlobalPolicy},
-		{name: "tenant", overrides: in.TenantPolicy},
-	} {
-		override, ok := layer.overrides[in.Tool]
-		if !ok {
-			continue
-		}
-		if hardened := harden(decision, override); hardened != decision {
-			decision, reason = hardened, "hardened by "+layer.name+" policy"
-		}
 	}
 
 	return PolicyResult{Decision: decision, Reason: reason}

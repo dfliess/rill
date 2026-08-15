@@ -191,21 +191,6 @@ type ActionExecutor interface {
 	Verify(ctx context.Context, req VerifyRequest) (VerifyResult, error)
 }
 
-// PolicyConfig holds the deterministic override layers the gateway applies on top of an agent's own approval config.
-// Each layer may only harden a decision (§8.1); neither can relax the agent's rule. These are the platform-wide and
-// per-tenant floors (§17.2, open question 8).
-//
-// NOTE: Both maps are deliberately left empty in production, and that is a decision rather than missing work: an
-// operator floor only protects someone when the agents it constrains are written by someone else, and today every
-// project is authored in-house. See the amendment to kairos-cloud ADR-0018 (2026-08-15), which wires the kill switch
-// but keeps these deferred until a customer edits their own project. The evaluation below stays wired and tested, so
-// filling the maps is all it takes.
-type PolicyConfig struct {
-	// Global is the platform floor no project can relax. Tenant is the per-tenant floor. Both key by tool name.
-	Global map[string]PolicyDecision
-	Tenant map[string]PolicyDecision
-}
-
 // Gateway is the single choke point every action tool call passes through (§16.2). The LLM never reaches a connector
 // directly: it proposes, and the gateway checks the allowlist (registry membership), validates arguments against the
 // tool schema, classifies risk and evaluates deterministic policy, resolves secrets server-side, derives the
@@ -223,8 +208,6 @@ type Gateway struct {
 	Secrets SecretResolver
 	// KillSwitch, when set, disables actions per scope (§17.2). Nil means no switch is wired.
 	KillSwitch KillSwitch
-	// Policy holds the global/tenant hardening layers.
-	Policy PolicyConfig
 	// Timeout and MaxOutputBytes bound each external write. Zero values fall back to package defaults.
 	Timeout        time.Duration
 	MaxOutputBytes int
@@ -254,8 +237,6 @@ type AuthorizeInput struct {
 	Descriptor  ToolDescriptor
 	Found       bool
 	AutoApprove map[string]bool
-	Global      map[string]PolicyDecision
-	Tenant      map[string]PolicyDecision
 	KillSwitch  bool
 	KillReason  string
 }
@@ -302,8 +283,6 @@ func Authorize(in AuthorizeInput) Authorization {
 			Class:         in.Descriptor.Class,
 			ReadOnlyHint:  in.Descriptor.ReadOnlyHint,
 			TrustReadOnly: in.Descriptor.TrustReadOnly,
-			GlobalPolicy:  in.Global,
-			TenantPolicy:  in.Tenant,
 		})
 		auth.Decision, auth.Reason = res.Decision, res.Reason
 	}
@@ -337,8 +316,6 @@ func (g *Gateway) Propose(ctx context.Context, in ProposeActionInput) (Authoriza
 		Descriptor:  desc,
 		Found:       found,
 		AutoApprove: in.AutoApprove,
-		Global:      g.Policy.Global,
-		Tenant:      g.Policy.Tenant,
 		KillSwitch:  killed,
 		KillReason:  killReason,
 	})
@@ -708,8 +685,6 @@ func (g *Gateway) reauthorize(in ExecuteActionInput, action *Action, desc ToolDe
 		Descriptor:  desc,
 		Found:       found,
 		AutoApprove: in.AutoApprove,
-		Global:      g.Policy.Global,
-		Tenant:      g.Policy.Tenant,
 		KillSwitch:  false,
 	})
 	// harden returns the stricter of the two; if the fresh decision is stricter than what was approved, harden changes
