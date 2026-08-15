@@ -29,6 +29,18 @@ describe("overview-utils", () => {
       ]);
     });
 
+    it("counts Act agents but not their triggers", () => {
+      const resources = [
+        makeResource(ResourceKind.Agent),
+        makeResource(ResourceKind.Agent),
+        makeResource(ResourceKind.AgentTrigger),
+      ];
+      const result = countByKind(resources);
+      expect(result).toEqual([
+        { kind: ResourceKind.Agent, label: "Agent", count: 2 },
+      ]);
+    });
+
     it("filters out non-display kinds", () => {
       const resources = [
         makeResource(ResourceKind.Source),
