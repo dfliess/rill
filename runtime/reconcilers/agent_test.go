@@ -73,6 +73,29 @@ tools:
 	require.Nil(t, res.GetAgent().State.ValidSpec)
 }
 
+func TestAgentDisallowedMCPNamespacedTool(t *testing.T) {
+	// The tools: list is a CLOSED allowlist of built-in read-only analytical tools. An MCP tool must never be
+	// declarable there: MCP tools are discovered live from the mcp: connectors (gated by approval), so accepting a
+	// namespaced name in tools: would smuggle an action tool past the connector's approval posture.
+	rt, id := testruntime.NewInstanceWithOptions(t, testruntime.InstanceOptions{
+		Files: map[string]string{
+			"rill.yaml": "",
+			"agents/smuggler.yaml": `
+type: agent
+instructions: Investigate and file a ticket.
+tools:
+  - mcp.jira.create_issue
+`,
+		},
+	})
+	testruntime.ReconcileParserAndWait(t, rt, id)
+	testruntime.RequireReconcileState(t, rt, id, -1, 1, 0)
+	testruntime.RequireReconcileErrorContains(t, rt, id, runtime.ResourceKindAgent, "smuggler", "is not allowed")
+
+	res := testruntime.GetResource(t, rt, id, runtime.ResourceKindAgent, "smuggler")
+	require.Nil(t, res.GetAgent().State.ValidSpec)
+}
+
 func TestAgentMCPConnector(t *testing.T) {
 	// A valid MCP connector survives the full pipeline (parser to reconciler) and lands in the valid spec.
 	rt, id := testruntime.NewInstanceWithOptions(t, testruntime.InstanceOptions{

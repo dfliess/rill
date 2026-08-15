@@ -596,6 +596,17 @@ func TestGatewayFlowAutoApproveExecutesWithoutHuman(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, act.ActionSucceeded, action.Status, "the action executed, it was not rejected at reauthorization")
 	require.Equal(t, act.PolicyAllow, action.PolicyDecision)
+
+	// The auto-approved action created NO approval and never paused the run. This is what makes the agent's
+	// security.approve expression moot for an auto-approved tool: the approve gate is only ever evaluated against a
+	// stored approval row (runtime/server's resolveApprovalDecision), so with no row it is never consulted — the
+	// connector's posture, not the approve expression, is what decides whether a human enters the loop.
+	approvals, err := store.ListApprovals(t.Context(), act.ListApprovalsFilter{InstanceID: inst, RunID: runID})
+	require.NoError(t, err)
+	require.Empty(t, approvals, "an auto-approved action must not create an approval (so security.approve is never evaluated for it)")
+	events, err := store.ListRunEvents(t.Context(), inst, runID, 0, 100)
+	require.NoError(t, err)
+	require.NotContains(t, eventTypes(events), act.EventTypeWaitingApproval, "an auto-approved action must not pause the run")
 }
 
 // TestGatewayFlowNoActionSucceeds verifies a run that proposes no external action succeeds immediately without an

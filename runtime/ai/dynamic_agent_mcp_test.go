@@ -558,6 +558,50 @@ func TestDynamicAgentProposesWriteTool(t *testing.T) {
 	require.NotEmpty(t, res.Proposed[0].SchemaHash, "the proposal pins the tool schema discovered at run start")
 }
 
+// TestDynamicAgentUntrustedReadOnlyHintProposes pins the trust_read_only_hint OFF side of the routing split: the
+// server advertises echo as read-only, but the connector did not opt in to trusting that annotation, so the hint is
+// ignored — MCP annotations are not a security boundary — and the tool is routed as a governed write: captured as a
+// proposal for the approval workflow, never executed inline. (The ON side, inline execution, is
+// TestDynamicAgentCallsMCPTool.)
+func TestDynamicAgentUntrustedReadOnlyHintProposes(t *testing.T) {
+	m := newMockMCPServer(t, echoBuild) // echo declares ReadOnlyHint: true
+	rec := &mcpCallRecorder{}
+	defer pointRecordingClientAt(m, rec)()
+
+	script := &scriptedAIService{
+		turns: []turnFunc{
+			// One turn: the model calls the hinted-but-untrusted tool and the loop pauses on the proposal.
+			toolCallTurn("mcp_demo_echo", map[string]any{"message": "hola"}),
+		},
+	}
+	s := newMCPScriptedSession(t, script, map[string]string{"MCP_TOKEN": "s3cr3t"})
+
+	provider := ai.NewStaticAgentProvider(&ai.AgentSnapshot{
+		Name:         "mcp_agent",
+		Instructions: "You may use the echo tool.",
+		MCPConnectors: []ai.MCPConnector{{
+			Name:       "demo",
+			URL:        "https://mcp.example.test/mcp",
+			AuthSecret: "MCP_TOKEN",
+			// TrustReadOnlyHint deliberately false: the server's annotation alone must not earn inline execution.
+		}},
+		MaxSteps: 5,
+	})
+
+	res, err := ai.RunDynamicAgent(t.Context(), s, provider, "mcp_agent", "Echo hola.")
+	require.NoError(t, err)
+	require.Empty(t, res.Response, "the segment pauses at the governed proposal, answering nothing before approval")
+
+	// The hinted tool did NOT execute inline: no CallTool ever reached the client (only discovery's ListTools did).
+	require.Empty(t, rec.calls(), "an untrusted read-only hint must not execute the tool inline")
+
+	// It was captured as a governed proposal instead, under its dotted effective name.
+	require.Len(t, res.Proposed, 1)
+	require.Equal(t, "demo", res.Proposed[0].Connector)
+	require.Equal(t, "mcp.demo.echo", res.Proposed[0].Tool)
+	require.Equal(t, "hola", res.Proposed[0].Args["message"])
+}
+
 // TestDynamicAgentResumesAfterAction is the core of the segmented durable loop: a first segment proposes a governed
 // write and pauses; a second segment resumes with the executed action's result injected, and the model — now seeing
 // the outcome of the action it proposed — composes a closing answer without re-executing the write. The second segment
