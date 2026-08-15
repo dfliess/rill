@@ -1,14 +1,12 @@
 import type { PartialMessage } from "@bufbuild/protobuf";
 import type {
   AgentApproval,
-  AgentDefinition,
   AgentRun,
 } from "@rilldata/web-common/proto/gen/rill/runtime/v1/agents_pb";
 
 // The AgentService hooks return proto messages serialized with `toJson`, so the
 // data these components consume is the JSON projection of each message. We model
 // that as `PartialMessage<T>` to match what the generated hooks hand back.
-export type AgentDefinitionData = PartialMessage<AgentDefinition>;
 export type AgentRunData = PartialMessage<AgentRun>;
 export type AgentApprovalData = PartialMessage<AgentApproval>;
 

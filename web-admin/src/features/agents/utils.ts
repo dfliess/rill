@@ -104,25 +104,6 @@ export function isApprovalPending(status: string | undefined): boolean {
 }
 
 /**
- * An approval is resolved once a human decided it (or the run was cancelled).
- * Resolved approvals stay on the run: they are its audit trail, so the detail
- * view keeps showing what was proposed, who decided it and when.
- */
-export function isApprovalResolved(status: string | undefined): boolean {
-  const s = normalizeStatus(status);
-  return s !== "" && s !== "pending";
-}
-
-/**
- * A run is finished once the backend stamps `finished_on`. This is the terminal
- * marker we key polling and the Cancel affordance off, independent of the status
- * vocabulary.
- */
-export function isRunFinished(run: AgentRunData | undefined): boolean {
-  return !!run?.finishedOn;
-}
-
-/**
  * Timestamps arrive as RFC3339 strings (the proto3 JSON projection of
  * google.protobuf.Timestamp), even though the static type models the message
  * shape, so we accept `unknown` and coerce defensively.

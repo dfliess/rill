@@ -194,6 +194,12 @@ type ActionExecutor interface {
 // PolicyConfig holds the deterministic override layers the gateway applies on top of an agent's own approval config.
 // Each layer may only harden a decision (§8.1); neither can relax the agent's rule. These are the platform-wide and
 // per-tenant floors (§17.2, open question 8).
+//
+// NOTE: Both maps are deliberately left empty in production, and that is a decision rather than missing work: an
+// operator floor only protects someone when the agents it constrains are written by someone else, and today every
+// project is authored in-house. See the amendment to kairos-cloud ADR-0018 (2026-08-15), which wires the kill switch
+// but keeps these deferred until a customer edits their own project. The evaluation below stays wired and tested, so
+// filling the maps is all it takes.
 type PolicyConfig struct {
 	// Global is the platform floor no project can relax. Tenant is the per-tenant floor. Both key by tool name.
 	Global map[string]PolicyDecision
@@ -1005,8 +1011,10 @@ func (r *MapToolRegistry) Lookup(_ context.Context, _, _, tool string) (ToolDesc
 }
 
 // MapKillSwitch is a simple in-memory KillSwitch: a switch can be engaged for the whole platform, for an instance, or
-// for a specific agent within an instance (§17.2). It is safe for concurrent use. A more elaborate, persisted switch
-// replaces it later without changing the gateway.
+// for a specific agent within an instance (§17.2). It is safe for concurrent use.
+//
+// It is the test double, not the production switch. Production wires NewVariableKillSwitch (killswitch.go), which
+// reads the project's KILL_ACT variable so an operator can engage it without git and without a redeploy.
 type MapKillSwitch struct {
 	mu        sync.RWMutex
 	platform  string // non-empty reason means the whole platform is disabled

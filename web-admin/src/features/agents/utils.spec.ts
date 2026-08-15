@@ -1,10 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  eventDecidedBy,
-  isApprovalResolved,
-  subjectLabel,
-  timestampSortKey,
-} from "./utils";
+import { eventDecidedBy, subjectLabel, timestampSortKey } from "./utils";
 
 const NAMES = new Map([["f960bb37-9d8a", "Diego Kairos"]]);
 
@@ -37,20 +32,6 @@ describe("eventDecidedBy", () => {
     expect(eventDecidedBy({})).toBe("");
     expect(eventDecidedBy({ decided_by: 42 })).toBe("");
     expect(eventDecidedBy("run.resumed")).toBe("");
-  });
-});
-
-describe("isApprovalResolved", () => {
-  it("treats every terminal status as resolved", () => {
-    for (const status of ["approved", "denied", "cancelled"]) {
-      expect(isApprovalResolved(status)).toBe(true);
-    }
-  });
-
-  it("does not resolve a pending or unknown-empty approval", () => {
-    expect(isApprovalResolved("pending")).toBe(false);
-    expect(isApprovalResolved("")).toBe(false);
-    expect(isApprovalResolved(undefined)).toBe(false);
   });
 });
 
