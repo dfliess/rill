@@ -23,6 +23,9 @@ export const displayKinds = [
   ResourceKind.Canvas,
   ResourceKind.Alert,
   ResourceKind.Report,
+  // Kairos Act: an Agent is a first-class resource on the status page, grouped
+  // with the other automations. Its AgentTrigger stays out, like RefreshTrigger.
+  ResourceKind.Agent,
   ResourceKind.API,
   ResourceKind.Connector,
 ];
