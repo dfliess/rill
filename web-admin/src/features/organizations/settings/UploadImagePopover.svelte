@@ -18,6 +18,11 @@
   export let loading: boolean;
   export let error: string;
   export let dark = false;
+  // Paints the frame white whatever the app's theme is. The light slot previews
+  // a logo drawn for light backgrounds, so on a dark product it needs its own
+  // background to read at all; upstream got away without one because Rill's
+  // mark is a mid blue that survives either side.
+  export let light = false;
   export let onSave: (assetId: string) => Promise<void>;
   export let onRemove: () => Promise<void>;
 
@@ -78,7 +83,11 @@
     class="flex items-center relative group h-[72px] border border-gray-300 hover:bg-surface-hover w-fit {!imageUrl
       ? 'w-24'
       : 'w-20'}"
-    style={dark ? "background-color: var(--color-rill-gray-dark-50)" : ""}
+    style={dark
+      ? "background-color: var(--color-rill-gray-dark-50)"
+      : light
+        ? "background-color: var(--white)"
+        : ""}
   >
     <div class="m-auto px-4 w-fit h-10">
       {#if imageUrl}

@@ -8,7 +8,7 @@
   import SettingsContainer from "@rilldata/web-admin/features/organizations/settings/SettingsContainer.svelte";
   import UploadImagePopover from "@rilldata/web-admin/features/organizations/settings/UploadImagePopover.svelte";
   import { Button } from "@rilldata/web-common/components/button";
-  import Rill from "@rilldata/web-common/components/icons/Rill.svelte";
+  import KairosLogo from "@rilldata/web-common/components/icons/KairosLogo.svelte";
   import { queryClient } from "@rilldata/web-common/lib/svelte-query/globalQueryClient";
   import { m } from "@rilldata/web-common/lib/i18n/gen/messages";
 
@@ -111,6 +111,7 @@
       <div class="flex flex-col gap-y-2">
         <div class="text-sm font-medium">{m.settings_light_logo_label()}</div>
         <UploadImagePopover
+          light
           imageUrl={organizationLogoUrl}
           accept="image/png, image/ico, image/x-ico, image/icon, image/x-icon"
           label={m.settings_logo_title()}
@@ -120,7 +121,7 @@
           onSave={onSaveLight}
           onRemove={onRemoveLight}
         >
-          <Rill width="64" height="40" mode="light" />
+          <KairosLogo width="64" height="40" mode="light" />
         </UploadImagePopover>
         {#if organizationLogoUrl}
           <Button
@@ -155,7 +156,7 @@
           onSave={onSaveDark}
           onRemove={onRemoveDark}
         >
-          <Rill width="64" height="40" mode="dark" />
+          <KairosLogo width="64" height="40" mode="dark" />
         </UploadImagePopover>
         {#if organizationLogoDarkUrl}
           <Button
