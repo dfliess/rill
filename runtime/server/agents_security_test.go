@@ -424,10 +424,13 @@ func TestAgentApprovalCanDecidePerAction(t *testing.T) {
 	}
 	start1, err := srv.StartAgentRun(opsCtx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "finanzas", IdempotencyKey: "f1"})
 	require.NoError(t, err)
-	refundApproval := seedApproval(start1.RunId, "issue_refund", "reembolsar pedido 42")
+	// Seeded with the EFFECTIVE tool name, which is what real traffic stores (mcpconn composes
+	// "mcp."+connector+"."+tool). Seeding the raw name here would let the expression below pass while failing in
+	// production, which is exactly what this test exists to prevent.
+	refundApproval := seedApproval(start1.RunId, "mcp.erp.issue_refund", "reembolsar pedido 42")
 	start2, err := srv.StartAgentRun(opsCtx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "finanzas", IdempotencyKey: "f2"})
 	require.NoError(t, err)
-	deleteApproval := seedApproval(start2.RunId, "delete_account", "borrar la cuenta 7")
+	deleteApproval := seedApproval(start2.RunId, "mcp.erp.delete_account", "borrar la cuenta 7")
 
 	// Ana can decide the refund and only the refund; direccion can decide both.
 	byID := func(ctx context.Context) map[string]bool {

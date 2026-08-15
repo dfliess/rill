@@ -735,7 +735,7 @@ func (e *DBOSExecutor) governProposedActions(ctx dbos.DBOSContext, in AgentRunIn
 
 		capturedConn, hasConn := mcpConnector(snapshot, proposal.Connector)
 		autoApprove := map[string]bool{}
-		if hasConn && connectorAutoApproves(capturedConn, rawToolName(proposal.Tool, proposal.Connector)) {
+		if hasConn && connectorAutoApproves(capturedConn, RawToolName(proposal.Tool, proposal.Connector)) {
 			autoApprove[proposal.Tool] = true
 		}
 

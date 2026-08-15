@@ -365,9 +365,11 @@ func matchesToolGlob(patterns []string, name string) bool {
 	return false
 }
 
-// rawToolName strips the mcp.<connector>. prefix from an effective tool name, returning the server's raw tool name,
-// which is what a connector's approval globs match against.
-func rawToolName(tool, connector string) string {
+// RawToolName strips the mcp.<connector>. prefix from an effective tool name, returning the server's raw tool name.
+// It is the name an author writes everywhere in the YAML: a connector's approval globs match against it, the kill
+// switch accepts it, and an agent's approve expression is evaluated with it. The prefixed form exists for routing
+// and for the audit trail; it is deliberately not what policy is written against.
+func RawToolName(tool, connector string) string {
 	return strings.TrimPrefix(tool, "mcp."+connector+".")
 }
 
