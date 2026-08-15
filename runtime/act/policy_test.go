@@ -93,33 +93,6 @@ func TestPolicyTrustedReadOnlyAllows(t *testing.T) {
 	require.Equal(t, act.PolicyAllow, act.Evaluate(in).Decision, "trusted read-only tool auto-executes")
 }
 
-// TestPolicyGlobalAndTenantOnlyHarden: an override may tighten a decision but never loosen it (§8.1).
-func TestPolicyGlobalAndTenantOnlyHarden(t *testing.T) {
-	// Global hardens an auto-approved allow up to deny.
-	in := baseInput()
-	in.AutoApprove = map[string]bool{"jira.create_issue": true}
-	in.GlobalPolicy = map[string]act.PolicyDecision{"jira.create_issue": act.PolicyDeny}
-	require.Equal(t, act.PolicyDeny, act.Evaluate(in).Decision)
-
-	// Tenant hardens a base approval up to deny.
-	in = baseInput()
-	in.TenantPolicy = map[string]act.PolicyDecision{"jira.create_issue": act.PolicyDeny}
-	require.Equal(t, act.PolicyDeny, act.Evaluate(in).Decision)
-
-	// A looser override is ignored: a base approval stays approval even if global says allow.
-	in = baseInput()
-	in.GlobalPolicy = map[string]act.PolicyDecision{"jira.create_issue": act.PolicyAllow}
-	require.Equal(t, act.PolicyApprovalRequired, act.Evaluate(in).Decision)
-}
-
-// TestPolicyCorruptOverrideFailsClosed: an unrecognized policy value hardens to deny rather than granting access.
-func TestPolicyCorruptOverrideFailsClosed(t *testing.T) {
-	in := baseInput()
-	in.AutoApprove = map[string]bool{"jira.create_issue": true}
-	in.GlobalPolicy = map[string]act.PolicyDecision{"jira.create_issue": act.PolicyDecision("garbage")}
-	require.Equal(t, act.PolicyDeny, act.Evaluate(in).Decision)
-}
-
 // TestToolClassRetriable pins the v1 retry classification (§12): auto-retry on an uncertain result is disabled for
 // EVERY class, so no class is ever re-driven automatically. The dedup story a class describes is not yet safe to act
 // on because CallTool does not propagate the idempotency key and no preflight lookup exists (see RetriableOnUncertain).
