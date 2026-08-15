@@ -115,11 +115,10 @@ func NewDispatcher(store *Store, catalog TriggerCatalog, executor act.AgentExecu
 	return d
 }
 
-// TODO(act, phase 1): known limit #5 — nothing yet drives Dispatch. The trigger path (ConfigureAct wiring,
-// Runtime.SetExecutionObserver, NewDispatcher, and a polling loop that calls Dispatch per instance on an interval)
-// is not connected to any running executable; it is exercised only by tests. Wiring it into a long-running process
-// (the rill-agent-worker) is a deployment-increment task: until then no automatic trigger actually fires in a
-// deployed runtime.
+// What drives Dispatch in a deployed runtime: BootstrapAct registers the observer on the runtime, builds the
+// dispatcher and starts a polling loop that calls Dispatch per instance on an interval (runtime/server/act_bootstrap.go).
+// The loop runs under its own context so shutdown stops dispatching. Automatic triggers do fire in production;
+// treat this path as live when changing it.
 
 // EnqueueDueSchedules is the schedule ticker: for every schedule-kind trigger of an instance it enqueues a synthetic
 // tick event for each cron boundary that fell since this instance's last scan, then Dispatch (called right after)

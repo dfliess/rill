@@ -459,8 +459,14 @@ func (g *Gateway) Execute(ctx context.Context, in ExecuteActionInput) (ExecuteRe
 		return g.refuse(ctx, in, "proposal does not match approved action: "+reason)
 	}
 
-	// Re-check the kill switch immediately before the write: it may have been engaged during a long approval wait, and
+	// Re-check the kill switch before claiming the write: it may have been engaged during a long approval wait, and
 	// fail-closed means an engaged switch stops the action even now (§17.2). The action stays approved (not executed).
+	//
+	// This is the last check, not the last instruction before the call: claiming the lease, resolving credentials,
+	// connecting the MCP client and re-listing tools all still run after it, so a switch engaged inside that window
+	// does not stop this attempt. Closing that gap would mean checking again after the pin re-check, which buys a
+	// second or two against an operator who is racing an already-authorized write; the switch's job is to stop the
+	// next action, and an in-flight call cannot be recalled anyway.
 	if killed, reason := g.killDisabled(ctx, KillScope{
 		InstanceID: in.InstanceID, AgentName: in.AgentName, Tool: in.Proposal.Tool, Connector: in.Proposal.Connector,
 	}); killed {
