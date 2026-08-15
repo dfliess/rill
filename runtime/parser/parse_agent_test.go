@@ -85,7 +85,9 @@ func TestAgentMCP(t *testing.T) {
 	repo := makeRepo(t, map[string]string{
 		`rill.yaml`: ``,
 		// An agent declaring an outbound MCP connector: the parser maps it structurally onto AgentSpec.Mcp; deep
-		// validation (transport, https, SSRF posture) is the reconciler's job.
+		// validation (transport, https, SSRF posture) is the reconciler's job. The approval posture and its glob
+		// exceptions must land on the spec verbatim: they are what decides which of the connector's actions run
+		// unsupervised, so a mapping that dropped them would silently re-gate (or worse, un-gate) actions.
 		`agents/support.yaml`: `
 type: agent
 instructions: Triage support tickets.
@@ -98,6 +100,11 @@ mcp:
       allowed_hosts:
         - jira.example.com
     trust_read_only_hint: true
+    approval: auto
+    require_approval:
+      - delete_*
+    auto_approve:
+      - search_*
 `,
 	})
 
@@ -114,6 +121,9 @@ mcp:
 						AuthSecret:        "JIRA_TOKEN",
 						AllowedHosts:      []string{"jira.example.com"},
 						TrustReadOnlyHint: true,
+						Approval:          "auto",
+						RequireApproval:   []string{"delete_*"},
+						AutoApprove:       []string{"search_*"},
 					},
 				},
 			},
@@ -178,6 +188,65 @@ mcp:
 		{
 			Message:  `duplicate mcp connector name "jira"`,
 			FilePath: "/agents/dup.yaml",
+		},
+	}
+	p, err := Parse(ctx, repo, "", "", "duckdb", true)
+	require.NoError(t, err)
+	requireResourcesAndErrors(t, p, nil, wantErrors)
+}
+
+// TestAgentMCPApprovalErrors checks that a misdeclared approval posture is a definition error, not a silent
+// misconfiguration: an unrecognized approval value and a malformed glob (in either exception list) would otherwise
+// change which actions run unsupervised — an unrecognized posture falls back to manual, and a malformed pattern
+// never matches — without the author ever noticing.
+func TestAgentMCPApprovalErrors(t *testing.T) {
+	ctx := context.Background()
+	repo := makeRepo(t, map[string]string{
+		`rill.yaml`: ``,
+		// An unrecognized approval posture.
+		`agents/bad_approval.yaml`: `
+type: agent
+instructions: Do something.
+mcp:
+  - name: jira
+    url: https://jira.example.com/mcp
+    approval: sometimes
+`,
+		// A malformed glob in auto_approve ("[" is an unterminated character class for path.Match).
+		`agents/bad_auto_glob.yaml`: `
+type: agent
+instructions: Do something.
+mcp:
+  - name: jira
+    url: https://jira.example.com/mcp
+    auto_approve:
+      - "search_["
+`,
+		// A malformed glob in require_approval.
+		`agents/bad_require_glob.yaml`: `
+type: agent
+instructions: Do something.
+mcp:
+  - name: jira
+    url: https://jira.example.com/mcp
+    approval: auto
+    require_approval:
+      - "delete_["
+`,
+	})
+
+	wantErrors := []*runtimev1.ParseError{
+		{
+			Message:  `mcp connector "jira": "approval" must be "manual" or "auto", got "sometimes"`,
+			FilePath: "/agents/bad_approval.yaml",
+		},
+		{
+			Message:  `mcp connector "jira": invalid tool pattern "search_["`,
+			FilePath: "/agents/bad_auto_glob.yaml",
+		},
+		{
+			Message:  `mcp connector "jira": invalid tool pattern "delete_["`,
+			FilePath: "/agents/bad_require_glob.yaml",
 		},
 	}
 	p, err := Parse(ctx, repo, "", "", "duckdb", true)

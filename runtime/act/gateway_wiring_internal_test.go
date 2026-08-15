@@ -74,6 +74,15 @@ func TestConnectorAutoApproves(t *testing.T) {
 		{"auto approves everything", ai.MCPConnector{Approval: "auto"}, "delete_issue", true},
 		{"auto + require_approval gates the match", ai.MCPConnector{Approval: "auto", RequireApproval: []string{"delete_*"}}, "delete_issue", false},
 		{"auto + require_approval lets others through", ai.MCPConnector{Approval: "auto", RequireApproval: []string{"delete_*"}}, "create_issue", true},
+		// An unrecognized posture is manual, fail-safe toward approval: the parser rejects it at definition time, so
+		// this is defense in depth for a snapshot built or migrated outside the parser.
+		{"unrecognized posture is manual", ai.MCPConnector{Approval: "always"}, "create_issue", false},
+		{"unrecognized posture still honors auto_approve", ai.MCPConnector{Approval: "always", AutoApprove: []string{"create_*"}}, "create_issue", true},
+		{"posture matching is case-sensitive", ai.MCPConnector{Approval: "AUTO"}, "create_issue", false},
+		// The globs match the RAW tool name; a pattern written against the effective name never matches (the executor
+		// strips the prefix via RawToolName before calling this — the flow-level guard is
+		// TestGatewayFlowAutoApproveGlobMatchesRawToolNameOnly).
+		{"effective-name pattern does not match raw name", ai.MCPConnector{AutoApprove: []string{"mcp.jira.create_*"}}, "create_issue", false},
 	}
 	for _, c := range cases {
 		require.Equal(t, c.want, connectorAutoApproves(c.conn, c.raw), c.name)
@@ -144,8 +153,8 @@ func TestClassifyRespectsAuthoritativePreDispatchFailed(t *testing.T) {
 }
 
 func TestRawToolName(t *testing.T) {
-	require.Equal(t, "HelloWorld", rawToolName("mcp.mockmcp.HelloWorld", "mockmcp"))
-	require.Equal(t, "create_issue", rawToolName("mcp.jira.create_issue", "jira"))
+	require.Equal(t, "HelloWorld", RawToolName("mcp.mockmcp.HelloWorld", "mockmcp"))
+	require.Equal(t, "create_issue", RawToolName("mcp.jira.create_issue", "jira"))
 }
 
 // editableAgentProvider is an AgentDefinitionProvider whose live snapshot a test can set to simulate an admin editing
