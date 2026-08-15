@@ -22,6 +22,10 @@
   } = $props();
 
   let pending = $derived(isApprovalPending(approval.status));
+  // The server resolves can_decide per approval, with its concrete action bound
+  // (approval authority can discriminate by tool). When false the card still
+  // shows the pending state — it is the run's record — but offers no buttons.
+  let canDecide = $derived(!!approval.canDecide);
   let proposal = $derived(parseProposal(approval.proposal));
   let showPosition = $derived(
     typeof approval.total === "number" && approval.total > 1,
@@ -50,7 +54,7 @@
       </span>
     {/if}
     <div class="grow"></div>
-    {#if pending}
+    {#if pending && canDecide}
       <ApproveDenyButtons
         approvalId={approval.approvalId ?? ""}
         argsHash={approval.argsHash ?? ""}

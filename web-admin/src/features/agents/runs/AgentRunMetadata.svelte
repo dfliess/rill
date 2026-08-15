@@ -7,6 +7,7 @@
   import {
     useAgentApprovals,
     useAgentRun,
+    useAgents,
     useSubjectNames,
   } from "../selectors";
   import {
@@ -67,6 +68,15 @@
   // svelte-ignore state_referenced_locally
   const subjectNamesQuery = useSubjectNames(organization, project);
   let subjectNames = $derived($subjectNamesQuery.data);
+
+  // The agent's server-resolved launch gate decides whether the re-run button
+  // renders at all. Enforcement stays server-side; this only hides dead ends.
+  // (Approval authority is per approval — each card reads its own can_decide.)
+  const agentsQuery = useAgents(runtimeClient);
+  let agentDef = $derived(
+    ($agentsQuery.data?.agents ?? []).find((a) => a.name === run?.agentName),
+  );
+  let canLaunch = $derived(!!agentDef?.canLaunch);
 </script>
 
 {#if run}
@@ -76,13 +86,15 @@
         <h1 class="text-fg-primary text-lg font-bold">{run.agentName}</h1>
         <AgentRunStatusChip status={run.status} />
         <div class="grow"></div>
-        <!-- Re-run this agent with a fresh manual prompt. -->
-        <StartAgentRunDialog
-          agent={run.agentName ?? ""}
-          {organization}
-          {project}
-          label={m.agents_run_new_manual()}
-        />
+        <!-- Re-run this agent with a fresh manual prompt (only when the caller may launch it). -->
+        {#if canLaunch}
+          <StartAgentRunDialog
+            agent={run.agentName ?? ""}
+            {organization}
+            {project}
+            label={m.agents_run_new_manual()}
+          />
+        {/if}
         <!-- An alert-triggered run records the alert that fired it; link back to it. -->
         {#if run.trigger === "alert" && run.triggerRef}
           <a

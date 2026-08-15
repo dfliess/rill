@@ -26,7 +26,7 @@ source:
   name: revenue_drop
   events: [entered_fail, renotify_due]
 actor:
-  user_email: act@revenue.ops
+  user_id: usr_act_ops
 input:
   prompt: Investiga la alerta y prepara evidencia.
   context:
@@ -56,7 +56,7 @@ deduplication:
 					Events: []string{"entered_fail", "renotify_due"},
 				},
 				Actor: &runtimev1.AgentTriggerActor{
-					UserEmail: "act@revenue.ops",
+					UserId: "usr_act_ops",
 				},
 				Input: &runtimev1.AgentTriggerInput{
 					Prompt:  "Investiga la alerta y prepara evidencia.",
@@ -157,9 +157,20 @@ source:
   name: x
   events: [entered_fail]
 actor:
-  user_email: alice@example.com
+  user_id: usr_alice
   attributes:
     email: bob@example.com
+`,
+		// Naming the actor by email is rejected: the address can change or leave, silently breaking the trigger.
+		`triggers/email_actor.yaml`: `
+type: agent_trigger
+agent: a
+source:
+  kind: alert
+  name: x
+  events: [entered_fail]
+actor:
+  user_email: alice@example.com
 `,
 		// A negative deduplication window would wrap to a huge unsigned value.
 		`triggers/negative_window.yaml`: `
@@ -180,7 +191,8 @@ deduplication:
 		{Message: `invalid value "sunset" for property "source.kind"`, FilePath: "/triggers/bad_kind.yaml"},
 		{Message: `invalid value "soon" for property "deduplication.window"`, FilePath: "/triggers/bad_window.yaml"},
 		{Message: "not_a_field", FilePath: "/triggers/unknown_field.yaml"},
-		{Message: `at most one of "user_id", "user_email" or "attributes"`, FilePath: "/triggers/mixed_identity.yaml"},
+		{Message: `at most one of "user_id" or "attributes"`, FilePath: "/triggers/mixed_identity.yaml"},
+		{Message: `"actor.user_email" is not supported`, FilePath: "/triggers/email_actor.yaml"},
 		{Message: `"deduplication.window" must not be negative`, FilePath: "/triggers/negative_window.yaml"},
 	}
 	p, err := Parse(ctx, repo, "", "", "duckdb", true)

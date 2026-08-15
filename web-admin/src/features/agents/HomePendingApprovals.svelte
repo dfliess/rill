@@ -41,8 +41,14 @@
       new Map<string, AgentApprovalData[]>(),
     ),
   );
+  // Home only surfaces approvals the viewer can actually resolve: an inbox of
+  // decisions that are not theirs to make is noise, not a call to action. The
+  // server resolves can_decide per approval (authority can discriminate by
+  // tool); the full (read-only) picture stays available in the Act tab.
   let pendingRuns = $derived(
-    runs.filter((r) => approvalsByRun.has(r.runId ?? "")),
+    runs.filter((r) =>
+      (approvalsByRun.get(r.runId ?? "") ?? []).some((a) => !!a.canDecide),
+    ),
   );
 
   let base = $derived(`/${organization}/${project}/-/agents`);

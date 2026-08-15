@@ -2,6 +2,7 @@ package act_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -462,6 +463,59 @@ func TestRunStoreListFilters(t *testing.T) {
 	require.Len(t, byStatus, 2)
 }
 
+// TestRunStoreAccessFilterInWhere pins that the access allow-list restricts inside the WHERE clause, not by
+// filtering a fetched page: with more inaccessible candidates than the page size, the page still comes back
+// full of accessible rows. In-memory filtering would return the newest (inaccessible) rows and then drop them,
+// yielding an empty page and lying pagination.
+func TestRunStoreAccessFilterInWhere(t *testing.T) {
+	store := newRunStore(t)
+	ctx := t.Context()
+
+	const instanceID = "inst-access-filter"
+	mk := func(agent, key string) string {
+		runID := act.ComposeRunID(instanceID, agent, key)
+		require.NoError(t, store.CreateRun(ctx, act.NewRun{RunID: runID, InstanceID: instanceID, AgentName: agent}))
+		return runID
+	}
+	// The accessible agent's runs are the OLDEST: a newest-first page of 2 with no WHERE restriction would
+	// contain only "triage" rows.
+	cob1 := mk("cobranza", "1")
+	cob2 := mk("cobranza", "2")
+	time.Sleep(20 * time.Millisecond) // separate created_on so the newest-first order is deterministic
+	mk("triage", "3")
+	mk("triage", "4")
+	mk("triage", "5")
+
+	// The page comes back full of accessible rows despite three newer inaccessible candidates.
+	page, err := store.ListRuns(ctx, act.ListRunsFilter{InstanceID: instanceID, AccessibleAgents: []string{"cobranza"}, Limit: 2})
+	require.NoError(t, err)
+	require.Len(t, page, 2)
+	require.ElementsMatch(t, []string{cob1, cob2}, []string{page[0].RunID, page[1].RunID})
+
+	// A non-nil empty allow-list matches nothing; nil applies no restriction.
+	none, err := store.ListRuns(ctx, act.ListRunsFilter{InstanceID: instanceID, AccessibleAgents: []string{}})
+	require.NoError(t, err)
+	require.Empty(t, none)
+	all, err := store.ListRuns(ctx, act.ListRunsFilter{InstanceID: instanceID})
+	require.NoError(t, err)
+	require.Len(t, all, 5)
+
+	// Approvals resolve the allow-list through their run.
+	require.NoError(t, store.CreateApproval(ctx, act.NewApproval{
+		ApprovalID: act.ApprovalIDForRun(cob1), RunID: cob1, InstanceID: instanceID, ArgsHash: act.HashArgs("x"),
+	}))
+	require.NoError(t, store.CreateApproval(ctx, act.NewApproval{
+		ApprovalID: act.ApprovalIDForRun(act.ComposeRunID(instanceID, "triage", "3")), RunID: act.ComposeRunID(instanceID, "triage", "3"), InstanceID: instanceID, ArgsHash: act.HashArgs("y"),
+	}))
+	approvals, err := store.ListApprovals(ctx, act.ListApprovalsFilter{InstanceID: instanceID, AccessibleAgents: []string{"cobranza"}})
+	require.NoError(t, err)
+	require.Len(t, approvals, 1)
+	require.Equal(t, cob1, approvals[0].RunID)
+	noApprovals, err := store.ListApprovals(ctx, act.ListApprovalsFilter{InstanceID: instanceID, AccessibleAgents: []string{}})
+	require.NoError(t, err)
+	require.Empty(t, noApprovals)
+}
+
 // TestRunStoreApprovalLifecycle covers create -> read -> resolve, and the double-submit guard: only the first
 // resolution of a pending approval wins.
 func TestRunStoreApprovalLifecycle(t *testing.T) {
@@ -487,6 +541,10 @@ func TestRunStoreApprovalLifecycle(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, act.ApprovalStatusPending, got.Status)
 	require.Equal(t, act.HashArgs("crear ticket P2"), got.ArgsHash)
+	// The projection joins the approval's run: the agent and the run's actor ride along, so a reader can
+	// resolve the approve policy for this concrete approval without a second lookup.
+	require.Equal(t, "triage", got.AgentName)
+	require.Empty(t, got.RunActorSubject)
 
 	// Only pending approvals appear in the inbox filter.
 	pending, err := store.ListApprovals(ctx, act.ListApprovalsFilter{InstanceID: instanceID, Status: act.ApprovalStatusPending})

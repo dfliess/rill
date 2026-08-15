@@ -22,6 +22,9 @@
   let confirmOpen = $state(false);
 
   let finished = $derived(!!run?.finishedOn);
+  // The server resolves can_cancel per run (the run's actor, or an EditTrigger
+  // holder); the button only renders for callers who can actually use it.
+  let canCancel = $derived(!!run?.canCancel);
 
   async function handleCancel() {
     try {
@@ -49,20 +52,22 @@
   }
 </script>
 
-<Button
-  type="secondary"
-  disabled={finished || $cancelRun.isPending}
-  onClick={() => (confirmOpen = true)}
->
-  {m.agents_run_cancel()}
-</Button>
+{#if canCancel}
+  <Button
+    type="secondary"
+    disabled={finished || $cancelRun.isPending}
+    onClick={() => (confirmOpen = true)}
+  >
+    {m.agents_run_cancel()}
+  </Button>
 
-<Confirmation
-  open={confirmOpen}
-  onOpenChange={(open: boolean) => (confirmOpen = open)}
-  title={m.agents_run_cancel_confirm_title()}
-  description={m.agents_run_cancel_confirm_desc()}
-  confirmLabel={m.agents_run_cancel()}
-  confirmType="secondary"
-  onConfirm={handleCancel}
-/>
+  <Confirmation
+    open={confirmOpen}
+    onOpenChange={(open: boolean) => (confirmOpen = open)}
+    title={m.agents_run_cancel_confirm_title()}
+    description={m.agents_run_cancel_confirm_desc()}
+    confirmLabel={m.agents_run_cancel()}
+    confirmType="secondary"
+    onConfirm={handleCancel}
+  />
+{/if}

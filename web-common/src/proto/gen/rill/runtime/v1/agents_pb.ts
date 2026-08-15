@@ -53,6 +53,17 @@ export class AgentDefinition extends Message<AgentDefinition> {
    */
   timeoutSeconds = 0;
 
+  /**
+   * can_launch reports whether the calling user may start a run of this agent, resolved by the server from the
+   * agent's security policy. The UI hides the launch affordances when it is false.
+   * NOTE: There is deliberately no per-agent can_approve: approval authority can discriminate by action
+   * (.action.tool/.action.connector), so it is a property of one approval, not of the agent. See
+   * AgentApproval.can_decide.
+   *
+   * @generated from field: bool can_launch = 9;
+   */
+  canLaunch = false;
+
   constructor(data?: PartialMessage<AgentDefinition>) {
     super();
     proto3.util.initPartial(data, this);
@@ -69,6 +80,7 @@ export class AgentDefinition extends Message<AgentDefinition> {
     { no: 6, name: "tools", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
     { no: 7, name: "max_steps", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
     { no: 8, name: "timeout_seconds", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 9, name: "can_launch", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): AgentDefinition {
@@ -186,6 +198,14 @@ export class AgentRun extends Message<AgentRun> {
    */
   finishedOn?: Timestamp;
 
+  /**
+   * can_cancel reports whether the calling user may cancel this run: they are the run's actor, or they hold
+   * the EditTrigger permission. The UI hides the cancel affordance when it is false.
+   *
+   * @generated from field: bool can_cancel = 19;
+   */
+  canCancel = false;
+
   constructor(data?: PartialMessage<AgentRun>) {
     super();
     proto3.util.initPartial(data, this);
@@ -212,6 +232,7 @@ export class AgentRun extends Message<AgentRun> {
     { no: 15, name: "updated_on", kind: "message", T: Timestamp },
     { no: 16, name: "started_on", kind: "message", T: Timestamp },
     { no: 17, name: "finished_on", kind: "message", T: Timestamp },
+    { no: 19, name: "can_cancel", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): AgentRun {
@@ -403,6 +424,16 @@ export class AgentApproval extends Message<AgentApproval> {
    */
   total = 0;
 
+  /**
+   * can_decide reports whether the calling user may decide (approve or deny) this approval, resolved by the
+   * server from the agent's approve policy with this approval's concrete action bound (its tool, connector and
+   * the run's actor). The UI hides the decision buttons when it is false; enforcement stays in the decision
+   * endpoints, which evaluate the same policy.
+   *
+   * @generated from field: bool can_decide = 18;
+   */
+  canDecide = false;
+
   constructor(data?: PartialMessage<AgentApproval>) {
     super();
     proto3.util.initPartial(data, this);
@@ -427,6 +458,7 @@ export class AgentApproval extends Message<AgentApproval> {
     { no: 15, name: "decided_on", kind: "message", T: Timestamp },
     { no: 16, name: "position", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
     { no: 17, name: "total", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 18, name: "can_decide", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): AgentApproval {

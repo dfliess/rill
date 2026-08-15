@@ -65,9 +65,6 @@ type Server struct {
 	limiter  ratelimit.Limiter
 	activity *activity.Client
 	ai       *ai.Runner
-	// agents resolves declarative agent definitions from the resource catalog. It is always set (it only needs the
-	// runtime); the run/approval surface below is optional.
-	agents ai.AgentDefinitionProvider
 	// agentRuns and agentExecutor are the Act run/approval plane. They are nil unless ConfigureAct wires them (they
 	// need Postgres and the DBOS worker), so the discovery endpoints work without Act being provisioned while the
 	// run and approval endpoints report Unimplemented until it is.
@@ -102,7 +99,6 @@ func NewServer(ctx context.Context, opts *Options, rt *runtime.Runtime, logger *
 		limiter:  limiter,
 		activity: activityClient,
 		ai:       ai.NewRunner(rt, activityClient),
-		agents:   act.NewCatalogAgentProvider(rt),
 	}
 
 	if opts.AuthEnable {

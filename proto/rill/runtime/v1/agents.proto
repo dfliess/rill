@@ -94,6 +94,12 @@ message AgentDefinition {
   repeated string tools = 6;
   int32 max_steps = 7;
   int32 timeout_seconds = 8;
+  // can_launch reports whether the calling user may start a run of this agent, resolved by the server from the
+  // agent's security policy. The UI hides the launch affordances when it is false.
+  // NOTE: There is deliberately no per-agent can_approve: approval authority can discriminate by action
+  // (.action.tool/.action.connector), so it is a property of one approval, not of the agent. See
+  // AgentApproval.can_decide.
+  bool can_launch = 9;
 }
 
 // AgentRun is the stored state of one run of an agent.
@@ -117,6 +123,9 @@ message AgentRun {
   google.protobuf.Timestamp updated_on = 15;
   google.protobuf.Timestamp started_on = 16;
   google.protobuf.Timestamp finished_on = 17;
+  // can_cancel reports whether the calling user may cancel this run: they are the run's actor, or they hold
+  // the EditTrigger permission. The UI hides the cancel affordance when it is false.
+  bool can_cancel = 19;
 }
 
 // AgentRunEvent is a single lifecycle event of a run. id is the global, monotonic cursor a stream consumer pages by;
@@ -154,6 +163,11 @@ message AgentApproval {
   int32 position = 16;
   // total is the number of actions in the batch.
   int32 total = 17;
+  // can_decide reports whether the calling user may decide (approve or deny) this approval, resolved by the
+  // server from the agent's approve policy with this approval's concrete action bound (its tool, connector and
+  // the run's actor). The UI hides the decision buttons when it is false; enforcement stays in the decision
+  // endpoints, which evaluate the same policy.
+  bool can_decide = 18;
 }
 
 message ListAgentsRequest {
