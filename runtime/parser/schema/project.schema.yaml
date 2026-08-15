@@ -32,6 +32,8 @@ oneOf:
   - $ref: '#/definitions/apis'
   - $ref: '#/definitions/themes'
   - $ref: '#/definitions/components'
+  - $ref: '#/definitions/agents'
+  - $ref: '#/definitions/agent-triggers'
   # - $ref: '#/definitions/rillyaml' separated due to parsing YAML issues
 
 definitions:
@@ -3183,6 +3185,304 @@ definitions:
         required:
           - type
         additionalProperties: false
+
+  # Agents (Kairos Act)
+  agents:
+    title: Agent YAML
+    id: agents
+    type: object
+    description: |
+      Agents are autonomous AI workers (Kairos Act). An agent couples an LLM, a system prompt (`instructions`), an allowlist of built-in read-only analytical tools, and optional outbound MCP connectors whose tools are the agent's actions on the outside world. Actions are governed by a per-connector approval posture: by default, every MCP tool call requires a human approval before it executes.
+
+      An agent runs when started manually or by an agent trigger. Triggers can be declared inline in the agent's `triggers:` list or as standalone `agent_trigger` resources; both forms behave identically.
+    examples:
+      - # Example: A collections agent that investigates a delinquency alert and proposes a CRM task
+        type: agent
+        display_name: Collections Management Agent
+        description: Investigates delinquency spikes and proposes opening a task in the CRM.
+        model:
+          connector: deepseek
+          name: deepseek-v4-flash
+        instructions: |
+          You are a credit and collections analyst. Investigate using the governed
+          metrics tools, and only at the end propose the task with create_crm_task.
+        tools:
+          - list_metrics_views
+          - get_metrics_view
+          - query_metrics_view
+          - query_metrics_view_summary
+        mcp:
+          - name: crm
+            url: https://crm.example.com/mcp
+            auth:
+              secret: CRM_TOKEN
+            network:
+              allowed_hosts:
+                - crm.example.com
+            approval: manual
+            auto_approve:
+              - "search_*"
+              - "get_*"
+        triggers:
+          - source:
+              kind: alert
+              name: high-delinquency
+              events:
+                - entered_fail
+            actor:
+              attributes:
+                email: act@example.com
+            input:
+              prompt: Investigate the delinquency spike and propose the collections task.
+            deduplication:
+              window: 24h
+        limits:
+          max_steps: 20
+          timeout: 10m
+    allOf:
+      - title: Properties
+        type: object
+        properties:
+          type:
+            type: string
+            const: agent
+            description: Refers to the resource type and must be `agent`
+          display_name:
+            type: string
+            description: Display name for the agent shown in the UI
+          description:
+            type: string
+            description: Description for the agent
+          model:
+            type: object
+            description: 'Declares the LLM intended to run the agent. NOTE: runs currently execute on the runtime''s configured AI connector; these fields carry the declared intent for per-agent model routing.'
+            properties:
+              connector:
+                type: string
+                description: Name of the AI connector for the agent's model. If it names a connector resource in the project, the agent depends on it; AI connectors are commonly configured in rill.yaml instead.
+              name:
+                type: string
+                description: Model identifier to request on the connector
+          instructions:
+            type: string
+            description: The agent's system prompt. Required; an agent without instructions is a parse error. It is combined with the project's `ai_instructions` at runtime.
+          tools:
+            type: array
+            description: Built-in tools the agent may call, drawn from the fixed allowlist of read-only analytical tools. This is the upper bound on the agent's authority over Rill's own tools; the model never sees a built-in tool outside this list. These tools read governed data and never require approval. MCP tools are NOT declared here; they come from `mcp` connectors and are discovered at run start.
+            items:
+              type: string
+              enum:
+                - list_metrics_views
+                - get_metrics_view
+                - query_metrics_view
+                - query_metrics_view_summary
+                - get_canvas
+          mcp:
+            type: array
+            description: Outbound MCP connectors; remote MCP servers whose tools become the agent's actions on the outside world. Each entry declares one server and the approval posture applied to its tools. Tools are offered to the model under namespaced names (`mcp.<connector>.<tool>`), but the approval globs below match the raw tool name WITHOUT the `mcp.<connector>.` prefix.
+            items:
+              type: object
+              properties:
+                name:
+                  type: string
+                  pattern: '^[^.]+$'
+                  description: Local connector name; required and unique among the agent's connectors. Must not contain dots; the dot is the namespace separator in effective tool names (`mcp.<connector>.<tool>`), so a dotted name would misroute tool calls and is rejected at parse time.
+                url:
+                  type: string
+                  format: uri
+                  description: The remote MCP endpoint. Required; must be an absolute `https` URL (validated at reconcile time). Only the Streamable HTTP transport is supported.
+                auth:
+                  type: object
+                  description: Credential presented to the remote server as a bearer token.
+                  properties:
+                    secret:
+                      type: string
+                      description: The NAME of a secret in the platform secret manager, never the secret value itself. It is resolved server-side on every execution, so rotating the credential does not invalidate a pending approval.
+                network:
+                  type: object
+                  description: Egress guard for the connector.
+                  properties:
+                    allowed_hosts:
+                      type: array
+                      description: Allowlist of hostnames the connector may reach. Every request host (including redirect targets) must match one entry exactly, case-insensitively. When empty, no host allowlist is enforced, but requests to loopback/private ranges are always denied.
+                      items:
+                        type: string
+                approval:
+                  type: string
+                  enum:
+                    - manual
+                    - auto
+                  description: Approval posture for the connector's tools. `manual` (the default) means every tool call requires a human approval, except tools matching `auto_approve`. `auto` means no tool call requires approval, except tools matching `require_approval`. An absent or unrecognized posture is treated as `manual`; the posture fails toward requiring approval.
+                require_approval:
+                  type: array
+                  description: Glob patterns (`*`, `?`, `[set]`) of tools that still require approval when `approval` is `auto`. Patterns match the RAW tool name as advertised by the MCP server, without the `mcp.<connector>.` prefix (e.g. `create_*`, not `mcp.crm.create_*`). A malformed pattern is a parse error, not a silent misconfiguration.
+                  items:
+                    type: string
+                auto_approve:
+                  type: array
+                  description: Glob patterns (`*`, `?`, `[set]`) of tools that skip approval when `approval` is `manual` (the default). Patterns match the RAW tool name as advertised by the MCP server, without the `mcp.<connector>.` prefix (e.g. `search_*`, not `mcp.crm.search_*`). A malformed pattern is a parse error, not a silent misconfiguration.
+                  items:
+                    type: string
+                trust_read_only_hint:
+                  type: boolean
+                  description: Off by default. When true, the connector trusts the `readOnlyHint` annotation the remote MCP server advertises on its tools, letting a read-only-hinted tool execute without approval. The hint is the server's own claim, not something the platform verifies; enabling this delegates that decision to the remote server.
+              required:
+                - name
+                - url
+          triggers:
+            type: array
+            description: Inline declaration of when this agent runs. Each entry is an agent trigger body without `agent` (which is this agent); the parser desugars it into a standalone `agent_trigger` resource. The triggers live outside the agent's spec on purpose, so editing when the agent fires never changes its spec hash (what it does).
+            items:
+              $ref: '#/definitions/agent_trigger_body_properties'
+          limits:
+            type: object
+            description: Execution limits for a run of the agent.
+            properties:
+              max_steps:
+                type: integer
+                minimum: 0
+                description: Maximum number of model/tool iterations in the agent loop. Zero or absent means the default limit.
+              timeout:
+                type: string
+                description: Wall-clock timeout for a run. Accepts seconds, a Go duration (e.g. `10m`) or an ISO 8601 duration. Sub-second values round up, so `500ms` does not truncate to zero. Zero or absent means no agent-level timeout.
+          security:
+            type: object
+            description: Access control for the agent, resolved by Rill's security engine (ADR-0018). Only `access`, `launch` and `approve` apply; the dashboard policy's `row_filter`/`include`/`exclude`/`rules` are rejected on agents (an agent has no rows or fields), and `execute` is reserved and rejected. Expressions are templated booleans with the same grammar and user attributes as a dashboard's `security.access`. Without a `security` block, only admins can see the agent; declaring `security` without `access` denies it to everyone except admins, who always retain access.
+            properties:
+              access:
+                oneOf:
+                  - type: string
+                    description: SQL expression that evaluates to a boolean to determine access
+                  - type: boolean
+                    description: Direct boolean value to allow or deny access
+                description: Expression indicating whether the user can see the agent, including all of the agent's runs. If `security` is defined but `access` is not, it resolves to false and the agent is visible only to admins, who are never excluded by an agent's policy (unlike a metrics view's, which applies to them too). It cannot reference the `.action`/`.run` context (that exists only while deciding an approval).
+              launch:
+                oneOf:
+                  - type: string
+                    description: SQL expression that evaluates to a boolean to determine who can launch
+                  - type: boolean
+                    description: Direct boolean value to allow or deny launching
+                description: Expression indicating whether the user can start a run of the agent. When omitted, it inherits `access`. Launching is always a subset of `access`. It cannot reference the `.action`/`.run` context (that exists only while deciding an approval).
+              approve:
+                oneOf:
+                  - type: string
+                    description: SQL expression that evaluates to a boolean to determine who can approve
+                  - type: boolean
+                    description: Direct boolean value to allow or deny approving
+                description: Expression indicating whether the user can approve or reject an action that the connector's approval posture flagged for a signature. When omitted, only admins can approve (deliberately stricter than `launch`; launching is inert, approving touches the outside world). Beyond `.user`, the expression may reference only `.action.tool`, `.action.connector` and `.run.actor`; the action's arguments are model-chosen and can never select the approver.
+        required:
+          - type
+          - instructions
+      - $ref: '#/definitions/common_properties'
+
+  # Agent Triggers (Kairos Act)
+  agent-triggers:
+    title: Agent Trigger YAML
+    id: agent-triggers
+    type: object
+    description: Agent triggers declare when an agent runs on its own; on an alert transition, on a report completion, or on a cron schedule. A trigger only starts runs; what the agent does is defined on the agent itself. The same body can be declared inline in the agent's `triggers:` list, where `agent` is implicit; both forms behave identically.
+    examples:
+      - # Example: Start the collections agent whenever the delinquency alert starts failing
+        type: agent_trigger
+        agent: collections_agent
+        source:
+          kind: alert
+          name: high-delinquency
+          events:
+            - entered_fail
+        actor:
+          attributes:
+            email: act@example.com
+        input:
+          prompt: Investigate the delinquency spike and propose the collections task.
+        deduplication:
+          window: 24h
+      - # Example: Run the weekly review agent every Monday at 08:00
+        type: agent_trigger
+        agent: weekly_review_agent
+        source:
+          kind: schedule
+          cron: 0 8 * * 1
+        actor:
+          attributes:
+            email: act@example.com
+    allOf:
+      - title: Properties
+        type: object
+        properties:
+          type:
+            type: string
+            const: agent_trigger
+            description: Refers to the resource type and must be `agent_trigger`
+          agent:
+            type: string
+            description: Name of the agent resource this trigger starts. Required; the trigger reconciles after the agent and fails closed if the agent is missing or invalid.
+        required:
+          - type
+          - agent
+      - $ref: '#/definitions/agent_trigger_body_properties'
+      - $ref: '#/definitions/common_properties'
+
+  # Agent trigger body, shared between the standalone agent_trigger resource and the inline triggers list on an agent
+  agent_trigger_body_properties:
+    type: object
+    properties:
+      source:
+        type: object
+        description: What activates the trigger. `kind` selects the event source; which of the other fields apply depends on it.
+        properties:
+          kind:
+            type: string
+            enum:
+              - alert
+              - report
+              - schedule
+            description: Kind of source the trigger subscribes to. Required. `alert` and `report` fire on events emitted by those resources; `schedule` fires on its own cron clock.
+          name:
+            type: string
+            description: 'Name of the alert or report to subscribe to. Empty means ANY resource of that kind (wildcard); when set, the resource must exist, so a typo fails closed at reconcile instead of silently never firing. Must not be set for `kind: schedule`.'
+          events:
+            type: array
+            description: Event short-names to subscribe to. Required (at least one) for `alert` and `report` sources; must not be set for `schedule`. Valid events are `entered_fail`, `recovered`, `entered_error`, `renotify_due` and `evaluated` for an alert source, and `completed` and `failed` for a report source.
+            items:
+              type: string
+          cron:
+            type: string
+            description: 'Cron expression the trigger fires on (standard cron syntax, validated at reconcile time). Required for `kind: schedule`; must not be set for `alert` or `report` sources.'
+        required:
+          - kind
+      actor:
+        type: object
+        description: The identity a started run acts as; its security claims when reading governed data. Set at most ONE of `attributes` or `user_id`; combining them is a parse error. Naming the actor by email is deliberately not supported (an address can change or leave the org, silently breaking the trigger). With no actor, the run carries no claims and fails closed.
+        properties:
+          attributes:
+            type: object
+            description: Explicit user attributes the run acts as, mirroring an alert's `query_for_attributes`. Mutually exclusive with `user_id`.
+            additionalProperties: true
+          user_id:
+            type: string
+            description: ID of the user whose attributes the run acts as; resolved via the admin service at reconcile time, exactly like an alert's `for.user_id`. Stable across email changes, unlike an email address. Mutually exclusive with `attributes`.
+      input:
+        type: object
+        description: The task handed to the started run.
+        properties:
+          prompt:
+            type: string
+            description: Prompt for the run. It specializes the task; when empty, the run starts from the agent's `instructions` with the triggering event as context.
+          context:
+            type: object
+            description: Key-value pairs injected as additional context for the run.
+            additionalProperties:
+              type: string
+      deduplication:
+        type: object
+        description: Collapses repeated activations of the trigger.
+        properties:
+          window:
+            type: string
+            description: Time window during which further matching events collapse onto the existing run instead of starting a new one. Accepts seconds, a Go duration (e.g. `24h`) or an ISO 8601 duration; must not be negative. Sub-second values round up, so `500ms` does not truncate to zero.
+    required:
+      - source
 
   # Chart Properties
   chart_properties:
