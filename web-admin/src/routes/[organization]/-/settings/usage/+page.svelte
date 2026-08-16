@@ -9,6 +9,34 @@
 
   let { data }: { data: PageData } = $props();
 
+  let embedLoaded = $state(false);
+
+  // El hueco del iframe se tapa hasta que el panel se ha pintado de verdad. Dar
+  // fondo al elemento no vale: el documento de dentro lo cubre con su blanco
+  // hasta que la aplicación monta y aplica el tema. Y `load` tampoco basta,
+  // porque salta cuando el documento está listo pero aún vacío.
+  const REVEAL_TIMEOUT_MS = 15000;
+
+  function revealWhenPainted(event: Event) {
+    const frame = event.currentTarget as HTMLIFrameElement;
+    const deadline = performance.now() + REVEAL_TIMEOUT_MS;
+    // El documento del embed nace blanco y se oscurece cuando la aplicación
+    // monta y resuelve el tema, así que la señal es que el iframe lleve ya la
+    // misma marca de tema que la página que lo contiene. En claro no hay nada
+    // que esperar, porque no hay salto que tapar.
+    const hostIsDark = document.documentElement.classList.contains("dark");
+    const check = () => {
+      const painted =
+        !hostIsDark ||
+        !!frame.contentDocument?.documentElement.classList.contains("dark");
+      // Se descubre igualmente al agotar el plazo: más vale enseñar un panel a
+      // medias que un hueco eterno si el embed falla.
+      if (painted || performance.now() > deadline) embedLoaded = true;
+      else requestAnimationFrame(check);
+    };
+    check();
+  }
+
   // Kairos: donde upstream embebe el portal de Orb, nosotros embebemos el
   // consumo que mide la propia plataforma (ADR-0017).
   //
@@ -54,8 +82,20 @@
   {#if $creds.isLoading}
     <Spinner status={EntityStatus.Running} size="16px" />
   {:else if embedUrl}
-    <iframe src={embedUrl} title={m.billing_usage_title()} class="embed"
-    ></iframe>
+    <div class="embed-frame">
+      {#if !embedLoaded}
+        <div class="embed-placeholder">
+          <Spinner status={EntityStatus.Running} size="16px" />
+        </div>
+      {/if}
+      <iframe
+        src={embedUrl}
+        title={m.billing_usage_title()}
+        class="embed"
+        class:opacity-0={!embedLoaded}
+        onload={revealWhenPainted}
+      ></iframe>
+    </div>
   {/if}
 </section>
 
@@ -64,7 +104,15 @@
     @apply w-full;
   }
 
+  .embed-frame {
+    @apply relative w-full h-[1440px];
+  }
+
+  .embed-placeholder {
+    @apply absolute inset-0 grid place-content-center bg-surface-base;
+  }
+
   .embed {
-    @apply w-full h-[1000px] border-0 bg-surface-base;
+    @apply w-full h-full border-0 bg-surface-base transition-opacity;
   }
 </style>
