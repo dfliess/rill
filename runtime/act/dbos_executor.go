@@ -26,6 +26,11 @@ const (
 	stepLoadApprover        = "load_approver"
 	stepLoadDenier          = "load_denier"
 
+	// terminalWriteTimeout bounds the writes that close out a run (recording its terminal status, sweeping its
+	// approvals). They run on a context that outlives the workflow's precisely because a shutdown cancels that one,
+	// so they need a deadline of their own: an unbounded write here would hold the process open on a dead database.
+	terminalWriteTimeout = 10 * time.Second
+
 	// payloadKeyDecidedBy carries the subject that decided an approval on the run.resumed / run.rejected events. The
 	// same subject is written to the action ledger's decided_by; the event is what makes it readable through the API,
 	// which does not expose the ledger.
@@ -249,19 +254,18 @@ func (e *DBOSExecutor) Cancel(ctx context.Context, instanceID, runID string) err
 	if e.store == nil {
 		return nil
 	}
-	// The workflow is already cancelled; the store writes below only reflect that, so a failure to record them must not
-	// fail Cancel. They are independent: withdrawing the pending approval matters even if the run transition did not
-	// land, so the inbox stops offering approve/deny on a run that will never resume (the panel is gated on pending).
-	if err := e.store.RecordTransition(ctx, RunTransition{
+	// The workflow is already cancelled; the store write below only reflects that, so a failure to record it must not
+	// fail Cancel. The transition and the approval withdrawal go together in CloseRun rather than as two independent
+	// writes: withdrawing the approval of a run whose cancelled transition did NOT land leaves it reading
+	// waiting_approval with nothing left to decide, which is worse than the inbox briefly offering a decision on a run
+	// that will not resume — that one an operator can retry, the other one needs a database (kairos-cloud#135).
+	if _, err := e.store.CloseRun(ctx, RunTransition{
 		InstanceID: instanceID,
 		RunID:      runID,
 		Status:     RunStatusCancelled,
 		EventType:  EventTypeCancelled,
 	}); err != nil && e.logger != nil {
-		e.logger.Warn("act: cancel: recording cancelled transition failed", "run", runID, "err", err)
-	}
-	if _, err := e.store.CancelPendingApprovals(ctx, instanceID, runID); err != nil && e.logger != nil {
-		e.logger.Warn("act: cancel: withdrawing pending approvals failed", "run", runID, "err", err)
+		e.logger.Warn("act: cancel: closing run failed", "run", runID, "err", err)
 	}
 	return nil
 }
@@ -454,14 +458,23 @@ func (e *DBOSExecutor) emitWithPayload(ctx dbos.DBOSContext, in AgentRunInput, r
 		return nil
 	}
 	_, err := dbos.RunAsStep(ctx, func(stepCtx context.Context) (bool, error) {
-		return true, e.store.RecordTransition(stepCtx, RunTransition{
+		tr := RunTransition{
 			InstanceID: in.InstanceID,
 			RunID:      runID,
 			Status:     status,
 			EventType:  eventType,
 			DedupeKey:  dedupeKey,
 			Payload:    payload,
-		})
+		}
+		// A terminal status closes the run: its still-pending approvals are withdrawn in the same transaction, so
+		// "a terminal run has no pending approvals" holds by construction rather than by every caller remembering to
+		// sweep. Forgetting that sweep, or doing it when the run did NOT go terminal, is what stranded runs in
+		// waiting_approval with nothing left to decide (kairos-cloud#135).
+		if status.IsTerminal() {
+			_, closeErr := e.store.CloseRun(stepCtx, tr)
+			return true, closeErr
+		}
+		return true, e.store.RecordTransition(stepCtx, tr)
 	}, dbos.WithStepName("emit:"+eventType))
 	if err != nil {
 		return fmt.Errorf("act: emit %s: %w", eventType, err)
@@ -517,36 +530,60 @@ func (e *DBOSExecutor) loadDecider(ctx dbos.DBOSContext, in AgentRunInput, appro
 // secrets into it — §17.2).
 func (e *DBOSExecutor) fail(ctx dbos.DBOSContext, in AgentRunInput, runID string, res AgentRunResult, what string, err error) (AgentRunResult, error) {
 	res.Status = RunStatusFailed
-	if e.store != nil {
-		_, _ = dbos.RunAsStep(ctx, func(stepCtx context.Context) (bool, error) {
-			return true, e.store.RecordTransition(stepCtx, RunTransition{
-				InstanceID: in.InstanceID,
-				RunID:      runID,
-				Status:     RunStatusFailed,
-				EventType:  EventTypeFailed,
-				Error:      err.Error(),
-			})
-		}, dbos.WithStepName("emit:"+EventTypeFailed))
-		e.sweepPendingApprovals(in.InstanceID, runID)
-	}
+	e.closeRun(ctx, in, runID, RunTransition{
+		InstanceID: in.InstanceID,
+		RunID:      runID,
+		Status:     RunStatusFailed,
+		EventType:  EventTypeFailed,
+		Error:      err.Error(),
+	}, what)
 	return res, fmt.Errorf("act: %s: %w", what, err)
 }
 
-// sweepPendingApprovals withdraws any still-pending approvals AND their ledger actions for a run that reached a
-// terminal state (failed, indeterminate, cancelled). It is best-effort and uses context.Background because the
-// workflow context may already be cancelled. A failure to sweep is logged but never fails the run.
-func (e *DBOSExecutor) sweepPendingApprovals(instanceID, runID string) {
+// closeRun durably marks a run terminal and withdraws its pending approvals as one atomic store write, then withdraws
+// its ledger actions. It is best-effort: an error closing the run must not mask the failure that caused it.
+//
+// The store write is retried on a context that outlives the workflow's, because a shutdown cancels that one and the
+// run would otherwise be left mid-flight. Doing the two writes separately is what stranded runs reading
+// waiting_approval with every approval cancelled and no decider (kairos-cloud#135), so CloseRun binds them: either
+// the run is terminal AND its approvals are withdrawn, or neither happened and the run stays decidable.
+func (e *DBOSExecutor) closeRun(ctx dbos.DBOSContext, in AgentRunInput, runID string, tr RunTransition, what string) {
 	if e.store == nil {
 		return
 	}
-	ctx := context.Background()
-	if _, err := e.store.CancelPendingApprovals(ctx, instanceID, runID); err != nil && e.logger != nil {
-		e.logger.Warn("act: sweeping pending approvals failed", "run", runID, "err", err)
+	// The step returns bool, not the cancelled count: DBOS checkpoints a step's output by type, so a run interrupted
+	// mid-deploy replays its recorded output through the new binary. Widening the type here would fail to deserialize
+	// checkpoints written by the old one.
+	_, err := dbos.RunAsStep(ctx, func(stepCtx context.Context) (bool, error) {
+		_, closeErr := e.store.CloseRun(stepCtx, tr)
+		return true, closeErr
+	}, dbos.WithStepName("emit:"+tr.EventType))
+	if err != nil {
+		closeCtx, cancel := context.WithTimeout(context.Background(), terminalWriteTimeout)
+		_, err = e.store.CloseRun(closeCtx, tr)
+		cancel()
 	}
-	if ledger := e.ledger(); ledger != nil {
-		if _, err := ledger.WithdrawPendingActions(ctx, instanceID, runID); err != nil && e.logger != nil {
-			e.logger.Warn("act: withdrawing pending actions failed", "run", runID, "err", err)
-		}
+	if err != nil && e.logger != nil {
+		e.logger.Error("act: closing run failed; it stays decidable with its approvals pending",
+			"run", runID, "stage", what, "status", tr.Status, "err", err)
+	}
+	e.withdrawPendingActions(in.InstanceID, runID)
+}
+
+// withdrawPendingActions closes out the ledger actions of a run that reached a terminal state. It is the ledger
+// counterpart of the approval sweep CloseRun performs, kept separate because the ledger may live behind the gateway
+// rather than in the run store, so it cannot join that transaction. A ledger action left open is an audit loose end,
+// not a run a human sees stuck, so best-effort is enough here. It runs on a context that outlives the workflow's,
+// which a shutdown may already have cancelled.
+func (e *DBOSExecutor) withdrawPendingActions(instanceID, runID string) {
+	ledger := e.ledger()
+	if ledger == nil {
+		return
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), terminalWriteTimeout)
+	defer cancel()
+	if _, err := ledger.WithdrawPendingActions(ctx, instanceID, runID); err != nil && e.logger != nil {
+		e.logger.Warn("act: withdrawing pending actions failed", "run", runID, "err", err)
 	}
 }
 
@@ -577,6 +614,12 @@ func (e *DBOSExecutor) ledger() ActionLedger {
 	return nil
 }
 
+// errInterruptedAwaitingApproval marks an approval wait cut short by a cancelled context, so callers unwinding the
+// stack can tell a shutdown apart from a real failure. It must stay distinguishable all the way up: the difference
+// decides whether the run's pending approvals are swept, and sweeping them on a shutdown is what stranded runs in
+// waiting_approval with nothing left to decide (kairos-cloud#135).
+var errInterruptedAwaitingApproval = errors.New("act: approval wait interrupted")
+
 // interruptedAwaitingApproval wraps a cancelled-context error from the approval wait. A cancelled context there means
 // the process is shutting down (a deploy) or the run was cancelled (CancelWorkflow), NOT that the run failed: so
 // unlike fail it records no failed transition, leaving the store row truthfully waiting_approval. That keeps the run
@@ -587,7 +630,7 @@ func (e *DBOSExecutor) ledger() ActionLedger {
 // survive the restart on its own. Making it resume across a deploy needs the split worker topology; this only stops the
 // interrupt from masquerading as a failure in the meantime.
 func interruptedAwaitingApproval(err error) error {
-	return fmt.Errorf("act: approval wait interrupted (context cancelled): %w", err)
+	return fmt.Errorf("%w (context cancelled): %w", errInterruptedAwaitingApproval, err)
 }
 
 // setupApproval records the waiting_approval transition and persists the approval request atomically, in one durable
@@ -843,13 +886,21 @@ func (e *DBOSExecutor) governProposedActions(ctx dbos.DBOSContext, in AgentRunIn
 				break
 			}
 		}
+		// Withdrawing the run's approvals is not done here: it belongs to the store write that marks the run
+		// terminal (CloseRun), so the two can never be observed half-applied. Sweeping them from this level is what
+		// stranded runs reading waiting_approval with every approval cancelled and no decider, since the paths that
+		// end a run WITHOUT marking it terminal — a shutdown interrupting the approval wait above all — swept anyway
+		// (kairos-cloud#135). Only the ledger, which may sit behind the gateway and cannot join that transaction,
+		// is closed out from here.
 		result, terminal, err := e.processOneAction(ctx, in, runID, res, actions[i], seg, i, hasMoreManual)
 		if err != nil {
-			e.sweepPendingApprovals(in.InstanceID, runID)
+			if !errors.Is(err, errInterruptedAwaitingApproval) {
+				e.withdrawPendingActions(in.InstanceID, runID)
+			}
 			return nil, true, err
 		}
 		if terminal {
-			e.sweepPendingApprovals(in.InstanceID, runID)
+			e.withdrawPendingActions(in.InstanceID, runID)
 			return nil, true, nil
 		}
 		results[i] = result
@@ -898,6 +949,10 @@ func (e *DBOSExecutor) processOneAction(ctx dbos.DBOSContext, in AgentRunInput, 
 			}
 			if err := e.emitWithPayload(ctx, in, runID, postRejectStatus, EventTypeRejected,
 				actionDedupeKey(EventTypeRejected, proposal.ToolCallID), deciderPayload(denier)); err != nil {
+				// A real failure, not a shutdown: end the run through fail so it is marked terminal and its remaining
+				// approvals are withdrawn with it. Returning the bare error would leave the run reading
+				// waiting_approval forever, which is the state this release exists to stop producing.
+				*res, err = e.fail(ctx, in, runID, *res, "emit rejected", err)
 				return nil, true, err
 			}
 			e.closeLedgerAction(ctx, in.InstanceID, runID, proposal.ToolCallID, ActionRejected, denier)
@@ -926,6 +981,8 @@ func (e *DBOSExecutor) processOneAction(ctx dbos.DBOSContext, in AgentRunInput, 
 		}
 		if err := e.emitWithPayload(ctx, in, runID, postResumeStatus, EventTypeResumed,
 			actionDedupeKey(EventTypeResumed, proposal.ToolCallID), deciderPayload(decidedBy)); err != nil {
+			// As above: a failure here is not a shutdown, so the run must be closed rather than left waiting.
+			*res, err = e.fail(ctx, in, runID, *res, "emit resumed", err)
 			return nil, true, err
 		}
 
@@ -974,6 +1031,10 @@ func (e *DBOSExecutor) processOneAction(ctx dbos.DBOSContext, in AgentRunInput, 
 	case OutcomeIndeterminate:
 		res.Status = RunStatusFailed
 		if err := e.emitFailedReason(ctx, in, runID, "action result indeterminate: awaiting human resolution"); err != nil {
+			// The run IS over (the write's outcome is unknown and needs a human), so if recording that failed, close it
+			// through fail, which retries on a context that survives a shutdown. Returning here would leave a finished
+			// run reading waiting_approval.
+			*res, err = e.fail(ctx, in, runID, *res, "emit indeterminate", err)
 			return nil, true, err
 		}
 		return nil, true, nil
@@ -988,19 +1049,21 @@ func (e *DBOSExecutor) processOneAction(ctx dbos.DBOSContext, in AgentRunInput, 
 
 // emitFailedReason records a failed run transition carrying a sanitized reason, as a durable step, and returns nil on
 // success. Unlike fail(), it is for a business-terminal failure (policy denied, action failed/indeterminate) that
-// ends the run without a workflow error, so DBOS does not retry it.
+// ends the run without a workflow error, so DBOS does not retry it. It closes the run rather than only recording the
+// transition, so the approvals of a batch whose later actions will never be reached are withdrawn with it.
 func (e *DBOSExecutor) emitFailedReason(ctx dbos.DBOSContext, in AgentRunInput, runID, reason string) error {
 	if e.store == nil {
 		return nil
 	}
 	_, err := dbos.RunAsStep(ctx, func(stepCtx context.Context) (bool, error) {
-		return true, e.store.RecordTransition(stepCtx, RunTransition{
+		_, closeErr := e.store.CloseRun(stepCtx, RunTransition{
 			InstanceID: in.InstanceID,
 			RunID:      runID,
 			Status:     RunStatusFailed,
 			EventType:  EventTypeFailed,
 			Error:      reason,
 		})
+		return true, closeErr
 	}, dbos.WithStepName("emit:"+EventTypeFailed))
 	if err != nil {
 		return fmt.Errorf("act: emit failed: %w", err)
