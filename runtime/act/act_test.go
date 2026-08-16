@@ -54,15 +54,19 @@ func requirePostgres(t *testing.T) (dsn, schema string) {
 type scriptedAI struct {
 	response string
 
-	mu    sync.Mutex
-	calls int
+	mu     sync.Mutex
+	calls  int
+	source runtime.RequestSource
 }
 
 var _ drivers.AIService = (*scriptedAI)(nil)
 
-func (s *scriptedAI) Complete(_ context.Context, _ *drivers.CompleteOptions) (*drivers.CompleteResult, error) {
+func (s *scriptedAI) Complete(ctx context.Context, _ *drivers.CompleteOptions) (*drivers.CompleteResult, error) {
 	s.mu.Lock()
 	s.calls++
+	// Recorded so a test can pin what the meter will see: the completion runs deep inside the durable loop, far from
+	// the request that started the run.
+	s.source = runtime.RequestSourceFromContext(ctx)
 	s.mu.Unlock()
 	return &drivers.CompleteResult{
 		Message: &aiv1.CompletionMessage{
@@ -79,6 +83,12 @@ func (s *scriptedAI) callCount() int {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	return s.calls
+}
+
+func (s *scriptedAI) requestSource() runtime.RequestSource {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.source
 }
 
 // toolForcingAI is a drivers.AIService that forces a call to toolName on its first completion and then returns

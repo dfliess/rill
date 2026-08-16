@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/dbos-inc/dbos-transact-golang/dbos"
+	"github.com/rilldata/rill/runtime"
 	"github.com/rilldata/rill/runtime/ai"
 )
 
@@ -105,6 +106,13 @@ func NewDBOSExecutor(ctx context.Context, cfg Config) (*DBOSExecutor, error) {
 	if version == "" {
 		version = defaultApplicationVersion
 	}
+
+	// Tag the executor's context as Act traffic. The API handlers already tag theirs, but a run does not execute in the
+	// request that started it: RunWorkflow below hands the work to DBOS on this context, and recovery after a restart
+	// has no request to inherit from at all. Without this, every token and tool call an agent spends is recorded with
+	// an empty source, so the meter cannot tell agent spend from chat spend.
+	ctx = runtime.WithRequestSource(ctx, runtime.RequestSourceAct)
+
 	dctx, err := dbos.NewDBOSContext(ctx, dbos.Config{
 		AppName:            appName,
 		DatabaseURL:        cfg.DatabaseURL,

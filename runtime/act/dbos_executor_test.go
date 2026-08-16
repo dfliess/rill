@@ -267,6 +267,31 @@ func TestExecutorBindsActorToRun(t *testing.T) {
 	require.Equal(t, actor, applied[0].Actor)
 }
 
+// TestExecutorTagsRunsAsActTraffic pins where an agent's spend gets charged. The tokens and tool calls are recorded
+// from inside the durable loop, which does not run in the request that started it, so the source has to come from the
+// executor's own context rather than from the API handler that tagged its own.
+func TestExecutorTagsRunsAsActTraffic(t *testing.T) {
+	rt, instanceID := newInstanceWithAgent(t, "Investiga y propon un ticket.")
+	llm := &scriptedAI{response: "propuesta"}
+	sink := &recordingSink{}
+	e := newExecutor(t, rt, llm, sink)
+
+	runID, err := e.Start(t.Context(), act.AgentRunInput{
+		InstanceID:     instanceID,
+		AgentName:      "triage",
+		Prompt:         "El coste diario subio.",
+		IdempotencyKey: "run-source-" + uuid.NewString(),
+	})
+	require.NoError(t, err)
+
+	require.NoError(t, e.Resume(t.Context(), runID, act.ApprovalApproved, ""))
+	res, err := e.Result(runID)
+	require.NoError(t, err)
+	require.Equal(t, act.RunStatusSucceeded, res.Status)
+
+	require.Equal(t, runtime.RequestSourceAct, llm.requestSource())
+}
+
 // TestRunAgentUsesInitiatorClaimsForToolAccess proves the fix for the confused-deputy hole (§17.3): a run executes
 // tools with the initiating actor's claims, not the worker's. The same agent, snapshot and model, run under two
 // different identities, produce opposite outcomes purely because of the claims the run carries — an actor without
