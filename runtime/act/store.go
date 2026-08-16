@@ -157,6 +157,13 @@ type NewApproval struct {
 	// ArgsHash is the canonical hash of the proposed arguments. The approval is bound to it: changing an argument
 	// after approval invalidates the decision and forces a fresh request (§11.2).
 	ArgsHash string
+	// CanonicalArgs is the exact byte preimage of ArgsHash, carried as a string so it round-trips byte-for-byte.
+	// It is what the approver reviews before signing: for a gateway action it is the canonical JSON of the tool
+	// arguments (CanonicalizeArgs), for the simulated Fase 1 path it is the proposal text HashArgs hashed. The
+	// caller MUST take it from the same place the hash was computed, never re-serialize: if these bytes and
+	// ArgsHash can diverge, the approver signs something they never saw. Empty on rows created before the column
+	// existed, and consumers must degrade gracefully then.
+	CanonicalArgs string
 	// Proposal is the normalized, human-readable description of what will happen, shown in the approval inbox.
 	Proposal string
 	// Policy records the deterministic policy decision that routed this to a human (§6.3). Free-form in Phase 1A.
@@ -184,15 +191,44 @@ type Approval struct {
 	Connector       string
 	ToolCallID      string
 	ArgsHash        string
-	Proposal        string
-	Policy          string
-	Status          string
-	RequestedBy     string
-	DecidedBy       string
-	CreatedOn       time.Time
-	DecidedOn       *time.Time
-	Position        int
-	Total           int
+	// CanonicalArgs is the stored byte preimage of ArgsHash (see NewApproval.CanonicalArgs). It is a pointer
+	// because "nothing was stored" and "the stored preimage is the empty string" are different facts and an
+	// authorization decision now rests on telling them apart: nil means the row predates the column, while a
+	// non-nil empty string is a preimage whose hash is the SHA-256 of no bytes. Read it through
+	// VerifiedCanonicalArgs, never directly.
+	CanonicalArgs *string
+	Proposal      string
+	Policy        string
+	Status        string
+	RequestedBy   string
+	DecidedBy     string
+	CreatedOn     time.Time
+	DecidedOn     *time.Time
+	Position      int
+	Total         int
+}
+
+// VerifiedCanonicalArgs returns the approval's stored canonical argument bytes, and whether they are present AND
+// still hash to ArgsHash. What is presented to an approver as "the thing being signed" must be demonstrably the
+// preimage of the hash their decision binds to, not a reconstruction.
+//
+// ok=false covers both ways that can fail: nothing stored (a row from before the column existed) and stored bytes
+// that contradict the hash (corruption, or a bug in how they were captured). Both mean the same thing to a caller
+// deciding whether an approval may be signed — nobody can be shown what they would be signing — so both refuse.
+// Use CanonicalArgs != nil to tell them apart when the distinction matters for logging: absence is an expected
+// degradation, contradiction is an incident.
+func (a *Approval) VerifiedCanonicalArgs() (args string, ok bool) {
+	// An empty preimage refuses too, matching CreateApproval, which will not store one. It cannot be told apart
+	// from "nothing recorded" once it reaches the wire as a proto3 string, so a client would hide the approve
+	// button while the server still accepted the decision — and a guarantee the two ends disagree about is not a
+	// guarantee. The store makes this state unreachable; this keeps it unreachable if that ever slips.
+	if a.CanonicalArgs == nil || *a.CanonicalArgs == "" {
+		return "", false
+	}
+	if HashArgs(*a.CanonicalArgs) != a.ArgsHash {
+		return "", false
+	}
+	return *a.CanonicalArgs, true
 }
 
 // ListRunsFilter scopes and narrows a run listing. InstanceID is mandatory: every query is scoped to one instance

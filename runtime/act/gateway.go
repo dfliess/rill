@@ -218,10 +218,14 @@ type Gateway struct {
 // and the approval bind to. It is produced even for a denied proposal, so a rejected action still has a hash and a
 // dedup key on record for audit.
 type Authorization struct {
-	Decision       PolicyDecision
-	Reason         string
-	Class          ToolClass
-	ArgsHash       string
+	Decision PolicyDecision
+	Reason   string
+	Class    ToolClass
+	ArgsHash string
+	// CanonicalArgs is the exact byte preimage of ArgsHash, captured from the same CanonicalizeArgs output the
+	// hash was computed over (never re-serialized) so the approval can persist and later show an approver the very
+	// bytes their decision binds to. Empty when the arguments could not be canonicalized (ArgsHash is empty too).
+	CanonicalArgs  string
 	IdempotencyKey string
 	ToolVersion    string
 	Connector      string
@@ -252,10 +256,14 @@ func Authorize(in AuthorizeInput) Authorization {
 		Connector:   in.Proposal.Connector,
 		Verifiable:  in.Descriptor.Verifiable,
 	}
-	argsHash, hashErr := HashCanonicalArgs(in.Proposal.Args)
-	auth.ArgsHash = argsHash
+	// Canonicalize once and derive BOTH the hash and the stored preimage from that single byte slice: computing
+	// them through separate paths is exactly the divergence the approval's "you sign what you see" invariant
+	// forbids (§6.4, §11.2).
+	canonicalArgs, hashErr := CanonicalizeArgs(in.Proposal.Args)
 	if hashErr == nil {
-		auth.IdempotencyKey = DeriveIdempotencyKey(in.RunID, in.Proposal.ToolCallID, argsHash)
+		auth.ArgsHash = hashBytes(canonicalArgs)
+		auth.CanonicalArgs = string(canonicalArgs)
+		auth.IdempotencyKey = DeriveIdempotencyKey(in.RunID, in.Proposal.ToolCallID, auth.ArgsHash)
 	}
 
 	switch {

@@ -146,6 +146,27 @@ func TestAuthorizeUnknownToolDenies(t *testing.T) {
 	require.NotEmpty(t, auth.ArgsHash, "even a denied proposal gets an identity for the ledger")
 }
 
+// TestAuthorizeCanonicalArgsAreThePreimage verifies Authorize hands back the exact byte preimage of the args hash
+// it computed: the pair is derived from ONE canonicalization, so the approval that persists both can later prove to
+// the approver that the bytes on screen are what the hash — and therefore their signature — binds to (§6.4).
+func TestAuthorizeCanonicalArgsAreThePreimage(t *testing.T) {
+	args := map[string]any{"summary": "coste alto: revisión de París", "alpha": map[string]any{"n": []any{1.0, "dos"}}}
+	auth := act.Authorize(act.AuthorizeInput{
+		RunID:      "run-1",
+		Proposal:   act.ToolProposal{ToolCallID: "call-1", Tool: "jira.create_issue", Args: args},
+		Descriptor: createIssueDescriptor(act.ClassIdempotentNative),
+		Found:      true,
+	})
+	require.Equal(t, act.PolicyApprovalRequired, auth.Decision)
+	require.Equal(t, auth.ArgsHash, act.HashArgs(auth.CanonicalArgs), "the returned bytes must hash to the returned hash")
+	wantBytes, err := act.CanonicalizeArgs(args)
+	require.NoError(t, err)
+	require.Equal(t, string(wantBytes), auth.CanonicalArgs)
+	wantHash, err := act.HashCanonicalArgs(args)
+	require.NoError(t, err)
+	require.Equal(t, wantHash, auth.ArgsHash)
+}
+
 // TestAuthorizeInvalidArgsDenies verifies arguments that violate the tool schema are denied before any effect.
 func TestAuthorizeInvalidArgsDenies(t *testing.T) {
 	auth := act.Authorize(act.AuthorizeInput{

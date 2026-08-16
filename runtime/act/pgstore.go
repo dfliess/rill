@@ -94,6 +94,16 @@ func (s *PostgresRunStore) DropSchemaForTest(ctx context.Context) {
 	_, _ = s.pool.Exec(ctx, fmt.Sprintf(`DROP SCHEMA IF EXISTS %s CASCADE`, s.schema))
 }
 
+// ClobberCanonicalArgsForTest overwrites an approval's stored preimage, which CreateApproval refuses to do because
+// it enforces the binding to args_hash. It exists so a test can reproduce the two states no legitimate write path
+// can produce any more: a row from before the column existed (nil) and a row whose bytes were corrupted after the
+// fact. Both must be refused at the approve endpoint rather than signed blind.
+func (s *PostgresRunStore) ClobberCanonicalArgsForTest(ctx context.Context, instanceID, approvalID string, canonicalArgs *string) error {
+	_, err := s.pool.Exec(ctx, fmt.Sprintf(`UPDATE %s SET canonical_args=$3 WHERE approval_id=$1 AND instance_id=$2`,
+		s.t("agent_approvals")), approvalID, instanceID, canonicalArgs)
+	return err
+}
+
 func (s *PostgresRunStore) Migrate(ctx context.Context) error {
 	// One statement per Exec: pgx's simple-protocol batching aside, keeping them separate makes a failure point to
 	// the exact DDL. All are IF NOT EXISTS so Migrate is safe to run on every startup.
@@ -178,6 +188,7 @@ func (s *PostgresRunStore) Migrate(ctx context.Context) error {
 			connector text NOT NULL DEFAULT '',
 			tool_call_id text NOT NULL DEFAULT '',
 			args_hash text NOT NULL,
+			canonical_args text,
 			proposal text NOT NULL DEFAULT '',
 			policy text NOT NULL DEFAULT '',
 			status text NOT NULL,
@@ -244,6 +255,33 @@ func (s *PostgresRunStore) Migrate(ctx context.Context) error {
 		// its batch, total is the batch size. Zero defaults are fine for old single-action approvals.
 		fmt.Sprintf(`ALTER TABLE %s ADD COLUMN IF NOT EXISTS position int NOT NULL DEFAULT 0`, s.t("agent_approvals")),
 		fmt.Sprintf(`ALTER TABLE %s ADD COLUMN IF NOT EXISTS total int NOT NULL DEFAULT 0`, s.t("agent_approvals")),
+
+		// Add canonical_args: the exact byte preimage of args_hash, persisted so an approver can be shown the very
+		// bytes their decision binds to. There is nothing to backfill INTO old rows: the bytes those hashes were
+		// computed over were never stored, and recomputing them from the truncated proposal would fabricate a
+		// preimage. Old approvals stay NULL, which is why the column is nullable rather than NOT NULL DEFAULT '':
+		// refusing to sign what cannot be shown is now an authorization decision, and it must not confuse "no
+		// preimage was ever stored" with "the preimage is the empty string".
+		fmt.Sprintf(`ALTER TABLE %s ADD COLUMN IF NOT EXISTS canonical_args text`, s.t("agent_approvals")),
+		// A database that already has the column from an earlier build of this same change carries it as
+		// NOT NULL DEFAULT '': ADD COLUMN IF NOT EXISTS would leave that in place, and its rows would then read
+		// back as an empty preimage (a hash contradiction) instead of as the absence they are. Converge the shape
+		// explicitly, then restore the absence those rows should have had.
+		//
+		// Guarded on attnotnull rather than run unconditionally: Migrate runs on every startup, and an unconditional
+		// UPDATE ... WHERE canonical_args='' would scan the whole table each time forever. Once the column is
+		// nullable the conversion has already happened, so the block does nothing and costs one catalog lookup.
+		fmt.Sprintf(`DO $$
+		BEGIN
+			IF EXISTS (
+				SELECT 1 FROM pg_attribute a
+				WHERE a.attrelid = '%s'::regclass AND a.attname = 'canonical_args' AND a.attnotnull
+			) THEN
+				ALTER TABLE %s ALTER COLUMN canonical_args DROP NOT NULL;
+				ALTER TABLE %s ALTER COLUMN canonical_args DROP DEFAULT;
+				UPDATE %s SET canonical_args=NULL WHERE canonical_args='';
+			END IF;
+		END $$`, s.t("agent_approvals"), s.t("agent_approvals"), s.t("agent_approvals"), s.t("agent_approvals")),
 
 		// Drop the approval expiry column: approval deadlines have been removed. The column is no longer written or
 		// read, and historical rows that carried an expiry date lose nothing of value (the deadline was never enforced
@@ -534,13 +572,29 @@ func (s *PostgresRunStore) CreateApproval(ctx context.Context, a NewApproval) er
 	if a.ApprovalID == "" || a.RunID == "" || a.InstanceID == "" || a.ArgsHash == "" {
 		return errors.New("act: CreateApproval requires ApprovalID, RunID, InstanceID and ArgsHash")
 	}
+	// Enforce the preimage binding where it is written, not only where it is read. An approval that cannot show an
+	// approver what they are signing cannot be signed at all (the API refuses it), so one created without a
+	// coherent preimage would be dead on arrival: better to fail the caller here, loudly, than to persist a row
+	// that only reveals its defect when a human is waiting on it.
+	//
+	// An empty preimage is rejected even when its hash matches. It would be a legitimate value in the abstract —
+	// the SHA-256 of no bytes is a real hash — but nothing describes an action with it: the gateway path always
+	// canonicalizes to at least "{}", and a simulated proposal with no text describes nothing to approve. Allowing
+	// it would only create a state that survives to the wire as an empty string and there becomes indistinguishable
+	// from "no preimage recorded", which is exactly the ambiguity the nullable column exists to remove.
+	if a.CanonicalArgs == "" {
+		return fmt.Errorf("act: CreateApproval requires CanonicalArgs (approval %q)", a.ApprovalID)
+	}
+	if HashArgs(a.CanonicalArgs) != a.ArgsHash {
+		return fmt.Errorf("act: CreateApproval requires CanonicalArgs to be the preimage of ArgsHash (approval %q)", a.ApprovalID)
+	}
 	_, err := s.pool.Exec(ctx, fmt.Sprintf(`
-		INSERT INTO %s (approval_id, run_id, instance_id, tool_name, connector, tool_call_id, args_hash, proposal,
-			policy, status, requested_by, position, total)
-		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+		INSERT INTO %s (approval_id, run_id, instance_id, tool_name, connector, tool_call_id, args_hash,
+			canonical_args, proposal, policy, status, requested_by, position, total)
+		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
 		ON CONFLICT (approval_id) DO NOTHING`, s.t("agent_approvals")),
-		a.ApprovalID, a.RunID, a.InstanceID, a.ToolName, a.Connector, a.ToolCallID, a.ArgsHash, a.Proposal,
-		a.Policy, ApprovalStatusPending, a.RequestedBy, a.Position, a.Total)
+		a.ApprovalID, a.RunID, a.InstanceID, a.ToolName, a.Connector, a.ToolCallID, a.ArgsHash,
+		a.CanonicalArgs, a.Proposal, a.Policy, ApprovalStatusPending, a.RequestedBy, a.Position, a.Total)
 	if err != nil {
 		return fmt.Errorf("act: create approval: %w", err)
 	}
@@ -657,8 +711,8 @@ func (s *PostgresRunStore) selectRunSQL() string {
 func (s *PostgresRunStore) selectApprovalSQL() string {
 	return fmt.Sprintf(`
 		SELECT a.approval_id, a.run_id, a.instance_id, r.agent_name, r.actor_subject, a.tool_name, a.connector,
-			a.tool_call_id, a.args_hash, a.proposal, a.policy, a.status, a.requested_by, a.decided_by, a.created_on,
-			a.decided_on, a.position, a.total
+			a.tool_call_id, a.args_hash, a.canonical_args, a.proposal, a.policy, a.status, a.requested_by, a.decided_by,
+			a.created_on, a.decided_on, a.position, a.total
 		FROM %s a JOIN %s r ON r.run_id = a.run_id AND r.instance_id = a.instance_id`,
 		s.t("agent_approvals"), s.t("agent_runs"))
 }
@@ -686,9 +740,11 @@ func scanRun(row rowScanner) (*Run, error) {
 
 func scanApproval(row rowScanner) (*Approval, error) {
 	var a Approval
+	// canonical_args scans into a pointer so a NULL (a row recorded before the column existed) stays
+	// distinguishable from a stored empty preimage; VerifiedCanonicalArgs relies on that difference.
 	err := row.Scan(&a.ApprovalID, &a.RunID, &a.InstanceID, &a.AgentName, &a.RunActorSubject, &a.ToolName,
-		&a.Connector, &a.ToolCallID, &a.ArgsHash, &a.Proposal, &a.Policy, &a.Status, &a.RequestedBy, &a.DecidedBy,
-		&a.CreatedOn, &a.DecidedOn, &a.Position, &a.Total)
+		&a.Connector, &a.ToolCallID, &a.ArgsHash, &a.CanonicalArgs, &a.Proposal, &a.Policy, &a.Status, &a.RequestedBy,
+		&a.DecidedBy, &a.CreatedOn, &a.DecidedOn, &a.Position, &a.Total)
 	if err != nil {
 		return nil, err
 	}
