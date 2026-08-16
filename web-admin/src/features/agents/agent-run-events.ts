@@ -13,6 +13,8 @@ export interface AgentRunEventsState {
 
 const RECONNECT_DELAY_MS = 3_000;
 const MAX_STREAM_ATTEMPTS = 3;
+/** A stream that stayed open this long was working; its end is a cutoff to resume from, not a failure to count. */
+const HEALTHY_STREAM_MS = 20_000;
 
 /**
  * Live event feed for a run, backed by AgentService.StreamAgentRunEvents.
@@ -44,6 +46,7 @@ export function agentRunEventsStore(
 
       async function consume(): Promise<void> {
         for (let attempt = 0; attempt < MAX_STREAM_ATTEMPTS; attempt++) {
+          const openedAt = Date.now();
           try {
             set({ events: [...events], streaming: true, error: null });
             const stream = client.agentService.streamAgentRunEvents(
@@ -77,6 +80,16 @@ export function agentRunEventsStore(
             return;
           } catch (e) {
             if (stopped || controller.signal.aborted) return;
+            // The attempt budget is there to stop hammering a backend that is
+            // failing, not to put a lifespan on a healthy stream. A connection
+            // that stayed up is evidence the backend is fine, so it does not
+            // spend from the budget: without this, a run parked on an approval
+            // for an afternoon exhausts three server-side cutoffs and the
+            // timeline goes dark while the run is still perfectly watchable.
+            if (Date.now() - openedAt >= HEALTHY_STREAM_MS) {
+              attempt = -1;
+              continue;
+            }
             const last = attempt === MAX_STREAM_ATTEMPTS - 1;
             if (last) {
               set({

@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/require"
 	runtimev1 "github.com/rilldata/rill/proto/gen/rill/runtime/v1"
+	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -85,4 +85,24 @@ func exprIdent(t *testing.T, name string) *runtimev1.Expression {
 	return &runtimev1.Expression{
 		Expression: &runtimev1.Expression_Ident{Ident: name},
 	}
+}
+
+// TestStreamAgentRunEventsGetsAWatchTimeout pins the server-side deadline for the run event stream.
+//
+// It shipped without an entry in timeoutSelector, so it fell through to the 30-second default meant for unary calls.
+// A watch is at its most useful when it has nothing to send — a run parked on a human approval emits no events while
+// it waits — so the interceptor cancelled it mid-wait and the timeline read "live events unavailable: context
+// deadline exceeded" on exactly the runs someone had open. Asserting it against the default is what makes the
+// omission visible: a new streaming method that forgets this fails here rather than in front of a user.
+func TestStreamAgentRunEventsGetsAWatchTimeout(t *testing.T) {
+	unaryDefault := timeoutSelector("/rill.runtime.v1.AgentService/GetAgentRun")
+	streamTimeout := timeoutSelector(runtimev1.AgentService_StreamAgentRunEvents_FullMethodName)
+
+	require.NotEqual(t, unaryDefault, streamTimeout,
+		"the run event stream must not inherit the unary default: it is a watch that legitimately sends nothing for long stretches")
+	require.GreaterOrEqual(t, streamTimeout, 30*time.Minute,
+		"a human deciding an approval takes minutes to hours, so the stream's deadline must be on that scale")
+
+	// The same scale as Rill's own watches, which is where this belongs.
+	require.Equal(t, timeoutSelector(runtimev1.RuntimeService_WatchResources_FullMethodName), streamTimeout)
 }
