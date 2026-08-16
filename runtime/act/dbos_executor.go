@@ -79,7 +79,7 @@ type Config struct {
 // dev topology (§20.1). In production the worker and the runtime that drives it are separate processes sharing the
 // same Postgres; the split does not change this code, only which side holds the dbos.Client.
 type DBOSExecutor struct {
-	ctx      dbos.DBOSContext
+	ctx      dbos.Context
 	client   dbos.Client
 	runner   Runner
 	store    RunStore
@@ -113,7 +113,7 @@ func NewDBOSExecutor(ctx context.Context, cfg Config) (*DBOSExecutor, error) {
 	// an empty source, so the meter cannot tell agent spend from chat spend.
 	ctx = runtime.WithRequestSource(ctx, runtime.RequestSourceAct)
 
-	dctx, err := dbos.NewDBOSContext(ctx, dbos.Config{
+	dctx, err := dbos.NewContext(ctx, dbos.Config{
 		AppName:            appName,
 		DatabaseURL:        cfg.DatabaseURL,
 		DatabaseSchema:     cfg.DatabaseSchema,
@@ -140,7 +140,7 @@ func NewDBOSExecutor(ctx context.Context, cfg Config) (*DBOSExecutor, error) {
 	dbos.RegisterWorkflow(dctx, e.runAgentWorkflow, dbos.WithWorkflowName(workflowName))
 
 	if err := dbos.Launch(dctx); err != nil {
-		dbos.Shutdown(dctx, 5*time.Second)
+		_ = dbos.Shutdown(dctx, 5*time.Second) // best effort: we are already failing to start
 		return nil, fmt.Errorf("act: launch DBOS: %w", err)
 	}
 
@@ -150,7 +150,7 @@ func NewDBOSExecutor(ctx context.Context, cfg Config) (*DBOSExecutor, error) {
 		Logger:         cfg.Logger,
 	})
 	if err != nil {
-		dbos.Shutdown(dctx, 5*time.Second)
+		_ = dbos.Shutdown(dctx, 5*time.Second) // best effort: we are already failing to start
 		return nil, fmt.Errorf("act: init DBOS client: %w", err)
 	}
 	e.client = client
@@ -159,11 +159,18 @@ func NewDBOSExecutor(ctx context.Context, cfg Config) (*DBOSExecutor, error) {
 }
 
 // Close drains the worker and closes the client. Callers should allow in-flight steps to finish within timeout.
+//
+// A shutdown error is logged, not returned: Close runs on the way out of the process, so there is no caller left to
+// act on it, and the client is closed even if the worker's drain reported a problem.
 func (e *DBOSExecutor) Close(timeout time.Duration) {
 	if e.client != nil {
-		e.client.Shutdown(timeout)
+		if err := dbos.Shutdown(e.client, timeout); err != nil && e.logger != nil {
+			e.logger.Warn("act: closing the DBOS client failed", "err", err)
+		}
 	}
-	dbos.Shutdown(e.ctx, timeout)
+	if err := dbos.Shutdown(e.ctx, timeout); err != nil && e.logger != nil {
+		e.logger.Warn("act: draining the DBOS worker failed", "err", err)
+	}
 }
 
 // ComposeRunID builds the durable workflow ID from (instance, agent, idempotency key). It length-prefixes the two
@@ -243,14 +250,14 @@ func (e *DBOSExecutor) Resume(_ context.Context, runID string, decision Approval
 	if toolCallID != "" {
 		topic = approvalTopic + ":" + toolCallID
 	}
-	if err := e.client.Send(runID, string(decision), topic); err != nil {
+	if err := dbos.Send(e.client, runID, string(decision), topic); err != nil {
 		return fmt.Errorf("act: resume run %q: %w", runID, err)
 	}
 	return nil
 }
 
 // Resumable reports whether the run's workflow can still consume a decision. A workflow in a terminal state cannot:
-// its function has returned, so nothing is left to receive the message. Send would still succeed there — it inserts a
+// its function has returned, so nothing is left to receive the message. Send would still succeed there: it inserts a
 // notification row whose only constraint is that the workflow EXISTS, which a terminal one does — so this is the check
 // that keeps an approval from being recorded against a run that will never act on it.
 //
@@ -281,7 +288,7 @@ func (e *DBOSExecutor) Resumable(_ context.Context, runID string) (bool, error) 
 // The transition is scoped by instance, so a caller can only cancel a run in the instance it addresses. Overwriting
 // an already-terminal run's status is a Phase 1 loose end (RecordTransition does not yet guard terminal states).
 func (e *DBOSExecutor) Cancel(ctx context.Context, instanceID, runID string) error {
-	if err := e.client.CancelWorkflow(runID); err != nil {
+	if err := dbos.CancelWorkflow(e.client, runID); err != nil {
 		return fmt.Errorf("act: cancel run %q: %w", runID, err)
 	}
 	if e.store == nil {
@@ -322,7 +329,7 @@ func (e *DBOSExecutor) Result(runID string) (AgentRunResult, error) {
 // inside the loop replays the entire loop, not just the last model turn, and re-drives the LLM. Phase 1 must split
 // this into one durable step per model turn and per tool call (§10.3), pairing each write step with an action
 // ledger (§12), so the loop resumes at the last completed turn and external writes are not re-driven.
-func (e *DBOSExecutor) runAgentWorkflow(ctx dbos.DBOSContext, in AgentRunInput) (AgentRunResult, error) {
+func (e *DBOSExecutor) runAgentWorkflow(ctx dbos.Context, in AgentRunInput) (AgentRunResult, error) {
 	runID, err := dbos.GetWorkflowID(ctx)
 	if err != nil {
 		return AgentRunResult{}, err
@@ -388,7 +395,6 @@ func (e *DBOSExecutor) runAgentWorkflow(ctx dbos.DBOSContext, in AgentRunInput) 
 	decision, err := dbos.Recv[string](ctx, approvalTopic, approvalWaitForever)
 	if err != nil {
 		if errors.Is(err, context.Canceled) {
-			e.parkIfShuttingDown(runID) // never returns while the process is going down
 			return res, interruptedAwaitingApproval(err)
 		}
 		return e.fail(ctx, in, runID, res, "await approval", err)
@@ -440,7 +446,7 @@ func (e *DBOSExecutor) runAgentWorkflow(ctx dbos.DBOSContext, in AgentRunInput) 
 // emitRunning records the queued->running transition and binds the run to the snapshot's spec hash in one durable
 // step. It is separate from emit because it is the only transition that carries a spec hash: it fires right after
 // the snapshot is captured, so the run row records exactly which agent version it executed (§8.3, §12).
-func (e *DBOSExecutor) emitRunning(ctx dbos.DBOSContext, in AgentRunInput, runID, specHash string) error {
+func (e *DBOSExecutor) emitRunning(ctx dbos.Context, in AgentRunInput, runID, specHash string) error {
 	if e.store == nil {
 		return nil
 	}
@@ -462,7 +468,7 @@ func (e *DBOSExecutor) emitRunning(ctx dbos.DBOSContext, in AgentRunInput, runID
 // persistConversation links the run to the AI session it executed in, as a durable step. It is a no-op when no store
 // is configured (the storeless unit tests) or when no session was opened (SessionID empty), so it never overwrites an
 // existing link with a blank. The store UPDATE is idempotent, so a replay re-writes the same checkpointed session ID.
-func (e *DBOSExecutor) persistConversation(ctx dbos.DBOSContext, in AgentRunInput, runID, sessionID string) error {
+func (e *DBOSExecutor) persistConversation(ctx dbos.Context, in AgentRunInput, runID, sessionID string) error {
 	if e.store == nil || sessionID == "" {
 		return nil
 	}
@@ -479,7 +485,7 @@ func (e *DBOSExecutor) persistConversation(ctx dbos.DBOSContext, in AgentRunInpu
 // own unit tests run storeless), so wiring a store adds state emission without changing the storeless step sequence.
 // The step is idempotent in the store (one event per edge), so a crash between the side effect and the checkpoint
 // replays it harmlessly.
-func (e *DBOSExecutor) emit(ctx dbos.DBOSContext, in AgentRunInput, runID string, status RunStatus, eventType string) error {
+func (e *DBOSExecutor) emit(ctx dbos.Context, in AgentRunInput, runID string, status RunStatus, eventType string) error {
 	return e.emitWithPayload(ctx, in, runID, status, eventType, "", nil)
 }
 
@@ -487,7 +493,7 @@ func (e *DBOSExecutor) emit(ctx dbos.DBOSContext, in AgentRunInput, runID string
 // edge on its event type alone — once per run). The payload must already be redacted: it is stored verbatim and read
 // by the run timeline, which is user-visible (§17.2). A nil payload behaves exactly like emit, so the step name and
 // shape are unchanged for the transitions that carry no detail.
-func (e *DBOSExecutor) emitWithPayload(ctx dbos.DBOSContext, in AgentRunInput, runID string, status RunStatus, eventType, dedupeKey string, payload map[string]any) error {
+func (e *DBOSExecutor) emitWithPayload(ctx dbos.Context, in AgentRunInput, runID string, status RunStatus, eventType, dedupeKey string, payload map[string]any) error {
 	if e.store == nil {
 		return nil
 	}
@@ -538,7 +544,7 @@ func deciderPayload(subject string) map[string]any {
 // not the decider; the approval row's decided_by was set by the API's claim (ResolveApproval) before the resume was
 // delivered, so it is authoritative here (§11.2, §18.3). Falls back to the initiator when no store is wired (the
 // executor's own unit tests) or when a non-API resume path left decided_by unset — see the Resume TODO above.
-func (e *DBOSExecutor) loadDecider(ctx dbos.DBOSContext, in AgentRunInput, approvalID, stepName string) (string, error) {
+func (e *DBOSExecutor) loadDecider(ctx dbos.Context, in AgentRunInput, approvalID, stepName string) (string, error) {
 	if e.store == nil {
 		return in.Actor.Subject, nil
 	}
@@ -562,7 +568,7 @@ func (e *DBOSExecutor) loadDecider(ctx dbos.DBOSContext, in AgentRunInput, appro
 // best-effort: an error recording the failure must not mask the failure that caused it. "what" is a short label for
 // the failed stage; err.Error() is stored as the sanitized message (the runner is responsible for not leaking
 // secrets into it — §17.2).
-func (e *DBOSExecutor) fail(ctx dbos.DBOSContext, in AgentRunInput, runID string, res AgentRunResult, what string, err error) (AgentRunResult, error) {
+func (e *DBOSExecutor) fail(ctx dbos.Context, in AgentRunInput, runID string, res AgentRunResult, what string, err error) (AgentRunResult, error) {
 	res.Status = RunStatusFailed
 	e.closeRun(ctx, in, runID, RunTransition{
 		InstanceID: in.InstanceID,
@@ -581,7 +587,7 @@ func (e *DBOSExecutor) fail(ctx dbos.DBOSContext, in AgentRunInput, runID string
 // run would otherwise be left mid-flight. Doing the two writes separately is what stranded runs reading
 // waiting_approval with every approval cancelled and no decider (kairos-cloud#135), so CloseRun binds them: either
 // the run is terminal AND its approvals are withdrawn, or neither happened and the run stays decidable.
-func (e *DBOSExecutor) closeRun(ctx dbos.DBOSContext, in AgentRunInput, runID string, tr RunTransition, what string) {
+func (e *DBOSExecutor) closeRun(ctx dbos.Context, in AgentRunInput, runID string, tr RunTransition, what string) {
 	if e.store == nil {
 		return
 	}
@@ -655,52 +661,24 @@ func (e *DBOSExecutor) ledger() ActionLedger {
 var errInterruptedAwaitingApproval = errors.New("act: approval wait interrupted")
 
 // interruptedAwaitingApproval wraps a cancelled-context error from the approval wait. A cancelled context there means
-// the run was cancelled or, if parkIfShuttingDown let it through, something cancelled the workflow that is not the
-// engine closing. Either way it is NOT a failure of the run: so unlike fail it records no failed transition, leaving
-// the store row truthfully waiting_approval. That keeps the run cancellable to clean it up, and a Cancel that raced
-// the shutdown still resolves cleanly.
+// the process is shutting down (a deploy) or the run was cancelled, NOT that the run failed: so unlike fail it records
+// no failed transition, leaving the store row truthfully waiting_approval. That keeps the run cancellable to clean it
+// up, and a Cancel that raced the shutdown still resolves cleanly.
+//
+// Returning this error is safe for the run's durability, which was not always true. Until DBOS v1.1 a returning error
+// was taken as a claim that the run was unrecoverable, so a deploy wrote off every approval nobody had signed yet;
+// that is how 27 of the 29 terminal workflows in production died (kairos-cloud#135, upstream #423). Since v1.1 the
+// shutdown cancellation carries its own cause and a run unwinding under it skips the outcome write entirely, so the
+// row keeps the PENDING it already had and the next process recovers it back into this same Recv, which reads the
+// notifications table before waiting: a decision taken while the platform was down is consumed at once.
 func interruptedAwaitingApproval(err error) error {
 	return fmt.Errorf("%w (context cancelled): %w", errInterruptedAwaitingApproval, err)
-}
-
-// parkIfShuttingDown never returns when the approval wait was cut short by the process going down.
-//
-// Returning an error from a workflow is, to DBOS, a claim about the run and not about this goroutine: it records the
-// error and does not recover the workflow, because "uncaught exceptions are assumed to be nonrecoverable". A shutdown
-// is not a failure. The run had not finished; it was waiting for a human. Answering "stop" with "I failed" therefore
-// files a live run as permanently dead, which is how 27 of the 29 terminal workflows in production died, all of them
-// with this same interrupted-approval error (kairos-cloud#135).
-//
-// So on a shutdown we say nothing at all. DBOS writes a workflow's outcome only when its function returns, so one that
-// never returns keeps the status its row already carries: PENDING, which the engine defines as "running or ready to
-// run" and which is exactly what a run parked on a human is. Shutdown waits for in-flight workflows up to its timeout,
-// logs that it gave up, and the process exits; this goroutine dies with it, having written nothing. The next process
-// recovers every PENDING workflow, replays the completed steps from their checkpoints and re-enters this same Recv,
-// which reads the notifications table before it waits: a decision taken while the platform was down is consumed at
-// once. The cost is that a deploy with a parked run always spends the full drain timeout before exiting.
-//
-// The test is which context died, not which error arrived: both cases surface the identical context.Canceled.
-// dbos.Shutdown cancels the root context that every workflow context descends from, and e.ctx IS that root, so a
-// cancelled e.ctx means the engine is closing rather than something happening to this run alone. Today nothing else
-// cancels a parked workflow — CancelWorkflow only writes CANCELLED to the database, which is noticed at the start of
-// the next step and a parked run never reaches one — but that is a property of the current code, not a guarantee.
-// Giving runs a durable DBOS deadline would make expiry a second and genuinely terminal cause of cancellation, and
-// parking on that one would resurrect a dead run on every boot. Hence the explicit question instead of assuming the
-// only possible answer.
-func (e *DBOSExecutor) parkIfShuttingDown(runID string) {
-	if e.ctx.Err() == nil {
-		return
-	}
-	if e.logger != nil {
-		e.logger.Info("act: shutting down while awaiting approval; leaving the run pending for recovery", "run", runID)
-	}
-	select {} // the process is exiting; this goroutine goes with it
 }
 
 // setupApproval records the waiting_approval transition and persists the approval request atomically, in one durable
 // step. The approval identity and the args hash are derived deterministically from the run and proposal, so a replay
 // creates the same approval (idempotent) rather than a second one.
-func (e *DBOSExecutor) setupApproval(ctx dbos.DBOSContext, in AgentRunInput, runID, proposal string) error {
+func (e *DBOSExecutor) setupApproval(ctx dbos.Context, in AgentRunInput, runID, proposal string) error {
 	if e.store == nil {
 		return nil
 	}
@@ -762,7 +740,7 @@ type runSegmentStepResult struct {
 // the gateway's Execute is idempotent on the ledger — an approved write is never driven twice under at-least-once
 // delivery (§12). A crash mid-segment re-drives that segment's model turns (the accepted spike granularity: replaying
 // a segment re-flushes its trace but never re-executes a committed external write).
-func (e *DBOSExecutor) runSegmentedLoop(ctx dbos.DBOSContext, in AgentRunInput, runID string, snapshot *ai.AgentSnapshot, res AgentRunResult) (AgentRunResult, error) {
+func (e *DBOSExecutor) runSegmentedLoop(ctx dbos.Context, in AgentRunInput, runID string, snapshot *ai.AgentSnapshot, res AgentRunResult) (AgentRunResult, error) {
 	var sessionID string
 	var resume []*ai.InjectedResult
 	for seg := 0; ; seg++ {
@@ -836,7 +814,7 @@ func canonicalArgsForApproval(a *governedAction) string {
 // actions execute immediately; manual actions wait for a per-tool-call DBOS topic. A rejection injects an error result
 // for that call (the model sees it on resume and adapts) without ending the run. Truly terminal outcomes (indeterminate,
 // workflow errors) stop the run; everything else produces an InjectedResult per action for the next segment.
-func (e *DBOSExecutor) governProposedActions(ctx dbos.DBOSContext, in AgentRunInput, runID string, snapshot *ai.AgentSnapshot, res *AgentRunResult, captured []*ai.ProposedAction, seg int) ([]*ai.InjectedResult, bool, error) {
+func (e *DBOSExecutor) governProposedActions(ctx dbos.Context, in AgentRunInput, runID string, snapshot *ai.AgentSnapshot, res *AgentRunResult, captured []*ai.ProposedAction, seg int) ([]*ai.InjectedResult, bool, error) {
 	n := len(captured)
 	actions := make([]governedAction, n)
 
@@ -978,7 +956,7 @@ func (e *DBOSExecutor) governProposedActions(ctx dbos.DBOSContext, in AgentRunIn
 // or policy denial injects an error result so the model sees the outcome; only indeterminate/workflow errors end
 // the run. hasMoreManual indicates whether a later action in the batch still requires a human decision: when true, the
 // post-decision status stays waiting_approval so the run remains visible in the inbox; when false, it moves to running.
-func (e *DBOSExecutor) processOneAction(ctx dbos.DBOSContext, in AgentRunInput, runID string, res *AgentRunResult, a governedAction, seg, idx int, hasMoreManual bool) (*ai.InjectedResult, bool, error) {
+func (e *DBOSExecutor) processOneAction(ctx dbos.Context, in AgentRunInput, runID string, res *AgentRunResult, a governedAction, seg, idx int, hasMoreManual bool) (*ai.InjectedResult, bool, error) {
 	proposal := a.proposal
 	auth := a.auth
 
@@ -996,7 +974,6 @@ func (e *DBOSExecutor) processOneAction(ctx dbos.DBOSContext, in AgentRunInput, 
 		decision, err := dbos.Recv[string](ctx, topic, approvalWaitForever)
 		if err != nil {
 			if errors.Is(err, context.Canceled) {
-				e.parkIfShuttingDown(runID) // never returns while the process is going down
 				return nil, true, interruptedAwaitingApproval(err)
 			}
 			*res, err = e.fail(ctx, in, runID, *res, "await approval", err)
@@ -1116,7 +1093,7 @@ func (e *DBOSExecutor) processOneAction(ctx dbos.DBOSContext, in AgentRunInput, 
 // success. Unlike fail(), it is for a business-terminal failure (policy denied, action failed/indeterminate) that
 // ends the run without a workflow error, so DBOS does not retry it. It closes the run rather than only recording the
 // transition, so the approvals of a batch whose later actions will never be reached are withdrawn with it.
-func (e *DBOSExecutor) emitFailedReason(ctx dbos.DBOSContext, in AgentRunInput, runID, reason string) error {
+func (e *DBOSExecutor) emitFailedReason(ctx dbos.Context, in AgentRunInput, runID, reason string) error {
 	if e.store == nil {
 		return nil
 	}
