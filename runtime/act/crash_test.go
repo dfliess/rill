@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rilldata/rill/runtime/act"
 	"github.com/rilldata/rill/runtime/ai"
 	"github.com/stretchr/testify/require"
@@ -118,7 +119,13 @@ func runCrashWorker() {
 		store = ps
 	}
 
-	e, err := act.NewDBOSExecutor(context.Background(), act.Config{
+	// Build the executor on a CANCELLABLE context, as the runtime does (graceful.WithCancelOnTerminate). Passing
+	// context.Background() here would make the worker unable to reproduce production's shutdown at all: the engine
+	// would only ever be cancelled by Close, which is the easy case.
+	hostCtx, stopHost := context.WithCancel(context.Background())
+	defer stopHost()
+
+	e, err := act.NewDBOSExecutor(hostCtx, act.Config{
 		DatabaseURL:        os.Getenv("ACT_DSN"),
 		DatabaseSchema:     os.Getenv("ACT_SCHEMA"),
 		ApplicationVersion: os.Getenv("ACT_APP_VERSION"),
@@ -186,6 +193,29 @@ func runCrashWorker() {
 			fmt.Fprintln(os.Stderr, "await waiting_approval:", err)
 			os.Exit(3)
 		}
+		e.Close(5 * time.Second)
+		os.Exit(0)
+	case "start-park-sigterm":
+		// The production shutdown, in the order the runtime actually performs it: the host's context is cancelled by
+		// the signal FIRST, and only then is the executor closed. That order is the whole test. DBOS leaves a parked
+		// workflow PENDING only when it can see that ITS OWN Shutdown caused the cancellation, which it decides by
+		// reading the cancel cause; a host context that dies first delivers a plain context.Canceled, the check misses,
+		// and the run is durably cancelled instead of recovered.
+		if _, err := e.Start(context.Background(), act.AgentRunInput{
+			InstanceID: instanceID, AgentName: agentName, Prompt: "alerta", IdempotencyKey: key,
+		}); err != nil {
+			fmt.Fprintln(os.Stderr, "start:", err)
+			os.Exit(3)
+		}
+		if err := awaitWaitingApproval(store, instanceID, workflowID); err != nil {
+			fmt.Fprintln(os.Stderr, "await waiting_approval:", err)
+			os.Exit(3)
+		}
+		stopHost()
+		// The runtime does not close Act the instant the signal lands: it stops serving first, and only the deferred
+		// close tears the engine down. Reproducing that gap matters, because what does the damage is a hook that fires
+		// on the host's cancellation, and back-to-back calls can outrun it.
+		time.Sleep(2 * time.Second)
 		e.Close(5 * time.Second)
 		os.Exit(0)
 	case "recover-approve":
@@ -336,6 +366,62 @@ func TestExecutorRecoversApprovalWaitAfterGracefulShutdown(t *testing.T) {
 	require.NoError(t, err2, "worker B should recover the parked run and finish cleanly; output:\n%s", out2)
 	require.Contains(t, string(out2), "RECOVERED status=succeeded",
 		"a run parked on approval must survive a graceful shutdown and finish once approved; output:\n%s", out2)
+}
+
+// TestExecutorRecoversApprovalWaitAfterHostCancelledShutdown is the sibling that reproduces how the runtime really
+// stops: the host's context is cancelled by the signal first, and the executor is closed afterwards.
+//
+// It exists because its sibling could not fail. That one builds the worker on a context nobody cancels, so the only
+// cancellation the engine ever sees is its own Shutdown, which is exactly the case DBOS handles. In production the
+// signal reaches the engine through its parent context first, carrying a plain context.Canceled instead of the cause
+// Shutdown would have set, so the library's check misses and the parked run is durably cancelled: the run survives
+// every test and dies on every deploy. The executor now detaches from the caller's cancellation to close that gap,
+// and this is the test that says so.
+func TestExecutorRecoversApprovalWaitAfterHostCancelledShutdown(t *testing.T) {
+	dsn, schema := requirePostgres(t)
+
+	version := "act-park-sigterm-" + uuid.NewString()
+	runID := "park-sigterm-run-" + uuid.NewString()
+	storeSchema := "act_park_sigterm_store_" + uuid.NewString()[:8]
+
+	// Phase 1: worker A parks on the approval, then shuts down the way the runtime does.
+	a := workerCmd(map[string]string{
+		"ACT_MODE": "start-park-sigterm", "ACT_RUN_ID": runID,
+		"ACT_DSN": dsn, "ACT_SCHEMA": schema, "ACT_APP_VERSION": version, "ACT_STORE_SCHEMA": storeSchema,
+	})
+	out, err := a.CombinedOutput()
+	require.NoError(t, err, "worker A should shut down cleanly; output:\n%s", out)
+
+	// Assert the row directly rather than inferring it from phase 2. This is the fact the fix is about, and reading it
+	// here is what makes the test fail for the right reason: a durably cancelled run cannot be recovered, so without
+	// the assertion the failure would surface two phases later as an unhelpful "worker B exited 4".
+	require.Equal(t, "PENDING", workflowStatus(t, dsn, schema, act.ComposeRunID("inst", "crash-agent", runID)),
+		"the runtime's shutdown durably cancelled a parked run instead of leaving it for recovery")
+
+	// Phase 2: worker B must still recover it and finish once approved.
+	b := workerCmd(map[string]string{
+		"ACT_MODE": "recover-approve", "ACT_RUN_ID": runID,
+		"ACT_DSN": dsn, "ACT_SCHEMA": schema, "ACT_APP_VERSION": version, "ACT_STORE_SCHEMA": storeSchema,
+	})
+	out2, err2 := b.CombinedOutput()
+	require.NoError(t, err2, "worker B should recover the parked run and finish cleanly; output:\n%s", out2)
+	require.Contains(t, string(out2), "RECOVERED status=succeeded",
+		"a run parked on approval must survive the runtime's own shutdown, not just a bare dbos.Shutdown; output:\n%s", out2)
+}
+
+// workflowStatus reads a workflow's status straight from the DBOS system tables. It reaches past the executor on
+// purpose: the whole question these shutdown tests ask is what the ENGINE recorded, which no Act-level API exposes.
+func workflowStatus(t *testing.T, dsn, schema, workflowID string) string {
+	t.Helper()
+	pool, err := pgxpool.New(context.Background(), dsn)
+	require.NoError(t, err)
+	defer pool.Close()
+
+	var status string
+	err = pool.QueryRow(context.Background(),
+		fmt.Sprintf("SELECT status FROM %s.workflow_status WHERE workflow_uuid = $1", schema), workflowID).Scan(&status)
+	require.NoError(t, err, "no workflow row for %q", workflowID)
+	return status
 }
 
 // awaitWaitingApproval blocks until the run reaches waiting_approval in the store, so a park worker can crash while the
