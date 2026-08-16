@@ -104,7 +104,7 @@ func TestStartRunWithoutPromptNeedsOneWhenTheAgentHasNoTrigger(t *testing.T) {
 		InstanceId: instanceID, Name: "triage", IdempotencyKey: "k3",
 	})
 	require.Equal(t, codes.InvalidArgument, status.Code(err))
-	require.Contains(t, status.Convert(err).Message(), "no trigger")
+	require.Contains(t, status.Convert(err).Message(), "neither a prompt of its own nor a trigger")
 }
 
 // TestStartRunWithoutPromptRefusesToGuessBetweenTriggers covers the ambiguous case. Two triggers ask the agent for
@@ -141,4 +141,71 @@ triggers:
 	})
 	require.Equal(t, codes.InvalidArgument, status.Code(err))
 	require.Contains(t, status.Convert(err).Message(), "several triggers")
+}
+
+// TestStartRunUsesTheAgentsOwnPromptWhenItHasNoTrigger covers the agent built to be launched by hand. It has no
+// trigger to borrow a user turn from, and demanding one from whoever presses the button would be the same friction
+// the trigger fallback exists to remove: retyping a request the author already knows how to word. Declaring it on
+// the agent means choosing the agent is enough to run it.
+func TestStartRunUsesTheAgentsOwnPromptWhenItHasNoTrigger(t *testing.T) {
+	const ownPrompt = "Revisa las devoluciones del ultimo mes y propone un ticket."
+	files := map[string]string{
+		"rill.yaml": "features:\n  agents: true\n",
+		"manual.yaml": `
+type: agent
+display_name: Manual Only
+instructions: "Sos el analista de devoluciones."
+prompt: "` + ownPrompt + `"
+tools: []
+limits:
+  max_steps: 3
+`,
+	}
+	srv, exec, instanceID := newActServerWithFiles(t, files)
+	ctx := testCtx()
+
+	_, err := srv.StartAgentRun(ctx, &runtimev1.StartAgentRunRequest{
+		InstanceId: instanceID, Name: "manual", IdempotencyKey: "k5",
+	})
+	require.NoError(t, err)
+	require.Equal(t, ownPrompt, exec.lastStart().Prompt)
+}
+
+// TestAgentsOwnPromptWinsOverItsTriggers is the tie-breaker. An agent with several triggers is otherwise refused,
+// because each asks for something different and picking one would silently run the wrong job; declaring a prompt
+// says what a manual launch means without touching what the triggers do on their own occasions.
+func TestAgentsOwnPromptWinsOverItsTriggers(t *testing.T) {
+	const ownPrompt = "Corre la revision completa."
+	files := map[string]string{
+		"rill.yaml": "features:\n  agents: true\n",
+		"both.yaml": `
+type: agent
+display_name: Both
+instructions: "Sos un analista polivalente."
+prompt: "` + ownPrompt + `"
+tools: []
+limits:
+  max_steps: 3
+triggers:
+  - source:
+      kind: schedule
+      cron: "0 8 * * 1"
+    input:
+      prompt: "Resumen semanal."
+  - source:
+      kind: schedule
+      cron: "0 8 1 * *"
+    input:
+      prompt: "Cierre mensual."
+`,
+	}
+	srv, exec, instanceID := newActServerWithFiles(t, files)
+	ctx := testCtx()
+
+	_, err := srv.StartAgentRun(ctx, &runtimev1.StartAgentRunRequest{
+		InstanceId: instanceID, Name: "both", IdempotencyKey: "k6",
+	})
+	require.NoError(t, err)
+	require.Equal(t, ownPrompt, exec.lastStart().Prompt,
+		"a declared prompt settles what a manual launch means, where the triggers alone are ambiguous")
 }

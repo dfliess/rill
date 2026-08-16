@@ -13376,6 +13376,8 @@ func (m *AgentSpec) validate(all bool) error {
 
 	// no validation rules for ApproveExpression
 
+	// no validation rules for Prompt
+
 	if len(errors) > 0 {
 		return AgentSpecMultiError(errors)
 	}

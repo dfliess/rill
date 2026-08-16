@@ -3239,6 +3239,33 @@ definitions:
         limits:
           max_steps: 20
           timeout: 10m
+      - # Example: An agent launched by hand, with no trigger. `prompt` is the request a trigger would
+        # otherwise carry, so starting a run needs nothing typed.
+        type: agent
+        display_name: Returns Reviewer
+        description: Reviews last month's returns on demand and proposes a quality ticket.
+        model:
+          connector: deepseek
+          name: deepseek-v4-flash
+        instructions: |
+          You are a returns analyst. Use the governed metrics tools to find which
+          category and channel drive returns, and only at the end propose the ticket.
+        prompt: Review last month's returns and propose the quality ticket.
+        tools:
+          - query_metrics_view
+          - get_metrics_view
+        mcp:
+          - name: quality
+            url: https://quality.example.com/mcp
+            auth:
+              secret: QUALITY_TOKEN
+            network:
+              allowed_hosts:
+                - quality.example.com
+            approval: manual
+        limits:
+          max_steps: 20
+          timeout: 10m
     allOf:
       - title: Properties
         type: object
@@ -3266,6 +3293,9 @@ definitions:
           instructions:
             type: string
             description: The agent's system prompt. Required; an agent without instructions is a parse error. It is combined with the project's `ai_instructions` at runtime.
+          prompt:
+            type: string
+            description: The message sent to the agent when a run is started without one, so launching it by hand needs no typing. Optional. `instructions` say what the agent does and travel as the system prompt; this is the message that asks for it, the same role a trigger's `input.prompt` plays for an automatic run. When absent, a manual run falls back to the prompt of the agent's single trigger; an agent with several triggers, or with none, needs either this property or a prompt supplied at launch.
           tools:
             type: array
             description: Built-in tools the agent may call, drawn from the fixed allowlist of read-only analytical tools. This is the upper bound on the agent's authority over Rill's own tools; the model never sees a built-in tool outside this list. These tools read governed data and never require approval. MCP tools are NOT declared here; they come from `mcp` connectors and are discovered at run start.

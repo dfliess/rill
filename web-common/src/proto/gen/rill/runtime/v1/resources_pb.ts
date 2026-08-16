@@ -6296,6 +6296,16 @@ export class AgentSpec extends Message<AgentSpec> {
    */
   approveExpression = "";
 
+  /**
+   * Prompt is the user turn to send when a run is started without one, for an agent meant to be launched by hand.
+   * Instructions say what the agent does and travel as the system message; this is the message that asks for it,
+   * the same role a trigger's input.prompt plays for an automatic run. Declaring it here means choosing the agent
+   * is enough to run it, without the launcher retyping a request its author already knows how to word.
+   *
+   * @generated from field: string prompt = 12;
+   */
+  prompt = "";
+
   constructor(data?: PartialMessage<AgentSpec>) {
     super();
     proto3.util.initPartial(data, this);
@@ -6315,6 +6325,7 @@ export class AgentSpec extends Message<AgentSpec> {
     { no: 9, name: "security_rules", kind: "message", T: SecurityRule, repeated: true },
     { no: 10, name: "launch_expression", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 11, name: "approve_expression", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 12, name: "prompt", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): AgentSpec {
