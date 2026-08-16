@@ -71,15 +71,30 @@ type fakeAgentExecutor struct {
 	store act.RunStore
 
 	mu        sync.Mutex
+	starts    []act.AgentRunInput
 	resumes   []resumeCall
 	cancels   []string
 	startErr  error
 	resumeErr error
 }
 
+// lastStart returns the input of the most recent Start, so a test can assert on what the server actually sent the
+// executor (the prompt above all), not merely that the call succeeded.
+func (f *fakeAgentExecutor) lastStart() act.AgentRunInput {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if len(f.starts) == 0 {
+		return act.AgentRunInput{}
+	}
+	return f.starts[len(f.starts)-1]
+}
+
 var _ act.AgentExecutor = (*fakeAgentExecutor)(nil)
 
 func (f *fakeAgentExecutor) Start(ctx context.Context, in act.AgentRunInput) (string, error) {
+	f.mu.Lock()
+	f.starts = append(f.starts, in)
+	f.mu.Unlock()
 	if f.startErr != nil {
 		return "", f.startErr
 	}
@@ -116,9 +131,12 @@ func (f *fakeAgentExecutor) Cancel(ctx context.Context, instanceID, runID string
 	f.mu.Lock()
 	f.cancels = append(f.cancels, runID)
 	f.mu.Unlock()
-	return f.store.RecordTransition(ctx, act.RunTransition{
+	// Mirrors the real executor: a terminal status goes through CloseRun, which withdraws the run's approvals in the
+	// same transaction. RecordTransition refuses terminal statuses precisely so this cannot drift apart.
+	_, err := f.store.CloseRun(ctx, act.RunTransition{
 		InstanceID: instanceID, RunID: runID, Status: act.RunStatusCancelled, EventType: act.EventTypeCancelled,
 	})
+	return err
 }
 
 func (f *fakeAgentExecutor) resumeCalls() []resumeCall {
@@ -224,7 +242,7 @@ func TestAgentServiceListRunsScoping(t *testing.T) {
 	ctx := testCtx()
 
 	// One run in the reconciled instance via the handler.
-	start, err := srv.StartAgentRun(ctx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "triage", IdempotencyKey: "k"})
+	start, err := srv.StartAgentRun(ctx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "triage", IdempotencyKey: "k", Prompt: "Investiga la alerta."})
 	require.NoError(t, err)
 
 	// One run in a different instance, seeded directly in the store.
@@ -254,7 +272,7 @@ func TestAgentServiceApproveResumesRun(t *testing.T) {
 	srv, store, exec, instanceID := newActServer(t)
 	ctx := testCtx()
 
-	start, err := srv.StartAgentRun(ctx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "triage", IdempotencyKey: "k"})
+	start, err := srv.StartAgentRun(ctx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "triage", IdempotencyKey: "k", Prompt: "Investiga la alerta."})
 	require.NoError(t, err)
 	runID := start.RunId
 
@@ -306,7 +324,7 @@ func TestAgentServiceDenyEndsRun(t *testing.T) {
 	srv, store, exec, instanceID := newActServer(t)
 	ctx := testCtx()
 
-	start, err := srv.StartAgentRun(ctx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "triage", IdempotencyKey: "k"})
+	start, err := srv.StartAgentRun(ctx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "triage", IdempotencyKey: "k", Prompt: "Investiga la alerta."})
 	require.NoError(t, err)
 	runID := start.RunId
 	approvalID := act.ApprovalIDForRun(runID)
@@ -328,7 +346,7 @@ func TestAgentServiceCancelRun(t *testing.T) {
 	srv, _, exec, instanceID := newActServer(t)
 	ctx := testCtx()
 
-	start, err := srv.StartAgentRun(ctx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "triage", IdempotencyKey: "k"})
+	start, err := srv.StartAgentRun(ctx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "triage", IdempotencyKey: "k", Prompt: "Investiga la alerta."})
 	require.NoError(t, err)
 
 	cancel, err := srv.CancelAgentRun(ctx, &runtimev1.CancelAgentRunRequest{InstanceId: instanceID, RunId: start.RunId})
@@ -372,11 +390,12 @@ func TestAgentServiceStreamEvents(t *testing.T) {
 	srv, store, _, instanceID := newActServer(t)
 	ctx := testCtx()
 
-	start, err := srv.StartAgentRun(ctx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "triage", IdempotencyKey: "k"})
+	start, err := srv.StartAgentRun(ctx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "triage", IdempotencyKey: "k", Prompt: "Investiga la alerta."})
 	require.NoError(t, err)
 	runID := start.RunId
 	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{InstanceID: instanceID, RunID: runID, Status: act.RunStatusRunning, EventType: act.EventTypeRunning}))
-	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{InstanceID: instanceID, RunID: runID, Status: act.RunStatusSucceeded, EventType: act.EventTypeSucceeded}))
+	_, err = store.CloseRun(ctx, act.RunTransition{InstanceID: instanceID, RunID: runID, Status: act.RunStatusSucceeded, EventType: act.EventTypeSucceeded})
+	require.NoError(t, err)
 
 	stream := &collectStream{ctx: ctx}
 	// The run is terminal, so the stream drains the backlog and returns without blocking.
@@ -414,6 +433,6 @@ func TestAgentServiceRunEndpointsUnimplementedWithoutStore(t *testing.T) {
 	// Run endpoints report Unimplemented.
 	_, err = srv.ListAgentRuns(ctx, &runtimev1.ListAgentRunsRequest{InstanceId: instanceID})
 	require.Equal(t, codes.Unimplemented, status.Code(err))
-	_, err = srv.StartAgentRun(ctx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "triage"})
+	_, err = srv.StartAgentRun(ctx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "triage", Prompt: "Investiga la alerta."})
 	require.Equal(t, codes.Unimplemented, status.Code(err))
 }

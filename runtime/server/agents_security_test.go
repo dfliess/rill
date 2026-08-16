@@ -244,21 +244,21 @@ func TestAgentSecurityLaunchGate(t *testing.T) {
 	salesCtx := userCtx("usr_sam", []any{"ventas"}, false)
 
 	// A member of operaciones launches without holding EditTrigger (no manage_project involved).
-	start, err := srv.StartAgentRun(opsCtx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "cobranza", IdempotencyKey: "k1"})
+	start, err := srv.StartAgentRun(opsCtx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "cobranza", IdempotencyKey: "k1", Prompt: "Arranca."})
 	require.NoError(t, err)
 	require.Equal(t, "cobranza", start.AgentName)
 
 	// Access without launch: the agent is visible but launching is denied.
-	_, err = srv.StartAgentRun(dirCtx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "cobranza", IdempotencyKey: "k2"})
+	_, err = srv.StartAgentRun(dirCtx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "cobranza", IdempotencyKey: "k2", Prompt: "Arranca."})
 	require.Equal(t, codes.PermissionDenied, status.Code(err))
 
 	// No access: the agent does not even exist for the caller.
-	_, err = srv.StartAgentRun(opsCtx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "triage", IdempotencyKey: "k3"})
+	_, err = srv.StartAgentRun(opsCtx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "triage", IdempotencyKey: "k3", Prompt: "Arranca."})
 	require.Equal(t, codes.NotFound, status.Code(err))
 
 	// An absent launch inherits access: any accessor can launch (this is what keeps the canvas agent note
 	// working for a plain viewer with access).
-	_, err = srv.StartAgentRun(salesCtx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "abierta", IdempotencyKey: "k4"})
+	_, err = srv.StartAgentRun(salesCtx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "abierta", IdempotencyKey: "k4", Prompt: "Arranca."})
 	require.NoError(t, err)
 
 	// A public-link token cannot launch anything.
@@ -279,7 +279,7 @@ func TestAgentSecurityRunsFilteredInWhere(t *testing.T) {
 	// WHERE restriction would contain only triage rows, which operaciones cannot see.
 	startRun := func(ctx context.Context, agent, key string) string {
 		t.Helper()
-		res, err := srv.StartAgentRun(ctx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: agent, IdempotencyKey: key})
+		res, err := srv.StartAgentRun(ctx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: agent, IdempotencyKey: key, Prompt: "Arranca."})
 		require.NoError(t, err)
 		return res.RunId
 	}
@@ -355,7 +355,7 @@ func TestAgentSecurityApprovalByGroup(t *testing.T) {
 	salesCtx := userCtx("usr_sam", []any{"ventas"}, false)
 	adminCtx := userCtx("usr_admin", []any{}, true, runtime.EditTrigger)
 
-	start, err := srv.StartAgentRun(opsCtx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "cobranza", IdempotencyKey: "k1"})
+	start, err := srv.StartAgentRun(opsCtx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "cobranza", IdempotencyKey: "k1", Prompt: "Arranca."})
 	require.NoError(t, err)
 	approvalID := seedApproval(start.RunId, "crear tarea de cobranza")
 
@@ -406,7 +406,7 @@ func TestAgentSecurityApprovalByGroup(t *testing.T) {
 	require.Len(t, exec.resumeCalls(), 1)
 
 	// EditTrigger break-glass: an operator outside dirección can still deny a second run's approval.
-	start2, err := srv.StartAgentRun(opsCtx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "cobranza", IdempotencyKey: "k2"})
+	start2, err := srv.StartAgentRun(opsCtx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "cobranza", IdempotencyKey: "k2", Prompt: "Arranca."})
 	require.NoError(t, err)
 	approval2 := seedApproval(start2.RunId, "otra tarea")
 	deny, err := srv.DenyAgentApproval(adminCtx, &runtimev1.DenyAgentApprovalRequest{InstanceId: instanceID, ApprovalId: approval2})
@@ -425,7 +425,7 @@ func TestAgentApprovalDeniedToInheritedAdminAttribute(t *testing.T) {
 	srv, store, exec, instanceID := newActSecurityServer(t)
 
 	opsCtx := userCtx("usr_marta", []any{"operaciones"}, false)
-	start, err := srv.StartAgentRun(opsCtx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "abierta", IdempotencyKey: "k1"})
+	start, err := srv.StartAgentRun(opsCtx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "abierta", IdempotencyKey: "k1", Prompt: "Arranca."})
 	require.NoError(t, err)
 	approvalID := act.ApprovalIDForRun(start.RunId)
 	require.NoError(t, store.CreateApproval(context.Background(), act.NewApproval{
@@ -471,7 +471,7 @@ func TestAgentApprovalRefusedWithoutAVerifiedPreimage(t *testing.T) {
 
 	seed := func(key string) string {
 		t.Helper()
-		start, err := srv.StartAgentRun(ctx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "abierta", IdempotencyKey: key})
+		start, err := srv.StartAgentRun(ctx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "abierta", IdempotencyKey: key, Prompt: "Arranca."})
 		require.NoError(t, err)
 		approvalID := act.ApprovalIDForRun(start.RunId)
 		require.NoError(t, store.CreateApproval(context.Background(), act.NewApproval{
@@ -534,13 +534,13 @@ func TestAgentApprovalCanDecidePerAction(t *testing.T) {
 		}))
 		return approvalID
 	}
-	start1, err := srv.StartAgentRun(opsCtx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "finanzas", IdempotencyKey: "f1"})
+	start1, err := srv.StartAgentRun(opsCtx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "finanzas", IdempotencyKey: "f1", Prompt: "Arranca."})
 	require.NoError(t, err)
 	// Seeded with the EFFECTIVE tool name, which is what real traffic stores (mcpconn composes
 	// "mcp."+connector+"."+tool). Seeding the raw name here would let the expression below pass while failing in
 	// production, which is exactly what this test exists to prevent.
 	refundApproval := seedApproval(start1.RunId, "mcp.erp.issue_refund", "reembolsar pedido 42")
-	start2, err := srv.StartAgentRun(opsCtx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "finanzas", IdempotencyKey: "f2"})
+	start2, err := srv.StartAgentRun(opsCtx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "finanzas", IdempotencyKey: "f2", Prompt: "Arranca."})
 	require.NoError(t, err)
 	deleteApproval := seedApproval(start2.RunId, "mcp.erp.delete_account", "borrar la cuenta 7")
 
@@ -582,7 +582,7 @@ func TestAgentSecurityCancelRun(t *testing.T) {
 	salesCtx := userCtx("usr_sam", []any{"ventas"}, false)
 	adminCtx := userCtx("usr_admin", []any{}, true, runtime.EditTrigger)
 
-	start, err := srv.StartAgentRun(opsCtx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "cobranza", IdempotencyKey: "k1"})
+	start, err := srv.StartAgentRun(opsCtx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "cobranza", IdempotencyKey: "k1", Prompt: "Arranca."})
 	require.NoError(t, err)
 
 	// The can_cancel bit mirrors the gate: true for the actor, false for another accessor.
@@ -605,7 +605,7 @@ func TestAgentSecurityCancelRun(t *testing.T) {
 	require.Equal(t, string(act.RunStatusCancelled), cancel.Run.Status)
 
 	// EditTrigger remains the operator's gate for runs they did not start.
-	start2, err := srv.StartAgentRun(opsCtx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "cobranza", IdempotencyKey: "k2"})
+	start2, err := srv.StartAgentRun(opsCtx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "cobranza", IdempotencyKey: "k2", Prompt: "Arranca."})
 	require.NoError(t, err)
 	cancel, err = srv.CancelAgentRun(adminCtx, &runtimev1.CancelAgentRunRequest{InstanceId: instanceID, RunId: start2.RunId})
 	require.NoError(t, err)
@@ -629,7 +629,7 @@ instructions: "Investiga."
 	adminCtx := userCtx("usr_admin", []any{}, true, runtime.EditTrigger)
 	_, err = srv.ListAgents(adminCtx, &runtimev1.ListAgentsRequest{InstanceId: instanceID})
 	require.Equal(t, codes.FailedPrecondition, status.Code(err))
-	_, err = srv.StartAgentRun(adminCtx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "triage"})
+	_, err = srv.StartAgentRun(adminCtx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "triage", Prompt: "Arranca."})
 	require.Equal(t, codes.FailedPrecondition, status.Code(err))
 	_, err = srv.ListAgentRuns(adminCtx, &runtimev1.ListAgentRunsRequest{InstanceId: instanceID})
 	require.Equal(t, codes.FailedPrecondition, status.Code(err))

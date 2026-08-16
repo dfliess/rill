@@ -138,6 +138,52 @@ func (s *Server) listAgentResources(ctx context.Context, instanceID string) ([]*
 
 // resolveAgentGates fetches the named agent from the catalog and resolves the caller's gates on it. A missing
 // agent and one that has not reconciled to a valid spec are both NotFound, mirroring the executor's provider.
+// defaultAgentPrompt returns the user turn to send when a manual launch supplies none: the prompt of the agent's
+// declared trigger. That text exists whether or not the trigger has fired — it is what the schedule sends every
+// Monday — so reusing it makes "run it by hand" mean "do now what you would do then", with nothing invented here.
+//
+// Only the TEXT is reused; the run is still recorded as manual, because that is who launched it. Trigger provenance
+// is set by the dispatcher and never by a caller (§18.3).
+//
+// With several triggers the agent is asked for different things on different occasions and there is no single
+// answer, so the choice is left to the caller rather than guessed: the launch is refused, naming them. An agent with
+// no triggers has no such text at all, so a prompt is genuinely required.
+func (s *Server) defaultAgentPrompt(ctx context.Context, instanceID, agentName string) (string, error) {
+	ctrl, err := s.runtime.Controller(ctx, instanceID)
+	if err != nil {
+		return "", err
+	}
+	resources, err := ctrl.List(ctx, runtime.ResourceKindAgentTrigger, "", false)
+	if err != nil {
+		return "", err
+	}
+
+	var prompts, names []string
+	for _, res := range resources {
+		spec := res.GetAgentTrigger().GetSpec()
+		if spec.GetAgent() != agentName {
+			continue
+		}
+		if p := spec.GetInput().GetPrompt(); p != "" {
+			prompts = append(prompts, p)
+			names = append(names, res.Meta.Name.Name)
+		}
+	}
+
+	switch len(prompts) {
+	case 1:
+		return prompts[0], nil
+	case 0:
+		return "", status.Errorf(codes.InvalidArgument,
+			"agent %q has no trigger to take a prompt from, so instructions for this run are required", agentName)
+	default:
+		sort.Strings(names)
+		return "", status.Errorf(codes.InvalidArgument,
+			"agent %q has several triggers (%s), each asking for something different: say which task to run",
+			agentName, strings.Join(names, ", "))
+	}
+}
+
 func (s *Server) resolveAgentGates(ctx context.Context, instanceID, name string, claims *runtime.SecurityClaims) (*runtimev1.Resource, runtime.AgentGates, error) {
 	ctrl, err := s.runtime.Controller(ctx, instanceID)
 	if err != nil {
@@ -268,10 +314,25 @@ func (s *Server) StartAgentRun(ctx context.Context, req *runtimev1.StartAgentRun
 	// supplied req.Trigger. Letting a caller set the trigger would let them forge provenance — labelling a run they
 	// initiated as an automatic "alert"/"report", or the reverse — which the audit trail (§18.3) must not permit.
 	// An automatic run's truthful trigger is set by the dispatcher, not here.
+	// An empty prompt means "do what you normally do, now". Choosing the agent already says what to run: its task
+	// lives in the agent's instructions, which travel as the system message. What a manual launch is missing is the
+	// USER turn that a trigger would have supplied — and the instructions are written expecting one ("when asked to
+	// comment on the close..."), so an empty turn would leave the model with nothing to answer. Reusing the trigger's
+	// own prompt makes launching by hand produce exactly what the schedule produces, with no text invented here and
+	// nothing concatenated: the caller's prompt, when given, REPLACES it rather than being appended to it, so a
+	// launcher can never smuggle text in beside instructions written by the agent's author.
+	prompt := req.Prompt
+	if prompt == "" {
+		prompt, err = s.defaultAgentPrompt(ctx, req.InstanceId, req.Name)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	runID, err := s.agentExecutor.Start(ctx, act.AgentRunInput{
 		InstanceID:     req.InstanceId,
 		AgentName:      req.Name,
-		Prompt:         promptWithDashboardContext(req.Prompt, req.DashboardContext),
+		Prompt:         promptWithDashboardContext(prompt, req.DashboardContext),
 		IdempotencyKey: idempotencyKey,
 		Trigger:        "manual",
 		ConversationID: req.ConversationId,
