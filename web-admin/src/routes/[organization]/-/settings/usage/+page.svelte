@@ -66,5 +66,11 @@
 
   .embed {
     @apply w-full h-[1000px] border-0;
+    /* Un iframe sin fondo lo pinta el navegador de blanco hasta que el
+       documento de dentro dibuja el suyo, así que al cargar la página daba un
+       fogonazo blanco dentro de una app oscura. Con el color de la superficie
+       el hueco es del mismo color que lo que va a aparecer, y el cambio deja
+       de verse. Sigue al tema, igual que el propio embed. */
+    @apply bg-surface-base;
   }
 </style>
