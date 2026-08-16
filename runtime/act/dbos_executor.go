@@ -113,6 +113,15 @@ func NewDBOSExecutor(ctx context.Context, cfg Config) (*DBOSExecutor, error) {
 	// an empty source, so the meter cannot tell agent spend from chat spend.
 	ctx = runtime.WithRequestSource(ctx, runtime.RequestSourceAct)
 
+	// Detach the engine from the caller's cancellation. Close is what tears DBOS down, and dbos.Shutdown marks that
+	// cancellation with a cause of its own so a workflow unwinding under it is left PENDING for the next process to
+	// recover instead of being durably cancelled. That check reads the CAUSE, so it only holds when Shutdown is the
+	// thing doing the cancelling. The runtime hands us a context cancelled by SIGTERM (graceful.WithCancelOnTerminate),
+	// which reaches the workflows first and carries a plain context.Canceled: the check does not fire, and every run
+	// parked on a human approval is durably cancelled on the way out, which is the bug this whole path exists to avoid
+	// (kairos-cloud#135). Detaching costs nothing, because the deferred Close already runs after the server stops.
+	ctx = context.WithoutCancel(ctx)
+
 	dctx, err := dbos.NewContext(ctx, dbos.Config{
 		AppName:            appName,
 		DatabaseURL:        cfg.DatabaseURL,
