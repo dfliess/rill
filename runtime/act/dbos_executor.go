@@ -249,6 +249,31 @@ func (e *DBOSExecutor) Resume(_ context.Context, runID string, decision Approval
 	return nil
 }
 
+// Resumable reports whether the run's workflow can still consume a decision. A workflow in a terminal state cannot:
+// its function has returned, so nothing is left to receive the message. Send would still succeed there — it inserts a
+// notification row whose only constraint is that the workflow EXISTS, which a terminal one does — so this is the check
+// that keeps an approval from being recorded against a run that will never act on it.
+//
+// Reading the status before the decision is recorded is not a race in the direction that matters: terminal states are
+// final, so a "no" cannot become a "yes". A "yes" that dies immediately afterwards leaves the caller exactly where it
+// was before this check existed.
+func (e *DBOSExecutor) Resumable(_ context.Context, runID string) (bool, error) {
+	h, err := dbos.RetrieveWorkflow[AgentRunResult](e.ctx, runID)
+	if err != nil {
+		return false, fmt.Errorf("act: retrieve run %q: %w", runID, err)
+	}
+	st, err := h.GetStatus()
+	if err != nil {
+		return false, fmt.Errorf("act: status of run %q: %w", runID, err)
+	}
+	switch st.Status {
+	case dbos.WorkflowStatusSuccess, dbos.WorkflowStatusError, dbos.WorkflowStatusCancelled, dbos.WorkflowStatusMaxRecoveryAttemptsExceeded:
+		return false, nil
+	default:
+		return true, nil
+	}
+}
+
 // Cancel stops a run. After the workflow is cancelled it records the cancelled transition directly (not as a step,
 // since the cancelled workflow will not run more steps) so the API reflects the terminal state. The store write is
 // best-effort: a cancelled workflow is already stopped, so a failed state write must not turn Cancel into an error.
@@ -363,6 +388,7 @@ func (e *DBOSExecutor) runAgentWorkflow(ctx dbos.DBOSContext, in AgentRunInput) 
 	decision, err := dbos.Recv[string](ctx, approvalTopic, approvalWaitForever)
 	if err != nil {
 		if errors.Is(err, context.Canceled) {
+			e.parkIfShuttingDown(runID) // never returns while the process is going down
 			return res, interruptedAwaitingApproval(err)
 		}
 		return e.fail(ctx, in, runID, res, "await approval", err)
@@ -629,16 +655,46 @@ func (e *DBOSExecutor) ledger() ActionLedger {
 var errInterruptedAwaitingApproval = errors.New("act: approval wait interrupted")
 
 // interruptedAwaitingApproval wraps a cancelled-context error from the approval wait. A cancelled context there means
-// the process is shutting down (a deploy) or the run was cancelled (CancelWorkflow), NOT that the run failed: so
-// unlike fail it records no failed transition, leaving the store row truthfully waiting_approval. That keeps the run
-// cancellable to clean it up, and a Cancel that raced the shutdown still resolves cleanly.
-//
-// Known limitation (Fase 1): on shutdown DBOS v0.19 still terminalizes the interrupted workflow (it records a terminal
-// status via an uncancellable write, and recovery only re-runs PENDING workflows), so the parked approval does not
-// survive the restart on its own. Making it resume across a deploy needs the split worker topology; this only stops the
-// interrupt from masquerading as a failure in the meantime.
+// the run was cancelled or, if parkIfShuttingDown let it through, something cancelled the workflow that is not the
+// engine closing. Either way it is NOT a failure of the run: so unlike fail it records no failed transition, leaving
+// the store row truthfully waiting_approval. That keeps the run cancellable to clean it up, and a Cancel that raced
+// the shutdown still resolves cleanly.
 func interruptedAwaitingApproval(err error) error {
 	return fmt.Errorf("%w (context cancelled): %w", errInterruptedAwaitingApproval, err)
+}
+
+// parkIfShuttingDown never returns when the approval wait was cut short by the process going down.
+//
+// Returning an error from a workflow is, to DBOS, a claim about the run and not about this goroutine: it records the
+// error and does not recover the workflow, because "uncaught exceptions are assumed to be nonrecoverable". A shutdown
+// is not a failure. The run had not finished; it was waiting for a human. Answering "stop" with "I failed" therefore
+// files a live run as permanently dead, which is how 27 of the 29 terminal workflows in production died, all of them
+// with this same interrupted-approval error (kairos-cloud#135).
+//
+// So on a shutdown we say nothing at all. DBOS writes a workflow's outcome only when its function returns, so one that
+// never returns keeps the status its row already carries: PENDING, which the engine defines as "running or ready to
+// run" and which is exactly what a run parked on a human is. Shutdown waits for in-flight workflows up to its timeout,
+// logs that it gave up, and the process exits; this goroutine dies with it, having written nothing. The next process
+// recovers every PENDING workflow, replays the completed steps from their checkpoints and re-enters this same Recv,
+// which reads the notifications table before it waits: a decision taken while the platform was down is consumed at
+// once. The cost is that a deploy with a parked run always spends the full drain timeout before exiting.
+//
+// The test is which context died, not which error arrived: both cases surface the identical context.Canceled.
+// dbos.Shutdown cancels the root context that every workflow context descends from, and e.ctx IS that root, so a
+// cancelled e.ctx means the engine is closing rather than something happening to this run alone. Today nothing else
+// cancels a parked workflow — CancelWorkflow only writes CANCELLED to the database, which is noticed at the start of
+// the next step and a parked run never reaches one — but that is a property of the current code, not a guarantee.
+// Giving runs a durable DBOS deadline would make expiry a second and genuinely terminal cause of cancellation, and
+// parking on that one would resurrect a dead run on every boot. Hence the explicit question instead of assuming the
+// only possible answer.
+func (e *DBOSExecutor) parkIfShuttingDown(runID string) {
+	if e.ctx.Err() == nil {
+		return
+	}
+	if e.logger != nil {
+		e.logger.Info("act: shutting down while awaiting approval; leaving the run pending for recovery", "run", runID)
+	}
+	select {} // the process is exiting; this goroutine goes with it
 }
 
 // setupApproval records the waiting_approval transition and persists the approval request atomically, in one durable
@@ -940,6 +996,7 @@ func (e *DBOSExecutor) processOneAction(ctx dbos.DBOSContext, in AgentRunInput, 
 		decision, err := dbos.Recv[string](ctx, topic, approvalWaitForever)
 		if err != nil {
 			if errors.Is(err, context.Canceled) {
+				e.parkIfShuttingDown(runID) // never returns while the process is going down
 				return nil, true, interruptedAwaitingApproval(err)
 			}
 			*res, err = e.fail(ctx, in, runID, *res, "await approval", err)

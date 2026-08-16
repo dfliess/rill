@@ -2,6 +2,7 @@ package server_test
 
 import (
 	"context"
+	"errors"
 	"net"
 	"net/url"
 	"os"
@@ -70,12 +71,14 @@ type resumeCall struct {
 type fakeAgentExecutor struct {
 	store act.RunStore
 
-	mu        sync.Mutex
-	starts    []act.AgentRunInput
-	resumes   []resumeCall
-	cancels   []string
-	startErr  error
-	resumeErr error
+	mu           sync.Mutex
+	starts       []act.AgentRunInput
+	resumes      []resumeCall
+	cancels      []string
+	startErr     error
+	resumeErr    error
+	notResumable bool
+	resumableErr error
 }
 
 // lastStart returns the input of the most recent Start, so a test can assert on what the server actually sent the
@@ -125,6 +128,17 @@ func (f *fakeAgentExecutor) Resume(_ context.Context, runID string, decision act
 	}
 	f.resumes = append(f.resumes, resumeCall{runID: runID, decision: decision})
 	return nil
+}
+
+// Resumable answers yes unless a test sets notResumable (the run's execution was given up on) or resumableErr (the
+// executor cannot tell). Both are the states in which a decision must not be recorded.
+func (f *fakeAgentExecutor) Resumable(_ context.Context, _ string) (bool, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if f.resumableErr != nil {
+		return false, f.resumableErr
+	}
+	return !f.notResumable, nil
 }
 
 func (f *fakeAgentExecutor) Cancel(ctx context.Context, instanceID, runID string) error {
@@ -317,6 +331,74 @@ func TestAgentServiceApproveResumesRun(t *testing.T) {
 	// A conflicting later decision is rejected: the first recorded decision stands.
 	_, err = srv.DenyAgentApproval(ctx, &runtimev1.DenyAgentApprovalRequest{InstanceId: instanceID, ApprovalId: approvalID})
 	require.Equal(t, codes.FailedPrecondition, status.Code(err))
+}
+
+// TestAgentServiceRefusesToSignAnAbandonedRun covers the failure that has no error of its own: delivering a decision
+// to a run whose execution was given up on succeeds at every step and accomplishes nothing. The durable message is
+// filed against a run that will never read it, so without this guard the approver is told the action was authorized
+// while nothing will ever perform it.
+//
+// The assertion that matters is not the error code but what is NOT written: the approval must still be pending and
+// still carry no decider, because a recorded signature is the artifact the guard exists to prevent. Denying is held
+// to the same rule; it is the other half of the same decision, and a rejection nobody consumes is equally a lie.
+func TestAgentServiceRefusesToSignAnAbandonedRun(t *testing.T) {
+	srv, store, exec, instanceID := newActServer(t)
+	ctx := testCtx()
+
+	start, err := srv.StartAgentRun(ctx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "triage", IdempotencyKey: "k", Prompt: "Investiga la alerta."})
+	require.NoError(t, err)
+	runID := start.RunId
+
+	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{InstanceID: instanceID, RunID: runID, Status: act.RunStatusRunning, EventType: act.EventTypeRunning}))
+	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{InstanceID: instanceID, RunID: runID, Status: act.RunStatusWaitingApproval, EventType: act.EventTypeWaitingApproval}))
+	proposal := "crear ticket P2"
+	approvalID := act.ApprovalIDForRun(runID)
+	require.NoError(t, store.CreateApproval(ctx, act.NewApproval{
+		ApprovalID: approvalID, RunID: runID, InstanceID: instanceID,
+		ToolName: "act.propose_action", ArgsHash: act.HashArgs(proposal), CanonicalArgs: proposal, Proposal: proposal, RequestedBy: "user:alice",
+	}))
+
+	// The run's execution is gone, which is exactly what the store cannot see: from its side the approval is a
+	// perfectly ordinary pending decision.
+	exec.notResumable = true
+
+	_, err = srv.ApproveAgentApproval(ctx, &runtimev1.ApproveAgentApprovalRequest{InstanceId: instanceID, ApprovalId: approvalID, ArgsHash: act.HashArgs(proposal)})
+	require.Equal(t, codes.FailedPrecondition, status.Code(err))
+	require.Empty(t, exec.resumeCalls(), "nothing should have been delivered")
+
+	after, err := store.GetApproval(ctx, instanceID, approvalID)
+	require.NoError(t, err)
+	require.Equal(t, act.ApprovalStatusPending, after.Status, "the approval was claimed for a run that cannot act on it")
+	require.Empty(t, after.DecidedBy, "a decider was recorded for a decision that will never take effect")
+
+	// Denying is refused on the same grounds, and likewise records nothing.
+	_, err = srv.DenyAgentApproval(ctx, &runtimev1.DenyAgentApprovalRequest{InstanceId: instanceID, ApprovalId: approvalID})
+	require.Equal(t, codes.FailedPrecondition, status.Code(err))
+
+	afterDeny, err := store.GetApproval(ctx, instanceID, approvalID)
+	require.NoError(t, err)
+	require.Equal(t, act.ApprovalStatusPending, afterDeny.Status)
+	require.Empty(t, afterDeny.DecidedBy)
+
+	// Not being able to tell is treated as a refusal too: signing is the irreversible half, so uncertainty about
+	// whether it can take effect must not resolve in favour of recording it.
+	exec.notResumable = false
+	exec.resumableErr = errors.New("act: system database unreachable")
+	_, err = srv.ApproveAgentApproval(ctx, &runtimev1.ApproveAgentApprovalRequest{InstanceId: instanceID, ApprovalId: approvalID, ArgsHash: act.HashArgs(proposal)})
+	require.Equal(t, codes.Unavailable, status.Code(err))
+	require.Empty(t, exec.resumeCalls())
+
+	stillPending, err := store.GetApproval(ctx, instanceID, approvalID)
+	require.NoError(t, err)
+	require.Equal(t, act.ApprovalStatusPending, stillPending.Status)
+
+	// With the run alive again the same decision goes through, so the guard refuses abandoned runs rather than
+	// approvals in general.
+	exec.resumableErr = nil
+	ok, err := srv.ApproveAgentApproval(ctx, &runtimev1.ApproveAgentApprovalRequest{InstanceId: instanceID, ApprovalId: approvalID, ArgsHash: act.HashArgs(proposal)})
+	require.NoError(t, err)
+	require.Equal(t, act.ApprovalStatusApproved, ok.Approval.Status)
+	require.Len(t, exec.resumeCalls(), 1)
 }
 
 // TestAgentServiceDenyEndsRun verifies denying an approval resolves it denied and resumes the run with a rejection.

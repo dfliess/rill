@@ -139,6 +139,15 @@ type AgentExecutor interface {
 	// matches it to the right governed call; when empty, it falls back to the legacy single-topic path (Fase 1 runs
 	// and old segment-based approvals).
 	Resume(ctx context.Context, runID string, decision ApprovalDecision, toolCallID string) error
+	// Resumable reports whether a run's durable execution is still able to act on a decision, as opposed to having
+	// been given up on. It exists because delivering a decision cannot fail loudly: the durable message is simply
+	// filed for a run that will never read it, so an approval recorded against an abandoned run tells its approver
+	// the action was authorized while nothing will ever perform it. Callers ask BEFORE recording the decision, and a
+	// false answer means refuse to record it at all (kairos-cloud#135).
+	//
+	// It answers about the execution, not the approval: whether the approval is still open is the store's question.
+	// An error means the executor could not tell, which callers treat as a refusal rather than a licence to sign.
+	Resumable(ctx context.Context, runID string) (bool, error)
 	// Cancel stops a run in the given instance. instanceID scopes the cancellation so a caller can only stop a run in
 	// the instance it addresses, and lets the executor record the terminal state against the right tenant.
 	Cancel(ctx context.Context, instanceID, runID string) error

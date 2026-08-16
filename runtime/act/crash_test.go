@@ -299,15 +299,17 @@ func TestExecutorRecoversApprovalWaitAfterCrash(t *testing.T) {
 // worker drains via a GRACEFUL DBOS shutdown while a run is parked on the approval Recv (what a deploy does), then a
 // fresh worker must recover the run and finish it once approved.
 //
-// It is SKIPPED because it documents a known Fase 1 durability gap that is not yet fixed: a graceful dbos.Shutdown
-// cancels the parked workflow's context, the approval Recv returns context.Canceled, and DBOS records the workflow
-// terminally (ERROR) via an uncancellable write BEFORE the process exits, so recovery (which only re-runs PENDING
-// workflows) never picks it up. The sibling TestExecutorRecoversApprovalWaitAfterCrash proves the machinery works when
-// the run is instead left PENDING (a hard kill). Closing the gap needs the split worker topology so a normal deploy
-// leaves in-flight approval waits PENDING rather than terminalizing them; un-skip this test when that lands.
+// This is the case that used to be lost. A graceful dbos.Shutdown cancels the parked workflow's context and the
+// approval Recv returns context.Canceled; returning that error told DBOS the run was unrecoverable, so it was written
+// off as ERROR and recovery (which only re-runs PENDING workflows) never picked it up again. parkIfShuttingDown now
+// makes the workflow return nothing at all on a shutdown, leaving the row PENDING for the next process to recover.
+//
+// It guards the whole chain, not just that decision: the row survives the drain, recovery replays the checkpointed
+// steps instead of re-running them, the re-entered Recv accepts a decision delivered afterwards, and the run finishes
+// with its action performed. Its sibling TestExecutorRecoversApprovalWaitAfterCrash is the same assertion for a hard
+// kill, which always worked, and the pair is what distinguishes "recovery is configured right" from "we stopped
+// telling DBOS the run had failed".
 func TestExecutorRecoversApprovalWaitAfterGracefulShutdown(t *testing.T) {
-	t.Skip("known Fase 1 gap: a graceful shutdown terminalizes a parked approval instead of leaving it PENDING; needs the split worker topology")
-
 	dsn, schema := requirePostgres(t)
 
 	version := "act-park-graceful-" + uuid.NewString()
