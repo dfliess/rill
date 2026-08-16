@@ -62,6 +62,7 @@
   "agents_run_form_cancel": "Cancel",
   "agents_run_form_error": "Failed to start run",
   "agents_run_form_prompt_label": "Instructions for this run (optional)",
+  "agents_run_form_prompt_required": "This agent has no scheduled task to start from, so write the instructions for this run.",
   "agents_run_form_prompt_placeholder": "Leave empty to run the agent’s usual task, or narrow it: “focus on returns”.",
   "agents_run_form_started_notification": "Run started",
   "agents_run_form_submit": "Run",
