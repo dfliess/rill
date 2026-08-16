@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -104,6 +105,38 @@ func (s *PostgresRunStore) ClobberCanonicalArgsForTest(ctx context.Context, inst
 	return err
 }
 
+// BackdateRunForTest moves a run's updated_on into the past. It exists so a test can reproduce a run that has sat
+// untouched for long enough to be considered stranded, which the startup repair requires before it closes anything;
+// no legitimate write path moves updated_on backwards.
+func (s *PostgresRunStore) BackdateRunForTest(ctx context.Context, instanceID, runID string, age time.Duration) error {
+	_, err := s.pool.Exec(ctx, fmt.Sprintf(`UPDATE %s SET updated_on = now() - $3::interval WHERE run_id=$1 AND instance_id=$2`,
+		s.t("agent_runs")), runID, instanceID, age.String())
+	return err
+}
+
+// BackdateApprovalDecisionsForTest moves a run's approval decisions into the past. The startup repair measures
+// staleness from decided_on, not from the run row, so a test that wants to look stranded has to age the decisions
+// themselves; ageing only the run is precisely the mistake that made an earlier version of that predicate able to
+// cancel a live run.
+func (s *PostgresRunStore) BackdateApprovalDecisionsForTest(ctx context.Context, instanceID, runID string, age time.Duration) error {
+	_, err := s.pool.Exec(ctx, fmt.Sprintf(`UPDATE %s SET decided_on = now() - $3::interval WHERE run_id=$1 AND instance_id=$2 AND decided_on IS NOT NULL`,
+		s.t("agent_approvals")), runID, instanceID, age.String())
+	return err
+}
+
+// ForceTerminalWithoutCloseForTest marks a run terminal by writing the status column directly, bypassing CloseRun and
+// so leaving any pending approvals attached. It reproduces what the previous binary did, which a replayed DBOS step
+// can still reproduce during the deploy that ships CloseRun: the step's output is checkpointed, so the new body that
+// withdraws approvals never runs. No production path may do this, which is why it lives behind a test-only name.
+func (s *PostgresRunStore) ForceTerminalWithoutCloseForTest(ctx context.Context, instanceID, runID string, status RunStatus) error {
+	if !status.IsTerminal() {
+		return fmt.Errorf("act: ForceTerminalWithoutCloseForTest requires a terminal status, got %q", status)
+	}
+	_, err := s.pool.Exec(ctx, fmt.Sprintf(`UPDATE %s SET status=$3, updated_on=now(), finished_on=COALESCE(finished_on, now()) WHERE run_id=$1 AND instance_id=$2`,
+		s.t("agent_runs")), runID, instanceID, string(status))
+	return err
+}
+
 func (s *PostgresRunStore) Migrate(ctx context.Context) error {
 	// One statement per Exec: pgx's simple-protocol batching aside, keeping them separate makes a failure point to
 	// the exact DDL. All are IF NOT EXISTS so Migrate is safe to run on every startup.
@@ -174,8 +207,8 @@ func (s *PostgresRunStore) Migrate(ctx context.Context) error {
 		// drop the old constraint. Every statement is idempotent: the backfills match no rows once dedupe_key is
 		// populated (new inserts always carry it), and the index/constraint statements are IF (NOT) EXISTS.
 		fmt.Sprintf(`ALTER TABLE %s ADD COLUMN IF NOT EXISTS dedupe_key text NOT NULL DEFAULT ''`, s.t("agent_run_events")),
-		fmt.Sprintf(`UPDATE %s SET dedupe_key = event_type || ':0' WHERE dedupe_key = '' AND event_type IN ('%s','%s','%s','%s')`,
-			s.t("agent_run_events"), EventTypeWaitingApproval, EventTypeResumed, EventTypeRejected, "run.expired"),
+		fmt.Sprintf(`UPDATE %s SET dedupe_key = event_type || ':0' WHERE dedupe_key = '' AND event_type IN ('%s','%s','%s')`,
+			s.t("agent_run_events"), EventTypeWaitingApproval, EventTypeResumed, EventTypeRejected),
 		fmt.Sprintf(`UPDATE %s SET dedupe_key = event_type WHERE dedupe_key = ''`, s.t("agent_run_events")),
 		fmt.Sprintf(`CREATE UNIQUE INDEX IF NOT EXISTS agent_run_events_run_dedupe_idx ON %s (run_id, dedupe_key)`, s.t("agent_run_events")),
 		fmt.Sprintf(`ALTER TABLE %s DROP CONSTRAINT IF EXISTS agent_run_events_run_id_event_type_key`, s.t("agent_run_events")),
@@ -285,11 +318,10 @@ func (s *PostgresRunStore) Migrate(ctx context.Context) error {
 
 		// Drop the approval expiry column: approval deadlines have been removed. The column is no longer written or
 		// read, and historical rows that carried an expiry date lose nothing of value (the deadline was never enforced
-		// in production). Normalize any historical "expired" statuses to "cancelled" so consumers see only the active
-		// vocabulary.
+		// in production). The companion statements that normalized historical "expired" statuses to "cancelled" are
+		// gone: both deployments ran them and hold zero expired rows, so they only survived as a false lead — reading
+		// them suggests an expiry mechanism that has not existed since the column was dropped.
 		fmt.Sprintf(`ALTER TABLE %s DROP COLUMN IF EXISTS expires_on`, s.t("agent_approvals")),
-		fmt.Sprintf(`UPDATE %s SET status='cancelled' WHERE status='expired'`, s.t("agent_approvals")),
-		fmt.Sprintf(`UPDATE %s SET status='cancelled' WHERE status='expired'`, s.t("agent_runs")),
 
 		// Referential integrity: every child table's run_id must point to an existing agent_runs row. Each FK is added
 		// NOT VALID (short AccessExclusive lock, no full-table scan), orphan rows are cleaned up (they are unreachable
@@ -340,6 +372,81 @@ func (s *PostgresRunStore) Migrate(ctx context.Context) error {
 		fmt.Sprintf(`DELETE FROM %s WHERE NOT EXISTS (SELECT 1 FROM %s r WHERE r.run_id = %s.run_id)`,
 			s.t("agent_actions"), s.t("agent_runs"), s.t("agent_actions")),
 		fmt.Sprintf(`ALTER TABLE %s VALIDATE CONSTRAINT agent_actions_run_id_fkey`, s.t("agent_actions")),
+
+		// Repair runs stranded by the write asymmetry this release fixes: a shutdown cut short the approval wait, the
+		// approval sweep ran on a context that outlived it while the run's terminal transition did not, and the run was
+		// left reading waiting_approval with every approval cancelled and no decider. Such a run is not decidable (there
+		// is nothing pending to approve) and not resumable (its workflow is gone), so it shows in the inbox forever
+		// offering nothing (kairos-cloud#135). Both deployments carry these; the fix above stops new ones, and this
+		// clears the ones already written, on startup, so nobody runs UPDATEs against a production database by hand.
+		//
+		// The predicate is deliberately narrow, and each clause earns its place by excluding a run that is alive:
+		//
+		//   - no approval still pending: there is genuinely nothing for a human to decide.
+		//   - at least one approval cancelled with NO decider: the specific fingerprint of this bug. A withdrawal
+		//     names no decider, so this separates "the process withdrew them" from "a human decided them all".
+		//   - the most recent decision is over an hour old. This is the clause that must NOT be read off the run's
+		//     updated_on: that column records when the run entered waiting_approval, so a run parked for hours and
+		//     approved one second before a replica boots would satisfy an age check on it and be cancelled while
+		//     live. Reading the age off the approvals' decided_on measures the thing that actually has to be stale.
+		//     A null MAX (rows predating the column) compares false, which leaves the run alone.
+		// It is serialized with an advisory lock because two replicas booting together would otherwise each compute
+		// MAX(seq)+1 for the same run and collide on the (run_id, seq) uniqueness, failing a migration over a repair.
+		// The lock is transaction-scoped, so it releases on commit and a crashed replica cannot hold it. The rolling
+		// deploy is safe for a second reason too: an old replica can still strand a run while the new one boots, but
+		// the hour of grace on the most recent decision keeps this from touching anything that recent.
+		fmt.Sprintf(`
+			WITH locked AS (SELECT pg_advisory_xact_lock(hashtext('%s.act_repair_stranded'))),
+			stranded AS (
+				SELECT r.run_id, r.instance_id
+				FROM %s r CROSS JOIN locked
+				WHERE r.status = '%s'
+				  AND NOT EXISTS (SELECT 1 FROM %s a WHERE a.run_id = r.run_id AND a.instance_id = r.instance_id AND a.status = '%s')
+				  AND EXISTS (SELECT 1 FROM %s a WHERE a.run_id = r.run_id AND a.instance_id = r.instance_id
+				              AND a.status = '%s' AND a.decided_by = '')
+				  AND (SELECT MAX(a.decided_on) FROM %s a WHERE a.run_id = r.run_id AND a.instance_id = r.instance_id)
+				      < now() - interval '1 hour'
+			), explained AS (
+				INSERT INTO %s (run_id, instance_id, seq, event_type, dedupe_key, status, payload, visibility)
+				SELECT s.run_id, s.instance_id,
+					COALESCE((SELECT MAX(e.seq) FROM %s e WHERE e.run_id = s.run_id), 0) + 1,
+					'%s', '%s', '%s',
+					jsonb_build_object('reason', 'The run was interrupted while it waited for approval and could not be resumed. Its pending approvals were withdrawn at the time; this closes the run itself.'),
+					'user'
+				FROM stranded s
+				ON CONFLICT (run_id, dedupe_key) DO NOTHING
+				RETURNING run_id
+			)
+			UPDATE %s r SET status = '%s', updated_on = now(), finished_on = COALESCE(r.finished_on, now())
+			FROM stranded s WHERE r.run_id = s.run_id AND r.instance_id = s.instance_id`,
+			s.schema,
+			s.t("agent_runs"), RunStatusWaitingApproval,
+			s.t("agent_approvals"), ApprovalStatusPending,
+			s.t("agent_approvals"), ApprovalStatusCancelled,
+			s.t("agent_approvals"),
+			s.t("agent_run_events"),
+			s.t("agent_run_events"),
+			EventTypeCancelled, EventTypeCancelled, RunStatusCancelled,
+			s.t("agent_runs"), RunStatusCancelled),
+
+		// The same invariant from the other side: an approval left pending on a run that already reached a terminal
+		// state. Nothing can come of deciding it (the run is over), but the inbox offers the decision anyway. A
+		// replayed DBOS step is one way to produce it — a run that recorded its terminal transition under the previous
+		// binary replays that step's checkpointed output and so skips the new body that withdraws approvals — and any
+		// future write path that marks a run terminal without going through CloseRun is another. The hour of grace
+		// keeps it off runs that are being closed right now, where the two writes are simply in flight.
+		fmt.Sprintf(`
+			UPDATE %s a SET status = '%s', decided_on = now()
+			WHERE a.status = '%s'
+			  AND EXISTS (
+				SELECT 1 FROM %s r
+				WHERE r.run_id = a.run_id AND r.instance_id = a.instance_id
+				  AND r.status IN ('%s','%s','%s','%s')
+				  AND r.updated_on < now() - interval '1 hour'
+			  )`,
+			s.t("agent_approvals"), ApprovalStatusCancelled, ApprovalStatusPending,
+			s.t("agent_runs"),
+			RunStatusSucceeded, RunStatusFailed, RunStatusRejected, RunStatusCancelled),
 	}
 
 	for _, stmt := range stmts {
@@ -382,58 +489,113 @@ func (s *PostgresRunStore) RecordTransition(ctx context.Context, tr RunTransitio
 	if tr.RunID == "" || tr.InstanceID == "" || tr.Status == "" || tr.EventType == "" {
 		return errors.New("act: RecordTransition requires RunID, InstanceID, Status and EventType")
 	}
+	// A terminal status must go through CloseRun, which withdraws the run's approvals in the same transaction.
+	// Refusing it here is what makes "a terminal run has no pending approvals" an invariant rather than a habit: with
+	// this door open, any caller could mark a run terminal and leave its approvals pending just by picking the more
+	// obvious method name (kairos-cloud#135).
+	if tr.Status.IsTerminal() {
+		return fmt.Errorf("act: RecordTransition refuses the terminal status %q: use CloseRun, which also withdraws the run's approvals", tr.Status)
+	}
 	return s.inTx(ctx, func(tx pgx.Tx) error {
-		// Lock the run row: this validates existence and instance scoping, and serializes transitions for the run so
-		// the per-run event sequence stays monotonic under concurrency.
-		var current string
-		err := tx.QueryRow(ctx, fmt.Sprintf(`SELECT status FROM %s WHERE run_id=$1 AND instance_id=$2 FOR UPDATE`, s.t("agent_runs")),
-			tr.RunID, tr.InstanceID).Scan(&current)
-		if errors.Is(err, pgx.ErrNoRows) {
-			return ErrRunNotFound
-		}
-		if err != nil {
-			return fmt.Errorf("lock run: %w", err)
-		}
+		return s.recordTransitionTx(ctx, tx, tr)
+	})
+}
 
-		// Guard terminal states: a run that has reached a terminal status never transitions again. Without this, a
-		// replayed transition of an earlier edge (a DBOS step re-running an old run.running after the run already
-		// succeeded) would regress the status back out of its terminal state. Terminal is final, so this is a no-op.
-		if RunStatus(current).IsTerminal() {
-			return nil
-		}
-
-		// Append the event first, and let its (run_id, dedupe_key) uniqueness decide idempotency: if this edge was
-		// already recorded, no row is inserted and we must NOT touch the status. This is what stops a re-applied
-		// transition from moving the status a second time (e.g. regressing a run whose later edges already ran). The
-		// key defaults to the event type (strict once-per-run); the executor scopes the repeatable approval edges per
-		// segment so a second governed pause is a NEW edge — it inserts and moves the status — while a replay of any
-		// recorded edge still carries the same key and stays a no-op.
-		inserted, err := s.appendEventTx(ctx, tx, tr.RunID, tr.InstanceID, tr.EventType, tr.DedupeKey, tr.Status, tr.Payload)
-		if err != nil {
+// CloseRun records a run's terminal transition and withdraws its still-pending approvals in ONE transaction, so no
+// reader can ever observe one without the other. Two writes done separately is what stranded runs showing
+// waiting_approval with every approval cancelled and no decider: the sweep landed on a context that outlived the
+// shutdown, the transition did not (kairos-cloud#135). Callers closing a run must use this, not RecordTransition
+// followed by CancelPendingApprovals.
+//
+// The approvals are cancelled even when the transition is a no-op (the run was already terminal, or this edge was
+// already recorded): the invariant being enforced is "a terminal run has no pending approvals", and an already-terminal
+// run holding one is exactly the inconsistency to clear. Returns how many approvals were cancelled.
+func (s *PostgresRunStore) CloseRun(ctx context.Context, tr RunTransition) (int64, error) {
+	if tr.RunID == "" || tr.InstanceID == "" || tr.Status == "" || tr.EventType == "" {
+		return 0, errors.New("act: CloseRun requires RunID, InstanceID, Status and EventType")
+	}
+	if !tr.Status.IsTerminal() {
+		return 0, fmt.Errorf("act: CloseRun requires a terminal status, got %q", tr.Status)
+	}
+	var cancelled int64
+	err := s.inTx(ctx, func(tx pgx.Tx) error {
+		if err := s.recordTransitionTx(ctx, tx, tr); err != nil {
 			return err
 		}
-		if !inserted {
-			// Duplicate edge: the status already reflects this transition. Leave the row untouched.
-			return nil
-		}
-
-		// Update lifecycle state. started_on latches on the first move into running; finished_on latches on the
-		// first move into a terminal status; error and spec_hash are written only when supplied.
-		_, err = tx.Exec(ctx, fmt.Sprintf(`
-			UPDATE %s SET
-				status=$3,
-				updated_on=now(),
-				started_on = COALESCE(started_on, CASE WHEN $3=$4 THEN now() END),
-				finished_on = CASE WHEN $5 THEN COALESCE(finished_on, now()) ELSE finished_on END,
-				error = CASE WHEN $6<>'' THEN $6 ELSE error END,
-				spec_hash = CASE WHEN $7<>'' THEN $7 ELSE spec_hash END
-			WHERE run_id=$1 AND instance_id=$2`, s.t("agent_runs")),
-			tr.RunID, tr.InstanceID, string(tr.Status), string(RunStatusRunning), tr.Status.IsTerminal(), tr.Error, tr.SpecHash)
+		tag, err := tx.Exec(ctx, fmt.Sprintf(`UPDATE %s SET status=$3, decided_on=now() WHERE run_id=$1 AND instance_id=$2 AND status=$4`, s.t("agent_approvals")),
+			tr.RunID, tr.InstanceID, ApprovalStatusCancelled, ApprovalStatusPending)
 		if err != nil {
-			return fmt.Errorf("update run: %w", err)
+			return fmt.Errorf("cancel pending approvals: %w", err)
+		}
+		cancelled = tag.RowsAffected()
+
+		// The ledger's counterpart, in the same transaction. This store IS the ledger in production, so an action left
+		// in approval_pending beside a withdrawn approval is the same half-applied state one table over. The executor
+		// also withdraws actions best-effort afterwards, which covers the deployment where the ledger sits behind the
+		// gateway instead; doing it here as well makes the common case atomic rather than merely likely.
+		if _, err := tx.Exec(ctx, fmt.Sprintf(`UPDATE %s SET status=$3, updated_on=now() WHERE run_id=$1 AND instance_id=$2 AND status=$4`, s.t("agent_actions")),
+			tr.RunID, tr.InstanceID, ActionWithdrawn, ActionApprovalPending); err != nil {
+			return fmt.Errorf("withdraw pending actions: %w", err)
 		}
 		return nil
 	})
+	return cancelled, err
+}
+
+// recordTransitionTx applies a status change and appends its event inside an open transaction. It is the shared body
+// of RecordTransition and CloseRun; the caller owns the transaction so a close can bind the transition and the
+// approval sweep into one atomic unit.
+func (s *PostgresRunStore) recordTransitionTx(ctx context.Context, tx pgx.Tx, tr RunTransition) error {
+	// Lock the run row: this validates existence and instance scoping, and serializes transitions for the run so
+	// the per-run event sequence stays monotonic under concurrency.
+	var current string
+	err := tx.QueryRow(ctx, fmt.Sprintf(`SELECT status FROM %s WHERE run_id=$1 AND instance_id=$2 FOR UPDATE`, s.t("agent_runs")),
+		tr.RunID, tr.InstanceID).Scan(&current)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return ErrRunNotFound
+	}
+	if err != nil {
+		return fmt.Errorf("lock run: %w", err)
+	}
+
+	// Guard terminal states: a run that has reached a terminal status never transitions again. Without this, a
+	// replayed transition of an earlier edge (a DBOS step re-running an old run.running after the run already
+	// succeeded) would regress the status back out of its terminal state. Terminal is final, so this is a no-op.
+	if RunStatus(current).IsTerminal() {
+		return nil
+	}
+
+	// Append the event first, and let its (run_id, dedupe_key) uniqueness decide idempotency: if this edge was
+	// already recorded, no row is inserted and we must NOT touch the status. This is what stops a re-applied
+	// transition from moving the status a second time (e.g. regressing a run whose later edges already ran). The
+	// key defaults to the event type (strict once-per-run); the executor scopes the repeatable approval edges per
+	// segment so a second governed pause is a NEW edge — it inserts and moves the status — while a replay of any
+	// recorded edge still carries the same key and stays a no-op.
+	inserted, err := s.appendEventTx(ctx, tx, tr.RunID, tr.InstanceID, tr.EventType, tr.DedupeKey, tr.Status, tr.Payload)
+	if err != nil {
+		return err
+	}
+	if !inserted {
+		// Duplicate edge: the status already reflects this transition. Leave the row untouched.
+		return nil
+	}
+
+	// Update lifecycle state. started_on latches on the first move into running; finished_on latches on the
+	// first move into a terminal status; error and spec_hash are written only when supplied.
+	_, err = tx.Exec(ctx, fmt.Sprintf(`
+		UPDATE %s SET
+			status=$3,
+			updated_on=now(),
+			started_on = COALESCE(started_on, CASE WHEN $3=$4 THEN now() END),
+			finished_on = CASE WHEN $5 THEN COALESCE(finished_on, now()) ELSE finished_on END,
+			error = CASE WHEN $6<>'' THEN $6 ELSE error END,
+			spec_hash = CASE WHEN $7<>'' THEN $7 ELSE spec_hash END
+		WHERE run_id=$1 AND instance_id=$2`, s.t("agent_runs")),
+		tr.RunID, tr.InstanceID, string(tr.Status), string(RunStatusRunning), tr.Status.IsTerminal(), tr.Error, tr.SpecHash)
+	if err != nil {
+		return fmt.Errorf("update run: %w", err)
+	}
+	return nil
 }
 
 // appendEventTx appends one lifecycle event inside an open transaction and reports whether a new row was inserted.
@@ -588,17 +750,36 @@ func (s *PostgresRunStore) CreateApproval(ctx context.Context, a NewApproval) er
 	if HashArgs(a.CanonicalArgs) != a.ArgsHash {
 		return fmt.Errorf("act: CreateApproval requires CanonicalArgs to be the preimage of ArgsHash (approval %q)", a.ApprovalID)
 	}
-	_, err := s.pool.Exec(ctx, fmt.Sprintf(`
-		INSERT INTO %s (approval_id, run_id, instance_id, tool_name, connector, tool_call_id, args_hash,
-			canonical_args, proposal, policy, status, requested_by, position, total)
-		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
-		ON CONFLICT (approval_id) DO NOTHING`, s.t("agent_approvals")),
-		a.ApprovalID, a.RunID, a.InstanceID, a.ToolName, a.Connector, a.ToolCallID, a.ArgsHash,
-		a.CanonicalArgs, a.Proposal, a.Policy, ApprovalStatusPending, a.RequestedBy, a.Position, a.Total)
-	if err != nil {
-		return fmt.Errorf("act: create approval: %w", err)
-	}
-	return nil
+	// Lock the run and refuse to attach a pending approval to one that is already over. Without the lock this races
+	// CloseRun in the losing direction: CloseRun withdraws what is pending and commits, this insert lands a moment
+	// later, and the run ends up terminal with a live approval nobody's decision can affect. Taking the same row lock
+	// CloseRun takes serializes the two, and the terminal check makes the loser fail instead of writing that state.
+	return s.inTx(ctx, func(tx pgx.Tx) error {
+		var current string
+		err := tx.QueryRow(ctx, fmt.Sprintf(`SELECT status FROM %s WHERE run_id=$1 AND instance_id=$2 FOR UPDATE`, s.t("agent_runs")),
+			a.RunID, a.InstanceID).Scan(&current)
+		if errors.Is(err, pgx.ErrNoRows) {
+			return ErrRunNotFound
+		}
+		if err != nil {
+			return fmt.Errorf("act: create approval: lock run: %w", err)
+		}
+		if RunStatus(current).IsTerminal() {
+			return fmt.Errorf("act: CreateApproval refuses to attach approval %q to run %q, which is already %s",
+				a.ApprovalID, a.RunID, current)
+		}
+		_, err = tx.Exec(ctx, fmt.Sprintf(`
+			INSERT INTO %s (approval_id, run_id, instance_id, tool_name, connector, tool_call_id, args_hash,
+				canonical_args, proposal, policy, status, requested_by, position, total)
+			VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+			ON CONFLICT (approval_id) DO NOTHING`, s.t("agent_approvals")),
+			a.ApprovalID, a.RunID, a.InstanceID, a.ToolName, a.Connector, a.ToolCallID, a.ArgsHash,
+			a.CanonicalArgs, a.Proposal, a.Policy, ApprovalStatusPending, a.RequestedBy, a.Position, a.Total)
+		if err != nil {
+			return fmt.Errorf("act: create approval: %w", err)
+		}
+		return nil
+	})
 }
 
 func (s *PostgresRunStore) GetApproval(ctx context.Context, instanceID, approvalID string) (*Approval, error) {

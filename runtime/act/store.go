@@ -271,6 +271,11 @@ type RunStore interface {
 	// RecordTransition applies a status change and appends its event in one transaction. It is idempotent per edge:
 	// re-applying an already-recorded transition leaves the row unchanged and appends no duplicate event.
 	RecordTransition(ctx context.Context, t RunTransition) error
+	// CloseRun records a run's TERMINAL transition and withdraws its still-pending approvals in one transaction, and
+	// is how a run must be closed: the two writes done separately can be observed half-applied, which is what left
+	// runs reading waiting_approval with every approval cancelled and no decider (kairos-cloud#135). The status must
+	// be terminal. Returns the number of approvals cancelled.
+	CloseRun(ctx context.Context, t RunTransition) (int64, error)
 	// SetRunConversationID links a run to the AI session it executed in, overwriting the conversation_id seeded at
 	// create time (normally empty). It is a simple idempotent UPDATE scoped by instance; re-applying it with the same
 	// session ID is a no-op, and a run that does not exist for the instance yields ErrRunNotFound.

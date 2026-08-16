@@ -32,7 +32,7 @@ agent; execution enters **only** through `AgentExecutor`.
 ```
 step load_snapshot   → capture the immutable snapshot (run is bound to it from here on)
 step run_agent       → run the whole runtime/ai model/tool loop as ONE step
-Recv "approval"      → suspend durably; the timeout gives expiration for free
+Recv "approval"      → suspend durably, indefinitely; Cancel is how a run nobody decides is ended
 step apply_action    → simulated external write, only if approved, exactly once on the happy path
 ```
 

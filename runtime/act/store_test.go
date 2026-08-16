@@ -65,9 +65,12 @@ func TestRunStoreRoundTrip(t *testing.T) {
 	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{
 		InstanceID: instanceID, RunID: runID, Status: act.RunStatusRunning, EventType: act.EventTypeRunning,
 	}))
-	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{
+	// A terminal status goes through CloseRun: RecordTransition refuses it, so that marking a run finished always
+	// withdraws its approvals in the same transaction (kairos-cloud#135).
+	_, err = store.CloseRun(ctx, act.RunTransition{
 		InstanceID: instanceID, RunID: runID, Status: act.RunStatusSucceeded, EventType: act.EventTypeSucceeded,
-	}))
+	})
+	require.NoError(t, err)
 
 	run, err = store.GetRun(ctx, instanceID, runID)
 	require.NoError(t, err)
@@ -160,13 +163,15 @@ func TestRunStoreTransitionGuardsTerminal(t *testing.T) {
 	runID := act.ComposeRunID(instanceID, "triage", "k")
 	require.NoError(t, store.CreateRun(ctx, act.NewRun{RunID: runID, InstanceID: instanceID, AgentName: "triage"}))
 	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{InstanceID: instanceID, RunID: runID, Status: act.RunStatusRunning, EventType: act.EventTypeRunning}))
-	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{InstanceID: instanceID, RunID: runID, Status: act.RunStatusSucceeded, EventType: act.EventTypeSucceeded}))
+	_, err := store.CloseRun(ctx, act.RunTransition{InstanceID: instanceID, RunID: runID, Status: act.RunStatusSucceeded, EventType: act.EventTypeSucceeded})
+	require.NoError(t, err)
 
 	// A replayed earlier edge after the run is terminal is a no-op: the status stays succeeded rather than regressing
 	// back to running.
 	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{InstanceID: instanceID, RunID: runID, Status: act.RunStatusRunning, EventType: act.EventTypeRunning}))
 	// A different terminal edge does not overwrite the recorded outcome or its (absent) error either.
-	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{InstanceID: instanceID, RunID: runID, Status: act.RunStatusFailed, EventType: act.EventTypeFailed, Error: "should be ignored"}))
+	_, err = store.CloseRun(ctx, act.RunTransition{InstanceID: instanceID, RunID: runID, Status: act.RunStatusFailed, EventType: act.EventTypeFailed, Error: "should be ignored"})
+	require.NoError(t, err)
 
 	run, err := store.GetRun(ctx, instanceID, runID)
 	require.NoError(t, err)
@@ -222,7 +227,8 @@ func TestRunStoreTransitionSegmentScopedEdgesRepeat(t *testing.T) {
 		InstanceID: instanceID, RunID: runID, Status: act.RunStatusRunning,
 		EventType: act.EventTypeResumed, DedupeKey: act.EventTypeResumed + ":1",
 	}))
-	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{InstanceID: instanceID, RunID: runID, Status: act.RunStatusSucceeded, EventType: act.EventTypeSucceeded}))
+	_, err = store.CloseRun(ctx, act.RunTransition{InstanceID: instanceID, RunID: runID, Status: act.RunStatusSucceeded, EventType: act.EventTypeSucceeded})
+	require.NoError(t, err)
 
 	// The timeline shows both pauses and both resumptions, once each, in order.
 	events, err := store.ListRunEvents(ctx, instanceID, runID, 0, 100)
@@ -446,7 +452,13 @@ func TestRunStoreListFilters(t *testing.T) {
 		runID := act.ComposeRunID(instanceID, agent, key)
 		require.NoError(t, store.CreateRun(ctx, act.NewRun{RunID: runID, InstanceID: instanceID, AgentName: agent}))
 		if status != act.RunStatusQueued {
-			require.NoError(t, store.RecordTransition(ctx, act.RunTransition{InstanceID: instanceID, RunID: runID, Status: status, EventType: string(status)}))
+			tr := act.RunTransition{InstanceID: instanceID, RunID: runID, Status: status, EventType: string(status)}
+			if status.IsTerminal() {
+				_, cErr := store.CloseRun(ctx, tr)
+				require.NoError(t, cErr)
+			} else {
+				require.NoError(t, store.RecordTransition(ctx, tr))
+			}
 		}
 		return runID
 	}
