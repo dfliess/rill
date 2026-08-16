@@ -1020,7 +1020,11 @@ func (s *Server) GetBillingProjectCredentials(ctx context.Context, req *adminv1.
 				runtime.ReadAPI,
 			},
 		},
-		Attributes: map[string]any{"organization_id": org.ID, "is_embed": true},
+		// "embed" is the attribute the runtime's own feature flags key on: the default rule for dashboard_chat is
+		// "{{ not .user.embed }}", so a token that spells it differently leaves the chat on inside an embed. This one
+		// then failed on every question, because it carries no AI permissions. Same name as the token minted for
+		// regular embeds (deployment.go), so the two behave alike.
+		Attributes: map[string]any{"organization_id": org.ID, "embed": true},
 	})
 	if err != nil {
 		return nil, fmt.Errorf("could not issue jwt: %w", err)
