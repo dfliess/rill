@@ -49,9 +49,11 @@
   let base = $derived(`/${organization}/${project}/-/agents`);
   let showPicker = $derived(!agent && agents.length > 0);
   let targetAgent = $derived(agent || selectedAgent);
-  let canSubmit = $derived(
-    prompt.trim() !== "" && !!targetAgent && !$startRun.isPending,
-  );
+  // Choosing an agent already says what to run: the task is in its instructions, and the trigger it declares
+  // carries the user turn that goes with them. Leaving this empty runs exactly what the schedule runs, so demanding
+  // text here only made the launcher retype — or guess — something already written in the agent's YAML. The server
+  // refuses an empty prompt for an agent with no trigger to take one from, which is the one case it is required.
+  let canSubmit = $derived(!!targetAgent && !$startRun.isPending);
 
   function reset() {
     prompt = "";
