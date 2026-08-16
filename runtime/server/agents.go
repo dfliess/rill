@@ -814,6 +814,19 @@ func (s *Server) ApproveAgentApproval(ctx context.Context, req *runtimev1.Approv
 // enqueue the Send in one transaction, drained by a background worker) would make it self-healing. Same class as
 // known limit #2 (the trigger outbox).
 func (s *Server) claimAndResume(ctx context.Context, approval *act.Approval, decision act.ApprovalDecision, storeStatus, decidedBy string) (*act.Approval, error) {
+	// Refuse before recording anything if the run can no longer act on the decision. This is ordered first on purpose:
+	// the claim is what makes the decision real (it stamps decided_by and takes the approval out of the inbox), so
+	// asking afterwards would mean the signature is already on file for an action nobody will perform. Delivery cannot
+	// tell us this later either, because it always succeeds: the message is filed for a run that never reads it.
+	resumable, err := s.agentExecutor.Resumable(ctx, approval.RunID)
+	if err != nil {
+		return nil, status.Errorf(codes.Unavailable, "could not determine whether run %q can still be decided: %v", approval.RunID, err)
+	}
+	if !resumable {
+		return nil, status.Errorf(codes.FailedPrecondition,
+			"run %q is no longer running and cannot act on a decision; cancel it to clear it from the inbox", approval.RunID)
+	}
+
 	var resolved *act.Approval
 	switch approval.Status {
 	case act.ApprovalStatusPending:
