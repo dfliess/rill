@@ -62,7 +62,6 @@
   "agents_run_form_cancel": "Cancelar",
   "agents_run_form_error": "No se pudo iniciar la ejecución",
   "agents_run_form_prompt_label": "Instrucciones para esta ejecución (opcional)",
-  "agents_run_form_prompt_required": "Este agente no tiene una tarea programada de la que partir, así que escribe las instrucciones de esta ejecución.",
   "agents_run_form_prompt_placeholder": "Déjalo vacío para la tarea habitual del agente, o acótalo: “céntrate en devoluciones”.",
   "agents_run_form_started_notification": "Ejecución iniciada",
   "agents_run_form_submit": "Ejecutar",

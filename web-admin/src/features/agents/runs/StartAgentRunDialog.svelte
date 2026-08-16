@@ -90,18 +90,8 @@
           : base,
       );
     } catch (e) {
-      // Sin instrucciones, el servidor solo rechaza por una razón: no encontró
-      // de dónde sacar la tarea, porque el agente no declara disparador o
-      // declara varios. Se dice en el idioma del usuario en lugar de reenviar
-      // el error del backend, que viaja fuera del catálogo y siempre en inglés.
-      // Cuando sí hay instrucciones, el mensaje del servidor es información y
-      // se pasa tal cual.
       eventBus.emit("notification", {
-        message: !prompt.trim()
-          ? m.agents_run_form_prompt_required()
-          : e instanceof Error
-            ? e.message
-            : m.agents_run_form_error(),
+        message: e instanceof Error ? e.message : m.agents_run_form_error(),
         type: "error",
       });
     }
