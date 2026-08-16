@@ -131,6 +131,18 @@ func TestGatewayFlowApproveExecutes(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, act.ActionVerified, action.Status)
 	require.Equal(t, "PROJ-777", action.ExternalReference)
+
+	// The approval created by the real workflow carries the exact preimage of the hash the decision was bound to
+	// (§6.4): what a UI shows from these bytes is byte-for-byte what was hashed, approved and executed.
+	appr, err := store.GetApproval(t.Context(), instanceID, act.ApprovalIDForToolCall(runID, "call-1"))
+	require.NoError(t, err)
+	canonical, ok := appr.VerifiedCanonicalArgs()
+	require.True(t, ok)
+	require.Equal(t, appr.ArgsHash, act.HashArgs(canonical))
+	require.Equal(t, appr.ArgsHash, action.ArgsHash, "the approval and the executed action bind to one hash")
+	wantBytes, err := act.CanonicalizeArgs(flowProposal().Args)
+	require.NoError(t, err)
+	require.Equal(t, string(wantBytes), canonical)
 }
 
 // TestGatewayFlowRecordsRealApprover proves the action ledger AND the run timeline record who APPROVED the action, not

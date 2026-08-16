@@ -676,6 +676,10 @@ func (m *AgentApproval) validate(all bool) error {
 
 	// no validation rules for CanDecide
 
+	// no validation rules for CanonicalArgs
+
+	// no validation rules for CanonicalArgsIsJson
+
 	if len(errors) > 0 {
 		return AgentApprovalMultiError(errors)
 	}

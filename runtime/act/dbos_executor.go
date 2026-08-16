@@ -608,14 +608,17 @@ func (e *DBOSExecutor) setupApproval(ctx dbos.DBOSContext, in AgentRunInput, run
 			return false, err
 		}
 		return true, e.store.CreateApproval(stepCtx, NewApproval{
-			ApprovalID:  ApprovalIDForRun(runID),
-			RunID:       runID,
-			InstanceID:  in.InstanceID,
-			ToolName:    proposedActionTool,
-			ArgsHash:    HashArgs(proposal),
-			Proposal:    proposal,
-			Policy:      "approval_required",
-			RequestedBy: in.Actor.Subject,
+			ApprovalID: ApprovalIDForRun(runID),
+			RunID:      runID,
+			InstanceID: in.InstanceID,
+			ToolName:   proposedActionTool,
+			ArgsHash:   HashArgs(proposal),
+			// This simulated path hashes the proposal text itself, so the proposal IS the preimage: persisting it
+			// as the canonical args keeps the invariant (stored bytes hash to ArgsHash) uniform across both paths.
+			CanonicalArgs: proposal,
+			Proposal:      proposal,
+			Policy:        "approval_required",
+			RequestedBy:   in.Actor.Subject,
 		})
 	}, dbos.WithStepName("setup_approval"))
 	if err != nil {
@@ -701,6 +704,26 @@ type governedAction struct {
 	autoApprove  map[string]bool
 }
 
+// canonicalArgsForApproval returns the preimage to persist with an action's approval. Normally it is the one the
+// gateway captured while hashing, which is the only source that cannot have drifted from the hash.
+//
+// The fallback exists for one situation: a run whose propose step was checkpointed by a build from before the
+// Authorization carried the preimage. On recovery DBOS replays that checkpoint, the field deserializes empty, and
+// refusing there would kill a legitimate in-flight run during a deploy. So rebuild it from the proposal's own
+// arguments and accept it ONLY if it hashes back to the authorization's hash. That check is what keeps this from
+// being a hole: a rebuild that matches IS the preimage, whatever produced it, and one that does not match is
+// discarded so the store's own binding check refuses the approval.
+func canonicalArgsForApproval(a *governedAction) string {
+	if a.auth.CanonicalArgs != "" {
+		return a.auth.CanonicalArgs
+	}
+	rebuilt, err := CanonicalizeArgs(a.proposal.Args)
+	if err != nil || hashBytes(rebuilt) != a.auth.ArgsHash {
+		return ""
+	}
+	return string(rebuilt)
+}
+
 // governProposedActions governs N proposed writes for segment seg. It derives each proposal, evaluates policy, creates
 // all manual approvals at once (visible in the inbox), then processes each action in proposal order: auto-approved
 // actions execute immediately; manual actions wait for a per-tool-call DBOS topic. A rejection injects an error result
@@ -775,18 +798,22 @@ func (e *DBOSExecutor) governProposedActions(ctx dbos.DBOSContext, in AgentRunIn
 					return false, err
 				}
 				if err := e.store.CreateApproval(stepCtx, NewApproval{
-					ApprovalID:  approvalID,
-					RunID:       runID,
-					InstanceID:  in.InstanceID,
-					ToolName:    a.proposal.Tool,
-					Connector:   a.proposal.Connector,
-					ToolCallID:  a.proposal.ToolCallID,
-					ArgsHash:    a.auth.ArgsHash,
-					Proposal:    a.proposal.Summary,
-					Policy:      string(a.auth.Decision),
-					RequestedBy: in.Actor.Subject,
-					Position:    i + 1,
-					Total:       n,
+					ApprovalID: approvalID,
+					RunID:      runID,
+					InstanceID: in.InstanceID,
+					ToolName:   a.proposal.Tool,
+					Connector:  a.proposal.Connector,
+					ToolCallID: a.proposal.ToolCallID,
+					ArgsHash:   a.auth.ArgsHash,
+					// The preimage travels on the Authorization, captured from the same CanonicalizeArgs output the
+					// hash was computed over; recomputing it here from a.proposal.Args could diverge from the hash
+					// (the gateway hashed its own frozen copy) and would break the "you sign what you see" invariant.
+					CanonicalArgs: canonicalArgsForApproval(a),
+					Proposal:      a.proposal.Summary,
+					Policy:        string(a.auth.Decision),
+					RequestedBy:   in.Actor.Subject,
+					Position:      i + 1,
+					Total:         n,
 				}); err != nil {
 					return false, err
 				}
@@ -1008,7 +1035,9 @@ func actionDedupeKey(eventType, toolCallID string) string { return eventType + "
 
 // HashArgs returns the canonical hash an approval is bound to: the decision is valid only for these exact arguments
 // (§6.4, §11.2). The spike's simulated path hashes the proposal text; the gateway path hashes the canonicalized tool
-// arguments (HashCanonicalArgs). Both yield the same "sha256:"-prefixed form so a consumer cannot tell them apart.
+// arguments (HashCanonicalArgs). Both yield the same "sha256:"-prefixed form so a consumer cannot tell them apart,
+// which is also what lets Approval.VerifiedCanonicalArgs verify a stored preimage from either path with this one
+// function.
 func HashArgs(args string) string {
 	sum := sha256.Sum256([]byte(args))
 	return "sha256:" + hex.EncodeToString(sum[:])

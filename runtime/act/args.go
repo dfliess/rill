@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"strings"
 )
 
 // CanonicalizeArgs renders tool arguments to a stable byte form so their hash is reproducible across the proposal,
@@ -86,4 +87,37 @@ func DeriveIdempotencyKey(runID, toolCallID, argsHash string) string {
 	sum := sha256.Sum256([]byte(runID + "\x00" + toolCallID + "\x00" + argsHash))
 	// Half the digest is ample collision resistance for a dedup key and keeps it compact in logs and external headers.
 	return "act-" + hex.EncodeToString(sum[:16])
+}
+
+// IsCanonicalJSON reports whether s is exactly what CanonicalizeArgs would produce for the object it encodes.
+//
+// It exists because a renderer has to know whether a preimage is JSON before it can display it faithfully: inside
+// json.Marshal's output a literal backslash is already doubled, so escapes are unambiguous as they are, while in
+// free-form text they are not and the renderer has to double them itself. Getting that backwards makes two different
+// signed texts look identical.
+//
+// The question is answered by re-deriving rather than by trusting where the bytes came from: only json.Marshal
+// produces this exact form, so a round-trip that reproduces s byte for byte IS the proof. UseNumber keeps the
+// original digits of a large integer, which float64 would round and which would then fail the comparison for a
+// perfectly canonical input.
+//
+// Domain note: it answers the question for JSON-like values, which is what json.Unmarshal produces and what the MCP
+// path carries. A map holding a json.RawMessage whose bytes are already non-canonical would round-trip to different
+// bytes and be reported false. That is a limit of the contract rather than a hazard — no caller builds args that way,
+// and the direction of the error is the safe one.
+func IsCanonicalJSON(s string) bool {
+	dec := json.NewDecoder(strings.NewReader(s))
+	dec.UseNumber()
+	var v map[string]any
+	if err := dec.Decode(&v); err != nil {
+		return false
+	}
+	if dec.More() {
+		return false
+	}
+	round, err := CanonicalizeArgs(v)
+	if err != nil {
+		return false
+	}
+	return string(round) == s
 }

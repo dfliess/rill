@@ -367,13 +367,13 @@ func TestRunStoreCancelPendingApprovals(t *testing.T) {
 	pendingApproval := act.ApprovalIDForRun(pendingRun)
 	require.NoError(t, store.CreateApproval(ctx, act.NewApproval{
 		ApprovalID: pendingApproval, RunID: pendingRun, InstanceID: instanceID,
-		ArgsHash: act.HashArgs("x"), Proposal: "x", RequestedBy: "user:alice",
+		ArgsHash: act.HashArgs("x"), CanonicalArgs: "x", Proposal: "x", RequestedBy: "user:alice",
 	}))
 	// A second run whose approval was already approved: cancelling the first run must not touch it.
 	decidedApproval := act.ApprovalIDForRun(decidedRun)
 	require.NoError(t, store.CreateApproval(ctx, act.NewApproval{
 		ApprovalID: decidedApproval, RunID: decidedRun, InstanceID: instanceID,
-		ArgsHash: act.HashArgs("y"), Proposal: "y", RequestedBy: "user:alice",
+		ArgsHash: act.HashArgs("y"), CanonicalArgs: "y", Proposal: "y", RequestedBy: "user:alice",
 	}))
 	_, err := store.ResolveApproval(ctx, instanceID, decidedApproval, act.ApprovalStatusApproved, "admin:bob")
 	require.NoError(t, err)
@@ -502,10 +502,10 @@ func TestRunStoreAccessFilterInWhere(t *testing.T) {
 
 	// Approvals resolve the allow-list through their run.
 	require.NoError(t, store.CreateApproval(ctx, act.NewApproval{
-		ApprovalID: act.ApprovalIDForRun(cob1), RunID: cob1, InstanceID: instanceID, ArgsHash: act.HashArgs("x"),
+		ApprovalID: act.ApprovalIDForRun(cob1), RunID: cob1, InstanceID: instanceID, ArgsHash: act.HashArgs("x"), CanonicalArgs: "x",
 	}))
 	require.NoError(t, store.CreateApproval(ctx, act.NewApproval{
-		ApprovalID: act.ApprovalIDForRun(act.ComposeRunID(instanceID, "triage", "3")), RunID: act.ComposeRunID(instanceID, "triage", "3"), InstanceID: instanceID, ArgsHash: act.HashArgs("y"),
+		ApprovalID: act.ApprovalIDForRun(act.ComposeRunID(instanceID, "triage", "3")), RunID: act.ComposeRunID(instanceID, "triage", "3"), InstanceID: instanceID, ArgsHash: act.HashArgs("y"), CanonicalArgs: "y",
 	}))
 	approvals, err := store.ListApprovals(ctx, act.ListApprovalsFilter{InstanceID: instanceID, AccessibleAgents: []string{"cobranza"}})
 	require.NoError(t, err)
@@ -528,13 +528,14 @@ func TestRunStoreApprovalLifecycle(t *testing.T) {
 
 	approvalID := act.ApprovalIDForRun(runID)
 	require.NoError(t, store.CreateApproval(ctx, act.NewApproval{
-		ApprovalID:  approvalID,
-		RunID:       runID,
-		InstanceID:  instanceID,
-		ToolName:    "act.propose_action",
-		ArgsHash:    act.HashArgs("crear ticket P2"),
-		Proposal:    "crear ticket P2",
-		RequestedBy: "user:alice",
+		ApprovalID:    approvalID,
+		RunID:         runID,
+		InstanceID:    instanceID,
+		ToolName:      "act.propose_action",
+		ArgsHash:      act.HashArgs("crear ticket P2"),
+		CanonicalArgs: "crear ticket P2",
+		Proposal:      "crear ticket P2",
+		RequestedBy:   "user:alice",
 	}))
 
 	got, err := store.GetApproval(ctx, instanceID, approvalID)
@@ -564,4 +565,270 @@ func TestRunStoreApprovalLifecycle(t *testing.T) {
 	// Cross-tenant resolution fails closed.
 	_, err = store.ResolveApproval(ctx, "other-inst", approvalID, act.ApprovalStatusApproved, "x")
 	require.ErrorIs(t, err, act.ErrApprovalNotFound)
+}
+
+// TestApprovalCanonicalArgsAreThePreimage is the invariant that justifies persisting the arguments at all (§6.4,
+// §11.2): the bytes the store returns for an approval hash to EXACTLY the approval's args_hash — the same value the
+// approve endpoint later binds the human's decision to — so what the UI renders from them is demonstrably the
+// preimage of the signed hash, not a reconstruction. It drives the production wiring end to end: Authorize
+// canonicalizes and hashes ONE byte slice, and the approval persists both outputs untouched.
+func TestApprovalCanonicalArgsAreThePreimage(t *testing.T) {
+	store := newRunStore(t)
+	ctx := t.Context()
+
+	const instanceID = "inst-appr-preimage"
+	runID := act.ComposeRunID(instanceID, "triage", "k")
+	require.NoError(t, store.CreateRun(ctx, act.NewRun{RunID: runID, InstanceID: instanceID, AgentName: "triage"}))
+
+	// Arguments with unordered keys, nesting and multi-byte text: everything canonicalization has to pin down.
+	args := map[string]any{
+		"zeta":    "último",
+		"alpha":   map[string]any{"nested": []any{1.0, "dos", true}},
+		"summary": "coste alto: revisión de París",
+	}
+	auth := act.Authorize(act.AuthorizeInput{
+		RunID:    runID,
+		Proposal: act.ToolProposal{ToolCallID: "call-1", Tool: "jira.create_issue", Connector: "jira_ops", Args: args},
+		// No descriptor: the decision is a deny, but the identity fields (hash and preimage) are computed
+		// regardless, which is exactly the pair the approval stores.
+	})
+	require.NotEmpty(t, auth.ArgsHash)
+	require.NotEmpty(t, auth.CanonicalArgs)
+
+	approvalID := act.ApprovalIDForToolCall(runID, "call-1")
+	require.NoError(t, store.CreateApproval(ctx, act.NewApproval{
+		ApprovalID:    approvalID,
+		RunID:         runID,
+		InstanceID:    instanceID,
+		ToolName:      "jira.create_issue",
+		Connector:     "jira_ops",
+		ToolCallID:    "call-1",
+		ArgsHash:      auth.ArgsHash,
+		CanonicalArgs: auth.CanonicalArgs,
+		Proposal:      "jira.create_issue(summary=coste alto…)",
+		RequestedBy:   "user:alice",
+	}))
+
+	got, err := store.GetApproval(ctx, instanceID, approvalID)
+	require.NoError(t, err)
+	canonical, ok := got.VerifiedCanonicalArgs()
+	require.True(t, ok)
+	// THE invariant: the persisted bytes hash to the approval's args_hash, byte for byte.
+	require.Equal(t, got.ArgsHash, act.HashArgs(canonical))
+	// And they are the canonical encoding of the proposed arguments, not some other preimage of a matching hash.
+	wantBytes, err := act.CanonicalizeArgs(args)
+	require.NoError(t, err)
+	require.Equal(t, string(wantBytes), canonical)
+
+	// The listing projection carries the same bytes, so the inbox and the detail read one truth.
+	listed, err := store.ListApprovals(ctx, act.ListApprovalsFilter{InstanceID: instanceID, RunID: runID})
+	require.NoError(t, err)
+	require.Len(t, listed, 1)
+	require.NotNil(t, listed[0].CanonicalArgs)
+	require.Equal(t, canonical, *listed[0].CanonicalArgs)
+}
+
+// TestCreateApprovalRequiresThePreimage pins the invariant at the write boundary: an approval whose stored bytes are
+// not the preimage of its hash can never be signed (the API refuses it), so creating one would only produce a row
+// that strands a human later. The store rejects it instead — missing preimage and contradicting preimage alike.
+func TestCreateApprovalRequiresThePreimage(t *testing.T) {
+	store := newRunStore(t)
+	ctx := t.Context()
+
+	const instanceID = "inst-appr-preimage-required"
+	runID := act.ComposeRunID(instanceID, "triage", "k")
+	require.NoError(t, store.CreateRun(ctx, act.NewRun{RunID: runID, InstanceID: instanceID, AgentName: "triage"}))
+
+	// Deliberately without CanonicalArgs: each case below sets (or omits) it to make its own point.
+	base := act.NewApproval{
+		ApprovalID:  act.ApprovalIDForRun(runID),
+		RunID:       runID,
+		InstanceID:  instanceID,
+		ToolName:    "act.propose_action",
+		ArgsHash:    act.HashArgs("crear ticket P2"),
+		Proposal:    "crear ticket P2",
+		RequestedBy: "user:alice",
+	}
+
+	require.Error(t, store.CreateApproval(ctx, base), "an approval with no preimage must not be persisted")
+
+	contradicting := base
+	contradicting.CanonicalArgs = "crear ticket P4"
+	require.Error(t, store.CreateApproval(ctx, contradicting), "a preimage that does not hash to ArgsHash must not be persisted")
+
+	// An empty preimage is refused even though its hash is legitimate: nothing describes an action with it, and on
+	// the wire it would be indistinguishable from "no preimage recorded", reintroducing the ambiguity the nullable
+	// column removes.
+	empty := base
+	empty.ArgsHash = act.HashArgs("")
+	empty.CanonicalArgs = ""
+	require.Error(t, store.CreateApproval(ctx, empty), "an empty preimage describes no action and must not be persisted")
+
+	// The coherent one goes through.
+	ok := base
+	ok.CanonicalArgs = "crear ticket P2"
+	require.NoError(t, store.CreateApproval(ctx, ok))
+}
+
+// TestApprovalVerifiedCanonicalArgsRejectsMismatch proves stored bytes that do NOT hash to the approval's args_hash
+// are never handed to a caller as the signed material: presenting them would claim "this is what you sign" about
+// bytes the signature does not cover, which is worse than presenting nothing. An absent preimage refuses too, and
+// the two are still distinguishable so a caller can log a contradiction as the incident it is.
+func TestApprovalVerifiedCanonicalArgsRejectsMismatch(t *testing.T) {
+	contradicting := `{"summary":"coste BAJO"}`
+	a := &act.Approval{
+		ArgsHash:      act.HashArgs(`{"summary":"coste alto"}`),
+		CanonicalArgs: &contradicting,
+	}
+	canonical, ok := a.VerifiedCanonicalArgs()
+	require.False(t, ok, "bytes that contradict the hash must be flagged, not served")
+	require.Empty(t, canonical)
+	require.NotNil(t, a.CanonicalArgs, "a contradiction stays distinguishable from an absence")
+
+	absent := &act.Approval{ArgsHash: act.HashArgs(`{"summary":"coste alto"}`)}
+	canonical, ok = absent.VerifiedCanonicalArgs()
+	require.False(t, ok, "nothing stored means nothing can be shown, so it refuses too")
+	require.Empty(t, canonical)
+	require.Nil(t, absent.CanonicalArgs)
+
+	// An empty preimage refuses even with a matching hash: proto3 flattens it to the same empty string as an
+	// absent one, so accepting it here would let the client and the server disagree about whether the approval
+	// can be signed.
+	empty := ""
+	emptyPreimage := &act.Approval{ArgsHash: act.HashArgs(""), CanonicalArgs: &empty}
+	canonical, ok = emptyPreimage.VerifiedCanonicalArgs()
+	require.False(t, ok, "an empty preimage is indistinguishable from none on the wire")
+	require.Empty(t, canonical)
+
+	// A coherent preimage is served.
+	signed := `{"summary":"coste alto"}`
+	verified := &act.Approval{ArgsHash: act.HashArgs(signed), CanonicalArgs: &signed}
+	canonical, ok = verified.VerifiedCanonicalArgs()
+	require.True(t, ok)
+	require.Equal(t, signed, canonical)
+}
+
+// TestRunStoreMigrateAddsCanonicalArgs exercises the startup migration against an agent_approvals table with the
+// PRE-canonical_args shape: the column is added idempotently, rows from the old build are served with no arguments
+// (their preimages were never stored, so there is nothing truthful to backfill), and new approvals written after the
+// migration carry and verify their preimage.
+func TestRunStoreMigrateAddsCanonicalArgs(t *testing.T) {
+	dsn, _ := requirePostgres(t)
+	ctx := t.Context()
+	pool, err := pgxpool.New(ctx, dsn)
+	require.NoError(t, err)
+	t.Cleanup(pool.Close)
+
+	// Recreate agent_runs and agent_approvals exactly as an earlier build's Migrate left them (agent_approvals
+	// without canonical_args), seeded with a run parked on a pending approval.
+	schema := "act_test_" + uuid.New().String()[:8]
+	runs := schema + ".agent_runs"
+	approvals := schema + ".agent_approvals"
+	_, err = pool.Exec(ctx, `CREATE SCHEMA `+schema)
+	require.NoError(t, err)
+	_, err = pool.Exec(ctx, `CREATE TABLE `+runs+` (
+		run_id text PRIMARY KEY,
+		instance_id text NOT NULL,
+		organization_id text,
+		project_id text,
+		agent_name text NOT NULL,
+		spec_hash text NOT NULL DEFAULT '',
+		trigger text NOT NULL DEFAULT '',
+		trigger_ref text NOT NULL DEFAULT '',
+		idempotency_key text NOT NULL DEFAULT '',
+		conversation_id text NOT NULL DEFAULT '',
+		actor_subject text NOT NULL DEFAULT '',
+		actor_service_principal boolean NOT NULL DEFAULT false,
+		status text NOT NULL,
+		error text NOT NULL DEFAULT '',
+		created_on timestamptz NOT NULL DEFAULT now(),
+		updated_on timestamptz NOT NULL DEFAULT now(),
+		started_on timestamptz,
+		finished_on timestamptz
+	)`)
+	require.NoError(t, err)
+	_, err = pool.Exec(ctx, `CREATE TABLE `+approvals+` (
+		approval_id text PRIMARY KEY,
+		run_id text NOT NULL,
+		instance_id text NOT NULL,
+		tool_name text NOT NULL DEFAULT '',
+		connector text NOT NULL DEFAULT '',
+		tool_call_id text NOT NULL DEFAULT '',
+		args_hash text NOT NULL,
+		proposal text NOT NULL DEFAULT '',
+		policy text NOT NULL DEFAULT '',
+		status text NOT NULL,
+		requested_by text NOT NULL DEFAULT '',
+		decided_by text NOT NULL DEFAULT '',
+		created_on timestamptz NOT NULL DEFAULT now(),
+		decided_on timestamptz,
+		position int NOT NULL DEFAULT 0,
+		total int NOT NULL DEFAULT 0
+	)`)
+	require.NoError(t, err)
+
+	const instanceID = "inst-migrate-args"
+	runID := act.ComposeRunID(instanceID, "triage", "k")
+	_, err = pool.Exec(ctx, `INSERT INTO `+runs+` (run_id, instance_id, agent_name, status) VALUES ($1, $2, 'triage', $3)`,
+		runID, instanceID, string(act.RunStatusWaitingApproval))
+	require.NoError(t, err)
+	oldApprovalID := act.ApprovalIDForToolCall(runID, "call-old")
+	_, err = pool.Exec(ctx, `INSERT INTO `+approvals+` (approval_id, run_id, instance_id, tool_name, tool_call_id, args_hash, proposal, status)
+		VALUES ($1, $2, $3, 'jira.create_issue', 'call-old', $4, 'jira.create_issue(summary=coste…)', 'pending')`,
+		oldApprovalID, runID, instanceID, act.HashArgs("preimage that was never stored"))
+	require.NoError(t, err)
+
+	// An intermediate build of this same change shipped the column as NOT NULL DEFAULT '', which ADD COLUMN IF NOT
+	// EXISTS would leave untouched: its rows would then read back as an empty preimage (a hash contradiction)
+	// rather than as the absence they are. Reproduce that shape so the migration has to converge it.
+	_, err = pool.Exec(ctx, `ALTER TABLE `+approvals+` ADD COLUMN canonical_args text NOT NULL DEFAULT ''`)
+	require.NoError(t, err)
+
+	store, err := act.NewPostgresRunStore(ctx, act.StoreConfig{DatabaseURL: dsn, Schema: schema})
+	require.NoError(t, err)
+	t.Cleanup(func() { store.DropSchemaForTest(ctx); store.Close() })
+	require.NoError(t, store.Migrate(ctx))
+	require.NoError(t, store.Migrate(ctx), "the migration runs on every startup, so it must be re-runnable")
+
+	// The column converged to nullable, and the intermediate build's empty strings became the NULLs they always
+	// meant. Without this the row would be diagnosed as corruption instead of as a row that predates the preimage.
+	var notNull bool
+	var colDefault *string
+	require.NoError(t, pool.QueryRow(ctx, `SELECT attnotnull, pg_get_expr(d.adbin, d.adrelid)
+		FROM pg_attribute a LEFT JOIN pg_attrdef d ON d.adrelid = a.attrelid AND d.adnum = a.attnum
+		WHERE a.attrelid = $1::regclass AND a.attname = 'canonical_args'`, approvals).Scan(&notNull, &colDefault))
+	require.False(t, notNull, "the column must end up nullable whatever shape it started from")
+	require.Nil(t, colDefault, "and without the empty-string default")
+
+	// The pre-migration row survives and is still readable, but its preimage is NULL rather than an empty string:
+	// the column is nullable exactly so this row cannot be mistaken for one whose signed bytes happen to be empty.
+	// It refuses verification, which is what makes the API refuse to approve it (it can only be denied).
+	old, err := store.GetApproval(ctx, instanceID, oldApprovalID)
+	require.NoError(t, err)
+	require.Nil(t, old.CanonicalArgs, "an old row stored no preimage; NULL is how that stays distinguishable")
+	canonical, ok := old.VerifiedCanonicalArgs()
+	require.False(t, ok, "nothing to show means nothing can be signed")
+	require.Empty(t, canonical)
+
+	// A post-migration approval round-trips its preimage through the migrated table.
+	wantBytes, err := act.CanonicalizeArgs(map[string]any{"summary": "coste alto"})
+	require.NoError(t, err)
+	newApprovalID := act.ApprovalIDForToolCall(runID, "call-new")
+	require.NoError(t, store.CreateApproval(ctx, act.NewApproval{
+		ApprovalID:    newApprovalID,
+		RunID:         runID,
+		InstanceID:    instanceID,
+		ToolName:      "jira.create_issue",
+		ToolCallID:    "call-new",
+		ArgsHash:      act.HashArgs(string(wantBytes)),
+		CanonicalArgs: string(wantBytes),
+		Proposal:      "jira.create_issue(summary=coste alto)",
+		RequestedBy:   "user:alice",
+	}))
+	created, err := store.GetApproval(ctx, instanceID, newApprovalID)
+	require.NoError(t, err)
+	canonical, ok = created.VerifiedCanonicalArgs()
+	require.True(t, ok)
+	require.Equal(t, string(wantBytes), canonical)
+	require.Equal(t, created.ArgsHash, act.HashArgs(canonical))
 }

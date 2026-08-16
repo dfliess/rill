@@ -434,6 +434,29 @@ export class AgentApproval extends Message<AgentApproval> {
    */
   canDecide = false;
 
+  /**
+   * canonical_args is the exact byte preimage of args_hash: the canonical JSON of the proposed tool arguments,
+   * byte-for-byte as it was hashed. It is a string, not a Struct, deliberately — a Struct would be re-serialized
+   * on the way out and would stop being the preimage, which is the whole point: what the approver reviews must be
+   * demonstrably what their decision's args_hash binds to. The server verifies the bytes against args_hash before
+   * serving them and omits them on a mismatch; the field is also empty for approvals recorded before the
+   * arguments were persisted, and the UI degrades to the one-line proposal then.
+   *
+   * @generated from field: string canonical_args = 19;
+   */
+  canonicalArgs = "";
+
+  /**
+   * canonical_args_is_json says whether canonical_args is exactly json.Marshal's output for the object it encodes,
+   * which a renderer needs in order to display it without ambiguity: inside JSON a literal backslash is already
+   * doubled, so escape sequences are unambiguous as they are, while in free-form text the renderer has to double
+   * them itself or a literal "\u200C" and a real zero-width non-joiner look the same on screen. The server derives
+   * this by re-canonicalizing and comparing, never by trusting where the bytes came from.
+   *
+   * @generated from field: bool canonical_args_is_json = 20;
+   */
+  canonicalArgsIsJson = false;
+
   constructor(data?: PartialMessage<AgentApproval>) {
     super();
     proto3.util.initPartial(data, this);
@@ -459,6 +482,8 @@ export class AgentApproval extends Message<AgentApproval> {
     { no: 16, name: "position", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
     { no: 17, name: "total", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
     { no: 18, name: "can_decide", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 19, name: "canonical_args", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 20, name: "canonical_args_is_json", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): AgentApproval {
