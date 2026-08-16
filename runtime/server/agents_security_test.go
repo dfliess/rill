@@ -344,7 +344,7 @@ func TestAgentSecurityApprovalByGroup(t *testing.T) {
 		approvalID := act.ApprovalIDForRun(runID)
 		require.NoError(t, store.CreateApproval(context.Background(), act.NewApproval{
 			ApprovalID: approvalID, RunID: runID, InstanceID: instanceID,
-			ToolName: "create_crm_task", Connector: "crm", ArgsHash: act.HashArgs(proposal), Proposal: proposal,
+			ToolName: "create_crm_task", Connector: "crm", ArgsHash: act.HashArgs(proposal), CanonicalArgs: proposal, Proposal: proposal,
 			RequestedBy: "usr_marta",
 		}))
 		return approvalID
@@ -431,7 +431,7 @@ func TestAgentApprovalDeniedToInheritedAdminAttribute(t *testing.T) {
 	require.NoError(t, store.CreateApproval(context.Background(), act.NewApproval{
 		ApprovalID: approvalID, RunID: start.RunId, InstanceID: instanceID,
 		ToolName: "mcp.crm.create_crm_task", Connector: "crm",
-		ArgsHash: act.HashArgs("crear tarea"), Proposal: "crear tarea", RequestedBy: "usr_marta",
+		ArgsHash: act.HashArgs("crear tarea"), CanonicalArgs: "crear tarea", Proposal: "crear tarea", RequestedBy: "usr_marta",
 	}))
 
 	// The token does reach the approval, because access is open. That is the point: the denial has to come
@@ -457,6 +457,62 @@ func TestAgentApprovalDeniedToInheritedAdminAttribute(t *testing.T) {
 	require.Equal(t, act.ApprovalStatusApproved, approve.Approval.Status)
 }
 
+// TestAgentApprovalRefusedWithoutAVerifiedPreimage pins the guarantee where it has to live: in the server.
+// Showing the approver the exact arguments is a client behaviour, and a guarantee that depends on the client
+// behaving is not a guarantee — the hash check alone only proves the caller echoed a hash back, never that a
+// human saw what it covers. So when there is no verified preimage there is nothing that could have been shown,
+// and approving is refused.
+//
+// Both states are reproduced: a row from before the column existed, and one whose bytes were corrupted after the
+// fact. Denying stays open in both, so an approval that cannot be signed can still be closed and re-proposed.
+func TestAgentApprovalRefusedWithoutAVerifiedPreimage(t *testing.T) {
+	srv, store, exec, instanceID := newActSecurityServer(t)
+	ctx := userCtx("usr_admin", []any{}, true, runtime.EditTrigger)
+
+	seed := func(key string) string {
+		t.Helper()
+		start, err := srv.StartAgentRun(ctx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "abierta", IdempotencyKey: key})
+		require.NoError(t, err)
+		approvalID := act.ApprovalIDForRun(start.RunId)
+		require.NoError(t, store.CreateApproval(context.Background(), act.NewApproval{
+			ApprovalID: approvalID, RunID: start.RunId, InstanceID: instanceID,
+			ToolName: "mcp.crm.create_crm_task", Connector: "crm",
+			ArgsHash: act.HashArgs("crear tarea"), CanonicalArgs: "crear tarea", Proposal: "crear tarea",
+			RequestedBy: "usr_admin",
+		}))
+		return approvalID
+	}
+
+	// A row recorded before the preimage was persisted: its bytes were never stored and cannot be recovered.
+	preMigration := seed("k-old")
+	require.NoError(t, store.ClobberCanonicalArgsForTest(context.Background(), instanceID, preMigration, nil))
+	_, err := srv.ApproveAgentApproval(ctx, &runtimev1.ApproveAgentApprovalRequest{
+		InstanceId: instanceID, ApprovalId: preMigration, ArgsHash: act.HashArgs("crear tarea"),
+	})
+	require.Equal(t, codes.FailedPrecondition, status.Code(err))
+	require.Contains(t, status.Convert(err).Message(), "deny it", "the error has to tell the operator what their way out is")
+	require.Empty(t, exec.resumeCalls(), "a refused approval never reaches the executor")
+
+	// Denying it is still allowed, so the run is not stranded: the agent can propose the action again.
+	deny, err := srv.DenyAgentApproval(ctx, &runtimev1.DenyAgentApprovalRequest{InstanceId: instanceID, ApprovalId: preMigration})
+	require.NoError(t, err)
+	require.Equal(t, act.ApprovalStatusDenied, deny.Approval.Status)
+
+	// Bytes that contradict the hash: the same refusal, reached the other way.
+	corrupted := seed("k-corrupt")
+	other := "crear OTRA tarea"
+	require.NoError(t, store.ClobberCanonicalArgsForTest(context.Background(), instanceID, corrupted, &other))
+	_, err = srv.ApproveAgentApproval(ctx, &runtimev1.ApproveAgentApprovalRequest{
+		InstanceId: instanceID, ApprovalId: corrupted, ArgsHash: act.HashArgs("crear tarea"),
+	})
+	require.Equal(t, codes.FailedPrecondition, status.Code(err))
+
+	// And the corrupted bytes are never served as the signed material either.
+	got, err := srv.GetAgentApproval(ctx, &runtimev1.GetAgentApprovalRequest{InstanceId: instanceID, ApprovalId: corrupted})
+	require.NoError(t, err)
+	require.Empty(t, got.Approval.CanonicalArgs, "bytes that contradict the hash are omitted, not shown")
+}
+
 // TestAgentApprovalCanDecidePerAction covers the issue #135 example that makes approval authority a property
 // of one approval, not of the agent: direccion signs everything, and Ana additionally signs refunds. Ana's
 // clause only matches a concrete action, so a per-agent bit would hide her buttons; the per-approval
@@ -473,7 +529,7 @@ func TestAgentApprovalCanDecidePerAction(t *testing.T) {
 		approvalID := act.ApprovalIDForRun(runID)
 		require.NoError(t, store.CreateApproval(context.Background(), act.NewApproval{
 			ApprovalID: approvalID, RunID: runID, InstanceID: instanceID,
-			ToolName: tool, Connector: "erp", ArgsHash: act.HashArgs(proposal), Proposal: proposal,
+			ToolName: tool, Connector: "erp", ArgsHash: act.HashArgs(proposal), CanonicalArgs: proposal, Proposal: proposal,
 			RequestedBy: "usr_marta",
 		}))
 		return approvalID

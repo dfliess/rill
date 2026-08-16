@@ -532,7 +532,7 @@ func (s *Server) ListAgentApprovals(ctx context.Context, req *runtimev1.ListAgen
 		if err != nil {
 			return nil, err
 		}
-		pbs[i] = approvalToPB(a, canDecide)
+		pbs[i] = s.approvalToPB(a, canDecide)
 	}
 	return &runtimev1.ListAgentApprovalsResponse{Approvals: pbs}, nil
 }
@@ -572,7 +572,7 @@ func (s *Server) GetAgentApproval(ctx context.Context, req *runtimev1.GetAgentAp
 	if err != nil {
 		return nil, err
 	}
-	return &runtimev1.GetAgentApprovalResponse{Approval: approvalToPB(approval, canDecide)}, nil
+	return &runtimev1.GetAgentApprovalResponse{Approval: s.approvalToPB(approval, canDecide)}, nil
 }
 
 // resolveApprovalDecision evaluates whether the caller may decide the given approval, with its concrete
@@ -690,13 +690,31 @@ func (s *Server) ApproveAgentApproval(ctx context.Context, req *runtimev1.Approv
 	if req.ArgsHash != approval.ArgsHash {
 		return nil, status.Error(codes.FailedPrecondition, "args_hash does not match the proposed action; the proposal changed and must be re-reviewed")
 	}
+	// Refuse to sign what cannot be shown. The hash check above only proves the client echoed a hash back; it says
+	// nothing about whether a human ever saw the arguments it covers. Without a verified preimage there is nothing
+	// the UI could have displayed, so an approval here would be exactly the blind signature this whole path exists
+	// to prevent — and enforcing it only in the client would leave the guarantee to whoever calls the API.
+	//
+	// Denying and cancelling stay open on purpose: an approval that cannot be signed must still be closable, so a
+	// pre-migration or corrupted one is denied and the agent proposes again, this time with its preimage recorded.
+	if _, ok := approval.VerifiedCanonicalArgs(); !ok {
+		if approval.CanonicalArgs != nil {
+			s.logger.Error("agent approval canonical args do not hash to the stored args_hash; refusing to approve",
+				zap.String("instance_id", approval.InstanceID),
+				zap.String("approval_id", approval.ApprovalID),
+				zap.String("args_hash", approval.ArgsHash),
+			)
+		}
+		return nil, status.Error(codes.FailedPrecondition,
+			"this approval has no verified copy of the arguments it covers, so it cannot be approved without signing unseen arguments; deny it and let the agent propose the action again")
+	}
 
 	resolved, err := s.claimAndResume(ctx, approval, act.ApprovalApproved, act.ApprovalStatusApproved, claims.UserID)
 	if err != nil {
 		return nil, err
 	}
 	// The caller just decided it, so their can_decide is true by construction.
-	return &runtimev1.ApproveAgentApprovalResponse{Approval: approvalToPB(resolved, true)}, nil
+	return &runtimev1.ApproveAgentApprovalResponse{Approval: s.approvalToPB(resolved, true)}, nil
 }
 
 // claimAndResume delivers an approval decision to its run durably, in an order that is both double-submit safe and
@@ -713,10 +731,12 @@ func (s *Server) ApproveAgentApproval(ctx context.Context, req *runtimev1.Approv
 // could never deliver the resume and the run would hang forever. We close that gap by making a retry that finds
 // the approval already resolved to the SAME decision re-deliver the Send (idempotent, thanks to the single Recv)
 // instead of failing. A retry carrying a DIFFERENT decision is rejected: the first recorded decision stands.
-// TODO(act, phase 1): recovery from a crash-between-claim-and-Send relies on an EXTERNAL retry arriving before the
-// run's approval timeout; no reconciler completes a claimed-but-unsent decision on its own. A durable resume outbox
-// (claim and enqueue the Send in one transaction, drained by a background worker) would make it self-healing. Same
-// class as known limit #2 (the trigger outbox).
+// TODO(act, phase 1): recovery from a crash-between-claim-and-Send relies on an EXTERNAL retry; no reconciler
+// completes a claimed-but-unsent decision on its own. There is no deadline pressing on that retry — approval
+// timeouts were removed and the workflow's Recv waits indefinitely — so the run parks rather than failing, but it
+// parks with the decision already recorded and nothing scheduled to deliver it. A durable resume outbox (claim and
+// enqueue the Send in one transaction, drained by a background worker) would make it self-healing. Same class as
+// known limit #2 (the trigger outbox).
 func (s *Server) claimAndResume(ctx context.Context, approval *act.Approval, decision act.ApprovalDecision, storeStatus, decidedBy string) (*act.Approval, error) {
 	var resolved *act.Approval
 	switch approval.Status {
@@ -772,7 +792,7 @@ func (s *Server) DenyAgentApproval(ctx context.Context, req *runtimev1.DenyAgent
 		return nil, err
 	}
 	// The caller just decided it, so their can_decide is true by construction.
-	return &runtimev1.DenyAgentApprovalResponse{Approval: approvalToPB(resolved, true)}, nil
+	return &runtimev1.DenyAgentApprovalResponse{Approval: s.approvalToPB(resolved, true)}, nil
 }
 
 // StreamAgentRunEvents streams a run's lifecycle events in order, resuming after req.AfterId, until the run reaches a
@@ -1010,25 +1030,44 @@ func runEventToPB(e *act.RunEvent) *runtimev1.AgentRunEvent {
 	return pb
 }
 
-func approvalToPB(a *act.Approval, canDecide bool) *runtimev1.AgentApproval {
+func (s *Server) approvalToPB(a *act.Approval, canDecide bool) *runtimev1.AgentApproval {
+	// Serve the stored argument bytes only when they still hash to the approval's args_hash: the UI presents them
+	// as "what you are signing", so bytes that contradict the hash (corruption, or a bug in how they were captured)
+	// must never be shown as the signed material — that would be worse than showing nothing. The mismatch case
+	// degrades to the pre-migration presentation (no arguments, one-line proposal) and is logged loudly, because a
+	// row that fails this check means the store's write path broke the invariant and needs a human.
+	canonicalArgs, ok := a.VerifiedCanonicalArgs()
+	if !ok && a.CanonicalArgs != nil {
+		// Stored bytes that contradict the hash are an incident, not a degradation: the write path broke the
+		// invariant. A row that simply predates the column (nil) is expected and stays quiet.
+		s.logger.Error("agent approval canonical args do not hash to the stored args_hash; omitting them from the API",
+			zap.String("instance_id", a.InstanceID),
+			zap.String("approval_id", a.ApprovalID),
+			zap.String("args_hash", a.ArgsHash),
+		)
+	}
 	return &runtimev1.AgentApproval{
-		ApprovalId:  a.ApprovalID,
-		RunId:       a.RunID,
-		InstanceId:  a.InstanceID,
-		ToolName:    a.ToolName,
-		Connector:   a.Connector,
-		ToolCallId:  a.ToolCallID,
-		ArgsHash:    a.ArgsHash,
-		Proposal:    a.Proposal,
-		Policy:      a.Policy,
-		Status:      a.Status,
-		RequestedBy: a.RequestedBy,
-		DecidedBy:   a.DecidedBy,
-		CreatedOn:   timestamppb.New(a.CreatedOn),
-		DecidedOn:   tsToPB(a.DecidedOn),
-		Position:    int32(a.Position),
-		Total:       int32(a.Total),
-		CanDecide:   canDecide,
+		ApprovalId:    a.ApprovalID,
+		RunId:         a.RunID,
+		InstanceId:    a.InstanceID,
+		ToolName:      a.ToolName,
+		Connector:     a.Connector,
+		ToolCallId:    a.ToolCallID,
+		ArgsHash:      a.ArgsHash,
+		CanonicalArgs: canonicalArgs,
+		// Derived, not assumed: only json.Marshal produces this exact form, so a round-trip that reproduces the
+		// bytes IS the proof that the renderer may rely on JSON's own backslash doubling.
+		CanonicalArgsIsJson: act.IsCanonicalJSON(canonicalArgs),
+		Proposal:            a.Proposal,
+		Policy:              a.Policy,
+		Status:              a.Status,
+		RequestedBy:         a.RequestedBy,
+		DecidedBy:           a.DecidedBy,
+		CreatedOn:           timestamppb.New(a.CreatedOn),
+		DecidedOn:           tsToPB(a.DecidedOn),
+		Position:            int32(a.Position),
+		Total:               int32(a.Total),
+		CanDecide:           canDecide,
 	}
 }
 
