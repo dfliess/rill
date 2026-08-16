@@ -11,7 +11,7 @@
   import { runDetailPath } from "../run-id";
   import { useAgents } from "../selectors";
   import type { AgentApprovalData, AgentRunData } from "../types";
-  import { agentTriggerLabel, formatDateTime } from "../utils";
+  import { agentTriggerLabel, escapeInline, formatDateTime } from "../utils";
   import AgentRunStatusChip from "./AgentRunStatusChip.svelte";
 
   let {
@@ -79,11 +79,13 @@
   <ul class="flex flex-col rounded-lg border divide-y overflow-hidden">
     {#each data as run (run.runId)}
       {@const approvals = approvalsByRun.get(run.runId ?? "") ?? []}
-      {@const approval = approvals[0]}
       <!-- can_decide is per approval (authority can discriminate by tool), so the
            inline buttons act on the first approval this caller may decide, which
-           is not necessarily the first of the batch. -->
+           is not necessarily the first of the batch. The row therefore NAMES the
+           one it can act on: naming the first of the batch while denying another
+           would record a human decision about a proposal the human never saw. -->
       {@const decidable = approvals.find((a) => !!a.canDecide)}
+      {@const approval = decidable ?? approvals[0]}
       {@const started = startedLabel(run)}
       <li>
         <div
@@ -92,6 +94,12 @@
           tabindex="0"
           onclick={(e) => onCardClick(e, run)}
           onkeydown={(e) => {
+            // Only when the row itself has focus. Without this the handler also
+            // fires for Enter and Space bubbling up from the inline controls,
+            // navigating to the run AND preventing the button's own activation:
+            // with the focus on Deny, the keyboard would silently open the run
+            // instead of the confirmation dialog.
+            if (e.target !== e.currentTarget) return;
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
               openRun(run);
@@ -123,10 +131,10 @@
                        what identifies the row, and the full tool name is one
                        tap away in the run detail. -->
                   <span
-                    class="font-mono text-xs text-fg-secondary truncate min-w-0 max-w-[16rem] shrink-[4]"
+                    class="font-mono text-xs text-fg-secondary truncate min-w-0 max-w-[16rem] shrink-[4] whitespace-pre"
                     title={m.agents_approval_proposed_action()}
                   >
-                    {approval.toolName}
+                    {escapeInline(approval.toolName)}
                   </span>
                   {#if approvals.length > 1}
                     <span
@@ -157,10 +165,15 @@
 
           <div class="flex items-center gap-x-2 shrink-0 ml-auto">
             {#if decidable}
+              <!-- onReview: this row shows the agent and the tool, never the
+                   arguments, so approving from here would be signing something
+                   unread. The primary button opens the run, where the approval
+                   card shows the signed arguments. -->
               <ApproveDenyButtons
                 approvalId={decidable.approvalId ?? ""}
                 argsHash={decidable.argsHash ?? ""}
                 runId={run.runId ?? ""}
+                onReview={() => openRun(run)}
               />
             {/if}
             {#if run.conversationId}

@@ -568,11 +568,14 @@ func proposedSummary(rt mcpconn.RemoteTool, args map[string]any) string {
 	return b.String()
 }
 
-// truncateArgValue renders one argument value compactly for a proposal summary, capping long strings so the summary
-// stays a single readable line.
+// truncateArgValue renders one argument value compactly for a proposal summary, capping long values so the summary
+// stays a single readable line in the inbox. The cap is per value, not per summary: 120 bytes is enough for a
+// realistic title, email subject or URL to survive intact, while a body-sized value is visibly cut (the appended
+// ellipsis marks it). The summary is only the inbox one-liner; the exact, complete arguments the approver signs are
+// persisted separately as the approval's canonical args.
 func truncateArgValue(v any) string {
 	s := fmt.Sprintf("%v", v)
-	const maxLen = 40
+	const maxLen = 120
 	if len(s) > maxLen {
 		return truncateUTF8(s, maxLen) + "…"
 	}
