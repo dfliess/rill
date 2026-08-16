@@ -317,6 +317,15 @@ func timeoutSelector(fullMethodName string) time.Duration {
 		return time.Minute * 30
 	}
 
+	// A run's event stream is a watch like the three above, and it is at its most useful precisely when it has nothing
+	// to send: a run parked on a human approval emits no events for as long as the decision takes. Under the 30s
+	// default the interceptor killed it mid-wait, and the timeline showed "live events unavailable: context deadline
+	// exceeded" on exactly the runs someone was watching. The client resumes with after_id, so the eventual cutoff
+	// costs nothing.
+	if fullMethodName == runtimev1.AgentService_StreamAgentRunEvents_FullMethodName {
+		return time.Minute * 30
+	}
+
 	if fullMethodName == runtimev1.RuntimeService_Complete_FullMethodName || fullMethodName == runtimev1.RuntimeService_CompleteStreaming_FullMethodName {
 		return time.Minute * 59 // Hard cap. Actual timeout is configured using config variable rill.ai.completion_timeout_seconds.
 	}
