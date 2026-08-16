@@ -39,4 +39,6 @@ For more information about using Git or cloning projects locally, please see our
 - [API YAML](apis.md)
 - [Theme YAML](themes.md)
 - [Component YAML](component.md)
+- [Agent YAML](agents.md)
+- [Agent Trigger YAML](agent-triggers.md)
 - [Project YAML](rill-yaml.md)

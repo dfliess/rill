@@ -20,9 +20,12 @@ type AgentYAML struct {
 		Connector string `yaml:"connector"`
 		Name      string `yaml:"name"`
 	} `yaml:"model"`
-	Instructions string   `yaml:"instructions"`
-	Tools        []string `yaml:"tools"`
-	Limits       struct {
+	Instructions string `yaml:"instructions"`
+	// Prompt is the user turn sent when a run is started without one, for an agent launched by hand rather than
+	// by a trigger. Optional: an agent that declares triggers already has their prompts to fall back on.
+	Prompt string   `yaml:"prompt"`
+	Tools  []string `yaml:"tools"`
+	Limits struct {
 		MaxSteps uint32 `yaml:"max_steps"`
 		Timeout  string `yaml:"timeout"`
 	} `yaml:"limits"`
@@ -180,6 +183,7 @@ func (p *Parser) parseAgent(node *Node) error {
 	r.AgentSpec.ModelConnector = tmp.Model.Connector
 	r.AgentSpec.ModelName = tmp.Model.Name
 	r.AgentSpec.Instructions = tmp.Instructions
+	r.AgentSpec.Prompt = tmp.Prompt
 	r.AgentSpec.Tools = tmp.Tools
 	if tmp.Limits.MaxSteps != 0 || timeoutSeconds != 0 {
 		r.AgentSpec.Limits = &runtimev1.AgentLimits{
