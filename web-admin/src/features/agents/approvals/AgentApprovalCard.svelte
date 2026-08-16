@@ -48,6 +48,12 @@
   // shown as the block it is: decomposing it would drop the very characters that
   // tell it apart from its canonical twin.
   let structured = $derived(!!approval.canonicalArgsIsJson && args.structured);
+  // Exact mode renders every non-ASCII code point as an escape. Unreadable on
+  // purpose: the surgical escapes cover the tricks worth naming, but two strings
+  // drawing the same glyphs is a property of fonts, not a list this code can
+  // finish (Cyrillic "а" beside Latin "a" needs no trick at all). This gives
+  // certainty on demand without imposing it on everyone who just wants to read.
+  let exact = $state(false);
   let shownRaw = $derived(
     exact
       ? escapeToAscii(args.raw)
@@ -67,14 +73,7 @@
   const COLLAPSE_THRESHOLD = 1200;
   const VALUE_COLLAPSE_THRESHOLD = 400;
   let collapsible = $derived(args.raw.length > COLLAPSE_THRESHOLD);
-  let expanded = $state(false);
 
-  // Exact mode renders every non-ASCII code point as an escape. Unreadable on
-  // purpose: the surgical escapes cover the tricks worth naming, but two strings
-  // drawing the same glyphs is a property of fonts, not a list this code can
-  // finish (Cyrillic "а" beside Latin "a" needs no trick at all). This gives
-  // certainty on demand without imposing it on everyone who just wants to read.
-  let exact = $state(false);
   // Rendered from the SOURCE text, not from the already-escaped form: escaping
   // an escape doubles its backslashes and turns a faithful rendering into a
   // puzzle.
@@ -85,25 +84,13 @@
     exact ? escapeToAscii(e.valueSource) : e.value,
   );
 
-  let expandedValues = $state<Record<number, boolean>>({});
-  function toggleValue(idx: number) {
-    expandedValues[idx] = !expandedValues[idx];
-  }
-
-  // Anything still clipped is something the approver has not been shown. Two
-  // values that differ only past the cut render identically, so signing while a
-  // fragment is folded is signing on a prefix. Approve stays disabled until
-  // every clipped fragment has been opened; Deny never does, because refusing
-  // what you could not read is always a sound answer.
-  let hasHiddenText = $derived(
-    (structured &&
-      args.entries.some(
-        (e, idx) =>
-          showValue(e).length > VALUE_COLLAPSE_THRESHOLD &&
-          !expandedValues[idx],
-      )) ||
-      (!structured && collapsible && !expanded),
-  );
+  // A long value scrolls inside its own box rather than being clipped behind a
+  // "show all" click. An earlier version withheld Approve until every folded
+  // fragment had been opened, on the reasoning that signing a prefix is not
+  // signing the value. That gate bought nothing: it forced a click, and a click
+  // is not reading. What it did cost was real, on every single approval. So the
+  // text is simply all there, reachable by scrolling like any other text, and
+  // the decision is the approver's to make.
 </script>
 
 <!-- A pending approval is a call to action (amber, with the decision buttons); a
@@ -195,11 +182,6 @@
             : m.agents_approval_args_exact_on()}
         </button>
       {/if}
-      {#if hasHiddenText}
-        <span class="text-xs text-amber-700 dark:text-amber-400">
-          {m.agents_approval_args_expand_to_approve()}
-        </span>
-      {/if}
     </div>
 
     {#if args.raw === ""}
@@ -239,7 +221,6 @@
         <dl class="rounded border bg-surface-card divide-y">
           {#each args.entries as entry, idx (idx)}
             {@const long = showValue(entry).length > VALUE_COLLAPSE_THRESHOLD}
-            {@const open = !!expandedValues[idx]}
             <div class="flex flex-col gap-y-1 px-3 py-2 min-w-0">
               <dt
                 class="font-mono text-xs text-fg-muted whitespace-pre-wrap break-words"
@@ -252,12 +233,13 @@
                   {showKey(entry)}
                 {/if}
               </dt>
-              <!-- max-h and overflow-hidden must sit on the SAME element: a
-                   capped height without the clip lets a long value paint over
-                   the rows below it, which is worse than not collapsing. -->
+              <!-- A long value gets its own scrollbox: the whole value is in the
+                   page, nothing is behind a click, and a fat `body` still cannot
+                   push the other arguments off screen. -->
               <div
-                class="relative overflow-hidden"
-                class:max-h-32={long && !open}
+                class="relative"
+                class:max-h-64={long}
+                class:overflow-y-auto={long}
               >
                 <dd
                   class="font-mono text-xs text-fg-primary whitespace-pre-wrap break-words"
@@ -276,23 +258,7 @@
                     </dd>
                   </div>
                 {/if}
-                {#if long && !open}
-                  <div
-                    class="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-surface-card to-transparent"
-                  ></div>
-                {/if}
               </div>
-              {#if long}
-                <button
-                  type="button"
-                  class="text-xs text-primary-600 self-start"
-                  onclick={() => toggleValue(idx)}
-                >
-                  {open
-                    ? m.agents_approval_collapse()
-                    : m.agents_approval_show_all()}
-                </button>
-              {/if}
             </div>
           {/each}
         </dl>
@@ -303,28 +269,13 @@
              material. It is one opaque value, so collapsing it hides no
              argument's existence. -->
         <div
-          class="relative rounded border bg-surface-card overflow-hidden"
-          class:max-h-56={collapsible && !expanded}
+          class="relative rounded border bg-surface-card"
+          class:max-h-96={collapsible}
+          class:overflow-y-auto={collapsible}
         >
           <pre
             class="font-mono text-xs text-fg-primary whitespace-pre-wrap break-words p-3 overflow-x-auto">{shownRaw}</pre>
-          {#if collapsible && !expanded}
-            <div
-              class="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-surface-card to-transparent"
-            ></div>
-          {/if}
         </div>
-        {#if collapsible}
-          <button
-            type="button"
-            class="text-xs text-primary-600 self-start"
-            onclick={() => (expanded = !expanded)}
-          >
-            {expanded
-              ? m.agents_approval_collapse()
-              : m.agents_approval_show_all()}
-          </button>
-        {/if}
       {/if}
 
       <!-- The raw signed bytes and their hash, always reachable whenever a
@@ -358,11 +309,13 @@
        reading order and the decision order the same one. -->
   <!-- Without a verified preimage there is nothing to show, so the server refuses
        to approve (only to deny). Offering the button anyway would be a dead end:
-       hide it and leave the way out. -->
+       hide it and leave the way out. That is the ONLY reason Approve is withheld:
+       not that the approver has not clicked enough, but that there is genuinely
+       nothing for them to read. -->
   {#if pending && canDecide}
     <div class="flex justify-end border-t pt-3">
       <ApproveDenyButtons
-        denyOnly={args.raw === "" || hasHiddenText}
+        denyOnly={args.raw === ""}
         approvalId={approval.approvalId ?? ""}
         argsHash={approval.argsHash ?? ""}
         runId={approval.runId ?? ""}
