@@ -300,15 +300,17 @@ func TestExecutorRecoversApprovalWaitAfterCrash(t *testing.T) {
 // fresh worker must recover the run and finish it once approved.
 //
 // This is the case that used to be lost. A graceful dbos.Shutdown cancels the parked workflow's context and the
-// approval Recv returns context.Canceled; returning that error told DBOS the run was unrecoverable, so it was written
-// off as ERROR and recovery (which only re-runs PENDING workflows) never picked it up again. parkIfShuttingDown now
-// makes the workflow return nothing at all on a shutdown, leaving the row PENDING for the next process to recover.
+// approval Recv returns context.Canceled; until DBOS v1.1 returning that error told the engine the run was
+// unrecoverable, so every unsigned approval was written off as ERROR and recovery (which only re-runs PENDING
+// workflows) never picked it up again. Since v1.1 the shutdown cancellation carries its own cause and a run unwinding
+// under it skips the outcome write, so the row keeps its PENDING (upstream #423).
 //
-// It guards the whole chain, not just that decision: the row survives the drain, recovery replays the checkpointed
-// steps instead of re-running them, the re-entered Recv accepts a decision delivered afterwards, and the run finishes
-// with its action performed. Its sibling TestExecutorRecoversApprovalWaitAfterCrash is the same assertion for a hard
-// kill, which always worked, and the pair is what distinguishes "recovery is configured right" from "we stopped
-// telling DBOS the run had failed".
+// That is what makes this test worth keeping rather than deleting with the workaround it once guarded: the behaviour
+// it asserts now lives in a dependency, so this is where an upgrade that regressed it would be caught. It covers the
+// whole chain, not one decision: the row survives the drain, recovery replays the checkpointed steps instead of
+// re-running them, the re-entered Recv accepts a decision delivered afterwards, and the run finishes with its action
+// performed. Its sibling TestExecutorRecoversApprovalWaitAfterCrash is the same assertion for a hard kill, which
+// always worked; the pair separates "recovery is configured right" from "the shutdown path preserves the run".
 func TestExecutorRecoversApprovalWaitAfterGracefulShutdown(t *testing.T) {
 	dsn, schema := requirePostgres(t)
 
