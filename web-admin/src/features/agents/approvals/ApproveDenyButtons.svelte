@@ -31,7 +31,30 @@
     // changed underneath them.
     argsHash,
     runId,
-  }: { approvalId: string; argsHash: string; runId: string } = $props();
+    onReview,
+    denyOnly,
+  }: {
+    approvalId: string;
+    argsHash: string;
+    runId: string;
+    /**
+     * Supplied by surfaces that do NOT show the action's arguments (the runs
+     * list). There, approving would be signing unread arguments however sound
+     * the server-side binding is, so the primary button sends the reviewer to
+     * the detail instead of deciding in place.
+     *
+     * Denying stays available either way, and that asymmetry is the point:
+     * saying yes requires having seen what you are authorizing, saying no does
+     * not. A denial executes nothing, and making it harder would only push
+     * people toward the approve button.
+     */
+    onReview?: () => void;
+    /**
+     * Set when the approval has no verified preimage: the server refuses to
+     * approve it (nothing could have been shown), so only the way out is left.
+     */
+    denyOnly?: boolean;
+  } = $props();
 
   const runtimeClient = useRuntimeClient();
   const queryClient = useQueryClient();
@@ -133,9 +156,15 @@
 </script>
 
 <div class="flex gap-x-2">
-  <Button type="primary" disabled={pending} onClick={handleApprove}>
-    {m.agents_approval_approve()}
-  </Button>
+  {#if onReview && !denyOnly}
+    <Button type="primary" disabled={pending} onClick={onReview}>
+      {m.agents_approval_review()}
+    </Button>
+  {:else if !denyOnly}
+    <Button type="primary" disabled={pending} onClick={handleApprove}>
+      {m.agents_approval_approve()}
+    </Button>
+  {/if}
   <Button
     type="secondary"
     disabled={pending}
