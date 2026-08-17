@@ -149,13 +149,25 @@ describe("parseCanonicalArgs", () => {
     expect(parsed.entries.map((e) => e.value)).toEqual(["1", "2", "3"]);
   });
 
-  it("keeps an escaped string signed-verbatim and offers the decoding beside it", () => {
+  it("decodes escapes that hide nothing instead of showing the text twice", () => {
     const parsed = parseCanonicalArgs('{"name":"Jos\\u00e9","city":"París"}');
-    // The escaped one carries both: the signed text and, as a reading aid, its
-    // decoding. The already-literal one needs no aid, so it gets none.
+    // `José` has nothing to hide — no invisible character, no deceiving
+    // composition — so its escape was notation and the decoded form IS the
+    // value. No second line: the reader would only be comparing one text with
+    // itself. The already-literal one reads the same way, as it always did.
     expect(parsed.entries.map(shown)).toEqual([
-      { key: "name", value: '"Jos\\u00e9"', readable: "José" },
+      { key: "name", value: '"José"' },
       { key: "city", value: '"París"' },
+    ]);
+  });
+
+  it("decodes a multi-line body rather than stacking \\n above its paragraphs", () => {
+    // The case that made this rule necessary: an alert body arrives as a single
+    // JSON string, and rendering the signed escapes on top of their own decoding
+    // buried the decision under two copies of the same paragraphs.
+    const parsed = parseCanonicalArgs('{"details":"Uno.\\n\\nDos."}');
+    expect(parsed.entries.map(shown)).toEqual([
+      { key: "details", value: '"Uno.\n\nDos."' },
     ]);
   });
 
@@ -165,11 +177,7 @@ describe("parseCanonicalArgs", () => {
     expect(parsed.structured).toBe(true);
     expect(parsed.entries.map(shown)).toEqual([
       { key: "body", value: '"a,b}c{d"' },
-      {
-        key: "quote",
-        value: '"she said \\"hi\\", bye"',
-        readable: 'she said "hi", bye',
-      },
+      { key: "quote", value: '"she said "hi", bye"' },
       { key: "next", value: "1" },
     ]);
   });
@@ -390,10 +398,21 @@ describe("parseCanonicalArgs", () => {
 
   it("pairs an escaped joiner with its natural reading", () => {
     // The signed line shows what is really there; the aid shows how it looks.
-    // Seeing both is what lets a reader notice the difference at all.
+    // Seeing both is what lets a reader notice the difference at all. This is
+    // the case the decoding rule must NOT collapse: unlike a `\n`, the escape
+    // here is the only reason the reader knows the character exists.
     const parsed = parseCanonicalArgs('{"user":"ad\u200Cmin"}');
     expect(parsed.entries[0].value).toBe('"ad\\u200Cmin"');
     expect(parsed.entries[0].readable).toBe("ad\u200Cmin");
+  });
+
+  it("keeps the escape when a value hides a character behind an escape it also needs", () => {
+    // Both reasons at once: a JSON `\n` (pure notation) and a bidi override
+    // (never notation). Decoding the first must not smuggle the second past the
+    // reader, so the pair stays.
+    const parsed = parseCanonicalArgs('{"file":"a\\nb\u202Ecod.exe"}');
+    expect(parsed.entries[0].value).toBe('"a\\nb\\u202Ecod.exe"');
+    expect(parsed.entries[0].readable).toBe("a\nb\\u202Ecod.exe");
   });
 
   it("escapes a control character in a one-line field but not in a value", () => {
