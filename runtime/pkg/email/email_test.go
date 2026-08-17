@@ -197,7 +197,7 @@ func TestKairosBranding(t *testing.T) {
 	for name, fn := range cases {
 		t.Run(name, func(t *testing.T) {
 			require.NoError(t, fn())
-			require.Contains(t, mock.body, "kairosagentica.com/img/logo/kairos-lockup-horizontal-mono-azul.png", "falta el logo de Kairos")
+			require.Contains(t, mock.body, "kairosagentica.com/img/logo/kairos-lockup-horizontal.png", "falta el logo de Kairos")
 			require.Contains(t, mock.body, "Inteligencia para empresas", "falta el footer de Kairos")
 			for _, mark := range rillMarks {
 				require.NotContains(t, mock.body, mark, "marca Rill residual: %s", mark)
