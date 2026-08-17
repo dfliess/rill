@@ -1,7 +1,9 @@
+import type { PartialMessage } from "@bufbuild/protobuf";
 import type {
   V1AnalystAgentContext,
   V1Expression,
 } from "@rilldata/web-common/runtime-client";
+import type { AnalystAgentContext } from "@rilldata/web-common/proto/gen/rill/runtime/v1/api_pb";
 import type { RuntimeClient } from "@rilldata/web-common/runtime-client/v2";
 import type { Interval } from "luxon";
 import {
@@ -58,7 +60,15 @@ export async function runAgentNote(
       trigger: "canvas",
       // The server folds this into the run's prompt, so the note is scoped to the filters and time range the
       // reader is actually looking at. Same object the AI-Chat sends from a canvas.
-      dashboardContext: params.dashboardContext,
+      //
+      // The cast is a type-level formality, not a shape change: the v2 client sends this request through
+      // `StartAgentRunRequest.fromJson`, so what it needs on the wire is proto-JSON, which is exactly what
+      // the REST client's `V1AnalystAgentContext` already is. The parameter is typed as the decoded message
+      // instead, where a filter is a `oneof` (`{ case, value }`) rather than the flat JSON form, so the two
+      // types disagree on paper while describing the same bytes.
+      dashboardContext: params.dashboardContext as
+        | PartialMessage<AnalystAgentContext>
+        | undefined,
     },
     { signal },
   );
