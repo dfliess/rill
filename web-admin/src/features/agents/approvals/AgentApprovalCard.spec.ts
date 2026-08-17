@@ -77,6 +77,22 @@ describe("AgentApprovalCard rendering", () => {
     // source and rendered form coincide and the assertion proves nothing.
     renderCard('{"user":"ad\u200Cmin"}');
     expect(screen.getByText('"ad\\u200Cmin"')).toBeTruthy();
+    // And the aid stays under it. This is the pair the rule below must not
+    // collapse: here the escape is the only reason the character is visible.
+    expect(screen.getByText("Readable form of the signed text")).toBeTruthy();
+  });
+
+  it("reads a multi-line body once, decoded, instead of twice", () => {
+    // The signed escapes are notation here, so the value IS its decoding and no
+    // aid is drawn under it. Asserted through the card, not the parser: the aid
+    // is a template branch, and a parser test cannot see one left behind.
+    // Read off textContent rather than getByText, whose default normalizer
+    // collapses the very line breaks this is about.
+    const { container } = renderCard('{"details":"Uno.\\n\\nDos."}');
+    expect(container.querySelector("dl dd")?.textContent?.trim()).toBe(
+      '"Uno.\n\nDos."',
+    );
+    expect(screen.queryByText("Readable form of the signed text")).toBeNull();
   });
 
   it("names an empty key instead of drawing an empty label", () => {

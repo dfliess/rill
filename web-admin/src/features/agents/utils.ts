@@ -385,17 +385,29 @@ export function escapeReadable(text: string): string {
 export interface ApprovalArgEntry {
   key: string;
   /**
-   * The value's SIGNED text, verbatim: a 19-digit account id reads exactly as
-   * hashed, and a string keeps its quotes and escapes. Nothing here is decoded,
-   * because decoding is where a rendering starts being able to differ from what
-   * the signature covers — the string `"false"` and the boolean `false` would
-   * become the same three characters on screen.
+   * The value as it reads in normal mode: the SIGNED text verbatim — a 19-digit
+   * account id reads exactly as hashed, and a string keeps its quotes — except
+   * that a string's JSON escapes are decoded when decoding them hides nothing
+   * (see below). The quotes stay in either case, so the string `"false"` never
+   * reads as the boolean `false`.
+   *
+   * Decoding is where a rendering starts being able to differ from what the
+   * signature covers, so it happens only when the decoded text contains nothing
+   * `escapeInvisible` would mark: no invisible or direction-changing character,
+   * no NFC-unstable composition. When it does contain one, the escape IS the
+   * information — the point of showing `‮` is that the reader cannot see
+   * it otherwise — and the signed rendering stays, with `readable` beside it.
+   *
+   * `valueSource` is always the untouched signed token, and exact mode renders
+   * from it, so the signed text is one click away in every case.
    */
   value: string;
   /**
-   * A human-readable rendering of a string value, present ONLY when it differs
-   * from `value` (i.e. the string carries escapes). It is a reading aid beside
-   * the signed text, never a replacement for it.
+   * A human-readable rendering of a string value, present ONLY when the signed
+   * rendering above is revealing something the reader would otherwise miss. It
+   * is a reading aid beside the signed text, never a replacement for it: a
+   * value whose escapes hide nothing gets no second line, it is simply read in
+   * `value`.
    */
   readable?: string;
   /**
@@ -592,14 +604,31 @@ function sliceTopLevelObject(raw: string): ApprovalArgEntry[] | null {
       if (valueToken[0] === '"') {
         const decoded = decodeString(valueToken);
         if (decoded === null) return null;
-        // Offer the natural reading whenever it differs from what the signed
-        // rendering shows: because of JSON escapes (a body full of \n) or
+        // The natural reading is worth showing whenever it differs from what the
+        // signed rendering shows: because of JSON escapes (a body full of \n) or
         // because the signed rendering escaped a joiner the aid keeps (an emoji,
         // a Persian ZWNJ). Comparing against the value without its quotes is
-        // comparing like with like; when they match, a second identical line
-        // would be noise.
+        // comparing like with like; when they match, a second line would be noise.
         const natural = escapeReadable(decoded);
-        if (natural !== entry.value.slice(1, -1)) entry.readable = natural;
+        if (natural !== entry.value.slice(1, -1)) {
+          // WHERE it goes depends on why they differ, and the test is whether the
+          // decoded text has anything to hide. If `escapeInvisible` leaves it
+          // untouched there is no invisible character, no bidi override and no
+          // deceiving composition in it: the escapes were pure JSON notation, and
+          // showing both forms hands the approver two copies of one text to
+          // compare — the alert body arrives as a wall of `\n` above the
+          // paragraphs it decodes to. So the decoded form simply becomes the
+          // value, quotes kept.
+          //
+          // Otherwise the escapes are the information, and the pair stays: the
+          // signed rendering shows what is actually there, the aid shows how it
+          // means to look.
+          if (escapeInvisible(decoded) === decoded) {
+            entry.value = '"' + natural + '"';
+          } else {
+            entry.readable = natural;
+          }
+        }
       }
       entries.push(entry);
       skipWhitespace();
