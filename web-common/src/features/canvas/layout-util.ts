@@ -33,6 +33,8 @@ export const initialHeights: Record<CanvasComponentType, number> = {
   pivot: 300,
   leaderboard: 300,
   map: 400,
+  // A note scrolls inside its row, like markdown, so it starts at the same height.
+  agent_note: 40,
 };
 
 // Minimum heights a component can shrink to, when smaller than its initial
