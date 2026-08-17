@@ -22,7 +22,7 @@
 
       <mj-section padding="24px 32px" border-bottom="1px solid #dcdcd6">
         <mj-column>
-          <mj-image align="left" width="143px" padding="0" src="https://kairosagentica.com/img/logo/kairos-lockup-horizontal-mono-azul.png" alt="Kairos" />
+          <mj-image align="left" width="143px" padding="0" src="https://kairosagentica.com/img/logo/kairos-lockup-horizontal.png" alt="Kairos" />
         </mj-column>
       </mj-section>
 
