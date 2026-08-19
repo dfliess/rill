@@ -6,6 +6,7 @@
 import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialMessage, PlainMessage } from "@bufbuild/protobuf";
 import { Message, proto3, protoInt64, Struct, Timestamp } from "@bufbuild/protobuf";
 import { Expression } from "../../runtime/v1/expression_pb.js";
+import { SecurityRule } from "../../runtime/v1/resources_pb.js";
 import { ExportFormat } from "../../runtime/v1/export_format_pb.js";
 
 /**
@@ -14267,6 +14268,150 @@ export class SendPushNotificationResponse extends Message<SendPushNotificationRe
 
   static equals(a: SendPushNotificationResponse | PlainMessage<SendPushNotificationResponse> | undefined, b: SendPushNotificationResponse | PlainMessage<SendPushNotificationResponse> | undefined): boolean {
     return proto3.util.equals(SendPushNotificationResponse, a, b);
+  }
+}
+
+/**
+ * @generated from message rill.admin.v1.ListProjectMemberAttributesRequest
+ */
+export class ListProjectMemberAttributesRequest extends Message<ListProjectMemberAttributesRequest> {
+  /**
+   * @generated from field: string project_id = 1;
+   */
+  projectId = "";
+
+  constructor(data?: PartialMessage<ListProjectMemberAttributesRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rill.admin.v1.ListProjectMemberAttributesRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "project_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ListProjectMemberAttributesRequest {
+    return new ListProjectMemberAttributesRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ListProjectMemberAttributesRequest {
+    return new ListProjectMemberAttributesRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ListProjectMemberAttributesRequest {
+    return new ListProjectMemberAttributesRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ListProjectMemberAttributesRequest | PlainMessage<ListProjectMemberAttributesRequest> | undefined, b: ListProjectMemberAttributesRequest | PlainMessage<ListProjectMemberAttributesRequest> | undefined): boolean {
+    return proto3.util.equals(ListProjectMemberAttributesRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message rill.admin.v1.ListProjectMemberAttributesResponse
+ */
+export class ListProjectMemberAttributesResponse extends Message<ListProjectMemberAttributesResponse> {
+  /**
+   * @generated from field: repeated rill.admin.v1.ProjectMemberAttributes members = 1;
+   */
+  members: ProjectMemberAttributes[] = [];
+
+  constructor(data?: PartialMessage<ListProjectMemberAttributesResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rill.admin.v1.ListProjectMemberAttributesResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "members", kind: "message", T: ProjectMemberAttributes, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ListProjectMemberAttributesResponse {
+    return new ListProjectMemberAttributesResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ListProjectMemberAttributesResponse {
+    return new ListProjectMemberAttributesResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ListProjectMemberAttributesResponse {
+    return new ListProjectMemberAttributesResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ListProjectMemberAttributesResponse | PlainMessage<ListProjectMemberAttributesResponse> | undefined, b: ListProjectMemberAttributesResponse | PlainMessage<ListProjectMemberAttributesResponse> | undefined): boolean {
+    return proto3.util.equals(ListProjectMemberAttributesResponse, a, b);
+  }
+}
+
+/**
+ * ProjectMemberAttributes describes a project member as the runtime sees them,
+ * i.e. the identity that a runtime JWT issued for the member would carry.
+ *
+ * @generated from message rill.admin.v1.ProjectMemberAttributes
+ */
+export class ProjectMemberAttributes extends Message<ProjectMemberAttributes> {
+  /**
+   * @generated from field: string user_id = 1;
+   */
+  userId = "";
+
+  /**
+   * @generated from field: string email = 2;
+   */
+  email = "";
+
+  /**
+   * Attributes as they would be embedded in a runtime JWT issued for the member.
+   *
+   * @generated from field: google.protobuf.Struct attributes = 3;
+   */
+  attributes?: Struct;
+
+  /**
+   * Whether the member has the runtime's EditTrigger permission on the calling deployment.
+   *
+   * @generated from field: bool edit_trigger = 4;
+   */
+  editTrigger = false;
+
+  /**
+   * Resource restrictions that apply to the member, as they would be embedded in a runtime JWT issued for them.
+   *
+   * @generated from field: repeated rill.runtime.v1.SecurityRule security_rules = 5;
+   */
+  securityRules: SecurityRule[] = [];
+
+  constructor(data?: PartialMessage<ProjectMemberAttributes>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rill.admin.v1.ProjectMemberAttributes";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "user_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "email", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "attributes", kind: "message", T: Struct },
+    { no: 4, name: "edit_trigger", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 5, name: "security_rules", kind: "message", T: SecurityRule, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ProjectMemberAttributes {
+    return new ProjectMemberAttributes().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ProjectMemberAttributes {
+    return new ProjectMemberAttributes().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ProjectMemberAttributes {
+    return new ProjectMemberAttributes().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ProjectMemberAttributes | PlainMessage<ProjectMemberAttributes> | undefined, b: ProjectMemberAttributes | PlainMessage<ProjectMemberAttributes> | undefined): boolean {
+    return proto3.util.equals(ProjectMemberAttributes, a, b);
   }
 }
 

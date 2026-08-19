@@ -8,6 +8,7 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/struct.proto";
 import "rill/runtime/v1/export_format.proto";
 import "rill/runtime/v1/expression.proto";
+import "rill/runtime/v1/resources.proto";
 import "validate/validate.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 
@@ -1232,6 +1233,14 @@ service AdminService {
     option (google.api.http) = {
       post: "/v1/projects/{project_id}/push-notifications/send",
       body: "*"
+    };
+  }
+
+  // ListProjectMemberAttributes returns the project's members with the identity the runtime would see for them.
+  // It's currently only called by the runtime to evaluate which members a security policy authorizes (e.g. who may approve an agent's proposed action).
+  rpc ListProjectMemberAttributes(ListProjectMemberAttributesRequest) returns (ListProjectMemberAttributesResponse) {
+    option (google.api.http) = {
+      get: "/v1/projects/{project_id}/member-attributes"
     };
   }
 
@@ -3215,6 +3224,27 @@ message SendPushNotificationRequest {
 message SendPushNotificationResponse {
   // Number of notifications successfully sent.
   int32 sent = 1;
+}
+
+message ListProjectMemberAttributesRequest {
+  string project_id = 1;
+}
+
+message ListProjectMemberAttributesResponse {
+  repeated ProjectMemberAttributes members = 1;
+}
+
+// ProjectMemberAttributes describes a project member as the runtime sees them,
+// i.e. the identity that a runtime JWT issued for the member would carry.
+message ProjectMemberAttributes {
+  string user_id = 1;
+  string email = 2;
+  // Attributes as they would be embedded in a runtime JWT issued for the member.
+  google.protobuf.Struct attributes = 3;
+  // Whether the member has the runtime's EditTrigger permission on the calling deployment.
+  bool edit_trigger = 4;
+  // Resource restrictions that apply to the member, as they would be embedded in a runtime JWT issued for them.
+  repeated rill.runtime.v1.SecurityRule security_rules = 5;
 }
 
 message CreateReportRequest {

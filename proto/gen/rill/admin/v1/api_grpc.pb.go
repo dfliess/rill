@@ -164,6 +164,7 @@ const (
 	AdminService_GetReportMeta_FullMethodName                          = "/rill.admin.v1.AdminService/GetReportMeta"
 	AdminService_GetAlertMeta_FullMethodName                           = "/rill.admin.v1.AdminService/GetAlertMeta"
 	AdminService_SendPushNotification_FullMethodName                   = "/rill.admin.v1.AdminService/SendPushNotification"
+	AdminService_ListProjectMemberAttributes_FullMethodName            = "/rill.admin.v1.AdminService/ListProjectMemberAttributes"
 	AdminService_CreateReport_FullMethodName                           = "/rill.admin.v1.AdminService/CreateReport"
 	AdminService_EditReport_FullMethodName                             = "/rill.admin.v1.AdminService/EditReport"
 	AdminService_UnsubscribeReport_FullMethodName                      = "/rill.admin.v1.AdminService/UnsubscribeReport"
@@ -515,6 +516,9 @@ type AdminServiceClient interface {
 	// SendPushNotification sends a web push notification to the subscriptions of the given recipients.
 	// It's currently only called by the runtime on behalf of a project's resources (e.g. when an alert fires).
 	SendPushNotification(ctx context.Context, in *SendPushNotificationRequest, opts ...grpc.CallOption) (*SendPushNotificationResponse, error)
+	// ListProjectMemberAttributes returns the project's members with the identity the runtime would see for them.
+	// It's currently only called by the runtime to evaluate which members a security policy authorizes (e.g. who may approve an agent's proposed action).
+	ListProjectMemberAttributes(ctx context.Context, in *ListProjectMemberAttributesRequest, opts ...grpc.CallOption) (*ListProjectMemberAttributesResponse, error)
 	// CreateReport adds a virtual file for a report, triggers a reconcile, and waits for the report to be added to the runtime catalog
 	CreateReport(ctx context.Context, in *CreateReportRequest, opts ...grpc.CallOption) (*CreateReportResponse, error)
 	// EditReport edits a virtual file for a UI-managed report, triggers a reconcile, and waits for the report to be updated in the runtime
@@ -2031,6 +2035,16 @@ func (c *adminServiceClient) SendPushNotification(ctx context.Context, in *SendP
 	return out, nil
 }
 
+func (c *adminServiceClient) ListProjectMemberAttributes(ctx context.Context, in *ListProjectMemberAttributesRequest, opts ...grpc.CallOption) (*ListProjectMemberAttributesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListProjectMemberAttributesResponse)
+	err := c.cc.Invoke(ctx, AdminService_ListProjectMemberAttributes_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *adminServiceClient) CreateReport(ctx context.Context, in *CreateReportRequest, opts ...grpc.CallOption) (*CreateReportResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(CreateReportResponse)
@@ -2650,6 +2664,9 @@ type AdminServiceServer interface {
 	// SendPushNotification sends a web push notification to the subscriptions of the given recipients.
 	// It's currently only called by the runtime on behalf of a project's resources (e.g. when an alert fires).
 	SendPushNotification(context.Context, *SendPushNotificationRequest) (*SendPushNotificationResponse, error)
+	// ListProjectMemberAttributes returns the project's members with the identity the runtime would see for them.
+	// It's currently only called by the runtime to evaluate which members a security policy authorizes (e.g. who may approve an agent's proposed action).
+	ListProjectMemberAttributes(context.Context, *ListProjectMemberAttributesRequest) (*ListProjectMemberAttributesResponse, error)
 	// CreateReport adds a virtual file for a report, triggers a reconcile, and waits for the report to be added to the runtime catalog
 	CreateReport(context.Context, *CreateReportRequest) (*CreateReportResponse, error)
 	// EditReport edits a virtual file for a UI-managed report, triggers a reconcile, and waits for the report to be updated in the runtime
@@ -3150,6 +3167,9 @@ func (UnimplementedAdminServiceServer) GetAlertMeta(context.Context, *GetAlertMe
 }
 func (UnimplementedAdminServiceServer) SendPushNotification(context.Context, *SendPushNotificationRequest) (*SendPushNotificationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendPushNotification not implemented")
+}
+func (UnimplementedAdminServiceServer) ListProjectMemberAttributes(context.Context, *ListProjectMemberAttributesRequest) (*ListProjectMemberAttributesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListProjectMemberAttributes not implemented")
 }
 func (UnimplementedAdminServiceServer) CreateReport(context.Context, *CreateReportRequest) (*CreateReportResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateReport not implemented")
@@ -5872,6 +5892,24 @@ func _AdminService_SendPushNotification_Handler(srv interface{}, ctx context.Con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AdminService_ListProjectMemberAttributes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListProjectMemberAttributesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).ListProjectMemberAttributes(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_ListProjectMemberAttributes_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).ListProjectMemberAttributes(ctx, req.(*ListProjectMemberAttributesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _AdminService_CreateReport_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateReportRequest)
 	if err := dec(in); err != nil {
@@ -6998,6 +7036,10 @@ var AdminService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SendPushNotification",
 			Handler:    _AdminService_SendPushNotification_Handler,
+		},
+		{
+			MethodName: "ListProjectMemberAttributes",
+			Handler:    _AdminService_ListProjectMemberAttributes_Handler,
 		},
 		{
 			MethodName: "CreateReport",

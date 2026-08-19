@@ -1893,7 +1893,7 @@ paths:
                 type: array
                 items:
                   type: object
-                  $ref: '#/definitions/v1ResourceName'
+                  $ref: '#/definitions/rilladminv1ResourceName'
               attributes:
                 type: object
                 description: |-
@@ -1993,7 +1993,7 @@ paths:
                 type: array
                 items:
                   type: object
-                  $ref: '#/definitions/v1ResourceName'
+                  $ref: '#/definitions/rilladminv1ResourceName'
       x-visibility: public
   /v1/orgs/{org}/projects/{project}/members/{email}/usergroups:
     get:
@@ -2583,7 +2583,7 @@ paths:
                 type: array
                 items:
                   type: object
-                  $ref: '#/definitions/v1ResourceName'
+                  $ref: '#/definitions/rilladminv1ResourceName'
                 description: list of resources to grant access to.
   /v1/orgs/{org}/projects/{project}/usergroups:
     get:
@@ -2693,7 +2693,7 @@ paths:
                 type: array
                 items:
                   type: object
-                  $ref: '#/definitions/v1ResourceName'
+                  $ref: '#/definitions/rilladminv1ResourceName'
       x-visibility: public
     put:
       summary: SetProjectMemberUsergroupRole sets the role for the user group
@@ -2734,7 +2734,7 @@ paths:
                 type: array
                 items:
                   type: object
-                  $ref: '#/definitions/v1ResourceName'
+                  $ref: '#/definitions/rilladminv1ResourceName'
       x-visibility: public
   /v1/orgs/{org}/projects/{project}/users/search:
     get:
@@ -3788,6 +3788,26 @@ paths:
                   type: string
               anonRecipients:
                 type: boolean
+  /v1/projects/{projectId}/member-attributes:
+    get:
+      summary: |-
+        ListProjectMemberAttributes returns the project's members with the identity the runtime would see for them.
+        It's currently only called by the runtime to evaluate which members a security policy authorizes (e.g. who may approve an agent's proposed action).
+      operationId: AdminService_ListProjectMemberAttributes
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1ListProjectMemberAttributesResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          type: string
   /v1/projects/{projectId}/push-notifications/send:
     post:
       summary: |-
@@ -4004,7 +4024,7 @@ paths:
                 type: array
                 items:
                   type: object
-                  $ref: '#/definitions/v1ResourceName'
+                  $ref: '#/definitions/rilladminv1ResourceName'
               webOpenMode:
                 type: string
               whereFilterJson:
@@ -4990,6 +5010,20 @@ definitions:
       The JSON representation for `NullValue` is JSON `null`.
 
        - NULL_VALUE: Null value.
+  rilladminv1ResourceName:
+    type: object
+    properties:
+      type:
+        type: string
+      name:
+        type: string
+  rillruntimev1ResourceName:
+    type: object
+    properties:
+      kind:
+        type: string
+      name:
+        type: string
   rpcStatus:
     type: object
     properties:
@@ -6128,6 +6162,14 @@ definitions:
           $ref: '#/definitions/v1ProjectInvite'
       nextPageToken:
         type: string
+  v1ListProjectMemberAttributesResponse:
+    type: object
+    properties:
+      members:
+        type: array
+        items:
+          type: object
+          $ref: '#/definitions/v1ProjectMemberAttributes'
   v1ListProjectMemberServicesResponse:
     type: object
     properties:
@@ -6339,7 +6381,7 @@ definitions:
         type: array
         items:
           type: object
-          $ref: '#/definitions/v1ResourceName'
+          $ref: '#/definitions/rilladminv1ResourceName'
       resourceType:
         type: string
       resourceName:
@@ -6382,7 +6424,7 @@ definitions:
         type: array
         items:
           type: object
-          $ref: '#/definitions/v1ResourceName'
+          $ref: '#/definitions/rilladminv1ResourceName'
   v1NotificationPreferences:
     type: object
     properties:
@@ -6642,7 +6684,29 @@ definitions:
         type: array
         items:
           type: object
-          $ref: '#/definitions/v1ResourceName'
+          $ref: '#/definitions/rilladminv1ResourceName'
+  v1ProjectMemberAttributes:
+    type: object
+    properties:
+      userId:
+        type: string
+      email:
+        type: string
+      attributes:
+        type: object
+        description: Attributes as they would be embedded in a runtime JWT issued for the member.
+      editTrigger:
+        type: boolean
+        description: Whether the member has the runtime's EditTrigger permission on the calling deployment.
+      securityRules:
+        type: array
+        items:
+          type: object
+          $ref: '#/definitions/v1SecurityRule'
+        description: Resource restrictions that apply to the member, as they would be embedded in a runtime JWT issued for them.
+    description: |-
+      ProjectMemberAttributes describes a project member as the runtime sees them,
+      i.e. the identity that a runtime JWT issued for the member would carry.
   v1ProjectMemberService:
     type: object
     properties:
@@ -6697,7 +6761,7 @@ definitions:
         type: array
         items:
           type: object
-          $ref: '#/definitions/v1ResourceName'
+          $ref: '#/definitions/rilladminv1ResourceName'
   v1ProjectPermissions:
     type: object
     properties:
@@ -6960,13 +7024,6 @@ definitions:
           - send "none" for reports that should not be opened or older reports which do not have any web_open_path
   v1RequestProjectAccessResponse:
     type: object
-  v1ResourceName:
-    type: object
-    properties:
-      type:
-        type: string
-      name:
-        type: string
   v1RevokeAllUserAuthTokensResponse:
     type: object
     properties:
@@ -7013,6 +7070,109 @@ definitions:
           $ref: '#/definitions/v1User'
       nextPageToken:
         type: string
+  v1SecurityRule:
+    type: object
+    properties:
+      access:
+        $ref: '#/definitions/v1SecurityRuleAccess'
+      fieldAccess:
+        $ref: '#/definitions/v1SecurityRuleFieldAccess'
+      rowFilter:
+        $ref: '#/definitions/v1SecurityRuleRowFilter'
+      transitiveAccess:
+        $ref: '#/definitions/v1SecurityRuleTransitiveAccess'
+  v1SecurityRuleAccess:
+    type: object
+    properties:
+      conditionExpression:
+        type: string
+        description: |-
+          The condition under which this rule applies.
+          It is ANDed together with the condition_kinds and condition_resources.
+      conditionKinds:
+        type: array
+        items:
+          type: string
+        description: The resource kinds the rule applies to. If empty, it defaults to all resource kinds.
+      conditionResources:
+        type: array
+        items:
+          type: object
+          $ref: '#/definitions/rillruntimev1ResourceName'
+        description: |-
+          The resources the rule applies to. If empty, it defaults to all resources in scope covered by `resource_kinds`.
+          It is ORed together with the condition_kinds.
+      allow:
+        type: boolean
+        description: Whether to allow or deny access to the resources covered by the conditions.
+      exclusive:
+        type: boolean
+        description: If true, any resource not covered by the conditions will explicitly get the opposite permission (e.g. will be denied if `allow` is true).
+  v1SecurityRuleFieldAccess:
+    type: object
+    properties:
+      conditionExpression:
+        type: string
+        description: |-
+          The condition under which this rule applies.
+          It is ANDed together with the condition_kinds and condition_resources.
+      conditionKinds:
+        type: array
+        items:
+          type: string
+        description: The resource kinds the rule applies to. If empty, it defaults to all resource kinds.
+      conditionResources:
+        type: array
+        items:
+          type: object
+          $ref: '#/definitions/rillruntimev1ResourceName'
+        description: |-
+          The resources the rule applies to. If empty, it defaults to all resources in scope covered by `resource_kinds`.
+          It is ORed together with the condition_kinds.
+      allow:
+        type: boolean
+      exclusive:
+        type: boolean
+        description: If true, all other fields not explicitly listed will get the opposite permission (e.g. will be denied if `allow` is true).
+      fields:
+        type: array
+        items:
+          type: string
+      allFields:
+        type: boolean
+  v1SecurityRuleRowFilter:
+    type: object
+    properties:
+      conditionExpression:
+        type: string
+        description: |-
+          The condition under which this rule applies.
+          It is ANDed together with the condition_kinds and condition_resources.
+      conditionKinds:
+        type: array
+        items:
+          type: string
+        description: The resource kinds the rule applies to. If empty, it defaults to all resource kinds.
+      conditionResources:
+        type: array
+        items:
+          type: object
+          $ref: '#/definitions/rillruntimev1ResourceName'
+        description: |-
+          The resources the rule applies to. If empty, it defaults to all resources in scope covered by `resource_kinds`.
+          It is ORed together with the condition_kinds.
+      sql:
+        type: string
+        title: Raw SQL expression to apply to the underlying table
+      expression:
+        $ref: '#/definitions/v1Expression'
+        title: Regular query expression referencing dimension names
+  v1SecurityRuleTransitiveAccess:
+    type: object
+    properties:
+      resource:
+        $ref: '#/definitions/rillruntimev1ResourceName'
+        description: this rules resolves to rules that provides access to whatever is needed to access this resource.
   v1SendPushNotificationResponse:
     type: object
     properties:

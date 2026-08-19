@@ -204,6 +204,7 @@ import type {
   V1ListOrganizationsResponse,
   V1ListPersonalFilesResponse,
   V1ListProjectInvitesResponse,
+  V1ListProjectMemberAttributesResponse,
   V1ListProjectMemberServicesResponse,
   V1ListProjectMemberUsergroupsResponse,
   V1ListProjectMemberUsersResponse,
@@ -13367,6 +13368,108 @@ export const createAdminServiceGetAlertMeta = <
 
   return createMutation(mutationOptions, queryClient);
 };
+/**
+ * @summary ListProjectMemberAttributes returns the project's members with the identity the runtime would see for them.
+It's currently only called by the runtime to evaluate which members a security policy authorizes (e.g. who may approve an agent's proposed action).
+ */
+export const adminServiceListProjectMemberAttributes = (
+  projectId: string,
+  signal?: AbortSignal,
+) => {
+  return httpClient<V1ListProjectMemberAttributesResponse>({
+    url: `/v1/projects/${projectId}/member-attributes`,
+    method: "GET",
+    signal,
+  });
+};
+
+export const getAdminServiceListProjectMemberAttributesQueryKey = (
+  projectId?: string,
+) => {
+  return [`/v1/projects/${projectId}/member-attributes`] as const;
+};
+
+export const getAdminServiceListProjectMemberAttributesQueryOptions = <
+  TData = Awaited<ReturnType<typeof adminServiceListProjectMemberAttributes>>,
+  TError = RpcStatus,
+>(
+  projectId: string,
+  options?: {
+    query?: Partial<
+      CreateQueryOptions<
+        Awaited<ReturnType<typeof adminServiceListProjectMemberAttributes>>,
+        TError,
+        TData
+      >
+    >;
+  },
+) => {
+  const { query: queryOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getAdminServiceListProjectMemberAttributesQueryKey(projectId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof adminServiceListProjectMemberAttributes>>
+  > = ({ signal }) =>
+    adminServiceListProjectMemberAttributes(projectId, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!projectId,
+    ...queryOptions,
+  } as CreateQueryOptions<
+    Awaited<ReturnType<typeof adminServiceListProjectMemberAttributes>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AdminServiceListProjectMemberAttributesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof adminServiceListProjectMemberAttributes>>
+>;
+export type AdminServiceListProjectMemberAttributesQueryError = RpcStatus;
+
+/**
+ * @summary ListProjectMemberAttributes returns the project's members with the identity the runtime would see for them.
+It's currently only called by the runtime to evaluate which members a security policy authorizes (e.g. who may approve an agent's proposed action).
+ */
+
+export function createAdminServiceListProjectMemberAttributes<
+  TData = Awaited<ReturnType<typeof adminServiceListProjectMemberAttributes>>,
+  TError = RpcStatus,
+>(
+  projectId: string,
+  options?: {
+    query?: Partial<
+      CreateQueryOptions<
+        Awaited<ReturnType<typeof adminServiceListProjectMemberAttributes>>,
+        TError,
+        TData
+      >
+    >;
+  },
+  queryClient?: QueryClient,
+): CreateQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getAdminServiceListProjectMemberAttributesQueryOptions(
+    projectId,
+    options,
+  );
+
+  const query = createQuery(queryOptions, queryClient) as CreateQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
 /**
  * @summary SendPushNotification sends a web push notification to the subscriptions of the given recipients.
 It's currently only called by the runtime on behalf of a project's resources (e.g. when an alert fires).

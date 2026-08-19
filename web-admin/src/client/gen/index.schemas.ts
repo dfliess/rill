@@ -64,6 +64,16 @@ export const ProtobufNullValue = {
   NULL_VALUE: "NULL_VALUE",
 } as const;
 
+export interface Rilladminv1ResourceName {
+  type?: string;
+  name?: string;
+}
+
+export interface Rillruntimev1ResourceName {
+  kind?: string;
+  name?: string;
+}
+
 export interface RpcStatus {
   code?: number;
   message?: string;
@@ -914,6 +924,10 @@ export interface V1ListProjectInvitesResponse {
   nextPageToken?: string;
 }
 
+export interface V1ListProjectMemberAttributesResponse {
+  members?: V1ProjectMemberAttributes[];
+}
+
 export interface V1ListProjectMemberServicesResponse {
   services?: V1ProjectMemberService[];
 }
@@ -1028,7 +1042,7 @@ export interface V1MagicAuthToken {
   createdByUserId?: string;
   createdByUserEmail?: string;
   attributes?: V1MagicAuthTokenAttributes;
-  resources?: V1ResourceName[];
+  resources?: Rilladminv1ResourceName[];
   resourceType?: string;
   resourceName?: string;
   metricsViewFilters?: V1MagicAuthTokenMetricsViewFilters;
@@ -1046,7 +1060,7 @@ export interface V1MemberUsergroup {
   createdOn?: string;
   updatedOn?: string;
   restrictResources?: boolean;
-  resources?: V1ResourceName[];
+  resources?: Rilladminv1ResourceName[];
 }
 
 export interface V1NotificationPreferences {
@@ -1187,7 +1201,27 @@ export interface V1ProjectInvite {
   orgRoleName?: string;
   invitedBy?: string;
   restrictResources?: boolean;
-  resources?: V1ResourceName[];
+  resources?: Rilladminv1ResourceName[];
+}
+
+/**
+ * Attributes as they would be embedded in a runtime JWT issued for the member.
+ */
+export type V1ProjectMemberAttributesAttributes = { [key: string]: unknown };
+
+/**
+ * ProjectMemberAttributes describes a project member as the runtime sees them,
+i.e. the identity that a runtime JWT issued for the member would carry.
+ */
+export interface V1ProjectMemberAttributes {
+  userId?: string;
+  email?: string;
+  /** Attributes as they would be embedded in a runtime JWT issued for the member. */
+  attributes?: V1ProjectMemberAttributesAttributes;
+  /** Whether the member has the runtime's EditTrigger permission on the calling deployment. */
+  editTrigger?: boolean;
+  /** Resource restrictions that apply to the member, as they would be embedded in a runtime JWT issued for them. */
+  securityRules?: V1SecurityRule[];
 }
 
 export type V1ProjectMemberServiceAttributes = { [key: string]: unknown };
@@ -1216,7 +1250,7 @@ export interface V1ProjectMemberUser {
   createdOn?: string;
   updatedOn?: string;
   restrictResources?: boolean;
-  resources?: V1ResourceName[];
+  resources?: Rilladminv1ResourceName[];
 }
 
 export interface V1ProjectPermissions {
@@ -1411,11 +1445,6 @@ export interface V1RequestProjectAccessResponse {
   [key: string]: unknown;
 }
 
-export interface V1ResourceName {
-  type?: string;
-  name?: string;
-}
-
 export interface V1RevokeAllUserAuthTokensResponse {
   /** Number of tokens revoked. */
   tokensRevoked?: number;
@@ -1454,6 +1483,61 @@ export interface V1SearchProjectUsersResponse {
 export interface V1SearchUsersResponse {
   users?: V1User[];
   nextPageToken?: string;
+}
+
+export interface V1SecurityRule {
+  access?: V1SecurityRuleAccess;
+  fieldAccess?: V1SecurityRuleFieldAccess;
+  rowFilter?: V1SecurityRuleRowFilter;
+  transitiveAccess?: V1SecurityRuleTransitiveAccess;
+}
+
+export interface V1SecurityRuleAccess {
+  /** The condition under which this rule applies.
+It is ANDed together with the condition_kinds and condition_resources. */
+  conditionExpression?: string;
+  /** The resource kinds the rule applies to. If empty, it defaults to all resource kinds. */
+  conditionKinds?: string[];
+  /** The resources the rule applies to. If empty, it defaults to all resources in scope covered by `resource_kinds`.
+It is ORed together with the condition_kinds. */
+  conditionResources?: Rillruntimev1ResourceName[];
+  /** Whether to allow or deny access to the resources covered by the conditions. */
+  allow?: boolean;
+  /** If true, any resource not covered by the conditions will explicitly get the opposite permission (e.g. will be denied if `allow` is true). */
+  exclusive?: boolean;
+}
+
+export interface V1SecurityRuleFieldAccess {
+  /** The condition under which this rule applies.
+It is ANDed together with the condition_kinds and condition_resources. */
+  conditionExpression?: string;
+  /** The resource kinds the rule applies to. If empty, it defaults to all resource kinds. */
+  conditionKinds?: string[];
+  /** The resources the rule applies to. If empty, it defaults to all resources in scope covered by `resource_kinds`.
+It is ORed together with the condition_kinds. */
+  conditionResources?: Rillruntimev1ResourceName[];
+  allow?: boolean;
+  /** If true, all other fields not explicitly listed will get the opposite permission (e.g. will be denied if `allow` is true). */
+  exclusive?: boolean;
+  fields?: string[];
+  allFields?: boolean;
+}
+
+export interface V1SecurityRuleRowFilter {
+  /** The condition under which this rule applies.
+It is ANDed together with the condition_kinds and condition_resources. */
+  conditionExpression?: string;
+  /** The resource kinds the rule applies to. If empty, it defaults to all resource kinds. */
+  conditionKinds?: string[];
+  /** The resources the rule applies to. If empty, it defaults to all resources in scope covered by `resource_kinds`.
+It is ORed together with the condition_kinds. */
+  conditionResources?: Rillruntimev1ResourceName[];
+  sql?: string;
+  expression?: V1Expression;
+}
+
+export interface V1SecurityRuleTransitiveAccess {
+  resource?: Rillruntimev1ResourceName;
 }
 
 export interface V1SendPushNotificationResponse {
@@ -1864,6 +1948,12 @@ export type AdminServiceRequestProjectAccessBodyBody = {
   role?: string;
 };
 
+export type AdminServiceSetProjectMemberUserRoleBodyBody = {
+  role?: string;
+  restrictResources?: boolean;
+  resources?: Rilladminv1ResourceName[];
+};
+
 export type AdminServiceCreateProjectWhitelistedDomainBodyBody = {
   domain?: string;
   role?: string;
@@ -1876,12 +1966,6 @@ export type AdminServiceCreateAlertBodyBody = {
 export type AdminServiceUnsubscribeAlertBodyBody = {
   email?: string;
   slackUser?: string;
-};
-
-export type AdminServiceSetProjectMemberUserRoleBodyBody = {
-  role?: string;
-  restrictResources?: boolean;
-  resources?: V1ResourceName[];
 };
 
 export type AdminServiceCreateReportBodyBody = {
@@ -2257,7 +2341,7 @@ export type AdminServiceAddProjectMemberUserBody = {
   email?: string;
   role?: string;
   restrictResources?: boolean;
-  resources?: V1ResourceName[];
+  resources?: Rilladminv1ResourceName[];
   /** Custom attributes to set on the user's org membership (attributes are org-scoped).
 If the user has not signed up yet, they are stored on the org invite and applied when the invite is accepted.
 Setting attributes requires permission to manage org members. */
@@ -2311,7 +2395,7 @@ This will be translated to a rill.runtime.v1.SecurityRuleFieldAccess, which curr
   /** Optional display name to store with the token. */
   displayName?: string;
   /** list of resources to grant access to. */
-  resources?: V1ResourceName[];
+  resources?: Rilladminv1ResourceName[];
 };
 
 export type AdminServiceListProjectMemberUsergroupsParams = {
@@ -2517,7 +2601,7 @@ export type AdminServiceGetReportMetaBody = {
   executionTime?: string;
   emailRecipients?: string[];
   anonRecipients?: boolean;
-  resources?: V1ResourceName[];
+  resources?: Rilladminv1ResourceName[];
   webOpenMode?: string;
   whereFilterJson?: string;
   accessibleFields?: string[];

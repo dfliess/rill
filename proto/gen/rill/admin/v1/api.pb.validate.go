@@ -38570,6 +38570,423 @@ var _ interface {
 	ErrorName() string
 } = SendPushNotificationResponseValidationError{}
 
+// Validate checks the field values on ListProjectMemberAttributesRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *ListProjectMemberAttributesRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListProjectMemberAttributesRequest
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// ListProjectMemberAttributesRequestMultiError, or nil if none found.
+func (m *ListProjectMemberAttributesRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListProjectMemberAttributesRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for ProjectId
+
+	if len(errors) > 0 {
+		return ListProjectMemberAttributesRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListProjectMemberAttributesRequestMultiError is an error wrapping multiple
+// validation errors returned by
+// ListProjectMemberAttributesRequest.ValidateAll() if the designated
+// constraints aren't met.
+type ListProjectMemberAttributesRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListProjectMemberAttributesRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListProjectMemberAttributesRequestMultiError) AllErrors() []error { return m }
+
+// ListProjectMemberAttributesRequestValidationError is the validation error
+// returned by ListProjectMemberAttributesRequest.Validate if the designated
+// constraints aren't met.
+type ListProjectMemberAttributesRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListProjectMemberAttributesRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListProjectMemberAttributesRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListProjectMemberAttributesRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListProjectMemberAttributesRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListProjectMemberAttributesRequestValidationError) ErrorName() string {
+	return "ListProjectMemberAttributesRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListProjectMemberAttributesRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListProjectMemberAttributesRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListProjectMemberAttributesRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListProjectMemberAttributesRequestValidationError{}
+
+// Validate checks the field values on ListProjectMemberAttributesResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *ListProjectMemberAttributesResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListProjectMemberAttributesResponse
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// ListProjectMemberAttributesResponseMultiError, or nil if none found.
+func (m *ListProjectMemberAttributesResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListProjectMemberAttributesResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetMembers() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ListProjectMemberAttributesResponseValidationError{
+						field:  fmt.Sprintf("Members[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ListProjectMemberAttributesResponseValidationError{
+						field:  fmt.Sprintf("Members[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ListProjectMemberAttributesResponseValidationError{
+					field:  fmt.Sprintf("Members[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return ListProjectMemberAttributesResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListProjectMemberAttributesResponseMultiError is an error wrapping multiple
+// validation errors returned by
+// ListProjectMemberAttributesResponse.ValidateAll() if the designated
+// constraints aren't met.
+type ListProjectMemberAttributesResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListProjectMemberAttributesResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListProjectMemberAttributesResponseMultiError) AllErrors() []error { return m }
+
+// ListProjectMemberAttributesResponseValidationError is the validation error
+// returned by ListProjectMemberAttributesResponse.Validate if the designated
+// constraints aren't met.
+type ListProjectMemberAttributesResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListProjectMemberAttributesResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListProjectMemberAttributesResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListProjectMemberAttributesResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListProjectMemberAttributesResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListProjectMemberAttributesResponseValidationError) ErrorName() string {
+	return "ListProjectMemberAttributesResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListProjectMemberAttributesResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListProjectMemberAttributesResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListProjectMemberAttributesResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListProjectMemberAttributesResponseValidationError{}
+
+// Validate checks the field values on ProjectMemberAttributes with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ProjectMemberAttributes) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ProjectMemberAttributes with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ProjectMemberAttributesMultiError, or nil if none found.
+func (m *ProjectMemberAttributes) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ProjectMemberAttributes) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for UserId
+
+	// no validation rules for Email
+
+	if all {
+		switch v := interface{}(m.GetAttributes()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ProjectMemberAttributesValidationError{
+					field:  "Attributes",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ProjectMemberAttributesValidationError{
+					field:  "Attributes",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetAttributes()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return ProjectMemberAttributesValidationError{
+				field:  "Attributes",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	// no validation rules for EditTrigger
+
+	for idx, item := range m.GetSecurityRules() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ProjectMemberAttributesValidationError{
+						field:  fmt.Sprintf("SecurityRules[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ProjectMemberAttributesValidationError{
+						field:  fmt.Sprintf("SecurityRules[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ProjectMemberAttributesValidationError{
+					field:  fmt.Sprintf("SecurityRules[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return ProjectMemberAttributesMultiError(errors)
+	}
+
+	return nil
+}
+
+// ProjectMemberAttributesMultiError is an error wrapping multiple validation
+// errors returned by ProjectMemberAttributes.ValidateAll() if the designated
+// constraints aren't met.
+type ProjectMemberAttributesMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ProjectMemberAttributesMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ProjectMemberAttributesMultiError) AllErrors() []error { return m }
+
+// ProjectMemberAttributesValidationError is the validation error returned by
+// ProjectMemberAttributes.Validate if the designated constraints aren't met.
+type ProjectMemberAttributesValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ProjectMemberAttributesValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ProjectMemberAttributesValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ProjectMemberAttributesValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ProjectMemberAttributesValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ProjectMemberAttributesValidationError) ErrorName() string {
+	return "ProjectMemberAttributesValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ProjectMemberAttributesValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sProjectMemberAttributes.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ProjectMemberAttributesValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ProjectMemberAttributesValidationError{}
+
 // Validate checks the field values on CreateReportRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.

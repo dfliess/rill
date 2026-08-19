@@ -4,9 +4,29 @@ import (
 	"testing"
 
 	"github.com/rilldata/rill/admin/database"
+	adminv1 "github.com/rilldata/rill/proto/gen/rill/admin/v1"
 	"github.com/rilldata/rill/runtime"
 	"github.com/stretchr/testify/require"
 )
+
+// TestElevatedPermissionsForEnvironment pins the environment-to-permission mapping shared by the runtime JWT's
+// instance permissions and ListProjectMemberAttributes, which reports the same EditTrigger grant to the runtime.
+func TestElevatedPermissionsForEnvironment(t *testing.T) {
+	perms := &adminv1.ProjectPermissions{ReadProdStatus: true, ManageProd: false, ReadDevStatus: true, ManageDev: true}
+
+	canReadStatus, canManage := elevatedPermissionsForEnvironment("prod", perms)
+	require.True(t, canReadStatus)
+	require.False(t, canManage)
+
+	canReadStatus, canManage = elevatedPermissionsForEnvironment("dev", perms)
+	require.True(t, canReadStatus)
+	require.True(t, canManage)
+
+	// Any environment other than "dev" is treated as prod.
+	canReadStatus, canManage = elevatedPermissionsForEnvironment("", perms)
+	require.True(t, canReadStatus)
+	require.False(t, canManage)
+}
 
 // TestSecurityRulesFromMagicAuthToken pins the admin-side link of the confinement that keeps Act agents (and
 // any other unlisted resource) closed to public links: a magic auth token's rules are either a blanket deny

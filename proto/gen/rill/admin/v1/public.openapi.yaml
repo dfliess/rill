@@ -64,6 +64,20 @@ components:
             enum:
                 - NULL_VALUE
             type: string
+        rilladminv1ResourceName:
+            properties:
+                name:
+                    type: string
+                type:
+                    type: string
+            type: object
+        rillruntimev1ResourceName:
+            properties:
+                kind:
+                    type: string
+                name:
+                    type: string
+            type: object
         rpcStatus:
             properties:
                 code:
@@ -1181,6 +1195,13 @@ components:
                 nextPageToken:
                     type: string
             type: object
+        v1ListProjectMemberAttributesResponse:
+            properties:
+                members:
+                    items:
+                        $ref: '#/components/schemas/v1ProjectMemberAttributes'
+                    type: array
+            type: object
         v1ListProjectMemberServicesResponse:
             properties:
                 services:
@@ -1376,7 +1397,7 @@ components:
                     type: string
                 resources:
                     items:
-                        $ref: '#/components/schemas/v1ResourceName'
+                        $ref: '#/components/schemas/rilladminv1ResourceName'
                     type: array
                 state:
                     type: string
@@ -1401,7 +1422,7 @@ components:
                     type: string
                 resources:
                     items:
-                        $ref: '#/components/schemas/v1ResourceName'
+                        $ref: '#/components/schemas/rilladminv1ResourceName'
                     type: array
                 restrictResources:
                     type: boolean
@@ -1666,11 +1687,32 @@ components:
                     type: string
                 resources:
                     items:
-                        $ref: '#/components/schemas/v1ResourceName'
+                        $ref: '#/components/schemas/rilladminv1ResourceName'
                     type: array
                 restrictResources:
                     type: boolean
                 roleName:
+                    type: string
+            type: object
+        v1ProjectMemberAttributes:
+            description: |-
+                ProjectMemberAttributes describes a project member as the runtime sees them,
+                i.e. the identity that a runtime JWT issued for the member would carry.
+            properties:
+                attributes:
+                    description: Attributes as they would be embedded in a runtime JWT issued for the member.
+                    type: object
+                editTrigger:
+                    description: Whether the member has the runtime's EditTrigger permission on the calling deployment.
+                    type: boolean
+                email:
+                    type: string
+                securityRules:
+                    description: Resource restrictions that apply to the member, as they would be embedded in a runtime JWT issued for them.
+                    items:
+                        $ref: '#/components/schemas/v1SecurityRule'
+                    type: array
+                userId:
                     type: string
             type: object
         v1ProjectMemberService:
@@ -1709,7 +1751,7 @@ components:
                     type: string
                 resources:
                     items:
-                        $ref: '#/components/schemas/v1ResourceName'
+                        $ref: '#/components/schemas/rilladminv1ResourceName'
                     type: array
                 restrictResources:
                     type: boolean
@@ -1988,13 +2030,6 @@ components:
             type: object
         v1RequestProjectAccessResponse:
             type: object
-        v1ResourceName:
-            properties:
-                name:
-                    type: string
-                type:
-                    type: string
-            type: object
         v1RevokeAllUserAuthTokensResponse:
             properties:
                 tokensRevoked:
@@ -2038,6 +2073,104 @@ components:
                     items:
                         $ref: '#/components/schemas/v1User'
                     type: array
+            type: object
+        v1SecurityRule:
+            properties:
+                access:
+                    $ref: '#/components/schemas/v1SecurityRuleAccess'
+                fieldAccess:
+                    $ref: '#/components/schemas/v1SecurityRuleFieldAccess'
+                rowFilter:
+                    $ref: '#/components/schemas/v1SecurityRuleRowFilter'
+                transitiveAccess:
+                    $ref: '#/components/schemas/v1SecurityRuleTransitiveAccess'
+            type: object
+        v1SecurityRuleAccess:
+            properties:
+                allow:
+                    description: Whether to allow or deny access to the resources covered by the conditions.
+                    type: boolean
+                conditionExpression:
+                    description: |-
+                        The condition under which this rule applies.
+                        It is ANDed together with the condition_kinds and condition_resources.
+                    type: string
+                conditionKinds:
+                    description: The resource kinds the rule applies to. If empty, it defaults to all resource kinds.
+                    items:
+                        type: string
+                    type: array
+                conditionResources:
+                    description: |-
+                        The resources the rule applies to. If empty, it defaults to all resources in scope covered by `resource_kinds`.
+                        It is ORed together with the condition_kinds.
+                    items:
+                        $ref: '#/components/schemas/rillruntimev1ResourceName'
+                    type: array
+                exclusive:
+                    description: If true, any resource not covered by the conditions will explicitly get the opposite permission (e.g. will be denied if `allow` is true).
+                    type: boolean
+            type: object
+        v1SecurityRuleFieldAccess:
+            properties:
+                allFields:
+                    type: boolean
+                allow:
+                    type: boolean
+                conditionExpression:
+                    description: |-
+                        The condition under which this rule applies.
+                        It is ANDed together with the condition_kinds and condition_resources.
+                    type: string
+                conditionKinds:
+                    description: The resource kinds the rule applies to. If empty, it defaults to all resource kinds.
+                    items:
+                        type: string
+                    type: array
+                conditionResources:
+                    description: |-
+                        The resources the rule applies to. If empty, it defaults to all resources in scope covered by `resource_kinds`.
+                        It is ORed together with the condition_kinds.
+                    items:
+                        $ref: '#/components/schemas/rillruntimev1ResourceName'
+                    type: array
+                exclusive:
+                    description: If true, all other fields not explicitly listed will get the opposite permission (e.g. will be denied if `allow` is true).
+                    type: boolean
+                fields:
+                    items:
+                        type: string
+                    type: array
+            type: object
+        v1SecurityRuleRowFilter:
+            properties:
+                conditionExpression:
+                    description: |-
+                        The condition under which this rule applies.
+                        It is ANDed together with the condition_kinds and condition_resources.
+                    type: string
+                conditionKinds:
+                    description: The resource kinds the rule applies to. If empty, it defaults to all resource kinds.
+                    items:
+                        type: string
+                    type: array
+                conditionResources:
+                    description: |-
+                        The resources the rule applies to. If empty, it defaults to all resources in scope covered by `resource_kinds`.
+                        It is ORed together with the condition_kinds.
+                    items:
+                        $ref: '#/components/schemas/rillruntimev1ResourceName'
+                    type: array
+                expression:
+                    $ref: '#/components/schemas/v1Expression'
+                sql:
+                    title: Raw SQL expression to apply to the underlying table
+                    type: string
+            type: object
+        v1SecurityRuleTransitiveAccess:
+            properties:
+                resource:
+                    $ref: '#/components/schemas/rillruntimev1ResourceName'
             type: object
         v1SendPushNotificationResponse:
             properties:
@@ -3309,7 +3442,7 @@ paths:
                                     type: string
                                 resources:
                                     items:
-                                        $ref: '#/components/schemas/v1ResourceName'
+                                        $ref: '#/components/schemas/rilladminv1ResourceName'
                                     type: array
                                 restrictResources:
                                     type: boolean
@@ -3425,7 +3558,7 @@ paths:
                             properties:
                                 resources:
                                     items:
-                                        $ref: '#/components/schemas/v1ResourceName'
+                                        $ref: '#/components/schemas/rilladminv1ResourceName'
                                     type: array
                                 restrictResources:
                                     type: boolean
@@ -3570,7 +3703,7 @@ paths:
                             properties:
                                 resources:
                                     items:
-                                        $ref: '#/components/schemas/v1ResourceName'
+                                        $ref: '#/components/schemas/rilladminv1ResourceName'
                                     type: array
                                 restrictResources:
                                     type: boolean
@@ -3619,7 +3752,7 @@ paths:
                             properties:
                                 resources:
                                     items:
-                                        $ref: '#/components/schemas/v1ResourceName'
+                                        $ref: '#/components/schemas/rilladminv1ResourceName'
                                     type: array
                                 restrictResources:
                                     type: boolean
@@ -4002,6 +4135,7 @@ paths:
     /v1/projects/-/redeploy: {}
     /v1/projects/{id}: {}
     /v1/projects/{projectId}/alerts/meta: {}
+    /v1/projects/{projectId}/member-attributes: {}
     /v1/projects/{projectId}/push-notifications/send: {}
     /v1/projects/{projectId}/repo/meta: {}
     /v1/projects/{projectId}/repo/virtual: {}
