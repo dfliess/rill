@@ -102,6 +102,7 @@ func New(t TestingT, allowHostAccess bool) *runtime.Runtime {
 type InstanceOptions struct {
 	Files             map[string]string
 	Variables         map[string]string
+	Annotations       map[string]string
 	WatchRepo         bool
 	StageChanges      bool
 	DisableHostAccess bool
@@ -189,6 +190,7 @@ func NewInstanceWithOptions(t TestingT, opts InstanceOptions) (*runtime.Runtime,
 			},
 		},
 		Variables:   vars,
+		Annotations: opts.Annotations,
 		FrontendURL: opts.FrontendURL,
 	}
 

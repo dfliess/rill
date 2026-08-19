@@ -89,6 +89,11 @@ func (l *localAdminService) GetReportMetadata(ctx context.Context, reportName, o
 	return nil, drivers.ErrNotImplemented
 }
 
+// SendPushNotification implements drivers.AdminService.
+func (l *localAdminService) SendPushNotification(ctx context.Context, category string, emails []string, title, body, linkPath, tag string) (int, error) {
+	return 0, drivers.ErrNotImplemented
+}
+
 // ProvisionConnector implements drivers.AdminService.
 func (l *localAdminService) ProvisionConnector(ctx context.Context, name, driver string, args map[string]any) (map[string]any, error) {
 	return nil, drivers.ErrNotImplemented
