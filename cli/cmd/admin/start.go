@@ -18,6 +18,7 @@ import (
 	"github.com/rilldata/rill/admin/billing"
 	"github.com/rilldata/rill/admin/billing/payment"
 	"github.com/rilldata/rill/admin/jobs/river"
+	"github.com/rilldata/rill/admin/pkg/pushnotifications"
 	"github.com/rilldata/rill/admin/server"
 	"github.com/rilldata/rill/cli/pkg/cmdutil"
 	"github.com/rilldata/rill/runtime/drivers"
@@ -93,16 +94,20 @@ type Config struct {
 	EmailSenderEmail                  string `split_words:"true"`
 	EmailSenderName                   string `split_words:"true"`
 	EmailBCC                          string `split_words:"true"`
-	AIDriver                          string `default:"" split_words:"true"`
-	OpenAIAPIKey                      string `envconfig:"openai_api_key"`
-	ClaudeAPIKey                      string `envconfig:"claude_api_key"`
-	GeminiAPIKey                      string `envconfig:"gemini_api_key"`
-	ActivitySinkType                  string `default:"" split_words:"true"`
-	ActivitySinkKafkaBrokers          string `default:"" split_words:"true"`
-	ActivityUISinkKafkaTopic          string `default:"" split_words:"true"`
-	MetricsProject                    string `default:"" split_words:"true"`
-	AutoscalerCron                    string `default:"CRON_TZ=America/Los_Angeles 0 0 * * 1" split_words:"true"`
-	ScaleDownConstraint               int    `default:"0" split_words:"true"`
+	// VAPID key pair and subject for Web Push notifications. Push notifications are disabled if the keys are not set.
+	VapidPublicKey           string `split_words:"true"`
+	VapidPrivateKey          string `split_words:"true"`
+	VapidSubject             string `split_words:"true"`
+	AIDriver                 string `default:"" split_words:"true"`
+	OpenAIAPIKey             string `envconfig:"openai_api_key"`
+	ClaudeAPIKey             string `envconfig:"claude_api_key"`
+	GeminiAPIKey             string `envconfig:"gemini_api_key"`
+	ActivitySinkType         string `default:"" split_words:"true"`
+	ActivitySinkKafkaBrokers string `default:"" split_words:"true"`
+	ActivityUISinkKafkaTopic string `default:"" split_words:"true"`
+	MetricsProject           string `default:"" split_words:"true"`
+	AutoscalerCron           string `default:"CRON_TZ=America/Los_Angeles 0 0 * * 1" split_words:"true"`
+	ScaleDownConstraint      int    `default:"0" split_words:"true"`
 	// StoppedDeploymentRetention is how long a stopped (hibernated) deployment is kept around before its persistent state is fully deleted.
 	StoppedDeploymentRetention time.Duration `default:"168h" split_words:"true"`
 	OrbAPIKey                  string        `split_words:"true"`
@@ -236,6 +241,9 @@ func StartCmd(ch *cmdutil.Helper) *cobra.Command {
 			}
 			emailClient := email.New(sender)
 
+			// Init push notifications client (disabled if the VAPID keys are not configured)
+			pushClient := pushnotifications.New(conf.VapidPublicKey, conf.VapidPrivateKey, conf.VapidSubject)
+
 			// Init github client
 			gh, err := admin.NewGithub(cmd.Context(), conf.GithubAppID, conf.GithubAppPrivateKey, conf.GithubManagedAccount, logger)
 			if err != nil {
@@ -335,7 +343,7 @@ func StartCmd(ch *cmdutil.Helper) *cobra.Command {
 				AllowMockBilling:           conf.AllowMockBilling,
 				StoppedDeploymentRetention: conf.StoppedDeploymentRetention,
 			}
-			adm, err := admin.New(cmd.Context(), admOpts, logger, issuer, emailClient, gh, aiService, assetsBucket, biller, p)
+			adm, err := admin.New(cmd.Context(), admOpts, logger, issuer, emailClient, pushClient, gh, aiService, assetsBucket, biller, p)
 			if err != nil {
 				logger.Fatal("error creating service", zap.Error(err))
 			}

@@ -12,6 +12,7 @@ import (
 	"github.com/rilldata/rill/admin/billing/payment"
 	"github.com/rilldata/rill/admin/database"
 	"github.com/rilldata/rill/admin/jobs"
+	"github.com/rilldata/rill/admin/pkg/pushnotifications"
 	"github.com/rilldata/rill/admin/provisioner"
 	"github.com/rilldata/rill/cli/pkg/version"
 	"github.com/rilldata/rill/runtime/drivers"
@@ -43,6 +44,7 @@ type Service struct {
 	URLs                       *URLs
 	ProvisionerSet             map[string]provisioner.Provisioner
 	Email                      *email.Client
+	Push                       *pushnotifications.Client
 	Github                     Github
 	AI                         drivers.AIService
 	Assets                     *storage.BucketHandle
@@ -61,7 +63,7 @@ type Service struct {
 	PaymentProvider            payment.Provider
 }
 
-func New(ctx context.Context, opts *Options, logger *zap.Logger, issuer *auth.Issuer, emailClient *email.Client, github Github, aiService drivers.AIService, assets *storage.BucketHandle, biller billing.Biller, p payment.Provider) (*Service, error) {
+func New(ctx context.Context, opts *Options, logger *zap.Logger, issuer *auth.Issuer, emailClient *email.Client, pushClient *pushnotifications.Client, github Github, aiService drivers.AIService, assets *storage.BucketHandle, biller billing.Biller, p payment.Provider) (*Service, error) {
 	// Init db
 	db, err := database.Open(opts.DatabaseDriver, opts.DatabaseDSN, opts.DatabaseEncryptionKeyring)
 	if err != nil {
@@ -128,6 +130,7 @@ func New(ctx context.Context, opts *Options, logger *zap.Logger, issuer *auth.Is
 		URLs:                       urls,
 		ProvisionerSet:             provSet,
 		Email:                      emailClient,
+		Push:                       pushClient,
 		Github:                     github,
 		AI:                         aiService,
 		Assets:                     assets,

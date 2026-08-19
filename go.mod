@@ -17,6 +17,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/MicahParks/keyfunc v1.9.0
 	github.com/NYTimes/gziphandler v1.1.1
+	github.com/SherClockHolmes/webpush-go v1.4.0
 	github.com/XSAM/otelsql v0.27.0
 	github.com/alecthomas/participle/v2 v2.1.1
 	github.com/alicebob/miniredis v2.5.0+incompatible
