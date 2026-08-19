@@ -544,6 +544,20 @@ components:
             type: object
         v1CreateProjectWhitelistedDomainResponse:
             type: object
+        v1CreatePushSubscriptionRequest:
+            properties:
+                auth:
+                    type: string
+                endpoint:
+                    description: Fields of a PushSubscription object from the browser's Push API.
+                    type: string
+                p256dh:
+                    type: string
+                userAgent:
+                    type: string
+            type: object
+        v1CreatePushSubscriptionResponse:
+            type: object
         v1CreateReportResponse:
             properties:
                 name:
@@ -576,6 +590,8 @@ components:
             properties:
                 id:
                     type: string
+            type: object
+        v1DeletePushSubscriptionResponse:
             type: object
         v1DeleteReportResponse:
             type: object
@@ -871,6 +887,11 @@ components:
                     format: int64
                     type: integer
             type: object
+        v1GetNotificationPreferencesResponse:
+            properties:
+                preferences:
+                    $ref: '#/components/schemas/v1NotificationPreferences'
+            type: object
         v1GetOrganizationMemberUserResponse:
             properties:
                 member:
@@ -939,6 +960,12 @@ components:
                         Deprecated: Populated for backwards compatibility.
                         (Renamed from "variables" to "variables_map").
                     type: object
+            type: object
+        v1GetPushNotificationConfigResponse:
+            properties:
+                vapidPublicKey:
+                    description: Public VAPID key for creating push subscriptions. Empty if push notifications are disabled.
+                    type: string
             type: object
         v1GetRepoMetaResponse:
             properties:
@@ -1233,6 +1260,13 @@ components:
                         $ref: '#/components/schemas/v1BillingPlan'
                     type: array
             type: object
+        v1ListPushSubscriptionsResponse:
+            properties:
+                subscriptions:
+                    items:
+                        $ref: '#/components/schemas/v1PushSubscription'
+                    type: array
+            type: object
         v1ListRolesResponse:
             properties:
                 organizationRoles:
@@ -1379,6 +1413,15 @@ components:
                 usersCount:
                     format: int64
                     type: integer
+            type: object
+        v1NotificationPreferences:
+            properties:
+                pushActApprovals:
+                    type: boolean
+                pushAlerts:
+                    type: boolean
+                pushReports:
+                    type: boolean
             type: object
         v1Organization:
             properties:
@@ -1799,6 +1842,18 @@ components:
                     description: Next page token for pagination.
                     type: string
             type: object
+        v1PushSubscription:
+            properties:
+                createdOn:
+                    format: date-time
+                    type: string
+                endpoint:
+                    type: string
+                id:
+                    type: string
+                userAgent:
+                    type: string
+            type: object
         v1Quotas:
             properties:
                 apiCallsPerSeat:
@@ -1983,6 +2038,13 @@ components:
                     items:
                         $ref: '#/components/schemas/v1User'
                     type: array
+            type: object
+        v1SendPushNotificationResponse:
+            properties:
+                sent:
+                    description: Number of notifications successfully sent.
+                    format: int32
+                    type: integer
             type: object
         v1Service:
             properties:
@@ -2361,6 +2423,16 @@ components:
                     type: string
             type: object
         v1UpdateBookmarkResponse:
+            type: object
+        v1UpdateNotificationPreferencesRequest:
+            properties:
+                preferences:
+                    $ref: '#/components/schemas/v1NotificationPreferences'
+            type: object
+        v1UpdateNotificationPreferencesResponse:
+            properties:
+                preferences:
+                    $ref: '#/components/schemas/v1NotificationPreferences'
             type: object
         v1UpdateOrganizationMemberUserAttributesResponse:
             type: object
@@ -7140,6 +7212,56 @@ paths:
                                 $ref: '#/components/schemas/rpcStatus'
                     description: An unexpected error response.
             summary: GetAlertMeta returns metadata for checking an alert. It's currently only called by the alert reconciler in the runtime.
+    /v1/projects/{projectId}/push-notifications/send:
+        post:
+            operationId: AdminService_SendPushNotification
+            parameters:
+                - in: path
+                  name: projectId
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            properties:
+                                body:
+                                    type: string
+                                category:
+                                    description: Notification category. One of "alerts", "reports" or "act_approvals".
+                                    type: string
+                                linkPath:
+                                    description: Path relative to the frontend URL to open when the notification is clicked. Must start with "/".
+                                    type: string
+                                recipientEmails:
+                                    items:
+                                        type: string
+                                    type: array
+                                tag:
+                                    description: Notifications with the same tag replace each other in the browser.
+                                    type: string
+                                title:
+                                    type: string
+                            type: object
+                required: true
+                x-originalParamName: body
+            responses:
+                "200":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/v1SendPushNotificationResponse'
+                    description: A successful response.
+                default:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/rpcStatus'
+                    description: An unexpected error response.
+            summary: |-
+                SendPushNotification sends a web push notification to the subscriptions of the given recipients.
+                It's currently only called by the runtime on behalf of a project's resources (e.g. when an alert fires).
     /v1/projects/{projectId}/repo/meta:
         get:
             operationId: AdminService_GetRepoMeta
@@ -7348,6 +7470,25 @@ paths:
                                 $ref: '#/components/schemas/rpcStatus'
                     description: An unexpected error response.
             summary: GetReportMeta returns metadata for generating a report. It's currently only called by the report reconciler in the runtime.
+    /v1/push-notifications/config:
+        get:
+            operationId: AdminService_GetPushNotificationConfig
+            responses:
+                "200":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/v1GetPushNotificationConfigResponse'
+                    description: A successful response.
+                default:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/rpcStatus'
+                    description: An unexpected error response.
+            summary: |-
+                GetPushNotificationConfig returns the public VAPID key browsers need to create push subscriptions.
+                An empty key means push notifications are disabled in the deployment.
     /v1/roles:
         get:
             operationId: AdminService_ListRoles
@@ -8291,6 +8432,46 @@ paths:
                                 $ref: '#/components/schemas/rpcStatus'
                     description: An unexpected error response.
             summary: GetCurrentUser returns the currently authenticated user (if any)
+    /v1/users/notification-preferences:
+        get:
+            operationId: AdminService_GetNotificationPreferences
+            responses:
+                "200":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/v1GetNotificationPreferencesResponse'
+                    description: A successful response.
+                default:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/rpcStatus'
+                    description: An unexpected error response.
+            summary: GetNotificationPreferences returns the current user's per-category notification preferences.
+        put:
+            operationId: AdminService_UpdateNotificationPreferences
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/v1UpdateNotificationPreferencesRequest'
+                required: true
+                x-originalParamName: body
+            responses:
+                "200":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/v1UpdateNotificationPreferencesResponse'
+                    description: A successful response.
+                default:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/rpcStatus'
+                    description: An unexpected error response.
+            summary: UpdateNotificationPreferences updates the current user's per-category notification preferences.
     /v1/users/preferences:
         put:
             operationId: AdminService_UpdateUserPreferences
@@ -8315,6 +8496,69 @@ paths:
                                 $ref: '#/components/schemas/rpcStatus'
                     description: An unexpected error response.
             summary: UpdateUserPreferences updates the preferences for the user
+    /v1/users/push-notifications/subscriptions:
+        get:
+            operationId: AdminService_ListPushSubscriptions
+            responses:
+                "200":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/v1ListPushSubscriptionsResponse'
+                    description: A successful response.
+                default:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/rpcStatus'
+                    description: An unexpected error response.
+            summary: ListPushSubscriptions lists the current user's push subscriptions.
+        post:
+            operationId: AdminService_CreatePushSubscription
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/v1CreatePushSubscriptionRequest'
+                required: true
+                x-originalParamName: body
+            responses:
+                "200":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/v1CreatePushSubscriptionResponse'
+                    description: A successful response.
+                default:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/rpcStatus'
+                    description: An unexpected error response.
+            summary: CreatePushSubscription registers a push subscription of one of the current user's browsers.
+    /v1/users/push-notifications/subscriptions/{id}:
+        delete:
+            operationId: AdminService_DeletePushSubscription
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/v1DeletePushSubscriptionResponse'
+                    description: A successful response.
+                default:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/rpcStatus'
+                    description: An unexpected error response.
+            summary: DeletePushSubscription deletes one of the current user's push subscriptions.
     /v1/users/search:
         get:
             operationId: AdminService_SearchUsers

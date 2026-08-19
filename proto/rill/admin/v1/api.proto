@@ -1122,6 +1122,43 @@ service AdminService {
     };
   }
 
+  // GetPushNotificationConfig returns the public VAPID key browsers need to create push subscriptions.
+  // An empty key means push notifications are disabled in the deployment.
+  rpc GetPushNotificationConfig(GetPushNotificationConfigRequest) returns (GetPushNotificationConfigResponse) {
+    option (google.api.http) = {get: "/v1/push-notifications/config"};
+  }
+
+  // CreatePushSubscription registers a push subscription of one of the current user's browsers.
+  rpc CreatePushSubscription(CreatePushSubscriptionRequest) returns (CreatePushSubscriptionResponse) {
+    option (google.api.http) = {
+      post: "/v1/users/push-notifications/subscriptions",
+      body: "*"
+    };
+  }
+
+  // ListPushSubscriptions lists the current user's push subscriptions.
+  rpc ListPushSubscriptions(ListPushSubscriptionsRequest) returns (ListPushSubscriptionsResponse) {
+    option (google.api.http) = {get: "/v1/users/push-notifications/subscriptions"};
+  }
+
+  // DeletePushSubscription deletes one of the current user's push subscriptions.
+  rpc DeletePushSubscription(DeletePushSubscriptionRequest) returns (DeletePushSubscriptionResponse) {
+    option (google.api.http) = {delete: "/v1/users/push-notifications/subscriptions/{id}"};
+  }
+
+  // GetNotificationPreferences returns the current user's per-category notification preferences.
+  rpc GetNotificationPreferences(GetNotificationPreferencesRequest) returns (GetNotificationPreferencesResponse) {
+    option (google.api.http) = {get: "/v1/users/notification-preferences"};
+  }
+
+  // UpdateNotificationPreferences updates the current user's per-category notification preferences.
+  rpc UpdateNotificationPreferences(UpdateNotificationPreferencesRequest) returns (UpdateNotificationPreferencesResponse) {
+    option (google.api.http) = {
+      put: "/v1/users/notification-preferences",
+      body: "*"
+    };
+  }
+
   // ListBookmarks lists all the bookmarks for the user and global ones for dashboard
   rpc ListBookmarks(ListBookmarksRequest) returns (ListBookmarksResponse) {
     option (google.api.http) = {get: "/v1/users/bookmarks"};
@@ -1185,6 +1222,15 @@ service AdminService {
   rpc GetAlertMeta(GetAlertMetaRequest) returns (GetAlertMetaResponse) {
     option (google.api.http) = {
       post: "/v1/projects/{project_id}/alerts/meta",
+      body: "*"
+    };
+  }
+
+  // SendPushNotification sends a web push notification to the subscriptions of the given recipients.
+  // It's currently only called by the runtime on behalf of a project's resources (e.g. when an alert fires).
+  rpc SendPushNotification(SendPushNotificationRequest) returns (SendPushNotificationResponse) {
+    option (google.api.http) = {
+      post: "/v1/projects/{project_id}/push-notifications/send",
       body: "*"
     };
   }
@@ -2540,6 +2586,62 @@ message UpdateUserPreferencesResponse {
   UserPreferences preferences = 1;
 }
 
+message GetPushNotificationConfigRequest {}
+
+message GetPushNotificationConfigResponse {
+  // Public VAPID key for creating push subscriptions. Empty if push notifications are disabled.
+  string vapid_public_key = 1;
+}
+
+message CreatePushSubscriptionRequest {
+  // Fields of a PushSubscription object from the browser's Push API.
+  string endpoint = 1 [(validate.rules).string.min_len = 1];
+  string p256dh = 2 [(validate.rules).string.min_len = 1];
+  string auth = 3 [(validate.rules).string.min_len = 1];
+  string user_agent = 4;
+}
+
+message CreatePushSubscriptionResponse {}
+
+message PushSubscription {
+  string id = 1;
+  string endpoint = 2;
+  string user_agent = 3;
+  google.protobuf.Timestamp created_on = 4;
+}
+
+message ListPushSubscriptionsRequest {}
+
+message ListPushSubscriptionsResponse {
+  repeated PushSubscription subscriptions = 1;
+}
+
+message DeletePushSubscriptionRequest {
+  string id = 1 [(validate.rules).string.uuid = true];
+}
+
+message DeletePushSubscriptionResponse {}
+
+message NotificationPreferences {
+  bool push_alerts = 1;
+  bool push_reports = 2;
+  bool push_act_approvals = 3;
+}
+
+message GetNotificationPreferencesRequest {}
+
+message GetNotificationPreferencesResponse {
+  NotificationPreferences preferences = 1;
+}
+
+message UpdateNotificationPreferencesRequest {
+  NotificationPreferences preferences = 1 [(validate.rules).message.required = true];
+}
+
+message UpdateNotificationPreferencesResponse {
+  NotificationPreferences preferences = 1;
+}
+
 message GetUserRequest {
   string email = 1 [(validate.rules).string.email = true];
 }
@@ -3095,6 +3197,24 @@ message GetAlertMetaResponse {
   map<string, URLs> recipient_urls = 2;
   google.protobuf.Struct query_for_attributes = 3;
   reserved 1;
+}
+
+message SendPushNotificationRequest {
+  string project_id = 1;
+  // Notification category. One of "alerts", "reports" or "act_approvals".
+  string category = 2 [(validate.rules).string = {in: ["alerts", "reports", "act_approvals"]}];
+  repeated string recipient_emails = 3;
+  string title = 4;
+  string body = 5;
+  // Path relative to the frontend URL to open when the notification is clicked. Must start with "/".
+  string link_path = 6;
+  // Notifications with the same tag replace each other in the browser.
+  string tag = 7;
+}
+
+message SendPushNotificationResponse {
+  // Number of notifications successfully sent.
+  int32 sent = 1;
 }
 
 message CreateReportRequest {

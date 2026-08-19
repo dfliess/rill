@@ -39,6 +39,9 @@ var (
 	_ = runtimev1.ExportFormat(0)
 )
 
+// define the regex for a UUID once up-front
+var _api_uuidPattern = regexp.MustCompile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
+
 // Validate checks the field values on PingRequest with the rules defined in
 // the proto definition for this message. If any rules are violated, the first
 // error encountered is returned, or nil if there are no violations.
@@ -25836,6 +25839,1686 @@ var _ interface {
 	ErrorName() string
 } = UpdateUserPreferencesResponseValidationError{}
 
+// Validate checks the field values on GetPushNotificationConfigRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *GetPushNotificationConfigRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetPushNotificationConfigRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// GetPushNotificationConfigRequestMultiError, or nil if none found.
+func (m *GetPushNotificationConfigRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetPushNotificationConfigRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return GetPushNotificationConfigRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetPushNotificationConfigRequestMultiError is an error wrapping multiple
+// validation errors returned by
+// GetPushNotificationConfigRequest.ValidateAll() if the designated
+// constraints aren't met.
+type GetPushNotificationConfigRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetPushNotificationConfigRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetPushNotificationConfigRequestMultiError) AllErrors() []error { return m }
+
+// GetPushNotificationConfigRequestValidationError is the validation error
+// returned by GetPushNotificationConfigRequest.Validate if the designated
+// constraints aren't met.
+type GetPushNotificationConfigRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetPushNotificationConfigRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetPushNotificationConfigRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetPushNotificationConfigRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetPushNotificationConfigRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetPushNotificationConfigRequestValidationError) ErrorName() string {
+	return "GetPushNotificationConfigRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetPushNotificationConfigRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetPushNotificationConfigRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetPushNotificationConfigRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetPushNotificationConfigRequestValidationError{}
+
+// Validate checks the field values on GetPushNotificationConfigResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *GetPushNotificationConfigResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetPushNotificationConfigResponse
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// GetPushNotificationConfigResponseMultiError, or nil if none found.
+func (m *GetPushNotificationConfigResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetPushNotificationConfigResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for VapidPublicKey
+
+	if len(errors) > 0 {
+		return GetPushNotificationConfigResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetPushNotificationConfigResponseMultiError is an error wrapping multiple
+// validation errors returned by
+// GetPushNotificationConfigResponse.ValidateAll() if the designated
+// constraints aren't met.
+type GetPushNotificationConfigResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetPushNotificationConfigResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetPushNotificationConfigResponseMultiError) AllErrors() []error { return m }
+
+// GetPushNotificationConfigResponseValidationError is the validation error
+// returned by GetPushNotificationConfigResponse.Validate if the designated
+// constraints aren't met.
+type GetPushNotificationConfigResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetPushNotificationConfigResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetPushNotificationConfigResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetPushNotificationConfigResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetPushNotificationConfigResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetPushNotificationConfigResponseValidationError) ErrorName() string {
+	return "GetPushNotificationConfigResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetPushNotificationConfigResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetPushNotificationConfigResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetPushNotificationConfigResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetPushNotificationConfigResponseValidationError{}
+
+// Validate checks the field values on CreatePushSubscriptionRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *CreatePushSubscriptionRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CreatePushSubscriptionRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// CreatePushSubscriptionRequestMultiError, or nil if none found.
+func (m *CreatePushSubscriptionRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CreatePushSubscriptionRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetEndpoint()) < 1 {
+		err := CreatePushSubscriptionRequestValidationError{
+			field:  "Endpoint",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetP256Dh()) < 1 {
+		err := CreatePushSubscriptionRequestValidationError{
+			field:  "P256Dh",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetAuth()) < 1 {
+		err := CreatePushSubscriptionRequestValidationError{
+			field:  "Auth",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for UserAgent
+
+	if len(errors) > 0 {
+		return CreatePushSubscriptionRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// CreatePushSubscriptionRequestMultiError is an error wrapping multiple
+// validation errors returned by CreatePushSubscriptionRequest.ValidateAll()
+// if the designated constraints aren't met.
+type CreatePushSubscriptionRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CreatePushSubscriptionRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CreatePushSubscriptionRequestMultiError) AllErrors() []error { return m }
+
+// CreatePushSubscriptionRequestValidationError is the validation error
+// returned by CreatePushSubscriptionRequest.Validate if the designated
+// constraints aren't met.
+type CreatePushSubscriptionRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CreatePushSubscriptionRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CreatePushSubscriptionRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CreatePushSubscriptionRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CreatePushSubscriptionRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CreatePushSubscriptionRequestValidationError) ErrorName() string {
+	return "CreatePushSubscriptionRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CreatePushSubscriptionRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCreatePushSubscriptionRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CreatePushSubscriptionRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CreatePushSubscriptionRequestValidationError{}
+
+// Validate checks the field values on CreatePushSubscriptionResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *CreatePushSubscriptionResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CreatePushSubscriptionResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// CreatePushSubscriptionResponseMultiError, or nil if none found.
+func (m *CreatePushSubscriptionResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CreatePushSubscriptionResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return CreatePushSubscriptionResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// CreatePushSubscriptionResponseMultiError is an error wrapping multiple
+// validation errors returned by CreatePushSubscriptionResponse.ValidateAll()
+// if the designated constraints aren't met.
+type CreatePushSubscriptionResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CreatePushSubscriptionResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CreatePushSubscriptionResponseMultiError) AllErrors() []error { return m }
+
+// CreatePushSubscriptionResponseValidationError is the validation error
+// returned by CreatePushSubscriptionResponse.Validate if the designated
+// constraints aren't met.
+type CreatePushSubscriptionResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CreatePushSubscriptionResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CreatePushSubscriptionResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CreatePushSubscriptionResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CreatePushSubscriptionResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CreatePushSubscriptionResponseValidationError) ErrorName() string {
+	return "CreatePushSubscriptionResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CreatePushSubscriptionResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCreatePushSubscriptionResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CreatePushSubscriptionResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CreatePushSubscriptionResponseValidationError{}
+
+// Validate checks the field values on PushSubscription with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *PushSubscription) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on PushSubscription with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// PushSubscriptionMultiError, or nil if none found.
+func (m *PushSubscription) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *PushSubscription) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	// no validation rules for Endpoint
+
+	// no validation rules for UserAgent
+
+	if all {
+		switch v := interface{}(m.GetCreatedOn()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, PushSubscriptionValidationError{
+					field:  "CreatedOn",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, PushSubscriptionValidationError{
+					field:  "CreatedOn",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetCreatedOn()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return PushSubscriptionValidationError{
+				field:  "CreatedOn",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return PushSubscriptionMultiError(errors)
+	}
+
+	return nil
+}
+
+// PushSubscriptionMultiError is an error wrapping multiple validation errors
+// returned by PushSubscription.ValidateAll() if the designated constraints
+// aren't met.
+type PushSubscriptionMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m PushSubscriptionMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m PushSubscriptionMultiError) AllErrors() []error { return m }
+
+// PushSubscriptionValidationError is the validation error returned by
+// PushSubscription.Validate if the designated constraints aren't met.
+type PushSubscriptionValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e PushSubscriptionValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e PushSubscriptionValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e PushSubscriptionValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e PushSubscriptionValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e PushSubscriptionValidationError) ErrorName() string { return "PushSubscriptionValidationError" }
+
+// Error satisfies the builtin error interface
+func (e PushSubscriptionValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sPushSubscription.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = PushSubscriptionValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = PushSubscriptionValidationError{}
+
+// Validate checks the field values on ListPushSubscriptionsRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListPushSubscriptionsRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListPushSubscriptionsRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListPushSubscriptionsRequestMultiError, or nil if none found.
+func (m *ListPushSubscriptionsRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListPushSubscriptionsRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return ListPushSubscriptionsRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListPushSubscriptionsRequestMultiError is an error wrapping multiple
+// validation errors returned by ListPushSubscriptionsRequest.ValidateAll() if
+// the designated constraints aren't met.
+type ListPushSubscriptionsRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListPushSubscriptionsRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListPushSubscriptionsRequestMultiError) AllErrors() []error { return m }
+
+// ListPushSubscriptionsRequestValidationError is the validation error returned
+// by ListPushSubscriptionsRequest.Validate if the designated constraints
+// aren't met.
+type ListPushSubscriptionsRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListPushSubscriptionsRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListPushSubscriptionsRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListPushSubscriptionsRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListPushSubscriptionsRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListPushSubscriptionsRequestValidationError) ErrorName() string {
+	return "ListPushSubscriptionsRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListPushSubscriptionsRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListPushSubscriptionsRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListPushSubscriptionsRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListPushSubscriptionsRequestValidationError{}
+
+// Validate checks the field values on ListPushSubscriptionsResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListPushSubscriptionsResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListPushSubscriptionsResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// ListPushSubscriptionsResponseMultiError, or nil if none found.
+func (m *ListPushSubscriptionsResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListPushSubscriptionsResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetSubscriptions() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ListPushSubscriptionsResponseValidationError{
+						field:  fmt.Sprintf("Subscriptions[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ListPushSubscriptionsResponseValidationError{
+						field:  fmt.Sprintf("Subscriptions[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ListPushSubscriptionsResponseValidationError{
+					field:  fmt.Sprintf("Subscriptions[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return ListPushSubscriptionsResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListPushSubscriptionsResponseMultiError is an error wrapping multiple
+// validation errors returned by ListPushSubscriptionsResponse.ValidateAll()
+// if the designated constraints aren't met.
+type ListPushSubscriptionsResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListPushSubscriptionsResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListPushSubscriptionsResponseMultiError) AllErrors() []error { return m }
+
+// ListPushSubscriptionsResponseValidationError is the validation error
+// returned by ListPushSubscriptionsResponse.Validate if the designated
+// constraints aren't met.
+type ListPushSubscriptionsResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListPushSubscriptionsResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListPushSubscriptionsResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListPushSubscriptionsResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListPushSubscriptionsResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListPushSubscriptionsResponseValidationError) ErrorName() string {
+	return "ListPushSubscriptionsResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListPushSubscriptionsResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListPushSubscriptionsResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListPushSubscriptionsResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListPushSubscriptionsResponseValidationError{}
+
+// Validate checks the field values on DeletePushSubscriptionRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *DeletePushSubscriptionRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on DeletePushSubscriptionRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// DeletePushSubscriptionRequestMultiError, or nil if none found.
+func (m *DeletePushSubscriptionRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DeletePushSubscriptionRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if err := m._validateUuid(m.GetId()); err != nil {
+		err = DeletePushSubscriptionRequestValidationError{
+			field:  "Id",
+			reason: "value must be a valid UUID",
+			cause:  err,
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return DeletePushSubscriptionRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+func (m *DeletePushSubscriptionRequest) _validateUuid(uuid string) error {
+	if matched := _api_uuidPattern.MatchString(uuid); !matched {
+		return errors.New("invalid uuid format")
+	}
+
+	return nil
+}
+
+// DeletePushSubscriptionRequestMultiError is an error wrapping multiple
+// validation errors returned by DeletePushSubscriptionRequest.ValidateAll()
+// if the designated constraints aren't met.
+type DeletePushSubscriptionRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DeletePushSubscriptionRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DeletePushSubscriptionRequestMultiError) AllErrors() []error { return m }
+
+// DeletePushSubscriptionRequestValidationError is the validation error
+// returned by DeletePushSubscriptionRequest.Validate if the designated
+// constraints aren't met.
+type DeletePushSubscriptionRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DeletePushSubscriptionRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DeletePushSubscriptionRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DeletePushSubscriptionRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DeletePushSubscriptionRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DeletePushSubscriptionRequestValidationError) ErrorName() string {
+	return "DeletePushSubscriptionRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e DeletePushSubscriptionRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDeletePushSubscriptionRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DeletePushSubscriptionRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DeletePushSubscriptionRequestValidationError{}
+
+// Validate checks the field values on DeletePushSubscriptionResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *DeletePushSubscriptionResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on DeletePushSubscriptionResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// DeletePushSubscriptionResponseMultiError, or nil if none found.
+func (m *DeletePushSubscriptionResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DeletePushSubscriptionResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return DeletePushSubscriptionResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// DeletePushSubscriptionResponseMultiError is an error wrapping multiple
+// validation errors returned by DeletePushSubscriptionResponse.ValidateAll()
+// if the designated constraints aren't met.
+type DeletePushSubscriptionResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DeletePushSubscriptionResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DeletePushSubscriptionResponseMultiError) AllErrors() []error { return m }
+
+// DeletePushSubscriptionResponseValidationError is the validation error
+// returned by DeletePushSubscriptionResponse.Validate if the designated
+// constraints aren't met.
+type DeletePushSubscriptionResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DeletePushSubscriptionResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DeletePushSubscriptionResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DeletePushSubscriptionResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DeletePushSubscriptionResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DeletePushSubscriptionResponseValidationError) ErrorName() string {
+	return "DeletePushSubscriptionResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e DeletePushSubscriptionResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDeletePushSubscriptionResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DeletePushSubscriptionResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DeletePushSubscriptionResponseValidationError{}
+
+// Validate checks the field values on NotificationPreferences with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *NotificationPreferences) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on NotificationPreferences with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// NotificationPreferencesMultiError, or nil if none found.
+func (m *NotificationPreferences) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *NotificationPreferences) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for PushAlerts
+
+	// no validation rules for PushReports
+
+	// no validation rules for PushActApprovals
+
+	if len(errors) > 0 {
+		return NotificationPreferencesMultiError(errors)
+	}
+
+	return nil
+}
+
+// NotificationPreferencesMultiError is an error wrapping multiple validation
+// errors returned by NotificationPreferences.ValidateAll() if the designated
+// constraints aren't met.
+type NotificationPreferencesMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m NotificationPreferencesMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m NotificationPreferencesMultiError) AllErrors() []error { return m }
+
+// NotificationPreferencesValidationError is the validation error returned by
+// NotificationPreferences.Validate if the designated constraints aren't met.
+type NotificationPreferencesValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e NotificationPreferencesValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e NotificationPreferencesValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e NotificationPreferencesValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e NotificationPreferencesValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e NotificationPreferencesValidationError) ErrorName() string {
+	return "NotificationPreferencesValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e NotificationPreferencesValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sNotificationPreferences.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = NotificationPreferencesValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = NotificationPreferencesValidationError{}
+
+// Validate checks the field values on GetNotificationPreferencesRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *GetNotificationPreferencesRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetNotificationPreferencesRequest
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// GetNotificationPreferencesRequestMultiError, or nil if none found.
+func (m *GetNotificationPreferencesRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetNotificationPreferencesRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return GetNotificationPreferencesRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetNotificationPreferencesRequestMultiError is an error wrapping multiple
+// validation errors returned by
+// GetNotificationPreferencesRequest.ValidateAll() if the designated
+// constraints aren't met.
+type GetNotificationPreferencesRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetNotificationPreferencesRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetNotificationPreferencesRequestMultiError) AllErrors() []error { return m }
+
+// GetNotificationPreferencesRequestValidationError is the validation error
+// returned by GetNotificationPreferencesRequest.Validate if the designated
+// constraints aren't met.
+type GetNotificationPreferencesRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetNotificationPreferencesRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetNotificationPreferencesRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetNotificationPreferencesRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetNotificationPreferencesRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetNotificationPreferencesRequestValidationError) ErrorName() string {
+	return "GetNotificationPreferencesRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetNotificationPreferencesRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetNotificationPreferencesRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetNotificationPreferencesRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetNotificationPreferencesRequestValidationError{}
+
+// Validate checks the field values on GetNotificationPreferencesResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *GetNotificationPreferencesResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetNotificationPreferencesResponse
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// GetNotificationPreferencesResponseMultiError, or nil if none found.
+func (m *GetNotificationPreferencesResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetNotificationPreferencesResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetPreferences()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, GetNotificationPreferencesResponseValidationError{
+					field:  "Preferences",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, GetNotificationPreferencesResponseValidationError{
+					field:  "Preferences",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetPreferences()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return GetNotificationPreferencesResponseValidationError{
+				field:  "Preferences",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return GetNotificationPreferencesResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetNotificationPreferencesResponseMultiError is an error wrapping multiple
+// validation errors returned by
+// GetNotificationPreferencesResponse.ValidateAll() if the designated
+// constraints aren't met.
+type GetNotificationPreferencesResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetNotificationPreferencesResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetNotificationPreferencesResponseMultiError) AllErrors() []error { return m }
+
+// GetNotificationPreferencesResponseValidationError is the validation error
+// returned by GetNotificationPreferencesResponse.Validate if the designated
+// constraints aren't met.
+type GetNotificationPreferencesResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetNotificationPreferencesResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetNotificationPreferencesResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetNotificationPreferencesResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetNotificationPreferencesResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetNotificationPreferencesResponseValidationError) ErrorName() string {
+	return "GetNotificationPreferencesResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetNotificationPreferencesResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetNotificationPreferencesResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetNotificationPreferencesResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetNotificationPreferencesResponseValidationError{}
+
+// Validate checks the field values on UpdateNotificationPreferencesRequest
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the first error encountered is returned, or nil if
+// there are no violations.
+func (m *UpdateNotificationPreferencesRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on UpdateNotificationPreferencesRequest
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// UpdateNotificationPreferencesRequestMultiError, or nil if none found.
+func (m *UpdateNotificationPreferencesRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *UpdateNotificationPreferencesRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.GetPreferences() == nil {
+		err := UpdateNotificationPreferencesRequestValidationError{
+			field:  "Preferences",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if all {
+		switch v := interface{}(m.GetPreferences()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, UpdateNotificationPreferencesRequestValidationError{
+					field:  "Preferences",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, UpdateNotificationPreferencesRequestValidationError{
+					field:  "Preferences",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetPreferences()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return UpdateNotificationPreferencesRequestValidationError{
+				field:  "Preferences",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return UpdateNotificationPreferencesRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// UpdateNotificationPreferencesRequestMultiError is an error wrapping multiple
+// validation errors returned by
+// UpdateNotificationPreferencesRequest.ValidateAll() if the designated
+// constraints aren't met.
+type UpdateNotificationPreferencesRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m UpdateNotificationPreferencesRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m UpdateNotificationPreferencesRequestMultiError) AllErrors() []error { return m }
+
+// UpdateNotificationPreferencesRequestValidationError is the validation error
+// returned by UpdateNotificationPreferencesRequest.Validate if the designated
+// constraints aren't met.
+type UpdateNotificationPreferencesRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e UpdateNotificationPreferencesRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e UpdateNotificationPreferencesRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e UpdateNotificationPreferencesRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e UpdateNotificationPreferencesRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e UpdateNotificationPreferencesRequestValidationError) ErrorName() string {
+	return "UpdateNotificationPreferencesRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e UpdateNotificationPreferencesRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sUpdateNotificationPreferencesRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = UpdateNotificationPreferencesRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = UpdateNotificationPreferencesRequestValidationError{}
+
+// Validate checks the field values on UpdateNotificationPreferencesResponse
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the first error encountered is returned, or nil if
+// there are no violations.
+func (m *UpdateNotificationPreferencesResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on UpdateNotificationPreferencesResponse
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// UpdateNotificationPreferencesResponseMultiError, or nil if none found.
+func (m *UpdateNotificationPreferencesResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *UpdateNotificationPreferencesResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetPreferences()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, UpdateNotificationPreferencesResponseValidationError{
+					field:  "Preferences",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, UpdateNotificationPreferencesResponseValidationError{
+					field:  "Preferences",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetPreferences()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return UpdateNotificationPreferencesResponseValidationError{
+				field:  "Preferences",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return UpdateNotificationPreferencesResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// UpdateNotificationPreferencesResponseMultiError is an error wrapping
+// multiple validation errors returned by
+// UpdateNotificationPreferencesResponse.ValidateAll() if the designated
+// constraints aren't met.
+type UpdateNotificationPreferencesResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m UpdateNotificationPreferencesResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m UpdateNotificationPreferencesResponseMultiError) AllErrors() []error { return m }
+
+// UpdateNotificationPreferencesResponseValidationError is the validation error
+// returned by UpdateNotificationPreferencesResponse.Validate if the
+// designated constraints aren't met.
+type UpdateNotificationPreferencesResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e UpdateNotificationPreferencesResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e UpdateNotificationPreferencesResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e UpdateNotificationPreferencesResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e UpdateNotificationPreferencesResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e UpdateNotificationPreferencesResponseValidationError) ErrorName() string {
+	return "UpdateNotificationPreferencesResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e UpdateNotificationPreferencesResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sUpdateNotificationPreferencesResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = UpdateNotificationPreferencesResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = UpdateNotificationPreferencesResponseValidationError{}
+
 // Validate checks the field values on GetUserRequest with the rules defined in
 // the proto definition for this message. If any rules are violated, the first
 // error encountered is returned, or nil if there are no violations.
@@ -36651,6 +38334,241 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = GetAlertMetaResponseValidationError{}
+
+// Validate checks the field values on SendPushNotificationRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *SendPushNotificationRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on SendPushNotificationRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// SendPushNotificationRequestMultiError, or nil if none found.
+func (m *SendPushNotificationRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *SendPushNotificationRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for ProjectId
+
+	if _, ok := _SendPushNotificationRequest_Category_InLookup[m.GetCategory()]; !ok {
+		err := SendPushNotificationRequestValidationError{
+			field:  "Category",
+			reason: "value must be in list [alerts reports act_approvals]",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for Title
+
+	// no validation rules for Body
+
+	// no validation rules for LinkPath
+
+	// no validation rules for Tag
+
+	if len(errors) > 0 {
+		return SendPushNotificationRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// SendPushNotificationRequestMultiError is an error wrapping multiple
+// validation errors returned by SendPushNotificationRequest.ValidateAll() if
+// the designated constraints aren't met.
+type SendPushNotificationRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m SendPushNotificationRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m SendPushNotificationRequestMultiError) AllErrors() []error { return m }
+
+// SendPushNotificationRequestValidationError is the validation error returned
+// by SendPushNotificationRequest.Validate if the designated constraints
+// aren't met.
+type SendPushNotificationRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e SendPushNotificationRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e SendPushNotificationRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e SendPushNotificationRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e SendPushNotificationRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e SendPushNotificationRequestValidationError) ErrorName() string {
+	return "SendPushNotificationRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e SendPushNotificationRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSendPushNotificationRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = SendPushNotificationRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = SendPushNotificationRequestValidationError{}
+
+var _SendPushNotificationRequest_Category_InLookup = map[string]struct{}{
+	"alerts":        {},
+	"reports":       {},
+	"act_approvals": {},
+}
+
+// Validate checks the field values on SendPushNotificationResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *SendPushNotificationResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on SendPushNotificationResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// SendPushNotificationResponseMultiError, or nil if none found.
+func (m *SendPushNotificationResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *SendPushNotificationResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Sent
+
+	if len(errors) > 0 {
+		return SendPushNotificationResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// SendPushNotificationResponseMultiError is an error wrapping multiple
+// validation errors returned by SendPushNotificationResponse.ValidateAll() if
+// the designated constraints aren't met.
+type SendPushNotificationResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m SendPushNotificationResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m SendPushNotificationResponseMultiError) AllErrors() []error { return m }
+
+// SendPushNotificationResponseValidationError is the validation error returned
+// by SendPushNotificationResponse.Validate if the designated constraints
+// aren't met.
+type SendPushNotificationResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e SendPushNotificationResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e SendPushNotificationResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e SendPushNotificationResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e SendPushNotificationResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e SendPushNotificationResponseValidationError) ErrorName() string {
+	return "SendPushNotificationResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e SendPushNotificationResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSendPushNotificationResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = SendPushNotificationResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = SendPushNotificationResponseValidationError{}
 
 // Validate checks the field values on CreateReportRequest with the rules
 // defined in the proto definition for this message. If any rules are

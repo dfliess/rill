@@ -209,6 +209,28 @@ type DB interface {
 	FindNotificationTokenForMagicAuthToken(ctx context.Context, magicAuthTokenID string) (*NotificationToken, error)
 	InsertNotificationToken(ctx context.Context, opts *InsertNotificationTokenOptions) (*NotificationToken, error)
 
+	FindPushSubscriptionsForUser(ctx context.Context, userID string) ([]*PushSubscription, error)
+	// FindPushSubscriptionsForRecipients returns the push subscriptions of the users with the given emails
+	// that have not opted out of push notifications for the given category.
+	// Users without a notification_preferences row default to receiving all categories.
+	// projectID identifies the project the notification originates from.
+	// It does not affect filtering yet: preferences are global per user, but a future per-project override
+	// should become an additional condition in this query rather than a new code path.
+	FindPushSubscriptionsForRecipients(ctx context.Context, projectID string, emails []string, category string) ([]*PushSubscription, error)
+	// InsertPushSubscription upserts a push subscription by endpoint:
+	// if the endpoint is already registered, its user, keys and user agent are updated.
+	InsertPushSubscription(ctx context.Context, opts *InsertPushSubscriptionOptions) (*PushSubscription, error)
+	// DeletePushSubscription deletes a push subscription scoped to its owning user.
+	DeletePushSubscription(ctx context.Context, id, userID string) error
+	// DeletePushSubscriptionByEndpoint deletes a push subscription by endpoint.
+	// It is used to purge subscriptions the push service reports as gone. It is idempotent.
+	DeletePushSubscriptionByEndpoint(ctx context.Context, endpoint string) error
+
+	// FindNotificationPreferences returns the notification preferences for a user.
+	// If the user has no stored preferences, it returns the defaults (all categories enabled).
+	FindNotificationPreferences(ctx context.Context, userID string) (*NotificationPreferences, error)
+	UpsertNotificationPreferences(ctx context.Context, userID string, opts *UpsertNotificationPreferencesOptions) (*NotificationPreferences, error)
+
 	FindDeviceAuthCodeByDeviceCode(ctx context.Context, deviceCode string) (*DeviceAuthCode, error)
 	FindPendingDeviceAuthCodeByUserCode(ctx context.Context, userCode string) (*DeviceAuthCode, error)
 	InsertDeviceAuthCode(ctx context.Context, deviceCode, userCode, clientID string, expiresOn time.Time) (*DeviceAuthCode, error)
@@ -896,6 +918,48 @@ type InsertNotificationTokenOptions struct {
 	ResourceName     string
 	RecipientEmail   string
 	MagicAuthTokenID string
+}
+
+// Notification categories that can be individually enabled or disabled per user.
+const (
+	NotificationCategoryAlerts       = "alerts"
+	NotificationCategoryReports      = "reports"
+	NotificationCategoryActApprovals = "act_approvals"
+)
+
+// PushSubscription is a Web Push subscription registered by one of a user's browsers.
+type PushSubscription struct {
+	ID        string    `db:"id"`
+	UserID    string    `db:"user_id"`
+	Endpoint  string    `db:"endpoint"`
+	P256dh    string    `db:"p256dh"`
+	Auth      string    `db:"auth"`
+	UserAgent string    `db:"user_agent"`
+	CreatedOn time.Time `db:"created_on"`
+}
+
+type InsertPushSubscriptionOptions struct {
+	UserID    string `validate:"required"`
+	Endpoint  string `validate:"required"`
+	P256dh    string `validate:"required"`
+	Auth      string `validate:"required"`
+	UserAgent string
+}
+
+// NotificationPreferences stores a user's per-category notification opt-outs.
+// A user without a stored row defaults to receiving all categories.
+type NotificationPreferences struct {
+	UserID           string    `db:"user_id"`
+	PushAlerts       bool      `db:"push_alerts"`
+	PushReports      bool      `db:"push_reports"`
+	PushActApprovals bool      `db:"push_act_approvals"`
+	UpdatedOn        time.Time `db:"updated_on"`
+}
+
+type UpsertNotificationPreferencesOptions struct {
+	PushAlerts       bool
+	PushReports      bool
+	PushActApprovals bool
 }
 
 // AuthClient is a client that requests and consumes auth tokens.

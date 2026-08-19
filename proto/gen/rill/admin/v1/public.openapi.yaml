@@ -544,6 +544,20 @@ components:
             type: object
         v1CreateProjectWhitelistedDomainResponse:
             type: object
+        v1CreatePushSubscriptionRequest:
+            properties:
+                auth:
+                    type: string
+                endpoint:
+                    description: Fields of a PushSubscription object from the browser's Push API.
+                    type: string
+                p256dh:
+                    type: string
+                userAgent:
+                    type: string
+            type: object
+        v1CreatePushSubscriptionResponse:
+            type: object
         v1CreateReportResponse:
             properties:
                 name:
@@ -576,6 +590,8 @@ components:
             properties:
                 id:
                     type: string
+            type: object
+        v1DeletePushSubscriptionResponse:
             type: object
         v1DeleteReportResponse:
             type: object
@@ -871,6 +887,11 @@ components:
                     format: int64
                     type: integer
             type: object
+        v1GetNotificationPreferencesResponse:
+            properties:
+                preferences:
+                    $ref: '#/components/schemas/v1NotificationPreferences'
+            type: object
         v1GetOrganizationMemberUserResponse:
             properties:
                 member:
@@ -939,6 +960,12 @@ components:
                         Deprecated: Populated for backwards compatibility.
                         (Renamed from "variables" to "variables_map").
                     type: object
+            type: object
+        v1GetPushNotificationConfigResponse:
+            properties:
+                vapidPublicKey:
+                    description: Public VAPID key for creating push subscriptions. Empty if push notifications are disabled.
+                    type: string
             type: object
         v1GetRepoMetaResponse:
             properties:
@@ -1233,6 +1260,13 @@ components:
                         $ref: '#/components/schemas/v1BillingPlan'
                     type: array
             type: object
+        v1ListPushSubscriptionsResponse:
+            properties:
+                subscriptions:
+                    items:
+                        $ref: '#/components/schemas/v1PushSubscription'
+                    type: array
+            type: object
         v1ListRolesResponse:
             properties:
                 organizationRoles:
@@ -1379,6 +1413,15 @@ components:
                 usersCount:
                     format: int64
                     type: integer
+            type: object
+        v1NotificationPreferences:
+            properties:
+                pushActApprovals:
+                    type: boolean
+                pushAlerts:
+                    type: boolean
+                pushReports:
+                    type: boolean
             type: object
         v1Organization:
             properties:
@@ -1799,6 +1842,18 @@ components:
                     description: Next page token for pagination.
                     type: string
             type: object
+        v1PushSubscription:
+            properties:
+                createdOn:
+                    format: date-time
+                    type: string
+                endpoint:
+                    type: string
+                id:
+                    type: string
+                userAgent:
+                    type: string
+            type: object
         v1Quotas:
             properties:
                 apiCallsPerSeat:
@@ -1983,6 +2038,13 @@ components:
                     items:
                         $ref: '#/components/schemas/v1User'
                     type: array
+            type: object
+        v1SendPushNotificationResponse:
+            properties:
+                sent:
+                    description: Number of notifications successfully sent.
+                    format: int32
+                    type: integer
             type: object
         v1Service:
             properties:
@@ -2361,6 +2423,16 @@ components:
                     type: string
             type: object
         v1UpdateBookmarkResponse:
+            type: object
+        v1UpdateNotificationPreferencesRequest:
+            properties:
+                preferences:
+                    $ref: '#/components/schemas/v1NotificationPreferences'
+            type: object
+        v1UpdateNotificationPreferencesResponse:
+            properties:
+                preferences:
+                    $ref: '#/components/schemas/v1NotificationPreferences'
             type: object
         v1UpdateOrganizationMemberUserAttributesResponse:
             type: object
@@ -3930,10 +4002,12 @@ paths:
     /v1/projects/-/redeploy: {}
     /v1/projects/{id}: {}
     /v1/projects/{projectId}/alerts/meta: {}
+    /v1/projects/{projectId}/push-notifications/send: {}
     /v1/projects/{projectId}/repo/meta: {}
     /v1/projects/{projectId}/repo/virtual: {}
     /v1/projects/{projectId}/repo/virtual/file: {}
     /v1/projects/{projectId}/reports/meta: {}
+    /v1/push-notifications/config: {}
     /v1/roles: {}
     /v1/services/tokens/{tokenId}: {}
     /v1/superuser/billing/repair: {}
@@ -3962,5 +4036,8 @@ paths:
     /v1/users/bookmarks: {}
     /v1/users/bookmarks/{bookmarkId}: {}
     /v1/users/current: {}
+    /v1/users/notification-preferences: {}
     /v1/users/preferences: {}
+    /v1/users/push-notifications/subscriptions: {}
+    /v1/users/push-notifications/subscriptions/{id}: {}
     /v1/users/search: {}

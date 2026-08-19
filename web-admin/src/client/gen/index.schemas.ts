@@ -406,6 +406,18 @@ export interface V1CreateProjectWhitelistedDomainResponse {
   [key: string]: unknown;
 }
 
+export interface V1CreatePushSubscriptionRequest {
+  /** Fields of a PushSubscription object from the browser's Push API. */
+  endpoint?: string;
+  p256dh?: string;
+  auth?: string;
+  userAgent?: string;
+}
+
+export interface V1CreatePushSubscriptionResponse {
+  [key: string]: unknown;
+}
+
 export interface V1CreateReportResponse {
   name?: string;
 }
@@ -440,6 +452,10 @@ export interface V1DeletePersonalFileResponse {
 
 export interface V1DeleteProjectResponse {
   id?: string;
+}
+
+export interface V1DeletePushSubscriptionResponse {
+  [key: string]: unknown;
 }
 
 export interface V1DeleteReportResponse {
@@ -688,6 +704,10 @@ export interface V1GetIFrameResponse {
   ttlSeconds?: number;
 }
 
+export interface V1GetNotificationPreferencesResponse {
+  preferences?: V1NotificationPreferences;
+}
+
 export interface V1GetOrganizationMemberUserResponse {
   member?: V1OrganizationMemberUser;
 }
@@ -742,6 +762,11 @@ export interface V1GetProjectVariablesResponse {
   /** Deprecated: Populated for backwards compatibility.
 (Renamed from "variables" to "variables_map"). */
   variablesMap?: V1GetProjectVariablesResponseVariablesMap;
+}
+
+export interface V1GetPushNotificationConfigResponse {
+  /** Public VAPID key for creating push subscriptions. Empty if push notifications are disabled. */
+  vapidPublicKey?: string;
 }
 
 export interface V1GetRepoMetaResponse {
@@ -940,6 +965,10 @@ export interface V1ListPublicBillingPlansResponse {
   plans?: V1BillingPlan[];
 }
 
+export interface V1ListPushSubscriptionsResponse {
+  subscriptions?: V1PushSubscription[];
+}
+
 export interface V1ListRolesResponse {
   organizationRoles?: V1OrganizationRole[];
   projectRoles?: V1ProjectRole[];
@@ -1018,6 +1047,12 @@ export interface V1MemberUsergroup {
   updatedOn?: string;
   restrictResources?: boolean;
   resources?: V1ResourceName[];
+}
+
+export interface V1NotificationPreferences {
+  pushAlerts?: boolean;
+  pushReports?: boolean;
+  pushActApprovals?: boolean;
 }
 
 export interface V1Organization {
@@ -1257,6 +1292,13 @@ export interface V1PullVirtualRepoResponse {
   nextPageToken?: string;
 }
 
+export interface V1PushSubscription {
+  id?: string;
+  endpoint?: string;
+  userAgent?: string;
+  createdOn?: string;
+}
+
 export interface V1Quotas {
   projects?: string;
   deployments?: string;
@@ -1412,6 +1454,11 @@ export interface V1SearchProjectUsersResponse {
 export interface V1SearchUsersResponse {
   users?: V1User[];
   nextPageToken?: string;
+}
+
+export interface V1SendPushNotificationResponse {
+  /** Number of notifications successfully sent. */
+  sent?: number;
 }
 
 export type V1ServiceAttributes = { [key: string]: unknown };
@@ -1697,6 +1744,14 @@ export interface V1UpdateBookmarkRequest {
 
 export interface V1UpdateBookmarkResponse {
   [key: string]: unknown;
+}
+
+export interface V1UpdateNotificationPreferencesRequest {
+  preferences?: V1NotificationPreferences;
+}
+
+export interface V1UpdateNotificationPreferencesResponse {
+  preferences?: V1NotificationPreferences;
 }
 
 export interface V1UpdateOrganizationMemberUserAttributesResponse {
@@ -2390,6 +2445,18 @@ export type AdminServiceGetAlertMetaBody = {
   ownerId?: string;
   emailRecipients?: string[];
   anonRecipients?: boolean;
+};
+
+export type AdminServiceSendPushNotificationBody = {
+  /** Notification category. One of "alerts", "reports" or "act_approvals". */
+  category?: string;
+  recipientEmails?: string[];
+  title?: string;
+  body?: string;
+  /** Path relative to the frontend URL to open when the notification is clicked. Must start with "/". */
+  linkPath?: string;
+  /** Notifications with the same tag replace each other in the browser. */
+  tag?: string;
 };
 
 export type AdminServicePullVirtualRepoParams = {

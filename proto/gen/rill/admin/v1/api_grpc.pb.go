@@ -146,6 +146,12 @@ const (
 	AdminService_GetCurrentMagicAuthToken_FullMethodName               = "/rill.admin.v1.AdminService/GetCurrentMagicAuthToken"
 	AdminService_RevokeMagicAuthToken_FullMethodName                   = "/rill.admin.v1.AdminService/RevokeMagicAuthToken"
 	AdminService_UpdateUserPreferences_FullMethodName                  = "/rill.admin.v1.AdminService/UpdateUserPreferences"
+	AdminService_GetPushNotificationConfig_FullMethodName              = "/rill.admin.v1.AdminService/GetPushNotificationConfig"
+	AdminService_CreatePushSubscription_FullMethodName                 = "/rill.admin.v1.AdminService/CreatePushSubscription"
+	AdminService_ListPushSubscriptions_FullMethodName                  = "/rill.admin.v1.AdminService/ListPushSubscriptions"
+	AdminService_DeletePushSubscription_FullMethodName                 = "/rill.admin.v1.AdminService/DeletePushSubscription"
+	AdminService_GetNotificationPreferences_FullMethodName             = "/rill.admin.v1.AdminService/GetNotificationPreferences"
+	AdminService_UpdateNotificationPreferences_FullMethodName          = "/rill.admin.v1.AdminService/UpdateNotificationPreferences"
 	AdminService_ListBookmarks_FullMethodName                          = "/rill.admin.v1.AdminService/ListBookmarks"
 	AdminService_GetBookmark_FullMethodName                            = "/rill.admin.v1.AdminService/GetBookmark"
 	AdminService_CreateBookmark_FullMethodName                         = "/rill.admin.v1.AdminService/CreateBookmark"
@@ -157,6 +163,7 @@ const (
 	AdminService_DeleteVirtualFile_FullMethodName                      = "/rill.admin.v1.AdminService/DeleteVirtualFile"
 	AdminService_GetReportMeta_FullMethodName                          = "/rill.admin.v1.AdminService/GetReportMeta"
 	AdminService_GetAlertMeta_FullMethodName                           = "/rill.admin.v1.AdminService/GetAlertMeta"
+	AdminService_SendPushNotification_FullMethodName                   = "/rill.admin.v1.AdminService/SendPushNotification"
 	AdminService_CreateReport_FullMethodName                           = "/rill.admin.v1.AdminService/CreateReport"
 	AdminService_EditReport_FullMethodName                             = "/rill.admin.v1.AdminService/EditReport"
 	AdminService_UnsubscribeReport_FullMethodName                      = "/rill.admin.v1.AdminService/UnsubscribeReport"
@@ -470,6 +477,19 @@ type AdminServiceClient interface {
 	RevokeMagicAuthToken(ctx context.Context, in *RevokeMagicAuthTokenRequest, opts ...grpc.CallOption) (*RevokeMagicAuthTokenResponse, error)
 	// UpdateUserPreferences updates the preferences for the user
 	UpdateUserPreferences(ctx context.Context, in *UpdateUserPreferencesRequest, opts ...grpc.CallOption) (*UpdateUserPreferencesResponse, error)
+	// GetPushNotificationConfig returns the public VAPID key browsers need to create push subscriptions.
+	// An empty key means push notifications are disabled in the deployment.
+	GetPushNotificationConfig(ctx context.Context, in *GetPushNotificationConfigRequest, opts ...grpc.CallOption) (*GetPushNotificationConfigResponse, error)
+	// CreatePushSubscription registers a push subscription of one of the current user's browsers.
+	CreatePushSubscription(ctx context.Context, in *CreatePushSubscriptionRequest, opts ...grpc.CallOption) (*CreatePushSubscriptionResponse, error)
+	// ListPushSubscriptions lists the current user's push subscriptions.
+	ListPushSubscriptions(ctx context.Context, in *ListPushSubscriptionsRequest, opts ...grpc.CallOption) (*ListPushSubscriptionsResponse, error)
+	// DeletePushSubscription deletes one of the current user's push subscriptions.
+	DeletePushSubscription(ctx context.Context, in *DeletePushSubscriptionRequest, opts ...grpc.CallOption) (*DeletePushSubscriptionResponse, error)
+	// GetNotificationPreferences returns the current user's per-category notification preferences.
+	GetNotificationPreferences(ctx context.Context, in *GetNotificationPreferencesRequest, opts ...grpc.CallOption) (*GetNotificationPreferencesResponse, error)
+	// UpdateNotificationPreferences updates the current user's per-category notification preferences.
+	UpdateNotificationPreferences(ctx context.Context, in *UpdateNotificationPreferencesRequest, opts ...grpc.CallOption) (*UpdateNotificationPreferencesResponse, error)
 	// ListBookmarks lists all the bookmarks for the user and global ones for dashboard
 	ListBookmarks(ctx context.Context, in *ListBookmarksRequest, opts ...grpc.CallOption) (*ListBookmarksResponse, error)
 	// GetBookmark returns the bookmark for the given user for the given project
@@ -492,6 +512,9 @@ type AdminServiceClient interface {
 	GetReportMeta(ctx context.Context, in *GetReportMetaRequest, opts ...grpc.CallOption) (*GetReportMetaResponse, error)
 	// GetAlertMeta returns metadata for checking an alert. It's currently only called by the alert reconciler in the runtime.
 	GetAlertMeta(ctx context.Context, in *GetAlertMetaRequest, opts ...grpc.CallOption) (*GetAlertMetaResponse, error)
+	// SendPushNotification sends a web push notification to the subscriptions of the given recipients.
+	// It's currently only called by the runtime on behalf of a project's resources (e.g. when an alert fires).
+	SendPushNotification(ctx context.Context, in *SendPushNotificationRequest, opts ...grpc.CallOption) (*SendPushNotificationResponse, error)
 	// CreateReport adds a virtual file for a report, triggers a reconcile, and waits for the report to be added to the runtime catalog
 	CreateReport(ctx context.Context, in *CreateReportRequest, opts ...grpc.CallOption) (*CreateReportResponse, error)
 	// EditReport edits a virtual file for a UI-managed report, triggers a reconcile, and waits for the report to be updated in the runtime
@@ -1828,6 +1851,66 @@ func (c *adminServiceClient) UpdateUserPreferences(ctx context.Context, in *Upda
 	return out, nil
 }
 
+func (c *adminServiceClient) GetPushNotificationConfig(ctx context.Context, in *GetPushNotificationConfigRequest, opts ...grpc.CallOption) (*GetPushNotificationConfigResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetPushNotificationConfigResponse)
+	err := c.cc.Invoke(ctx, AdminService_GetPushNotificationConfig_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) CreatePushSubscription(ctx context.Context, in *CreatePushSubscriptionRequest, opts ...grpc.CallOption) (*CreatePushSubscriptionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreatePushSubscriptionResponse)
+	err := c.cc.Invoke(ctx, AdminService_CreatePushSubscription_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) ListPushSubscriptions(ctx context.Context, in *ListPushSubscriptionsRequest, opts ...grpc.CallOption) (*ListPushSubscriptionsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListPushSubscriptionsResponse)
+	err := c.cc.Invoke(ctx, AdminService_ListPushSubscriptions_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) DeletePushSubscription(ctx context.Context, in *DeletePushSubscriptionRequest, opts ...grpc.CallOption) (*DeletePushSubscriptionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeletePushSubscriptionResponse)
+	err := c.cc.Invoke(ctx, AdminService_DeletePushSubscription_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) GetNotificationPreferences(ctx context.Context, in *GetNotificationPreferencesRequest, opts ...grpc.CallOption) (*GetNotificationPreferencesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetNotificationPreferencesResponse)
+	err := c.cc.Invoke(ctx, AdminService_GetNotificationPreferences_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) UpdateNotificationPreferences(ctx context.Context, in *UpdateNotificationPreferencesRequest, opts ...grpc.CallOption) (*UpdateNotificationPreferencesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateNotificationPreferencesResponse)
+	err := c.cc.Invoke(ctx, AdminService_UpdateNotificationPreferences_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *adminServiceClient) ListBookmarks(ctx context.Context, in *ListBookmarksRequest, opts ...grpc.CallOption) (*ListBookmarksResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ListBookmarksResponse)
@@ -1932,6 +2015,16 @@ func (c *adminServiceClient) GetAlertMeta(ctx context.Context, in *GetAlertMetaR
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetAlertMetaResponse)
 	err := c.cc.Invoke(ctx, AdminService_GetAlertMeta_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) SendPushNotification(ctx context.Context, in *SendPushNotificationRequest, opts ...grpc.CallOption) (*SendPushNotificationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SendPushNotificationResponse)
+	err := c.cc.Invoke(ctx, AdminService_SendPushNotification_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -2519,6 +2612,19 @@ type AdminServiceServer interface {
 	RevokeMagicAuthToken(context.Context, *RevokeMagicAuthTokenRequest) (*RevokeMagicAuthTokenResponse, error)
 	// UpdateUserPreferences updates the preferences for the user
 	UpdateUserPreferences(context.Context, *UpdateUserPreferencesRequest) (*UpdateUserPreferencesResponse, error)
+	// GetPushNotificationConfig returns the public VAPID key browsers need to create push subscriptions.
+	// An empty key means push notifications are disabled in the deployment.
+	GetPushNotificationConfig(context.Context, *GetPushNotificationConfigRequest) (*GetPushNotificationConfigResponse, error)
+	// CreatePushSubscription registers a push subscription of one of the current user's browsers.
+	CreatePushSubscription(context.Context, *CreatePushSubscriptionRequest) (*CreatePushSubscriptionResponse, error)
+	// ListPushSubscriptions lists the current user's push subscriptions.
+	ListPushSubscriptions(context.Context, *ListPushSubscriptionsRequest) (*ListPushSubscriptionsResponse, error)
+	// DeletePushSubscription deletes one of the current user's push subscriptions.
+	DeletePushSubscription(context.Context, *DeletePushSubscriptionRequest) (*DeletePushSubscriptionResponse, error)
+	// GetNotificationPreferences returns the current user's per-category notification preferences.
+	GetNotificationPreferences(context.Context, *GetNotificationPreferencesRequest) (*GetNotificationPreferencesResponse, error)
+	// UpdateNotificationPreferences updates the current user's per-category notification preferences.
+	UpdateNotificationPreferences(context.Context, *UpdateNotificationPreferencesRequest) (*UpdateNotificationPreferencesResponse, error)
 	// ListBookmarks lists all the bookmarks for the user and global ones for dashboard
 	ListBookmarks(context.Context, *ListBookmarksRequest) (*ListBookmarksResponse, error)
 	// GetBookmark returns the bookmark for the given user for the given project
@@ -2541,6 +2647,9 @@ type AdminServiceServer interface {
 	GetReportMeta(context.Context, *GetReportMetaRequest) (*GetReportMetaResponse, error)
 	// GetAlertMeta returns metadata for checking an alert. It's currently only called by the alert reconciler in the runtime.
 	GetAlertMeta(context.Context, *GetAlertMetaRequest) (*GetAlertMetaResponse, error)
+	// SendPushNotification sends a web push notification to the subscriptions of the given recipients.
+	// It's currently only called by the runtime on behalf of a project's resources (e.g. when an alert fires).
+	SendPushNotification(context.Context, *SendPushNotificationRequest) (*SendPushNotificationResponse, error)
 	// CreateReport adds a virtual file for a report, triggers a reconcile, and waits for the report to be added to the runtime catalog
 	CreateReport(context.Context, *CreateReportRequest) (*CreateReportResponse, error)
 	// EditReport edits a virtual file for a UI-managed report, triggers a reconcile, and waits for the report to be updated in the runtime
@@ -2988,6 +3097,24 @@ func (UnimplementedAdminServiceServer) RevokeMagicAuthToken(context.Context, *Re
 func (UnimplementedAdminServiceServer) UpdateUserPreferences(context.Context, *UpdateUserPreferencesRequest) (*UpdateUserPreferencesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateUserPreferences not implemented")
 }
+func (UnimplementedAdminServiceServer) GetPushNotificationConfig(context.Context, *GetPushNotificationConfigRequest) (*GetPushNotificationConfigResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPushNotificationConfig not implemented")
+}
+func (UnimplementedAdminServiceServer) CreatePushSubscription(context.Context, *CreatePushSubscriptionRequest) (*CreatePushSubscriptionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreatePushSubscription not implemented")
+}
+func (UnimplementedAdminServiceServer) ListPushSubscriptions(context.Context, *ListPushSubscriptionsRequest) (*ListPushSubscriptionsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListPushSubscriptions not implemented")
+}
+func (UnimplementedAdminServiceServer) DeletePushSubscription(context.Context, *DeletePushSubscriptionRequest) (*DeletePushSubscriptionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeletePushSubscription not implemented")
+}
+func (UnimplementedAdminServiceServer) GetNotificationPreferences(context.Context, *GetNotificationPreferencesRequest) (*GetNotificationPreferencesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetNotificationPreferences not implemented")
+}
+func (UnimplementedAdminServiceServer) UpdateNotificationPreferences(context.Context, *UpdateNotificationPreferencesRequest) (*UpdateNotificationPreferencesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateNotificationPreferences not implemented")
+}
 func (UnimplementedAdminServiceServer) ListBookmarks(context.Context, *ListBookmarksRequest) (*ListBookmarksResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListBookmarks not implemented")
 }
@@ -3020,6 +3147,9 @@ func (UnimplementedAdminServiceServer) GetReportMeta(context.Context, *GetReport
 }
 func (UnimplementedAdminServiceServer) GetAlertMeta(context.Context, *GetAlertMetaRequest) (*GetAlertMetaResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAlertMeta not implemented")
+}
+func (UnimplementedAdminServiceServer) SendPushNotification(context.Context, *SendPushNotificationRequest) (*SendPushNotificationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendPushNotification not implemented")
 }
 func (UnimplementedAdminServiceServer) CreateReport(context.Context, *CreateReportRequest) (*CreateReportResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateReport not implemented")
@@ -5418,6 +5548,114 @@ func _AdminService_UpdateUserPreferences_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AdminService_GetPushNotificationConfig_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPushNotificationConfigRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).GetPushNotificationConfig(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_GetPushNotificationConfig_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).GetPushNotificationConfig(ctx, req.(*GetPushNotificationConfigRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_CreatePushSubscription_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreatePushSubscriptionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).CreatePushSubscription(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_CreatePushSubscription_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).CreatePushSubscription(ctx, req.(*CreatePushSubscriptionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_ListPushSubscriptions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListPushSubscriptionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).ListPushSubscriptions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_ListPushSubscriptions_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).ListPushSubscriptions(ctx, req.(*ListPushSubscriptionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_DeletePushSubscription_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeletePushSubscriptionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).DeletePushSubscription(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_DeletePushSubscription_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).DeletePushSubscription(ctx, req.(*DeletePushSubscriptionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_GetNotificationPreferences_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetNotificationPreferencesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).GetNotificationPreferences(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_GetNotificationPreferences_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).GetNotificationPreferences(ctx, req.(*GetNotificationPreferencesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_UpdateNotificationPreferences_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateNotificationPreferencesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).UpdateNotificationPreferences(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_UpdateNotificationPreferences_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).UpdateNotificationPreferences(ctx, req.(*UpdateNotificationPreferencesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _AdminService_ListBookmarks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListBookmarksRequest)
 	if err := dec(in); err != nil {
@@ -5612,6 +5850,24 @@ func _AdminService_GetAlertMeta_Handler(srv interface{}, ctx context.Context, de
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AdminServiceServer).GetAlertMeta(ctx, req.(*GetAlertMetaRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_SendPushNotification_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SendPushNotificationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).SendPushNotification(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_SendPushNotification_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).SendPushNotification(ctx, req.(*SendPushNotificationRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -6672,6 +6928,30 @@ var AdminService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _AdminService_UpdateUserPreferences_Handler,
 		},
 		{
+			MethodName: "GetPushNotificationConfig",
+			Handler:    _AdminService_GetPushNotificationConfig_Handler,
+		},
+		{
+			MethodName: "CreatePushSubscription",
+			Handler:    _AdminService_CreatePushSubscription_Handler,
+		},
+		{
+			MethodName: "ListPushSubscriptions",
+			Handler:    _AdminService_ListPushSubscriptions_Handler,
+		},
+		{
+			MethodName: "DeletePushSubscription",
+			Handler:    _AdminService_DeletePushSubscription_Handler,
+		},
+		{
+			MethodName: "GetNotificationPreferences",
+			Handler:    _AdminService_GetNotificationPreferences_Handler,
+		},
+		{
+			MethodName: "UpdateNotificationPreferences",
+			Handler:    _AdminService_UpdateNotificationPreferences_Handler,
+		},
+		{
 			MethodName: "ListBookmarks",
 			Handler:    _AdminService_ListBookmarks_Handler,
 		},
@@ -6714,6 +6994,10 @@ var AdminService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetAlertMeta",
 			Handler:    _AdminService_GetAlertMeta_Handler,
+		},
+		{
+			MethodName: "SendPushNotification",
+			Handler:    _AdminService_SendPushNotification_Handler,
 		},
 		{
 			MethodName: "CreateReport",

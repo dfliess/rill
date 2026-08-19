@@ -15,6 +15,7 @@ import (
 	"testing"
 	"time"
 
+	webpush "github.com/SherClockHolmes/webpush-go"
 	"github.com/google/go-github/v71/github"
 	"github.com/joho/godotenv"
 	"github.com/rilldata/rill/admin"
@@ -24,6 +25,7 @@ import (
 	"github.com/rilldata/rill/admin/database"
 	"github.com/rilldata/rill/admin/jobs/river"
 	"github.com/rilldata/rill/admin/pkg/pgtestcontainer"
+	"github.com/rilldata/rill/admin/pkg/pushnotifications"
 	"github.com/rilldata/rill/admin/server"
 	"github.com/rilldata/rill/cli/pkg/version"
 	"github.com/rilldata/rill/runtime"
@@ -94,6 +96,11 @@ func NewWithOptionalRuntime(t *testing.T, startRt bool) *Fixture {
 	sender := email.NewTestSender()
 	emailClient := email.New(sender)
 
+	// Push notifications client with an ephemeral VAPID key pair
+	vapidPrivateKey, vapidPublicKey, err := webpush.GenerateVAPIDKeys()
+	require.NoError(t, err)
+	pushClient := pushnotifications.New(vapidPublicKey, vapidPrivateKey, "mailto:test@rilldata.com")
+
 	// Application-managed column encryption keyring
 	keyring, err := database.NewRandomKeyring()
 	require.NoError(t, err)
@@ -155,7 +162,7 @@ func NewWithOptionalRuntime(t *testing.T, startRt bool) *Fixture {
 		AutoscalerCron:            "",
 		ScaleDownConstraint:       0,
 	}
-	adm, err := admin.New(ctx, admOpts, logger, issuer, emailClient, newGithub(t), mockAI, nil, billing.NewNoop(), payment.NewNoop())
+	adm, err := admin.New(ctx, admOpts, logger, issuer, emailClient, pushClient, newGithub(t), mockAI, nil, billing.NewNoop(), payment.NewNoop())
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		// cleanup any managed repos created during testing since the repos are cleaned in a river job not executed in tests

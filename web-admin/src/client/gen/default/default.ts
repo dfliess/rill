@@ -90,6 +90,7 @@ import type {
   AdminServiceSearchProjectNamesParams,
   AdminServiceSearchProjectUsersParams,
   AdminServiceSearchUsersParams,
+  AdminServiceSendPushNotificationBody,
   AdminServiceSetOrganizationMemberUserRoleBody,
   AdminServiceSetProjectMemberUserRoleBodyBody,
   AdminServiceSudoGetResourceParams,
@@ -127,6 +128,8 @@ import type {
   V1CreatePersonalFileResponse,
   V1CreateProjectResponse,
   V1CreateProjectWhitelistedDomainResponse,
+  V1CreatePushSubscriptionRequest,
+  V1CreatePushSubscriptionResponse,
   V1CreateReportResponse,
   V1CreateServiceResponse,
   V1CreateUsergroupResponse,
@@ -136,6 +139,7 @@ import type {
   V1DeleteOrganizationResponse,
   V1DeletePersonalFileResponse,
   V1DeleteProjectResponse,
+  V1DeletePushSubscriptionResponse,
   V1DeleteReportResponse,
   V1DeleteServiceResponse,
   V1DeleteUserResponse,
@@ -164,6 +168,7 @@ import type {
   V1GetGithubRepoStatusResponse,
   V1GetGithubUserStatusResponse,
   V1GetIFrameResponse,
+  V1GetNotificationPreferencesResponse,
   V1GetOrganizationMemberUserResponse,
   V1GetOrganizationNameForDomainResponse,
   V1GetOrganizationResponse,
@@ -174,6 +179,7 @@ import type {
   V1GetProjectMemberUserResponse,
   V1GetProjectResponse,
   V1GetProjectVariablesResponse,
+  V1GetPushNotificationConfigResponse,
   V1GetRepoMetaResponse,
   V1GetReportMetaResponse,
   V1GetServiceResponse,
@@ -207,6 +213,7 @@ import type {
   V1ListProjectsForOrganizationResponse,
   V1ListProjectsForUserByNameResponse,
   V1ListPublicBillingPlansResponse,
+  V1ListPushSubscriptionsResponse,
   V1ListRolesResponse,
   V1ListServiceAuthTokensResponse,
   V1ListServicesResponse,
@@ -243,6 +250,7 @@ import type {
   V1SearchProjectNamesResponse,
   V1SearchProjectUsersResponse,
   V1SearchUsersResponse,
+  V1SendPushNotificationResponse,
   V1SetOrganizationMemberServiceRoleResponse,
   V1SetOrganizationMemberUserRoleResponse,
   V1SetOrganizationMemberUsergroupRoleResponse,
@@ -287,6 +295,8 @@ import type {
   V1UpdateBillingSubscriptionResponse,
   V1UpdateBookmarkRequest,
   V1UpdateBookmarkResponse,
+  V1UpdateNotificationPreferencesRequest,
+  V1UpdateNotificationPreferencesResponse,
   V1UpdateOrganizationMemberUserAttributesResponse,
   V1UpdateOrganizationResponse,
   V1UpdateProjectResponse,
@@ -13358,6 +13368,96 @@ export const createAdminServiceGetAlertMeta = <
   return createMutation(mutationOptions, queryClient);
 };
 /**
+ * @summary SendPushNotification sends a web push notification to the subscriptions of the given recipients.
+It's currently only called by the runtime on behalf of a project's resources (e.g. when an alert fires).
+ */
+export const adminServiceSendPushNotification = (
+  projectId: string,
+  adminServiceSendPushNotificationBody: AdminServiceSendPushNotificationBody,
+  signal?: AbortSignal,
+) => {
+  return httpClient<V1SendPushNotificationResponse>({
+    url: `/v1/projects/${projectId}/push-notifications/send`,
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    data: adminServiceSendPushNotificationBody,
+    signal,
+  });
+};
+
+export const getAdminServiceSendPushNotificationMutationOptions = <
+  TError = RpcStatus,
+  TContext = unknown,
+>(options?: {
+  mutation?: CreateMutationOptions<
+    Awaited<ReturnType<typeof adminServiceSendPushNotification>>,
+    TError,
+    { projectId: string; data: AdminServiceSendPushNotificationBody },
+    TContext
+  >;
+}): CreateMutationOptions<
+  Awaited<ReturnType<typeof adminServiceSendPushNotification>>,
+  TError,
+  { projectId: string; data: AdminServiceSendPushNotificationBody },
+  TContext
+> => {
+  const mutationKey = ["adminServiceSendPushNotification"];
+  const { mutation: mutationOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey } };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminServiceSendPushNotification>>,
+    { projectId: string; data: AdminServiceSendPushNotificationBody }
+  > = (props) => {
+    const { projectId, data } = props ?? {};
+
+    return adminServiceSendPushNotification(projectId, data);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminServiceSendPushNotificationMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminServiceSendPushNotification>>
+>;
+export type AdminServiceSendPushNotificationMutationBody =
+  AdminServiceSendPushNotificationBody;
+export type AdminServiceSendPushNotificationMutationError = RpcStatus;
+
+/**
+ * @summary SendPushNotification sends a web push notification to the subscriptions of the given recipients.
+It's currently only called by the runtime on behalf of a project's resources (e.g. when an alert fires).
+ */
+export const createAdminServiceSendPushNotification = <
+  TError = RpcStatus,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: CreateMutationOptions<
+      Awaited<ReturnType<typeof adminServiceSendPushNotification>>,
+      TError,
+      { projectId: string; data: AdminServiceSendPushNotificationBody },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): CreateMutationResult<
+  Awaited<ReturnType<typeof adminServiceSendPushNotification>>,
+  TError,
+  { projectId: string; data: AdminServiceSendPushNotificationBody },
+  TContext
+> => {
+  const mutationOptions =
+    getAdminServiceSendPushNotificationMutationOptions(options);
+
+  return createMutation(mutationOptions, queryClient);
+};
+/**
  * @summary GetRepoMeta returns credentials and other metadata for accessing a project's repo
  */
 export const adminServiceGetRepoMeta = (
@@ -13840,6 +13940,91 @@ export const createAdminServiceGetReportMeta = <
 
   return createMutation(mutationOptions, queryClient);
 };
+/**
+ * @summary GetPushNotificationConfig returns the public VAPID key browsers need to create push subscriptions.
+An empty key means push notifications are disabled in the deployment.
+ */
+export const adminServiceGetPushNotificationConfig = (signal?: AbortSignal) => {
+  return httpClient<V1GetPushNotificationConfigResponse>({
+    url: `/v1/push-notifications/config`,
+    method: "GET",
+    signal,
+  });
+};
+
+export const getAdminServiceGetPushNotificationConfigQueryKey = () => {
+  return [`/v1/push-notifications/config`] as const;
+};
+
+export const getAdminServiceGetPushNotificationConfigQueryOptions = <
+  TData = Awaited<ReturnType<typeof adminServiceGetPushNotificationConfig>>,
+  TError = RpcStatus,
+>(options?: {
+  query?: Partial<
+    CreateQueryOptions<
+      Awaited<ReturnType<typeof adminServiceGetPushNotificationConfig>>,
+      TError,
+      TData
+    >
+  >;
+}) => {
+  const { query: queryOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getAdminServiceGetPushNotificationConfigQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof adminServiceGetPushNotificationConfig>>
+  > = ({ signal }) => adminServiceGetPushNotificationConfig(signal);
+
+  return { queryKey, queryFn, ...queryOptions } as CreateQueryOptions<
+    Awaited<ReturnType<typeof adminServiceGetPushNotificationConfig>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AdminServiceGetPushNotificationConfigQueryResult = NonNullable<
+  Awaited<ReturnType<typeof adminServiceGetPushNotificationConfig>>
+>;
+export type AdminServiceGetPushNotificationConfigQueryError = RpcStatus;
+
+/**
+ * @summary GetPushNotificationConfig returns the public VAPID key browsers need to create push subscriptions.
+An empty key means push notifications are disabled in the deployment.
+ */
+
+export function createAdminServiceGetPushNotificationConfig<
+  TData = Awaited<ReturnType<typeof adminServiceGetPushNotificationConfig>>,
+  TError = RpcStatus,
+>(
+  options?: {
+    query?: Partial<
+      CreateQueryOptions<
+        Awaited<ReturnType<typeof adminServiceGetPushNotificationConfig>>,
+        TError,
+        TData
+      >
+    >;
+  },
+  queryClient?: QueryClient,
+): CreateQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getAdminServiceGetPushNotificationConfigQueryOptions(options);
+
+  const query = createQuery(queryOptions, queryClient) as CreateQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
 /**
  * @summary ListRoles lists all the roles available for orgs and projects.
  */
@@ -17007,6 +17192,177 @@ export function createAdminServiceGetCurrentUser<
 }
 
 /**
+ * @summary GetNotificationPreferences returns the current user's per-category notification preferences.
+ */
+export const adminServiceGetNotificationPreferences = (
+  signal?: AbortSignal,
+) => {
+  return httpClient<V1GetNotificationPreferencesResponse>({
+    url: `/v1/users/notification-preferences`,
+    method: "GET",
+    signal,
+  });
+};
+
+export const getAdminServiceGetNotificationPreferencesQueryKey = () => {
+  return [`/v1/users/notification-preferences`] as const;
+};
+
+export const getAdminServiceGetNotificationPreferencesQueryOptions = <
+  TData = Awaited<ReturnType<typeof adminServiceGetNotificationPreferences>>,
+  TError = RpcStatus,
+>(options?: {
+  query?: Partial<
+    CreateQueryOptions<
+      Awaited<ReturnType<typeof adminServiceGetNotificationPreferences>>,
+      TError,
+      TData
+    >
+  >;
+}) => {
+  const { query: queryOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getAdminServiceGetNotificationPreferencesQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof adminServiceGetNotificationPreferences>>
+  > = ({ signal }) => adminServiceGetNotificationPreferences(signal);
+
+  return { queryKey, queryFn, ...queryOptions } as CreateQueryOptions<
+    Awaited<ReturnType<typeof adminServiceGetNotificationPreferences>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AdminServiceGetNotificationPreferencesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof adminServiceGetNotificationPreferences>>
+>;
+export type AdminServiceGetNotificationPreferencesQueryError = RpcStatus;
+
+/**
+ * @summary GetNotificationPreferences returns the current user's per-category notification preferences.
+ */
+
+export function createAdminServiceGetNotificationPreferences<
+  TData = Awaited<ReturnType<typeof adminServiceGetNotificationPreferences>>,
+  TError = RpcStatus,
+>(
+  options?: {
+    query?: Partial<
+      CreateQueryOptions<
+        Awaited<ReturnType<typeof adminServiceGetNotificationPreferences>>,
+        TError,
+        TData
+      >
+    >;
+  },
+  queryClient?: QueryClient,
+): CreateQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getAdminServiceGetNotificationPreferencesQueryOptions(options);
+
+  const query = createQuery(queryOptions, queryClient) as CreateQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary UpdateNotificationPreferences updates the current user's per-category notification preferences.
+ */
+export const adminServiceUpdateNotificationPreferences = (
+  v1UpdateNotificationPreferencesRequest: V1UpdateNotificationPreferencesRequest,
+) => {
+  return httpClient<V1UpdateNotificationPreferencesResponse>({
+    url: `/v1/users/notification-preferences`,
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    data: v1UpdateNotificationPreferencesRequest,
+  });
+};
+
+export const getAdminServiceUpdateNotificationPreferencesMutationOptions = <
+  TError = RpcStatus,
+  TContext = unknown,
+>(options?: {
+  mutation?: CreateMutationOptions<
+    Awaited<ReturnType<typeof adminServiceUpdateNotificationPreferences>>,
+    TError,
+    { data: V1UpdateNotificationPreferencesRequest },
+    TContext
+  >;
+}): CreateMutationOptions<
+  Awaited<ReturnType<typeof adminServiceUpdateNotificationPreferences>>,
+  TError,
+  { data: V1UpdateNotificationPreferencesRequest },
+  TContext
+> => {
+  const mutationKey = ["adminServiceUpdateNotificationPreferences"];
+  const { mutation: mutationOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey } };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminServiceUpdateNotificationPreferences>>,
+    { data: V1UpdateNotificationPreferencesRequest }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return adminServiceUpdateNotificationPreferences(data);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminServiceUpdateNotificationPreferencesMutationResult =
+  NonNullable<
+    Awaited<ReturnType<typeof adminServiceUpdateNotificationPreferences>>
+  >;
+export type AdminServiceUpdateNotificationPreferencesMutationBody =
+  V1UpdateNotificationPreferencesRequest;
+export type AdminServiceUpdateNotificationPreferencesMutationError = RpcStatus;
+
+/**
+ * @summary UpdateNotificationPreferences updates the current user's per-category notification preferences.
+ */
+export const createAdminServiceUpdateNotificationPreferences = <
+  TError = RpcStatus,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: CreateMutationOptions<
+      Awaited<ReturnType<typeof adminServiceUpdateNotificationPreferences>>,
+      TError,
+      { data: V1UpdateNotificationPreferencesRequest },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): CreateMutationResult<
+  Awaited<ReturnType<typeof adminServiceUpdateNotificationPreferences>>,
+  TError,
+  { data: V1UpdateNotificationPreferencesRequest },
+  TContext
+> => {
+  const mutationOptions =
+    getAdminServiceUpdateNotificationPreferencesMutationOptions(options);
+
+  return createMutation(mutationOptions, queryClient);
+};
+/**
  * @summary UpdateUserPreferences updates the preferences for the user
  */
 export const adminServiceUpdateUserPreferences = (
@@ -17088,6 +17444,255 @@ export const createAdminServiceUpdateUserPreferences = <
 > => {
   const mutationOptions =
     getAdminServiceUpdateUserPreferencesMutationOptions(options);
+
+  return createMutation(mutationOptions, queryClient);
+};
+/**
+ * @summary ListPushSubscriptions lists the current user's push subscriptions.
+ */
+export const adminServiceListPushSubscriptions = (signal?: AbortSignal) => {
+  return httpClient<V1ListPushSubscriptionsResponse>({
+    url: `/v1/users/push-notifications/subscriptions`,
+    method: "GET",
+    signal,
+  });
+};
+
+export const getAdminServiceListPushSubscriptionsQueryKey = () => {
+  return [`/v1/users/push-notifications/subscriptions`] as const;
+};
+
+export const getAdminServiceListPushSubscriptionsQueryOptions = <
+  TData = Awaited<ReturnType<typeof adminServiceListPushSubscriptions>>,
+  TError = RpcStatus,
+>(options?: {
+  query?: Partial<
+    CreateQueryOptions<
+      Awaited<ReturnType<typeof adminServiceListPushSubscriptions>>,
+      TError,
+      TData
+    >
+  >;
+}) => {
+  const { query: queryOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getAdminServiceListPushSubscriptionsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof adminServiceListPushSubscriptions>>
+  > = ({ signal }) => adminServiceListPushSubscriptions(signal);
+
+  return { queryKey, queryFn, ...queryOptions } as CreateQueryOptions<
+    Awaited<ReturnType<typeof adminServiceListPushSubscriptions>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AdminServiceListPushSubscriptionsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof adminServiceListPushSubscriptions>>
+>;
+export type AdminServiceListPushSubscriptionsQueryError = RpcStatus;
+
+/**
+ * @summary ListPushSubscriptions lists the current user's push subscriptions.
+ */
+
+export function createAdminServiceListPushSubscriptions<
+  TData = Awaited<ReturnType<typeof adminServiceListPushSubscriptions>>,
+  TError = RpcStatus,
+>(
+  options?: {
+    query?: Partial<
+      CreateQueryOptions<
+        Awaited<ReturnType<typeof adminServiceListPushSubscriptions>>,
+        TError,
+        TData
+      >
+    >;
+  },
+  queryClient?: QueryClient,
+): CreateQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getAdminServiceListPushSubscriptionsQueryOptions(options);
+
+  const query = createQuery(queryOptions, queryClient) as CreateQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary CreatePushSubscription registers a push subscription of one of the current user's browsers.
+ */
+export const adminServiceCreatePushSubscription = (
+  v1CreatePushSubscriptionRequest: V1CreatePushSubscriptionRequest,
+  signal?: AbortSignal,
+) => {
+  return httpClient<V1CreatePushSubscriptionResponse>({
+    url: `/v1/users/push-notifications/subscriptions`,
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    data: v1CreatePushSubscriptionRequest,
+    signal,
+  });
+};
+
+export const getAdminServiceCreatePushSubscriptionMutationOptions = <
+  TError = RpcStatus,
+  TContext = unknown,
+>(options?: {
+  mutation?: CreateMutationOptions<
+    Awaited<ReturnType<typeof adminServiceCreatePushSubscription>>,
+    TError,
+    { data: V1CreatePushSubscriptionRequest },
+    TContext
+  >;
+}): CreateMutationOptions<
+  Awaited<ReturnType<typeof adminServiceCreatePushSubscription>>,
+  TError,
+  { data: V1CreatePushSubscriptionRequest },
+  TContext
+> => {
+  const mutationKey = ["adminServiceCreatePushSubscription"];
+  const { mutation: mutationOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey } };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminServiceCreatePushSubscription>>,
+    { data: V1CreatePushSubscriptionRequest }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return adminServiceCreatePushSubscription(data);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminServiceCreatePushSubscriptionMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminServiceCreatePushSubscription>>
+>;
+export type AdminServiceCreatePushSubscriptionMutationBody =
+  V1CreatePushSubscriptionRequest;
+export type AdminServiceCreatePushSubscriptionMutationError = RpcStatus;
+
+/**
+ * @summary CreatePushSubscription registers a push subscription of one of the current user's browsers.
+ */
+export const createAdminServiceCreatePushSubscription = <
+  TError = RpcStatus,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: CreateMutationOptions<
+      Awaited<ReturnType<typeof adminServiceCreatePushSubscription>>,
+      TError,
+      { data: V1CreatePushSubscriptionRequest },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): CreateMutationResult<
+  Awaited<ReturnType<typeof adminServiceCreatePushSubscription>>,
+  TError,
+  { data: V1CreatePushSubscriptionRequest },
+  TContext
+> => {
+  const mutationOptions =
+    getAdminServiceCreatePushSubscriptionMutationOptions(options);
+
+  return createMutation(mutationOptions, queryClient);
+};
+/**
+ * @summary DeletePushSubscription deletes one of the current user's push subscriptions.
+ */
+export const adminServiceDeletePushSubscription = (id: string) => {
+  return httpClient<V1DeletePushSubscriptionResponse>({
+    url: `/v1/users/push-notifications/subscriptions/${id}`,
+    method: "DELETE",
+  });
+};
+
+export const getAdminServiceDeletePushSubscriptionMutationOptions = <
+  TError = RpcStatus,
+  TContext = unknown,
+>(options?: {
+  mutation?: CreateMutationOptions<
+    Awaited<ReturnType<typeof adminServiceDeletePushSubscription>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+}): CreateMutationOptions<
+  Awaited<ReturnType<typeof adminServiceDeletePushSubscription>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["adminServiceDeletePushSubscription"];
+  const { mutation: mutationOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey } };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminServiceDeletePushSubscription>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return adminServiceDeletePushSubscription(id);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminServiceDeletePushSubscriptionMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminServiceDeletePushSubscription>>
+>;
+
+export type AdminServiceDeletePushSubscriptionMutationError = RpcStatus;
+
+/**
+ * @summary DeletePushSubscription deletes one of the current user's push subscriptions.
+ */
+export const createAdminServiceDeletePushSubscription = <
+  TError = RpcStatus,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: CreateMutationOptions<
+      Awaited<ReturnType<typeof adminServiceDeletePushSubscription>>,
+      TError,
+      { id: string },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): CreateMutationResult<
+  Awaited<ReturnType<typeof adminServiceDeletePushSubscription>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationOptions =
+    getAdminServiceDeletePushSubscriptionMutationOptions(options);
 
   return createMutation(mutationOptions, queryClient);
 };

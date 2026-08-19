@@ -1741,6 +1741,109 @@ func (c *connection) InsertNotificationToken(ctx context.Context, opts *database
 	return res, nil
 }
 
+func (c *connection) FindPushSubscriptionsForUser(ctx context.Context, userID string) ([]*database.PushSubscription, error) {
+	var res []*database.PushSubscription
+	err := c.getDB(ctx).SelectContext(ctx, &res, "SELECT * FROM push_subscriptions WHERE user_id=$1 ORDER BY created_on", userID)
+	if err != nil {
+		return nil, parseErr("push subscriptions", err)
+	}
+	return res, nil
+}
+
+// FindPushSubscriptionsForRecipients does not use projectID yet: preferences are global per user in v1.
+// See the interface comment in database.go.
+func (c *connection) FindPushSubscriptionsForRecipients(ctx context.Context, projectID string, emails []string, category string) ([]*database.PushSubscription, error) {
+	var categoryColumn string
+	switch category {
+	case database.NotificationCategoryAlerts:
+		categoryColumn = "push_alerts"
+	case database.NotificationCategoryReports:
+		categoryColumn = "push_reports"
+	case database.NotificationCategoryActApprovals:
+		categoryColumn = "push_act_approvals"
+	default:
+		return nil, database.NewValidationError(fmt.Sprintf("unknown notification category %q", category))
+	}
+
+	lowered := make([]string, len(emails))
+	for i, email := range emails {
+		lowered[i] = strings.ToLower(email)
+	}
+
+	var res []*database.PushSubscription
+	err := c.getDB(ctx).SelectContext(ctx, &res, fmt.Sprintf(`
+		SELECT s.* FROM push_subscriptions s
+		JOIN users u ON s.user_id = u.id
+		LEFT JOIN notification_preferences p ON p.user_id = u.id
+		WHERE lower(u.email) = ANY($1) AND coalesce(p.%s, true)
+	`, categoryColumn), lowered)
+	if err != nil {
+		return nil, parseErr("push subscriptions", err)
+	}
+	return res, nil
+}
+
+func (c *connection) InsertPushSubscription(ctx context.Context, opts *database.InsertPushSubscriptionOptions) (*database.PushSubscription, error) {
+	if err := database.Validate(opts); err != nil {
+		return nil, err
+	}
+
+	res := &database.PushSubscription{}
+	err := c.getDB(ctx).QueryRowxContext(ctx, `
+		INSERT INTO push_subscriptions (user_id, endpoint, p256dh, auth, user_agent)
+		VALUES ($1, $2, $3, $4, $5)
+		ON CONFLICT (endpoint) DO UPDATE SET user_id=excluded.user_id, p256dh=excluded.p256dh, auth=excluded.auth, user_agent=excluded.user_agent
+		RETURNING *`,
+		opts.UserID, opts.Endpoint, opts.P256dh, opts.Auth, opts.UserAgent,
+	).StructScan(res)
+	if err != nil {
+		return nil, parseErr("push subscription", err)
+	}
+	return res, nil
+}
+
+func (c *connection) DeletePushSubscription(ctx context.Context, id, userID string) error {
+	res, err := c.getDB(ctx).ExecContext(ctx, "DELETE FROM push_subscriptions WHERE id=$1 AND user_id=$2", id, userID)
+	return checkDeleteRow("push subscription", res, err)
+}
+
+func (c *connection) DeletePushSubscriptionByEndpoint(ctx context.Context, endpoint string) error {
+	_, err := c.getDB(ctx).ExecContext(ctx, "DELETE FROM push_subscriptions WHERE endpoint=$1", endpoint)
+	return parseErr("push subscription", err)
+}
+
+func (c *connection) FindNotificationPreferences(ctx context.Context, userID string) (*database.NotificationPreferences, error) {
+	res := &database.NotificationPreferences{}
+	err := c.getDB(ctx).QueryRowxContext(ctx, "SELECT * FROM notification_preferences WHERE user_id=$1", userID).StructScan(res)
+	if err != nil {
+		if errors.Is(parseErr("notification preferences", err), database.ErrNotFound) {
+			return &database.NotificationPreferences{
+				UserID:           userID,
+				PushAlerts:       true,
+				PushReports:      true,
+				PushActApprovals: true,
+			}, nil
+		}
+		return nil, parseErr("notification preferences", err)
+	}
+	return res, nil
+}
+
+func (c *connection) UpsertNotificationPreferences(ctx context.Context, userID string, opts *database.UpsertNotificationPreferencesOptions) (*database.NotificationPreferences, error) {
+	res := &database.NotificationPreferences{}
+	err := c.getDB(ctx).QueryRowxContext(ctx, `
+		INSERT INTO notification_preferences (user_id, push_alerts, push_reports, push_act_approvals)
+		VALUES ($1, $2, $3, $4)
+		ON CONFLICT (user_id) DO UPDATE SET push_alerts=excluded.push_alerts, push_reports=excluded.push_reports, push_act_approvals=excluded.push_act_approvals, updated_on=now()
+		RETURNING *`,
+		userID, opts.PushAlerts, opts.PushReports, opts.PushActApprovals,
+	).StructScan(res)
+	if err != nil {
+		return nil, parseErr("notification preferences", err)
+	}
+	return res, nil
+}
+
 func (c *connection) FindDeviceAuthCodeByDeviceCode(ctx context.Context, deviceCode string) (*database.DeviceAuthCode, error) {
 	authCode := &database.DeviceAuthCode{}
 	err := c.getDB(ctx).QueryRowxContext(ctx, "SELECT * FROM device_auth_codes WHERE device_code = $1", deviceCode).StructScan(authCode)

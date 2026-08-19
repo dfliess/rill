@@ -47,6 +47,8 @@ func TestPostgres(t *testing.T) {
 	t.Run("TestOrganizationMemberUserAttributes", func(t *testing.T) { testOrganizationMemberUserAttributes(t, db) })
 	t.Run("TestOrganizationInviteAttributes", func(t *testing.T) { testOrganizationInviteAttributes(t, db) })
 	t.Run("TestAttributeValidation", func(t *testing.T) { testAttributeValidation(t, db) })
+	t.Run("TestPushSubscriptions", func(t *testing.T) { testPushSubscriptions(t, db) })
+	t.Run("TestNotificationPreferences", func(t *testing.T) { testNotificationPreferences(t, db) })
 
 	t.Run("TestOrgNameValidation", func(t *testing.T) {
 		cases := []struct {
@@ -1066,6 +1068,131 @@ func TestValidateAttributesUnit(t *testing.T) {
 			}
 		})
 	}
+}
+
+func testPushSubscriptions(t *testing.T, db database.DB) {
+	ctx := context.Background()
+
+	u1, err := db.InsertUser(ctx, &database.InsertUserOptions{Email: randomName() + "@Rilldata.com"})
+	require.NoError(t, err)
+	u2, err := db.InsertUser(ctx, &database.InsertUserOptions{Email: randomName() + "@rilldata.com"})
+	require.NoError(t, err)
+
+	// Validation of required fields
+	_, err = db.InsertPushSubscription(ctx, &database.InsertPushSubscriptionOptions{UserID: u1.ID, Endpoint: "https://push.example.com/s1"})
+	require.Error(t, err)
+
+	sub1, err := db.InsertPushSubscription(ctx, &database.InsertPushSubscriptionOptions{UserID: u1.ID, Endpoint: "https://push.example.com/s1", P256dh: "p1", Auth: "a1", UserAgent: "Firefox"})
+	require.NoError(t, err)
+	require.Equal(t, u1.ID, sub1.UserID)
+	require.Equal(t, "Firefox", sub1.UserAgent)
+	require.Less(t, time.Since(sub1.CreatedOn), 10*time.Second)
+	_, err = db.InsertPushSubscription(ctx, &database.InsertPushSubscriptionOptions{UserID: u1.ID, Endpoint: "https://push.example.com/s2", P256dh: "p2", Auth: "a2"})
+	require.NoError(t, err)
+	_, err = db.InsertPushSubscription(ctx, &database.InsertPushSubscriptionOptions{UserID: u2.ID, Endpoint: "https://push.example.com/s3", P256dh: "p3", Auth: "a3"})
+	require.NoError(t, err)
+
+	subs, err := db.FindPushSubscriptionsForUser(ctx, u1.ID)
+	require.NoError(t, err)
+	require.Len(t, subs, 2)
+
+	// Re-registering an endpoint reassigns it (same row, new user and keys)
+	sub1b, err := db.InsertPushSubscription(ctx, &database.InsertPushSubscriptionOptions{UserID: u2.ID, Endpoint: "https://push.example.com/s1", P256dh: "p1b", Auth: "a1b", UserAgent: "Chrome"})
+	require.NoError(t, err)
+	require.Equal(t, sub1.ID, sub1b.ID)
+	require.Equal(t, u2.ID, sub1b.UserID)
+	require.Equal(t, "p1b", sub1b.P256dh)
+	require.Equal(t, "a1b", sub1b.Auth)
+	require.Equal(t, "Chrome", sub1b.UserAgent)
+	subs, err = db.FindPushSubscriptionsForUser(ctx, u1.ID)
+	require.NoError(t, err)
+	require.Len(t, subs, 1)
+
+	projectID := "11111111-0000-0000-0000-000000000001"
+
+	// Recipient lookup is case-insensitive on email and defaults to all categories without a preferences row
+	recipients := []string{strings.ToUpper(u1.Email), u2.Email, "unknown@rilldata.com"}
+	for _, category := range []string{database.NotificationCategoryAlerts, database.NotificationCategoryReports, database.NotificationCategoryActApprovals} {
+		subs, err = db.FindPushSubscriptionsForRecipients(ctx, projectID, recipients, category)
+		require.NoError(t, err)
+		require.Len(t, subs, 3)
+	}
+
+	// An opted-out category excludes the user's subscriptions; other categories are unaffected
+	_, err = db.UpsertNotificationPreferences(ctx, u2.ID, &database.UpsertNotificationPreferencesOptions{PushAlerts: false, PushReports: true, PushActApprovals: true})
+	require.NoError(t, err)
+	subs, err = db.FindPushSubscriptionsForRecipients(ctx, projectID, recipients, database.NotificationCategoryAlerts)
+	require.NoError(t, err)
+	require.Len(t, subs, 1)
+	require.Equal(t, u1.ID, subs[0].UserID)
+	subs, err = db.FindPushSubscriptionsForRecipients(ctx, projectID, recipients, database.NotificationCategoryReports)
+	require.NoError(t, err)
+	require.Len(t, subs, 3)
+
+	// In v1, preferences are global per user: the originating project doesn't change the result
+	subs, err = db.FindPushSubscriptionsForRecipients(ctx, "11111111-0000-0000-0000-000000000002", recipients, database.NotificationCategoryAlerts)
+	require.NoError(t, err)
+	require.Len(t, subs, 1)
+
+	_, err = db.FindPushSubscriptionsForRecipients(ctx, projectID, recipients, "invalid")
+	require.ErrorIs(t, err, database.ErrValidation)
+
+	// Deletes are scoped to the owning user
+	err = db.DeletePushSubscription(ctx, sub1b.ID, u1.ID)
+	require.ErrorIs(t, err, database.ErrNotFound)
+	err = db.DeletePushSubscription(ctx, sub1b.ID, u2.ID)
+	require.NoError(t, err)
+
+	// Purging by endpoint is idempotent
+	err = db.DeletePushSubscriptionByEndpoint(ctx, "https://push.example.com/s3")
+	require.NoError(t, err)
+	err = db.DeletePushSubscriptionByEndpoint(ctx, "https://push.example.com/s3")
+	require.NoError(t, err)
+
+	// Deleting a user cascades to their subscriptions
+	require.NoError(t, db.DeleteUser(ctx, u1.ID))
+	subs, err = db.FindPushSubscriptionsForUser(ctx, u1.ID)
+	require.NoError(t, err)
+	require.Len(t, subs, 0)
+
+	require.NoError(t, db.DeleteUser(ctx, u2.ID))
+}
+
+func testNotificationPreferences(t *testing.T, db database.DB) {
+	ctx := context.Background()
+
+	u, err := db.InsertUser(ctx, &database.InsertUserOptions{Email: randomName() + "@rilldata.com"})
+	require.NoError(t, err)
+
+	// Without a stored row, all categories default to enabled
+	prefs, err := db.FindNotificationPreferences(ctx, u.ID)
+	require.NoError(t, err)
+	require.Equal(t, u.ID, prefs.UserID)
+	require.True(t, prefs.PushAlerts)
+	require.True(t, prefs.PushReports)
+	require.True(t, prefs.PushActApprovals)
+
+	prefs, err = db.UpsertNotificationPreferences(ctx, u.ID, &database.UpsertNotificationPreferencesOptions{PushAlerts: false, PushReports: true, PushActApprovals: false})
+	require.NoError(t, err)
+	require.False(t, prefs.PushAlerts)
+	require.True(t, prefs.PushReports)
+	require.False(t, prefs.PushActApprovals)
+	require.Less(t, time.Since(prefs.UpdatedOn), 10*time.Second)
+
+	prefs, err = db.FindNotificationPreferences(ctx, u.ID)
+	require.NoError(t, err)
+	require.False(t, prefs.PushAlerts)
+	require.True(t, prefs.PushReports)
+	require.False(t, prefs.PushActApprovals)
+
+	// Upserting again updates the existing row
+	prefs, err = db.UpsertNotificationPreferences(ctx, u.ID, &database.UpsertNotificationPreferencesOptions{PushAlerts: true, PushReports: false, PushActApprovals: true})
+	require.NoError(t, err)
+	require.True(t, prefs.PushAlerts)
+	require.False(t, prefs.PushReports)
+	require.True(t, prefs.PushActApprovals)
+
+	require.NoError(t, db.DeleteUser(ctx, u.ID))
 }
 
 func randomName() string {

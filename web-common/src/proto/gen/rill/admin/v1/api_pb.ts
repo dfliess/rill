@@ -9376,6 +9376,546 @@ export class UpdateUserPreferencesResponse extends Message<UpdateUserPreferences
 }
 
 /**
+ * @generated from message rill.admin.v1.GetPushNotificationConfigRequest
+ */
+export class GetPushNotificationConfigRequest extends Message<GetPushNotificationConfigRequest> {
+  constructor(data?: PartialMessage<GetPushNotificationConfigRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rill.admin.v1.GetPushNotificationConfigRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetPushNotificationConfigRequest {
+    return new GetPushNotificationConfigRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetPushNotificationConfigRequest {
+    return new GetPushNotificationConfigRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetPushNotificationConfigRequest {
+    return new GetPushNotificationConfigRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetPushNotificationConfigRequest | PlainMessage<GetPushNotificationConfigRequest> | undefined, b: GetPushNotificationConfigRequest | PlainMessage<GetPushNotificationConfigRequest> | undefined): boolean {
+    return proto3.util.equals(GetPushNotificationConfigRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message rill.admin.v1.GetPushNotificationConfigResponse
+ */
+export class GetPushNotificationConfigResponse extends Message<GetPushNotificationConfigResponse> {
+  /**
+   * Public VAPID key for creating push subscriptions. Empty if push notifications are disabled.
+   *
+   * @generated from field: string vapid_public_key = 1;
+   */
+  vapidPublicKey = "";
+
+  constructor(data?: PartialMessage<GetPushNotificationConfigResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rill.admin.v1.GetPushNotificationConfigResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "vapid_public_key", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetPushNotificationConfigResponse {
+    return new GetPushNotificationConfigResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetPushNotificationConfigResponse {
+    return new GetPushNotificationConfigResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetPushNotificationConfigResponse {
+    return new GetPushNotificationConfigResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetPushNotificationConfigResponse | PlainMessage<GetPushNotificationConfigResponse> | undefined, b: GetPushNotificationConfigResponse | PlainMessage<GetPushNotificationConfigResponse> | undefined): boolean {
+    return proto3.util.equals(GetPushNotificationConfigResponse, a, b);
+  }
+}
+
+/**
+ * @generated from message rill.admin.v1.CreatePushSubscriptionRequest
+ */
+export class CreatePushSubscriptionRequest extends Message<CreatePushSubscriptionRequest> {
+  /**
+   * Fields of a PushSubscription object from the browser's Push API.
+   *
+   * @generated from field: string endpoint = 1;
+   */
+  endpoint = "";
+
+  /**
+   * @generated from field: string p256dh = 2;
+   */
+  p256dh = "";
+
+  /**
+   * @generated from field: string auth = 3;
+   */
+  auth = "";
+
+  /**
+   * @generated from field: string user_agent = 4;
+   */
+  userAgent = "";
+
+  constructor(data?: PartialMessage<CreatePushSubscriptionRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rill.admin.v1.CreatePushSubscriptionRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "endpoint", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "p256dh", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "auth", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "user_agent", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): CreatePushSubscriptionRequest {
+    return new CreatePushSubscriptionRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): CreatePushSubscriptionRequest {
+    return new CreatePushSubscriptionRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): CreatePushSubscriptionRequest {
+    return new CreatePushSubscriptionRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: CreatePushSubscriptionRequest | PlainMessage<CreatePushSubscriptionRequest> | undefined, b: CreatePushSubscriptionRequest | PlainMessage<CreatePushSubscriptionRequest> | undefined): boolean {
+    return proto3.util.equals(CreatePushSubscriptionRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message rill.admin.v1.CreatePushSubscriptionResponse
+ */
+export class CreatePushSubscriptionResponse extends Message<CreatePushSubscriptionResponse> {
+  constructor(data?: PartialMessage<CreatePushSubscriptionResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rill.admin.v1.CreatePushSubscriptionResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): CreatePushSubscriptionResponse {
+    return new CreatePushSubscriptionResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): CreatePushSubscriptionResponse {
+    return new CreatePushSubscriptionResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): CreatePushSubscriptionResponse {
+    return new CreatePushSubscriptionResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: CreatePushSubscriptionResponse | PlainMessage<CreatePushSubscriptionResponse> | undefined, b: CreatePushSubscriptionResponse | PlainMessage<CreatePushSubscriptionResponse> | undefined): boolean {
+    return proto3.util.equals(CreatePushSubscriptionResponse, a, b);
+  }
+}
+
+/**
+ * @generated from message rill.admin.v1.PushSubscription
+ */
+export class PushSubscription extends Message<PushSubscription> {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id = "";
+
+  /**
+   * @generated from field: string endpoint = 2;
+   */
+  endpoint = "";
+
+  /**
+   * @generated from field: string user_agent = 3;
+   */
+  userAgent = "";
+
+  /**
+   * @generated from field: google.protobuf.Timestamp created_on = 4;
+   */
+  createdOn?: Timestamp;
+
+  constructor(data?: PartialMessage<PushSubscription>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rill.admin.v1.PushSubscription";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "endpoint", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "user_agent", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "created_on", kind: "message", T: Timestamp },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): PushSubscription {
+    return new PushSubscription().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): PushSubscription {
+    return new PushSubscription().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): PushSubscription {
+    return new PushSubscription().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: PushSubscription | PlainMessage<PushSubscription> | undefined, b: PushSubscription | PlainMessage<PushSubscription> | undefined): boolean {
+    return proto3.util.equals(PushSubscription, a, b);
+  }
+}
+
+/**
+ * @generated from message rill.admin.v1.ListPushSubscriptionsRequest
+ */
+export class ListPushSubscriptionsRequest extends Message<ListPushSubscriptionsRequest> {
+  constructor(data?: PartialMessage<ListPushSubscriptionsRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rill.admin.v1.ListPushSubscriptionsRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ListPushSubscriptionsRequest {
+    return new ListPushSubscriptionsRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ListPushSubscriptionsRequest {
+    return new ListPushSubscriptionsRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ListPushSubscriptionsRequest {
+    return new ListPushSubscriptionsRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ListPushSubscriptionsRequest | PlainMessage<ListPushSubscriptionsRequest> | undefined, b: ListPushSubscriptionsRequest | PlainMessage<ListPushSubscriptionsRequest> | undefined): boolean {
+    return proto3.util.equals(ListPushSubscriptionsRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message rill.admin.v1.ListPushSubscriptionsResponse
+ */
+export class ListPushSubscriptionsResponse extends Message<ListPushSubscriptionsResponse> {
+  /**
+   * @generated from field: repeated rill.admin.v1.PushSubscription subscriptions = 1;
+   */
+  subscriptions: PushSubscription[] = [];
+
+  constructor(data?: PartialMessage<ListPushSubscriptionsResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rill.admin.v1.ListPushSubscriptionsResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "subscriptions", kind: "message", T: PushSubscription, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ListPushSubscriptionsResponse {
+    return new ListPushSubscriptionsResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ListPushSubscriptionsResponse {
+    return new ListPushSubscriptionsResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ListPushSubscriptionsResponse {
+    return new ListPushSubscriptionsResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ListPushSubscriptionsResponse | PlainMessage<ListPushSubscriptionsResponse> | undefined, b: ListPushSubscriptionsResponse | PlainMessage<ListPushSubscriptionsResponse> | undefined): boolean {
+    return proto3.util.equals(ListPushSubscriptionsResponse, a, b);
+  }
+}
+
+/**
+ * @generated from message rill.admin.v1.DeletePushSubscriptionRequest
+ */
+export class DeletePushSubscriptionRequest extends Message<DeletePushSubscriptionRequest> {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id = "";
+
+  constructor(data?: PartialMessage<DeletePushSubscriptionRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rill.admin.v1.DeletePushSubscriptionRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): DeletePushSubscriptionRequest {
+    return new DeletePushSubscriptionRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): DeletePushSubscriptionRequest {
+    return new DeletePushSubscriptionRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): DeletePushSubscriptionRequest {
+    return new DeletePushSubscriptionRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: DeletePushSubscriptionRequest | PlainMessage<DeletePushSubscriptionRequest> | undefined, b: DeletePushSubscriptionRequest | PlainMessage<DeletePushSubscriptionRequest> | undefined): boolean {
+    return proto3.util.equals(DeletePushSubscriptionRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message rill.admin.v1.DeletePushSubscriptionResponse
+ */
+export class DeletePushSubscriptionResponse extends Message<DeletePushSubscriptionResponse> {
+  constructor(data?: PartialMessage<DeletePushSubscriptionResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rill.admin.v1.DeletePushSubscriptionResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): DeletePushSubscriptionResponse {
+    return new DeletePushSubscriptionResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): DeletePushSubscriptionResponse {
+    return new DeletePushSubscriptionResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): DeletePushSubscriptionResponse {
+    return new DeletePushSubscriptionResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: DeletePushSubscriptionResponse | PlainMessage<DeletePushSubscriptionResponse> | undefined, b: DeletePushSubscriptionResponse | PlainMessage<DeletePushSubscriptionResponse> | undefined): boolean {
+    return proto3.util.equals(DeletePushSubscriptionResponse, a, b);
+  }
+}
+
+/**
+ * @generated from message rill.admin.v1.NotificationPreferences
+ */
+export class NotificationPreferences extends Message<NotificationPreferences> {
+  /**
+   * @generated from field: bool push_alerts = 1;
+   */
+  pushAlerts = false;
+
+  /**
+   * @generated from field: bool push_reports = 2;
+   */
+  pushReports = false;
+
+  /**
+   * @generated from field: bool push_act_approvals = 3;
+   */
+  pushActApprovals = false;
+
+  constructor(data?: PartialMessage<NotificationPreferences>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rill.admin.v1.NotificationPreferences";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "push_alerts", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 2, name: "push_reports", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 3, name: "push_act_approvals", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): NotificationPreferences {
+    return new NotificationPreferences().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): NotificationPreferences {
+    return new NotificationPreferences().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): NotificationPreferences {
+    return new NotificationPreferences().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: NotificationPreferences | PlainMessage<NotificationPreferences> | undefined, b: NotificationPreferences | PlainMessage<NotificationPreferences> | undefined): boolean {
+    return proto3.util.equals(NotificationPreferences, a, b);
+  }
+}
+
+/**
+ * @generated from message rill.admin.v1.GetNotificationPreferencesRequest
+ */
+export class GetNotificationPreferencesRequest extends Message<GetNotificationPreferencesRequest> {
+  constructor(data?: PartialMessage<GetNotificationPreferencesRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rill.admin.v1.GetNotificationPreferencesRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetNotificationPreferencesRequest {
+    return new GetNotificationPreferencesRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetNotificationPreferencesRequest {
+    return new GetNotificationPreferencesRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetNotificationPreferencesRequest {
+    return new GetNotificationPreferencesRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetNotificationPreferencesRequest | PlainMessage<GetNotificationPreferencesRequest> | undefined, b: GetNotificationPreferencesRequest | PlainMessage<GetNotificationPreferencesRequest> | undefined): boolean {
+    return proto3.util.equals(GetNotificationPreferencesRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message rill.admin.v1.GetNotificationPreferencesResponse
+ */
+export class GetNotificationPreferencesResponse extends Message<GetNotificationPreferencesResponse> {
+  /**
+   * @generated from field: rill.admin.v1.NotificationPreferences preferences = 1;
+   */
+  preferences?: NotificationPreferences;
+
+  constructor(data?: PartialMessage<GetNotificationPreferencesResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rill.admin.v1.GetNotificationPreferencesResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "preferences", kind: "message", T: NotificationPreferences },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetNotificationPreferencesResponse {
+    return new GetNotificationPreferencesResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetNotificationPreferencesResponse {
+    return new GetNotificationPreferencesResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetNotificationPreferencesResponse {
+    return new GetNotificationPreferencesResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetNotificationPreferencesResponse | PlainMessage<GetNotificationPreferencesResponse> | undefined, b: GetNotificationPreferencesResponse | PlainMessage<GetNotificationPreferencesResponse> | undefined): boolean {
+    return proto3.util.equals(GetNotificationPreferencesResponse, a, b);
+  }
+}
+
+/**
+ * @generated from message rill.admin.v1.UpdateNotificationPreferencesRequest
+ */
+export class UpdateNotificationPreferencesRequest extends Message<UpdateNotificationPreferencesRequest> {
+  /**
+   * @generated from field: rill.admin.v1.NotificationPreferences preferences = 1;
+   */
+  preferences?: NotificationPreferences;
+
+  constructor(data?: PartialMessage<UpdateNotificationPreferencesRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rill.admin.v1.UpdateNotificationPreferencesRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "preferences", kind: "message", T: NotificationPreferences },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UpdateNotificationPreferencesRequest {
+    return new UpdateNotificationPreferencesRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): UpdateNotificationPreferencesRequest {
+    return new UpdateNotificationPreferencesRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): UpdateNotificationPreferencesRequest {
+    return new UpdateNotificationPreferencesRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: UpdateNotificationPreferencesRequest | PlainMessage<UpdateNotificationPreferencesRequest> | undefined, b: UpdateNotificationPreferencesRequest | PlainMessage<UpdateNotificationPreferencesRequest> | undefined): boolean {
+    return proto3.util.equals(UpdateNotificationPreferencesRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message rill.admin.v1.UpdateNotificationPreferencesResponse
+ */
+export class UpdateNotificationPreferencesResponse extends Message<UpdateNotificationPreferencesResponse> {
+  /**
+   * @generated from field: rill.admin.v1.NotificationPreferences preferences = 1;
+   */
+  preferences?: NotificationPreferences;
+
+  constructor(data?: PartialMessage<UpdateNotificationPreferencesResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rill.admin.v1.UpdateNotificationPreferencesResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "preferences", kind: "message", T: NotificationPreferences },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UpdateNotificationPreferencesResponse {
+    return new UpdateNotificationPreferencesResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): UpdateNotificationPreferencesResponse {
+    return new UpdateNotificationPreferencesResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): UpdateNotificationPreferencesResponse {
+    return new UpdateNotificationPreferencesResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: UpdateNotificationPreferencesResponse | PlainMessage<UpdateNotificationPreferencesResponse> | undefined, b: UpdateNotificationPreferencesResponse | PlainMessage<UpdateNotificationPreferencesResponse> | undefined): boolean {
+    return proto3.util.equals(UpdateNotificationPreferencesResponse, a, b);
+  }
+}
+
+/**
  * @generated from message rill.admin.v1.GetUserRequest
  */
 export class GetUserRequest extends Message<GetUserRequest> {
@@ -13609,6 +14149,124 @@ export class GetAlertMetaResponse_URLs extends Message<GetAlertMetaResponse_URLs
 
   static equals(a: GetAlertMetaResponse_URLs | PlainMessage<GetAlertMetaResponse_URLs> | undefined, b: GetAlertMetaResponse_URLs | PlainMessage<GetAlertMetaResponse_URLs> | undefined): boolean {
     return proto3.util.equals(GetAlertMetaResponse_URLs, a, b);
+  }
+}
+
+/**
+ * @generated from message rill.admin.v1.SendPushNotificationRequest
+ */
+export class SendPushNotificationRequest extends Message<SendPushNotificationRequest> {
+  /**
+   * @generated from field: string project_id = 1;
+   */
+  projectId = "";
+
+  /**
+   * Notification category. One of "alerts", "reports" or "act_approvals".
+   *
+   * @generated from field: string category = 2;
+   */
+  category = "";
+
+  /**
+   * @generated from field: repeated string recipient_emails = 3;
+   */
+  recipientEmails: string[] = [];
+
+  /**
+   * @generated from field: string title = 4;
+   */
+  title = "";
+
+  /**
+   * @generated from field: string body = 5;
+   */
+  body = "";
+
+  /**
+   * Path relative to the frontend URL to open when the notification is clicked. Must start with "/".
+   *
+   * @generated from field: string link_path = 6;
+   */
+  linkPath = "";
+
+  /**
+   * Notifications with the same tag replace each other in the browser.
+   *
+   * @generated from field: string tag = 7;
+   */
+  tag = "";
+
+  constructor(data?: PartialMessage<SendPushNotificationRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rill.admin.v1.SendPushNotificationRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "project_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "category", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "recipient_emails", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 4, name: "title", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "body", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 6, name: "link_path", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 7, name: "tag", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): SendPushNotificationRequest {
+    return new SendPushNotificationRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): SendPushNotificationRequest {
+    return new SendPushNotificationRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): SendPushNotificationRequest {
+    return new SendPushNotificationRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: SendPushNotificationRequest | PlainMessage<SendPushNotificationRequest> | undefined, b: SendPushNotificationRequest | PlainMessage<SendPushNotificationRequest> | undefined): boolean {
+    return proto3.util.equals(SendPushNotificationRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message rill.admin.v1.SendPushNotificationResponse
+ */
+export class SendPushNotificationResponse extends Message<SendPushNotificationResponse> {
+  /**
+   * Number of notifications successfully sent.
+   *
+   * @generated from field: int32 sent = 1;
+   */
+  sent = 0;
+
+  constructor(data?: PartialMessage<SendPushNotificationResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rill.admin.v1.SendPushNotificationResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "sent", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): SendPushNotificationResponse {
+    return new SendPushNotificationResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): SendPushNotificationResponse {
+    return new SendPushNotificationResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): SendPushNotificationResponse {
+    return new SendPushNotificationResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: SendPushNotificationResponse | PlainMessage<SendPushNotificationResponse> | undefined, b: SendPushNotificationResponse | PlainMessage<SendPushNotificationResponse> | undefined): boolean {
+    return proto3.util.equals(SendPushNotificationResponse, a, b);
   }
 }
 

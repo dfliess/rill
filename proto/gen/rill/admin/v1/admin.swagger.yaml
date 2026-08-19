@@ -3788,6 +3788,49 @@ paths:
                   type: string
               anonRecipients:
                 type: boolean
+  /v1/projects/{projectId}/push-notifications/send:
+    post:
+      summary: |-
+        SendPushNotification sends a web push notification to the subscriptions of the given recipients.
+        It's currently only called by the runtime on behalf of a project's resources (e.g. when an alert fires).
+      operationId: AdminService_SendPushNotification
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1SendPushNotificationResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          type: string
+        - name: body
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              category:
+                type: string
+                description: Notification category. One of "alerts", "reports" or "act_approvals".
+              recipientEmails:
+                type: array
+                items:
+                  type: string
+              title:
+                type: string
+              body:
+                type: string
+              linkPath:
+                type: string
+                description: Path relative to the frontend URL to open when the notification is clicked. Must start with "/".
+              tag:
+                type: string
+                description: Notifications with the same tag replace each other in the browser.
   /v1/projects/{projectId}/repo/meta:
     get:
       summary: GetRepoMeta returns credentials and other metadata for accessing a project's repo
@@ -3970,6 +4013,21 @@ paths:
                 type: array
                 items:
                   type: string
+  /v1/push-notifications/config:
+    get:
+      summary: |-
+        GetPushNotificationConfig returns the public VAPID key browsers need to create push subscriptions.
+        An empty key means push notifications are disabled in the deployment.
+      operationId: AdminService_GetPushNotificationConfig
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1GetPushNotificationConfigResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
   /v1/roles:
     get:
       summary: ListRoles lists all the roles available for orgs and projects.
@@ -4741,6 +4799,37 @@ paths:
           description: An unexpected error response.
           schema:
             $ref: '#/definitions/rpcStatus'
+  /v1/users/notification-preferences:
+    get:
+      summary: GetNotificationPreferences returns the current user's per-category notification preferences.
+      operationId: AdminService_GetNotificationPreferences
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1GetNotificationPreferencesResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+    put:
+      summary: UpdateNotificationPreferences updates the current user's per-category notification preferences.
+      operationId: AdminService_UpdateNotificationPreferences
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1UpdateNotificationPreferencesResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/v1UpdateNotificationPreferencesRequest'
   /v1/users/preferences:
     put:
       summary: UpdateUserPreferences updates the preferences for the user
@@ -4760,6 +4849,55 @@ paths:
           required: true
           schema:
             $ref: '#/definitions/v1UpdateUserPreferencesRequest'
+  /v1/users/push-notifications/subscriptions:
+    get:
+      summary: ListPushSubscriptions lists the current user's push subscriptions.
+      operationId: AdminService_ListPushSubscriptions
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1ListPushSubscriptionsResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+    post:
+      summary: CreatePushSubscription registers a push subscription of one of the current user's browsers.
+      operationId: AdminService_CreatePushSubscription
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1CreatePushSubscriptionResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/v1CreatePushSubscriptionRequest'
+  /v1/users/push-notifications/subscriptions/{id}:
+    delete:
+      summary: DeletePushSubscription deletes one of the current user's push subscriptions.
+      operationId: AdminService_DeletePushSubscription
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1DeletePushSubscriptionResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: string
   /v1/users/search:
     get:
       summary: GetUsersByEmail returns users by email
@@ -5339,6 +5477,20 @@ definitions:
         $ref: '#/definitions/v1Project'
   v1CreateProjectWhitelistedDomainResponse:
     type: object
+  v1CreatePushSubscriptionRequest:
+    type: object
+    properties:
+      endpoint:
+        type: string
+        description: Fields of a PushSubscription object from the browser's Push API.
+      p256dh:
+        type: string
+      auth:
+        type: string
+      userAgent:
+        type: string
+  v1CreatePushSubscriptionResponse:
+    type: object
   v1CreateReportResponse:
     type: object
     properties:
@@ -5372,6 +5524,8 @@ definitions:
     properties:
       id:
         type: string
+  v1DeletePushSubscriptionResponse:
+    type: object
   v1DeleteReportResponse:
     type: object
   v1DeleteServiceResponse:
@@ -5667,6 +5821,11 @@ definitions:
       ttlSeconds:
         type: integer
         format: int64
+  v1GetNotificationPreferencesResponse:
+    type: object
+    properties:
+      preferences:
+        $ref: '#/definitions/v1NotificationPreferences'
   v1GetOrganizationMemberUserResponse:
     type: object
     properties:
@@ -5737,6 +5896,12 @@ definitions:
         description: |-
           Deprecated: Populated for backwards compatibility.
           (Renamed from "variables" to "variables_map").
+  v1GetPushNotificationConfigResponse:
+    type: object
+    properties:
+      vapidPublicKey:
+        type: string
+        description: Public VAPID key for creating push subscriptions. Empty if push notifications are disabled.
   v1GetRepoMetaResponse:
     type: object
     properties:
@@ -6051,6 +6216,14 @@ definitions:
         items:
           type: object
           $ref: '#/definitions/v1BillingPlan'
+  v1ListPushSubscriptionsResponse:
+    type: object
+    properties:
+      subscriptions:
+        type: array
+        items:
+          type: object
+          $ref: '#/definitions/v1PushSubscription'
   v1ListRolesResponse:
     type: object
     properties:
@@ -6210,6 +6383,15 @@ definitions:
         items:
           type: object
           $ref: '#/definitions/v1ResourceName'
+  v1NotificationPreferences:
+    type: object
+    properties:
+      pushAlerts:
+        type: boolean
+      pushReports:
+        type: boolean
+      pushActApprovals:
+        type: boolean
   v1Organization:
     type: object
     properties:
@@ -6632,6 +6814,18 @@ definitions:
       nextPageToken:
         type: string
         description: Next page token for pagination.
+  v1PushSubscription:
+    type: object
+    properties:
+      id:
+        type: string
+      endpoint:
+        type: string
+      userAgent:
+        type: string
+      createdOn:
+        type: string
+        format: date-time
   v1Quotas:
     type: object
     properties:
@@ -6819,6 +7013,13 @@ definitions:
           $ref: '#/definitions/v1User'
       nextPageToken:
         type: string
+  v1SendPushNotificationResponse:
+    type: object
+    properties:
+      sent:
+        type: integer
+        format: int32
+        description: Number of notifications successfully sent.
   v1Service:
     type: object
     properties:
@@ -7197,6 +7398,16 @@ definitions:
         type: boolean
   v1UpdateBookmarkResponse:
     type: object
+  v1UpdateNotificationPreferencesRequest:
+    type: object
+    properties:
+      preferences:
+        $ref: '#/definitions/v1NotificationPreferences'
+  v1UpdateNotificationPreferencesResponse:
+    type: object
+    properties:
+      preferences:
+        $ref: '#/definitions/v1NotificationPreferences'
   v1UpdateOrganizationMemberUserAttributesResponse:
     type: object
   v1UpdateOrganizationResponse:
