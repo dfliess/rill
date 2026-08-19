@@ -89,6 +89,23 @@ func (h *Handle) GetAlertMetadata(ctx context.Context, alertName, ownerID string
 	return meta, nil
 }
 
+func (h *Handle) SendPushNotification(ctx context.Context, category string, emails []string, title, body, linkPath, tag string) (int, error) {
+	res, err := h.admin.SendPushNotification(ctx, &adminv1.SendPushNotificationRequest{
+		ProjectId:       h.config.ProjectID,
+		Category:        category,
+		RecipientEmails: emails,
+		Title:           title,
+		Body:            body,
+		LinkPath:        linkPath,
+		Tag:             tag,
+	})
+	if err != nil {
+		return 0, err
+	}
+
+	return int(res.Sent), nil
+}
+
 func (h *Handle) ProvisionConnector(ctx context.Context, name, driver string, args map[string]any) (map[string]any, error) {
 	argsPB, err := structpb.NewStruct(args)
 	if err != nil {

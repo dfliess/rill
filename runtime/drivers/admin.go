@@ -11,11 +11,24 @@ var ErrNotAuthenticated = errors.New("not authenticated")
 type AdminService interface {
 	GetReportMetadata(ctx context.Context, reportName, ownerID, webOpenMode string, emailRecipients []string, anonRecipients bool, executionTime time.Time) (*ReportMetadata, error)
 	GetAlertMetadata(ctx context.Context, alertName, ownerID string, emailRecipients []string, anonRecipients bool, annotations map[string]string, queryForUserID, queryForUserEmail string) (*AlertMetadata, error)
+	// SendPushNotification sends a web push notification to the subscriptions of the given recipient emails.
+	// The category must be one of the PushCategory constants; recipients that opted out of it are skipped.
+	// linkPath is the frontend path to open when the notification is clicked (must start with "/");
+	// notifications with the same tag replace each other in the browser.
+	// It returns the number of notifications sent, which may be zero if push is disabled or nobody is subscribed.
+	SendPushNotification(ctx context.Context, category string, emails []string, title, body, linkPath, tag string) (int, error)
 	ProvisionConnector(ctx context.Context, name, driver string, args map[string]any) (map[string]any, error)
 	GetConfig(ctx context.Context) (*Config, error)
 	ListDeployments(ctx context.Context) ([]*Deployment, error)
 	UpdateProjectVariables(ctx context.Context, environment string, variables map[string]string) error
 }
+
+// Categories of web push notifications, matching the notification preferences users can toggle in the admin.
+const (
+	PushCategoryAlerts       = "alerts"
+	PushCategoryReports      = "reports"
+	PushCategoryActApprovals = "act_approvals"
+)
 
 type ReportMetadata struct {
 	ReportDelivery map[string]ReportDelivery
