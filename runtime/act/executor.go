@@ -153,6 +153,40 @@ type AgentExecutor interface {
 	Cancel(ctx context.Context, instanceID, runID string) error
 }
 
+// ApprovalNotifier is told when a run pauses on human approvals, so the people who may decide can be reached out of
+// band (web push, kairos-cloud#143) instead of having to be watching the inbox.
+//
+// It is a seam for the same reason as ActionSink: the executor knows a run paused, but not who should hear about it.
+// That answer needs the project's membership and the agent's approve policy, neither of which this package can
+// reach. Implementations are best-effort by contract: they report no error, and a failure to notify may never
+// affect the run.
+type ApprovalNotifier interface {
+	NotifyPendingApprovals(ctx context.Context, pending PendingApprovals)
+}
+
+// PendingApprovals describes one pause of a run: the actions of a governed batch that await a human decision. A
+// batch is one moment of signing, so it is notified once however many actions it holds; a run that pauses again
+// produces another one.
+type PendingApprovals struct {
+	InstanceID string
+	RunID      string
+	AgentName  string
+	// IdempotencyKey is the run's caller-facing identity, which is what a run's URL carries (not the composite RunID).
+	IdempotencyKey string
+	// RunActor is the subject the run acts for; an approve expression may discriminate on it (`.run.actor`).
+	RunActor string
+	// Actions are the batch's actions awaiting a decision, in proposal order.
+	Actions []PendingAction
+}
+
+// PendingAction identifies one proposed action awaiting a human decision.
+type PendingAction struct {
+	// Tool is the RAW tool name, the form an approve expression matches (see RawToolName), not the
+	// mcp.<connector>.<tool> form the ledger stores.
+	Tool      string
+	Connector string
+}
+
 // AgentRunResult is the durable outcome of a run. DBOS checkpoints it as the workflow result, so a Start replaying
 // a finished run returns this without re-executing anything.
 type AgentRunResult struct {

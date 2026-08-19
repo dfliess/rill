@@ -106,6 +106,28 @@ func (h *Handle) SendPushNotification(ctx context.Context, category string, emai
 	return int(res.Sent), nil
 }
 
+func (h *Handle) ListProjectMemberAttributes(ctx context.Context) ([]drivers.ProjectMember, error) {
+	res, err := h.admin.ListProjectMemberAttributes(ctx, &adminv1.ListProjectMemberAttributesRequest{
+		ProjectId: h.config.ProjectID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	members := make([]drivers.ProjectMember, len(res.Members))
+	for i, m := range res.Members {
+		members[i] = drivers.ProjectMember{
+			UserID:        m.UserId,
+			Email:         m.Email,
+			Attributes:    m.Attributes.AsMap(),
+			EditTrigger:   m.EditTrigger,
+			SecurityRules: m.SecurityRules,
+		}
+	}
+
+	return members, nil
+}
+
 func (h *Handle) ProvisionConnector(ctx context.Context, name, driver string, args map[string]any) (map[string]any, error) {
 	argsPB, err := structpb.NewStruct(args)
 	if err != nil {

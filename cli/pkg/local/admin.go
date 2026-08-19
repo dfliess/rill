@@ -94,6 +94,11 @@ func (l *localAdminService) SendPushNotification(ctx context.Context, category s
 	return 0, drivers.ErrNotImplemented
 }
 
+// ListProjectMemberAttributes implements drivers.AdminService.
+func (l *localAdminService) ListProjectMemberAttributes(ctx context.Context) ([]drivers.ProjectMember, error) {
+	return nil, drivers.ErrNotImplemented
+}
+
 // ProvisionConnector implements drivers.AdminService.
 func (l *localAdminService) ProvisionConnector(ctx context.Context, name, driver string, args map[string]any) (map[string]any, error) {
 	return nil, drivers.ErrNotImplemented

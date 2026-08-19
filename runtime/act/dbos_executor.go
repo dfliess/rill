@@ -71,7 +71,11 @@ type Config struct {
 	// Gateway's Ledger should share the same Postgres as Store (its agent_actions table lives in the product schema).
 	Gateway  *Gateway
 	Proposer Proposer
-	Logger   *slog.Logger
+	// Approvals, when set, is notified every time a run pauses on human approvals, so whoever may decide is told out
+	// of band (kairos-cloud#143). Optional and best-effort: a deployment without it simply notifies nobody, and a
+	// notification that fails never touches the run.
+	Approvals ApprovalNotifier
+	Logger    *slog.Logger
 }
 
 // DBOSExecutor is the DBOS-backed AgentExecutor. It both embeds the worker (it registers the workflow and runs
@@ -79,14 +83,15 @@ type Config struct {
 // dev topology (§20.1). In production the worker and the runtime that drives it are separate processes sharing the
 // same Postgres; the split does not change this code, only which side holds the dbos.Client.
 type DBOSExecutor struct {
-	ctx      dbos.Context
-	client   dbos.Client
-	runner   Runner
-	store    RunStore
-	gateway  *Gateway
-	proposer Proposer
-	version  string
-	logger   *slog.Logger
+	ctx       dbos.Context
+	client    dbos.Client
+	runner    Runner
+	store     RunStore
+	gateway   *Gateway
+	proposer  Proposer
+	approvals ApprovalNotifier
+	version   string
+	logger    *slog.Logger
 }
 
 var _ AgentExecutor = (*DBOSExecutor)(nil)
@@ -134,13 +139,14 @@ func NewDBOSExecutor(ctx context.Context, cfg Config) (*DBOSExecutor, error) {
 	}
 
 	e := &DBOSExecutor{
-		ctx:      dctx,
-		runner:   cfg.Runner,
-		store:    cfg.Store,
-		gateway:  cfg.Gateway,
-		proposer: cfg.Proposer,
-		version:  version,
-		logger:   cfg.Logger,
+		ctx:       dctx,
+		runner:    cfg.Runner,
+		store:     cfg.Store,
+		gateway:   cfg.Gateway,
+		proposer:  cfg.Proposer,
+		approvals: cfg.Approvals,
+		version:   version,
+		logger:    cfg.Logger,
 	}
 
 	// Register the ONE generic workflow. It is a bound method so the workflow body reaches the runner (and, in
@@ -918,6 +924,12 @@ func (e *DBOSExecutor) governProposedActions(ctx dbos.Context, in AgentRunInput,
 			*res, err = e.fail(ctx, in, runID, *res, "setup approvals", err)
 			return nil, true, err
 		}
+
+		// Tell whoever may decide that the run is waiting on them (kairos-cloud#143). Deliberately AFTER the step and
+		// not inside it: a completed step is never re-executed, so a notification sent from within it would be skipped
+		// on the recovery path, which is the one where a run has waited longest. Out here a replay notifies again
+		// instead, which is the harmless direction: the push is tagged per run, so the browser collapses the duplicate.
+		e.notifyPendingApprovals(ctx, in, runID, actions)
 	}
 
 	// Phase 3: process each action in proposal order. Auto-approved actions execute immediately; manual ones wait for
@@ -958,6 +970,46 @@ func (e *DBOSExecutor) governProposedActions(ctx dbos.Context, in AgentRunInput,
 	}
 
 	return results, false, nil
+}
+
+// notifyPendingApprovals hands the batch's manual approvals to the configured ApprovalNotifier. Auto-approved and
+// policy-denied actions are left out: nobody has to sign them, and a batch with none of them notifies nobody.
+func (e *DBOSExecutor) notifyPendingApprovals(ctx context.Context, in AgentRunInput, runID string, actions []governedAction) {
+	if e.approvals == nil {
+		return
+	}
+
+	// The approvals are already committed and the run is about to park on them: whatever the notifier does, the run
+	// must reach that wait. Its contract says it never fails, so this catches only a bug in it, but a panic here
+	// would unwind the workflow and lose a run that has nothing wrong with it.
+	defer func() {
+		if r := recover(); r != nil && e.logger != nil {
+			e.logger.Error("act: notifying the pending approvals panicked", "run", runID, "panic", r)
+		}
+	}()
+
+	pending := make([]PendingAction, 0, len(actions))
+	for i := range actions {
+		if actions[i].auth.Decision != PolicyApprovalRequired {
+			continue
+		}
+		pending = append(pending, PendingAction{
+			Tool:      RawToolName(actions[i].proposal.Tool, actions[i].proposal.Connector),
+			Connector: actions[i].proposal.Connector,
+		})
+	}
+	if len(pending) == 0 {
+		return
+	}
+
+	e.approvals.NotifyPendingApprovals(ctx, PendingApprovals{
+		InstanceID:     in.InstanceID,
+		RunID:          runID,
+		AgentName:      in.AgentName,
+		IdempotencyKey: in.IdempotencyKey,
+		RunActor:       in.Actor.Subject,
+		Actions:        pending,
+	})
 }
 
 // processOneAction handles policy, approval wait, and execution for one action within a governed batch. It returns the

@@ -117,7 +117,10 @@ func (s *Server) BootstrapAct(ctx context.Context, cfg ActConfig) (io.Closer, er
 		Store:              runStore,
 		Gateway:            act.NewMCPGateway(s.runtime, runStore, logger),
 		Proposer:           act.NewCapturedProposer(),
-		Logger:             logger,
+		// Whenever a run pauses, whoever the agent's approve policy authorizes gets a web push (kairos-cloud#143),
+		// so an approval does not depend on someone happening to have the inbox open.
+		Approvals: &actApprovalPushNotifier{runtime: s.runtime, logger: s.logger},
+		Logger:    logger,
 	})
 	if err != nil {
 		return fail(fmt.Errorf("act: build executor: %w", err))

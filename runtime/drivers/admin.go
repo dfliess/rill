@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"time"
+
+	runtimev1 "github.com/rilldata/rill/proto/gen/rill/runtime/v1"
 )
 
 var ErrNotAuthenticated = errors.New("not authenticated")
@@ -17,6 +19,10 @@ type AdminService interface {
 	// notifications with the same tag replace each other in the browser.
 	// It returns the number of notifications sent, which may be zero if push is disabled or nobody is subscribed.
 	SendPushNotification(ctx context.Context, category string, emails []string, title, body, linkPath, tag string) (int, error)
+	// ListProjectMemberAttributes returns the project's members with the identity a runtime JWT issued for them would carry.
+	// It lets the runtime evaluate a security policy for members that are not making a request,
+	// which is what turns "may this user decide?" into "who may decide?" (see Runtime.ResolveAgentApprovers).
+	ListProjectMemberAttributes(ctx context.Context) ([]ProjectMember, error)
 	ProvisionConnector(ctx context.Context, name, driver string, args map[string]any) (map[string]any, error)
 	GetConfig(ctx context.Context) (*Config, error)
 	ListDeployments(ctx context.Context) ([]*Deployment, error)
@@ -29,6 +35,20 @@ const (
 	PushCategoryReports      = "reports"
 	PushCategoryActApprovals = "act_approvals"
 )
+
+// ProjectMember is one member of the project as the runtime sees them:
+// the attributes, permissions and security rules a runtime JWT issued for them would carry.
+type ProjectMember struct {
+	UserID string
+	Email  string
+	// Attributes as they would be embedded in the member's runtime JWT, i.e. the `.user` a security policy evaluates against.
+	Attributes map[string]any
+	// EditTrigger reports whether the member holds the runtime's EditTrigger permission on this deployment.
+	// It is the only instance permission that differs between members, see Runtime.ResolveAgentApprovers.
+	EditTrigger bool
+	// SecurityRules are the resource restrictions that apply to the member; empty for an unrestricted one.
+	SecurityRules []*runtimev1.SecurityRule
+}
 
 type ReportMetadata struct {
 	ReportDelivery map[string]ReportDelivery
