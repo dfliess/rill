@@ -4866,7 +4866,20 @@ paths:
             $ref: '#/definitions/rpcStatus'
   /v1/users/notification-preferences:
     get:
-      summary: GetNotificationPreferences returns the current user's per-category notification preferences.
+      summary: ListNotificationPreferences returns the current user's notification preferences in every organization they belong to.
+      operationId: AdminService_ListNotificationPreferences
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1ListNotificationPreferencesResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+  /v1/users/notification-preferences/{org}:
+    get:
+      summary: GetNotificationPreferences returns the current user's per-category notification preferences in an organization.
       operationId: AdminService_GetNotificationPreferences
       responses:
         "200":
@@ -4877,8 +4890,13 @@ paths:
           description: An unexpected error response.
           schema:
             $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: org
+          in: path
+          required: true
+          type: string
     put:
-      summary: UpdateNotificationPreferences updates the current user's per-category notification preferences.
+      summary: UpdateNotificationPreferences updates the current user's per-category notification preferences in an organization.
       operationId: AdminService_UpdateNotificationPreferences
       responses:
         "200":
@@ -4890,11 +4908,18 @@ paths:
           schema:
             $ref: '#/definitions/rpcStatus'
       parameters:
+        - name: org
+          in: path
+          required: true
+          type: string
         - name: body
           in: body
           required: true
           schema:
-            $ref: '#/definitions/v1UpdateNotificationPreferencesRequest'
+            type: object
+            properties:
+              preferences:
+                $ref: '#/definitions/v1NotificationPreferences'
   /v1/users/preferences:
     put:
       summary: UpdateUserPreferences updates the preferences for the user
@@ -6134,6 +6159,14 @@ definitions:
           $ref: '#/definitions/v1MagicAuthToken'
       nextPageToken:
         type: string
+  v1ListNotificationPreferencesResponse:
+    type: object
+    properties:
+      organizations:
+        type: array
+        items:
+          type: object
+          $ref: '#/definitions/v1OrganizationNotificationPreferences'
   v1ListOrganizationBillingIssuesResponse:
     type: object
     properties:
@@ -6479,6 +6512,7 @@ definitions:
         type: boolean
       pushActApprovals:
         type: boolean
+    description: 'NotificationPreferences are a user''s opt-outs for one organization: a category left on there stays on for its projects only.'
   v1Organization:
     type: object
     properties:
@@ -6590,6 +6624,16 @@ definitions:
       updatedOn:
         type: string
         format: date-time
+  v1OrganizationNotificationPreferences:
+    type: object
+    properties:
+      org:
+        type: string
+      orgDisplayName:
+        type: string
+      preferences:
+        $ref: '#/definitions/v1NotificationPreferences'
+    description: OrganizationNotificationPreferences pairs an organization with the current user's preferences in it.
   v1OrganizationPermissions:
     type: object
     properties:
@@ -7623,11 +7667,6 @@ definitions:
         type: boolean
   v1UpdateBookmarkResponse:
     type: object
-  v1UpdateNotificationPreferencesRequest:
-    type: object
-    properties:
-      preferences:
-        $ref: '#/definitions/v1NotificationPreferences'
   v1UpdateNotificationPreferencesResponse:
     type: object
     properties:

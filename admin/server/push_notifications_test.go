@@ -7,6 +7,7 @@ import (
 	"sync/atomic"
 	"testing"
 
+	"github.com/rilldata/rill/admin/database"
 	"github.com/rilldata/rill/admin/testadmin"
 	adminv1 "github.com/rilldata/rill/proto/gen/rill/admin/v1"
 	"github.com/stretchr/testify/require"
@@ -26,6 +27,16 @@ func TestPushSubscriptions(t *testing.T) {
 
 	u1, c1 := fix.NewUser(t)
 	_, c2 := fix.NewUser(t)
+
+	// Two organizations with a project each: preferences hang off the organization, not the user
+	orgA, err := c1.CreateOrganization(ctx, &adminv1.CreateOrganizationRequest{Name: randomName()})
+	require.NoError(t, err)
+	projA, err := c1.CreateProject(ctx, &adminv1.CreateProjectRequest{Org: orgA.Organization.Name, Project: "proj1", ProdSlots: 1, SkipDeploy: true})
+	require.NoError(t, err)
+	orgB, err := c1.CreateOrganization(ctx, &adminv1.CreateOrganizationRequest{Name: randomName()})
+	require.NoError(t, err)
+	projB, err := c1.CreateProject(ctx, &adminv1.CreateProjectRequest{Org: orgB.Organization.Name, Project: "proj1", ProdSlots: 1, SkipDeploy: true})
+	require.NoError(t, err)
 
 	t.Run("Config returns the VAPID public key", func(t *testing.T) {
 		res, err := c1.GetPushNotificationConfig(ctx, &adminv1.GetPushNotificationConfigRequest{})
@@ -60,27 +71,63 @@ func TestPushSubscriptions(t *testing.T) {
 		require.NoError(t, err)
 	})
 
-	t.Run("Preferences default to enabled and can be updated", func(t *testing.T) {
-		res, err := c1.GetNotificationPreferences(ctx, &adminv1.GetNotificationPreferencesRequest{})
+	t.Run("Preferences default to enabled and are kept per organization", func(t *testing.T) {
+		res, err := c1.GetNotificationPreferences(ctx, &adminv1.GetNotificationPreferencesRequest{Org: orgA.Organization.Name})
 		require.NoError(t, err)
 		require.True(t, res.Preferences.PushAlerts)
 		require.True(t, res.Preferences.PushReports)
 		require.True(t, res.Preferences.PushActApprovals)
 
 		upd, err := c1.UpdateNotificationPreferences(ctx, &adminv1.UpdateNotificationPreferencesRequest{
+			Org:         orgA.Organization.Name,
 			Preferences: &adminv1.NotificationPreferences{PushAlerts: false, PushReports: true, PushActApprovals: false},
 		})
 		require.NoError(t, err)
 		require.False(t, upd.Preferences.PushAlerts)
 
-		res, err = c1.GetNotificationPreferences(ctx, &adminv1.GetNotificationPreferencesRequest{})
+		res, err = c1.GetNotificationPreferences(ctx, &adminv1.GetNotificationPreferencesRequest{Org: orgA.Organization.Name})
 		require.NoError(t, err)
 		require.False(t, res.Preferences.PushAlerts)
 		require.True(t, res.Preferences.PushReports)
 		require.False(t, res.Preferences.PushActApprovals)
 
+		// The other organization is untouched by it
+		res, err = c1.GetNotificationPreferences(ctx, &adminv1.GetNotificationPreferencesRequest{Org: orgB.Organization.Name})
+		require.NoError(t, err)
+		require.True(t, res.Preferences.PushAlerts)
+		require.True(t, res.Preferences.PushReports)
+		require.True(t, res.Preferences.PushActApprovals)
+
+		// The listing carries one entry per organization the user belongs to, defaults included
+		list, err := c1.ListNotificationPreferences(ctx, &adminv1.ListNotificationPreferencesRequest{})
+		require.NoError(t, err)
+		require.Len(t, list.Organizations, 2)
+		byOrg := make(map[string]*adminv1.NotificationPreferences, len(list.Organizations))
+		for _, o := range list.Organizations {
+			byOrg[o.Org] = o.Preferences
+		}
+		require.False(t, byOrg[orgA.Organization.Name].PushAlerts)
+		require.True(t, byOrg[orgA.Organization.Name].PushReports)
+		require.False(t, byOrg[orgA.Organization.Name].PushActApprovals)
+		require.True(t, byOrg[orgB.Organization.Name].PushAlerts)
+
+		// A user who does not belong to the organization can neither read nor write its preferences
+		_, err = c2.GetNotificationPreferences(ctx, &adminv1.GetNotificationPreferencesRequest{Org: orgA.Organization.Name})
+		require.Error(t, err)
+		require.Equal(t, codes.PermissionDenied, status.Code(err))
+		_, err = c2.UpdateNotificationPreferences(ctx, &adminv1.UpdateNotificationPreferencesRequest{
+			Org:         orgA.Organization.Name,
+			Preferences: &adminv1.NotificationPreferences{PushAlerts: false, PushReports: false, PushActApprovals: false},
+		})
+		require.Error(t, err)
+		require.Equal(t, codes.PermissionDenied, status.Code(err))
+		list, err = c2.ListNotificationPreferences(ctx, &adminv1.ListNotificationPreferencesRequest{})
+		require.NoError(t, err)
+		require.Empty(t, list.Organizations)
+
 		// Restore defaults for the send tests below
 		_, err = c1.UpdateNotificationPreferences(ctx, &adminv1.UpdateNotificationPreferencesRequest{
+			Org:         orgA.Organization.Name,
 			Preferences: &adminv1.NotificationPreferences{PushAlerts: true, PushReports: true, PushActApprovals: true},
 		})
 		require.NoError(t, err)
@@ -99,64 +146,87 @@ func TestPushSubscriptions(t *testing.T) {
 		}))
 		defer goneSrv.Close()
 
-		orgName := randomName()
-		r1, err := c1.CreateOrganization(ctx, &adminv1.CreateOrganizationRequest{Name: orgName})
-		require.NoError(t, err)
-		r2, err := c1.CreateProject(ctx, &adminv1.CreateProjectRequest{Org: r1.Organization.Name, Project: "proj1", ProdSlots: 1, SkipDeploy: true})
+		// u3 belongs to the first organization only, so that is the only one they can set preferences in
+		u3, c3 := fix.NewUser(t)
+		_, err = c1.AddOrganizationMemberUser(ctx, &adminv1.AddOrganizationMemberUserRequest{Org: orgA.Organization.Name, Email: u3.Email, Role: database.OrganizationRoleNameViewer})
 		require.NoError(t, err)
 
-		u3, c3 := fix.NewUser(t)
-		_, err = c1.CreatePushSubscription(ctx, &adminv1.CreatePushSubscriptionRequest{Endpoint: okSrv.URL, P256Dh: testP256dh, Auth: testAuth})
+		_, err = c1.CreatePushSubscription(ctx, &adminv1.CreatePushSubscriptionRequest{Endpoint: okSrv.URL + "/u1", P256Dh: testP256dh, Auth: testAuth})
 		require.NoError(t, err)
-		_, err = c3.CreatePushSubscription(ctx, &adminv1.CreatePushSubscriptionRequest{Endpoint: goneSrv.URL, P256Dh: testP256dh, Auth: testAuth})
+		_, err = c3.CreatePushSubscription(ctx, &adminv1.CreatePushSubscriptionRequest{Endpoint: okSrv.URL + "/u3", P256Dh: testP256dh, Auth: testAuth})
 		require.NoError(t, err)
 
 		// A user without access to the project can't send
-		_, err = c3.SendPushNotification(ctx, &adminv1.SendPushNotificationRequest{ProjectId: r2.Project.Id, Category: "alerts", RecipientEmails: []string{u1.Email}, Title: "Hi"})
+		_, err = c2.SendPushNotification(ctx, &adminv1.SendPushNotificationRequest{ProjectId: projA.Project.Id, Category: "alerts", RecipientEmails: []string{u1.Email}, Title: "Hi"})
 		require.Error(t, err)
 		require.Equal(t, codes.PermissionDenied, status.Code(err))
 
 		// An absolute or protocol-relative link path is rejected
 		for _, linkPath := range []string{"https://evil.example.com/x", "//evil.example.com/x", "relative/no/slash"} {
-			_, err = c1.SendPushNotification(ctx, &adminv1.SendPushNotificationRequest{ProjectId: r2.Project.Id, Category: "alerts", RecipientEmails: []string{u1.Email}, Title: "Hi", LinkPath: linkPath})
+			_, err = c1.SendPushNotification(ctx, &adminv1.SendPushNotificationRequest{ProjectId: projA.Project.Id, Category: "alerts", RecipientEmails: []string{u1.Email}, Title: "Hi", LinkPath: linkPath})
 			require.Error(t, err)
 			require.Equal(t, codes.InvalidArgument, status.Code(err), "link_path %q", linkPath)
 		}
 
 		// An unknown category is rejected
-		_, err = c1.SendPushNotification(ctx, &adminv1.SendPushNotificationRequest{ProjectId: r2.Project.Id, Category: "invalid", RecipientEmails: []string{u1.Email}, Title: "Hi"})
+		_, err = c1.SendPushNotification(ctx, &adminv1.SendPushNotificationRequest{ProjectId: projA.Project.Id, Category: "invalid", RecipientEmails: []string{u1.Email}, Title: "Hi"})
 		require.Error(t, err)
 		require.Equal(t, codes.InvalidArgument, status.Code(err))
 
-		// A recipient that opted out of the category is skipped
+		// A recipient that opted out of the category is skipped for the projects of that organization
 		_, err = c3.UpdateNotificationPreferences(ctx, &adminv1.UpdateNotificationPreferencesRequest{
+			Org:         orgA.Organization.Name,
 			Preferences: &adminv1.NotificationPreferences{PushAlerts: false, PushReports: true, PushActApprovals: true},
 		})
 		require.NoError(t, err)
 		res, err := c1.SendPushNotification(ctx, &adminv1.SendPushNotificationRequest{
-			ProjectId:       r2.Project.Id,
+			ProjectId:       projA.Project.Id,
 			Category:        "alerts",
 			RecipientEmails: []string{u1.Email, u3.Email},
 			Title:           "Alert fired",
 			Body:            "Details",
-			LinkPath:        "/" + orgName + "/proj1/-/alerts/a1",
+			LinkPath:        "/" + orgA.Organization.Name + "/proj1/-/alerts/a1",
 			Tag:             "a1",
 		})
 		require.NoError(t, err)
 		require.Equal(t, int32(1), res.Sent)
 		require.Equal(t, int32(1), delivered.Load())
 
-		// For a category the recipient did not opt out of, the gone subscription is contacted and purged
+		// The opt-out stays in its organization: the same category sent from a project of the other one arrives
 		res, err = c1.SendPushNotification(ctx, &adminv1.SendPushNotificationRequest{
-			ProjectId:       r2.Project.Id,
+			ProjectId:       projB.Project.Id,
+			Category:        "alerts",
+			RecipientEmails: []string{u1.Email, u3.Email},
+			Title:           "Alert fired elsewhere",
+		})
+		require.NoError(t, err)
+		require.Equal(t, int32(2), res.Sent)
+		require.Equal(t, int32(3), delivered.Load())
+
+		// A category they did not opt out of still arrives from the organization they opted out in
+		res, err = c1.SendPushNotification(ctx, &adminv1.SendPushNotificationRequest{
+			ProjectId:       projA.Project.Id,
 			Category:        "reports",
 			RecipientEmails: []string{u1.Email, u3.Email},
 			Title:           "Your report is ready",
 		})
 		require.NoError(t, err)
-		require.Equal(t, int32(1), res.Sent)
-		require.Equal(t, int32(2), delivered.Load())
-		subs, err := c3.ListPushSubscriptions(ctx, &adminv1.ListPushSubscriptionsRequest{})
+		require.Equal(t, int32(2), res.Sent)
+		require.Equal(t, int32(5), delivered.Load())
+
+		// A subscription the push service reports as gone is contacted once and purged
+		u4, c4 := fix.NewUser(t)
+		_, err = c4.CreatePushSubscription(ctx, &adminv1.CreatePushSubscriptionRequest{Endpoint: goneSrv.URL, P256Dh: testP256dh, Auth: testAuth})
+		require.NoError(t, err)
+		res, err = c1.SendPushNotification(ctx, &adminv1.SendPushNotificationRequest{
+			ProjectId:       projA.Project.Id,
+			Category:        "reports",
+			RecipientEmails: []string{u4.Email},
+			Title:           "Your report is ready",
+		})
+		require.NoError(t, err)
+		require.Equal(t, int32(0), res.Sent)
+		subs, err := c4.ListPushSubscriptions(ctx, &adminv1.ListPushSubscriptionsRequest{})
 		require.NoError(t, err)
 		require.Len(t, subs.Subscriptions, 0)
 	})

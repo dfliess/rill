@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   derivePushSectionState,
   describeUserAgent,
+  listOrganizationPreferences,
   listPushDevices,
   readNotificationPreferences,
   subscriptionCredentials,
@@ -167,6 +168,46 @@ describe("readNotificationPreferences", () => {
       pushReports: false,
       pushActApprovals: false,
     });
+  });
+});
+
+describe("listOrganizationPreferences", () => {
+  it("keeps the order the admin sent and titles each block with the display name", () => {
+    const blocks = listOrganizationPreferences([
+      {
+        org: "acme",
+        orgDisplayName: "Acme Inc.",
+        preferences: { pushAlerts: true, pushReports: true },
+      },
+      { org: "beta", orgDisplayName: "", preferences: { pushReports: true } },
+    ]);
+    expect(blocks.map((block) => block.org)).toEqual(["acme", "beta"]);
+    expect(blocks.map((block) => block.label)).toEqual(["Acme Inc.", "beta"]);
+  });
+
+  it("reads each organization's preferences on its own, false included", () => {
+    const blocks = listOrganizationPreferences([
+      { org: "acme", preferences: { pushAlerts: true } },
+      { org: "beta", preferences: { pushReports: true } },
+    ]);
+    expect(blocks[0].preferences).toEqual({
+      pushAlerts: true,
+      pushReports: false,
+      pushActApprovals: false,
+    });
+    expect(blocks[1].preferences).toEqual({
+      pushAlerts: false,
+      pushReports: true,
+      pushActApprovals: false,
+    });
+  });
+
+  it("drops an entry without an organization and handles a missing list", () => {
+    expect(
+      listOrganizationPreferences([{ orgDisplayName: "Nameless" }]),
+    ).toEqual([]);
+    expect(listOrganizationPreferences(undefined)).toEqual([]);
+    expect(listOrganizationPreferences([])).toEqual([]);
   });
 });
 
