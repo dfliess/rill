@@ -1147,15 +1147,20 @@ service AdminService {
     option (google.api.http) = {delete: "/v1/users/push-notifications/subscriptions/{id}"};
   }
 
-  // GetNotificationPreferences returns the current user's per-category notification preferences.
-  rpc GetNotificationPreferences(GetNotificationPreferencesRequest) returns (GetNotificationPreferencesResponse) {
+  // ListNotificationPreferences returns the current user's notification preferences in every organization they belong to.
+  rpc ListNotificationPreferences(ListNotificationPreferencesRequest) returns (ListNotificationPreferencesResponse) {
     option (google.api.http) = {get: "/v1/users/notification-preferences"};
   }
 
-  // UpdateNotificationPreferences updates the current user's per-category notification preferences.
+  // GetNotificationPreferences returns the current user's per-category notification preferences in an organization.
+  rpc GetNotificationPreferences(GetNotificationPreferencesRequest) returns (GetNotificationPreferencesResponse) {
+    option (google.api.http) = {get: "/v1/users/notification-preferences/{org}"};
+  }
+
+  // UpdateNotificationPreferences updates the current user's per-category notification preferences in an organization.
   rpc UpdateNotificationPreferences(UpdateNotificationPreferencesRequest) returns (UpdateNotificationPreferencesResponse) {
     option (google.api.http) = {
-      put: "/v1/users/notification-preferences",
+      put: "/v1/users/notification-preferences/{org}",
       body: "*"
     };
   }
@@ -2631,20 +2636,37 @@ message DeletePushSubscriptionRequest {
 
 message DeletePushSubscriptionResponse {}
 
+// NotificationPreferences are a user's opt-outs for one organization: a category left on there stays on for its projects only.
 message NotificationPreferences {
   bool push_alerts = 1;
   bool push_reports = 2;
   bool push_act_approvals = 3;
 }
 
-message GetNotificationPreferencesRequest {}
+// OrganizationNotificationPreferences pairs an organization with the current user's preferences in it.
+message OrganizationNotificationPreferences {
+  string org = 1;
+  string org_display_name = 2;
+  NotificationPreferences preferences = 3;
+}
+
+message ListNotificationPreferencesRequest {}
+
+message ListNotificationPreferencesResponse {
+  repeated OrganizationNotificationPreferences organizations = 1;
+}
+
+message GetNotificationPreferencesRequest {
+  string org = 1 [(validate.rules).string.min_len = 1];
+}
 
 message GetNotificationPreferencesResponse {
   NotificationPreferences preferences = 1;
 }
 
 message UpdateNotificationPreferencesRequest {
-  NotificationPreferences preferences = 1 [(validate.rules).message.required = true];
+  string org = 1 [(validate.rules).string.min_len = 1];
+  NotificationPreferences preferences = 2 [(validate.rules).message.required = true];
 }
 
 message UpdateNotificationPreferencesResponse {

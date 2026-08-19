@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -1108,33 +1109,54 @@ func testPushSubscriptions(t *testing.T, db database.DB) {
 	require.NoError(t, err)
 	require.Len(t, subs, 1)
 
-	projectID := "11111111-0000-0000-0000-000000000001"
+	// Two organizations with a project each: preferences are stored per organization
+	orgA, err := db.InsertOrganization(ctx, &database.InsertOrganizationOptions{Name: randomName()})
+	require.NoError(t, err)
+	projA, err := db.InsertProject(ctx, &database.InsertProjectOptions{OrganizationID: orgA.ID, Name: randomName()})
+	require.NoError(t, err)
+	orgB, err := db.InsertOrganization(ctx, &database.InsertOrganizationOptions{Name: randomName()})
+	require.NoError(t, err)
+	projB, err := db.InsertProject(ctx, &database.InsertProjectOptions{OrganizationID: orgB.ID, Name: randomName()})
+	require.NoError(t, err)
 
 	// Recipient lookup is case-insensitive on email and defaults to all categories without a preferences row
 	recipients := []string{strings.ToUpper(u1.Email), u2.Email, "unknown@rilldata.com"}
 	for _, category := range []string{database.NotificationCategoryAlerts, database.NotificationCategoryReports, database.NotificationCategoryActApprovals} {
-		subs, err = db.FindPushSubscriptionsForRecipients(ctx, projectID, recipients, category)
+		subs, err = db.FindPushSubscriptionsForRecipients(ctx, projA.ID, recipients, category)
 		require.NoError(t, err)
 		require.Len(t, subs, 3)
 	}
 
 	// An opted-out category excludes the user's subscriptions; other categories are unaffected
-	_, err = db.UpsertNotificationPreferences(ctx, u2.ID, &database.UpsertNotificationPreferencesOptions{PushAlerts: false, PushReports: true, PushActApprovals: true})
+	_, err = db.UpsertNotificationPreferences(ctx, u2.ID, orgA.ID, &database.UpsertNotificationPreferencesOptions{PushAlerts: false, PushReports: true, PushActApprovals: true})
 	require.NoError(t, err)
-	subs, err = db.FindPushSubscriptionsForRecipients(ctx, projectID, recipients, database.NotificationCategoryAlerts)
+	subs, err = db.FindPushSubscriptionsForRecipients(ctx, projA.ID, recipients, database.NotificationCategoryAlerts)
 	require.NoError(t, err)
 	require.Len(t, subs, 1)
 	require.Equal(t, u1.ID, subs[0].UserID)
-	subs, err = db.FindPushSubscriptionsForRecipients(ctx, projectID, recipients, database.NotificationCategoryReports)
+	subs, err = db.FindPushSubscriptionsForRecipients(ctx, projA.ID, recipients, database.NotificationCategoryReports)
 	require.NoError(t, err)
 	require.Len(t, subs, 3)
 
-	// In v1, preferences are global per user: the originating project doesn't change the result
-	subs, err = db.FindPushSubscriptionsForRecipients(ctx, "11111111-0000-0000-0000-000000000002", recipients, database.NotificationCategoryAlerts)
+	// The opt-out belongs to its organization: a project of the other one is unaffected by it
+	subs, err = db.FindPushSubscriptionsForRecipients(ctx, projB.ID, recipients, database.NotificationCategoryAlerts)
+	require.NoError(t, err)
+	require.Len(t, subs, 3)
+
+	// Opting out in the second organization too excludes the user from both
+	_, err = db.UpsertNotificationPreferences(ctx, u2.ID, orgB.ID, &database.UpsertNotificationPreferencesOptions{PushAlerts: false, PushReports: true, PushActApprovals: true})
+	require.NoError(t, err)
+	subs, err = db.FindPushSubscriptionsForRecipients(ctx, projB.ID, recipients, database.NotificationCategoryAlerts)
 	require.NoError(t, err)
 	require.Len(t, subs, 1)
+	require.Equal(t, u1.ID, subs[0].UserID)
 
-	_, err = db.FindPushSubscriptionsForRecipients(ctx, projectID, recipients, "invalid")
+	// A project that doesn't exist has no organization to read preferences from, so it reaches nobody
+	subs, err = db.FindPushSubscriptionsForRecipients(ctx, "11111111-0000-0000-0000-000000000001", recipients, database.NotificationCategoryAlerts)
+	require.NoError(t, err)
+	require.Len(t, subs, 0)
+
+	_, err = db.FindPushSubscriptionsForRecipients(ctx, projA.ID, recipients, "invalid")
 	require.ErrorIs(t, err, database.ErrValidation)
 
 	// Deletes are scoped to the owning user
@@ -1164,33 +1186,95 @@ func testNotificationPreferences(t *testing.T, db database.DB) {
 	u, err := db.InsertUser(ctx, &database.InsertUserOptions{Email: randomName() + "@rilldata.com"})
 	require.NoError(t, err)
 
+	role, err := db.FindOrganizationRole(ctx, database.OrganizationRoleNameAdmin)
+	require.NoError(t, err)
+	orgA, err := db.InsertOrganization(ctx, &database.InsertOrganizationOptions{Name: randomName(), DisplayName: "Org A"})
+	require.NoError(t, err)
+	_, err = db.InsertOrganizationMemberUser(ctx, orgA.ID, u.ID, role.ID, nil, false)
+	require.NoError(t, err)
+	orgB, err := db.InsertOrganization(ctx, &database.InsertOrganizationOptions{Name: randomName()})
+	require.NoError(t, err)
+	_, err = db.InsertOrganizationMemberUser(ctx, orgB.ID, u.ID, role.ID, nil, false)
+	require.NoError(t, err)
+	// An organization the user does not belong to never shows up in their list
+	orgC, err := db.InsertOrganization(ctx, &database.InsertOrganizationOptions{Name: randomName()})
+	require.NoError(t, err)
+
 	// Without a stored row, all categories default to enabled
-	prefs, err := db.FindNotificationPreferences(ctx, u.ID)
+	prefs, err := db.FindNotificationPreferences(ctx, u.ID, orgA.ID)
 	require.NoError(t, err)
 	require.Equal(t, u.ID, prefs.UserID)
+	require.Equal(t, orgA.ID, prefs.OrgID)
 	require.True(t, prefs.PushAlerts)
 	require.True(t, prefs.PushReports)
 	require.True(t, prefs.PushActApprovals)
 
-	prefs, err = db.UpsertNotificationPreferences(ctx, u.ID, &database.UpsertNotificationPreferencesOptions{PushAlerts: false, PushReports: true, PushActApprovals: false})
+	prefs, err = db.UpsertNotificationPreferences(ctx, u.ID, orgA.ID, &database.UpsertNotificationPreferencesOptions{PushAlerts: false, PushReports: true, PushActApprovals: false})
 	require.NoError(t, err)
+	require.Equal(t, orgA.ID, prefs.OrgID)
 	require.False(t, prefs.PushAlerts)
 	require.True(t, prefs.PushReports)
 	require.False(t, prefs.PushActApprovals)
 	require.Less(t, time.Since(prefs.UpdatedOn), 10*time.Second)
 
-	prefs, err = db.FindNotificationPreferences(ctx, u.ID)
+	prefs, err = db.FindNotificationPreferences(ctx, u.ID, orgA.ID)
 	require.NoError(t, err)
 	require.False(t, prefs.PushAlerts)
 	require.True(t, prefs.PushReports)
 	require.False(t, prefs.PushActApprovals)
 
-	// Upserting again updates the existing row
-	prefs, err = db.UpsertNotificationPreferences(ctx, u.ID, &database.UpsertNotificationPreferencesOptions{PushAlerts: true, PushReports: false, PushActApprovals: true})
+	// The other organization keeps its defaults
+	prefs, err = db.FindNotificationPreferences(ctx, u.ID, orgB.ID)
+	require.NoError(t, err)
+	require.True(t, prefs.PushAlerts)
+	require.True(t, prefs.PushReports)
+	require.True(t, prefs.PushActApprovals)
+
+	// The listing covers every organization the user belongs to, ordered by name, defaults included
+	list, err := db.FindNotificationPreferencesForUser(ctx, u.ID)
+	require.NoError(t, err)
+	require.Len(t, list, 2)
+	expectedNames := []string{orgA.Name, orgB.Name}
+	slices.Sort(expectedNames)
+	require.Equal(t, expectedNames, []string{list[0].OrgName, list[1].OrgName})
+	byOrg := map[string]*database.OrganizationNotificationPreferences{list[0].OrgID: list[0], list[1].OrgID: list[1]}
+	require.Equal(t, "Org A", byOrg[orgA.ID].OrgDisplayName)
+	require.False(t, byOrg[orgA.ID].PushAlerts)
+	require.True(t, byOrg[orgA.ID].PushReports)
+	require.False(t, byOrg[orgA.ID].PushActApprovals)
+	require.True(t, byOrg[orgB.ID].PushAlerts)
+	require.True(t, byOrg[orgB.ID].PushReports)
+	require.True(t, byOrg[orgB.ID].PushActApprovals)
+	require.NotContains(t, byOrg, orgC.ID)
+
+	// An organization reached only through a usergroup counts too: delivery goes by recipient address, so an
+	// org missing here would keep notifying a user who has no switch to turn it off.
+	group, err := db.InsertUsergroup(ctx, &database.InsertUsergroupOptions{OrgID: orgC.ID, Name: randomName()})
+	require.NoError(t, err)
+	require.NoError(t, db.InsertOrganizationMemberUsergroup(ctx, group.ID, orgC.ID, role.ID))
+	require.NoError(t, db.InsertUsergroupMemberUser(ctx, group.ID, u.ID))
+	list, err = db.FindNotificationPreferencesForUser(ctx, u.ID)
+	require.NoError(t, err)
+	require.Len(t, list, 3)
+	require.Contains(t, []string{list[0].OrgID, list[1].OrgID, list[2].OrgID}, orgC.ID)
+	require.NoError(t, db.DeleteUsergroup(ctx, group.ID))
+
+	// Upserting again updates the existing row and leaves the other organization alone
+	prefs, err = db.UpsertNotificationPreferences(ctx, u.ID, orgA.ID, &database.UpsertNotificationPreferencesOptions{PushAlerts: true, PushReports: false, PushActApprovals: true})
 	require.NoError(t, err)
 	require.True(t, prefs.PushAlerts)
 	require.False(t, prefs.PushReports)
 	require.True(t, prefs.PushActApprovals)
+	prefs, err = db.FindNotificationPreferences(ctx, u.ID, orgB.ID)
+	require.NoError(t, err)
+	require.True(t, prefs.PushReports)
+
+	// Deleting an organization takes its preferences with it
+	require.NoError(t, db.DeleteOrganization(ctx, orgA.Name))
+	list, err = db.FindNotificationPreferencesForUser(ctx, u.ID)
+	require.NoError(t, err)
+	require.Len(t, list, 1)
+	require.Equal(t, orgB.ID, list[0].OrgID)
 
 	require.NoError(t, db.DeleteUser(ctx, u.ID))
 }

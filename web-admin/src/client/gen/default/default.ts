@@ -99,6 +99,7 @@ import type {
   AdminServiceTriggerRefreshSourcesBody,
   AdminServiceUnsubscribeAlertBodyBody,
   AdminServiceUpdateBillingSubscriptionBodyBody,
+  AdminServiceUpdateNotificationPreferencesBody,
   AdminServiceUpdateOrganizationBody,
   AdminServiceUpdateOrganizationMemberUserAttributesBody,
   AdminServiceUpdateProjectBody,
@@ -197,6 +198,7 @@ import type {
   V1ListDeploymentsResponse,
   V1ListGithubUserReposResponse,
   V1ListMagicAuthTokensResponse,
+  V1ListNotificationPreferencesResponse,
   V1ListOrganizationBillingIssuesResponse,
   V1ListOrganizationInvitesResponse,
   V1ListOrganizationMemberUsergroupsResponse,
@@ -296,7 +298,6 @@ import type {
   V1UpdateBillingSubscriptionResponse,
   V1UpdateBookmarkRequest,
   V1UpdateBookmarkResponse,
-  V1UpdateNotificationPreferencesRequest,
   V1UpdateNotificationPreferencesResponse,
   V1UpdateOrganizationMemberUserAttributesResponse,
   V1UpdateOrganizationResponse,
@@ -17295,29 +17296,29 @@ export function createAdminServiceGetCurrentUser<
 }
 
 /**
- * @summary GetNotificationPreferences returns the current user's per-category notification preferences.
+ * @summary ListNotificationPreferences returns the current user's notification preferences in every organization they belong to.
  */
-export const adminServiceGetNotificationPreferences = (
+export const adminServiceListNotificationPreferences = (
   signal?: AbortSignal,
 ) => {
-  return httpClient<V1GetNotificationPreferencesResponse>({
+  return httpClient<V1ListNotificationPreferencesResponse>({
     url: `/v1/users/notification-preferences`,
     method: "GET",
     signal,
   });
 };
 
-export const getAdminServiceGetNotificationPreferencesQueryKey = () => {
+export const getAdminServiceListNotificationPreferencesQueryKey = () => {
   return [`/v1/users/notification-preferences`] as const;
 };
 
-export const getAdminServiceGetNotificationPreferencesQueryOptions = <
-  TData = Awaited<ReturnType<typeof adminServiceGetNotificationPreferences>>,
+export const getAdminServiceListNotificationPreferencesQueryOptions = <
+  TData = Awaited<ReturnType<typeof adminServiceListNotificationPreferences>>,
   TError = RpcStatus,
 >(options?: {
   query?: Partial<
     CreateQueryOptions<
-      Awaited<ReturnType<typeof adminServiceGetNotificationPreferences>>,
+      Awaited<ReturnType<typeof adminServiceListNotificationPreferences>>,
       TError,
       TData
     >
@@ -17327,13 +17328,109 @@ export const getAdminServiceGetNotificationPreferencesQueryOptions = <
 
   const queryKey =
     queryOptions?.queryKey ??
-    getAdminServiceGetNotificationPreferencesQueryKey();
+    getAdminServiceListNotificationPreferencesQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof adminServiceListNotificationPreferences>>
+  > = ({ signal }) => adminServiceListNotificationPreferences(signal);
+
+  return { queryKey, queryFn, ...queryOptions } as CreateQueryOptions<
+    Awaited<ReturnType<typeof adminServiceListNotificationPreferences>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AdminServiceListNotificationPreferencesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof adminServiceListNotificationPreferences>>
+>;
+export type AdminServiceListNotificationPreferencesQueryError = RpcStatus;
+
+/**
+ * @summary ListNotificationPreferences returns the current user's notification preferences in every organization they belong to.
+ */
+
+export function createAdminServiceListNotificationPreferences<
+  TData = Awaited<ReturnType<typeof adminServiceListNotificationPreferences>>,
+  TError = RpcStatus,
+>(
+  options?: {
+    query?: Partial<
+      CreateQueryOptions<
+        Awaited<ReturnType<typeof adminServiceListNotificationPreferences>>,
+        TError,
+        TData
+      >
+    >;
+  },
+  queryClient?: QueryClient,
+): CreateQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getAdminServiceListNotificationPreferencesQueryOptions(options);
+
+  const query = createQuery(queryOptions, queryClient) as CreateQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary GetNotificationPreferences returns the current user's per-category notification preferences in an organization.
+ */
+export const adminServiceGetNotificationPreferences = (
+  org: string,
+  signal?: AbortSignal,
+) => {
+  return httpClient<V1GetNotificationPreferencesResponse>({
+    url: `/v1/users/notification-preferences/${org}`,
+    method: "GET",
+    signal,
+  });
+};
+
+export const getAdminServiceGetNotificationPreferencesQueryKey = (
+  org?: string,
+) => {
+  return [`/v1/users/notification-preferences/${org}`] as const;
+};
+
+export const getAdminServiceGetNotificationPreferencesQueryOptions = <
+  TData = Awaited<ReturnType<typeof adminServiceGetNotificationPreferences>>,
+  TError = RpcStatus,
+>(
+  org: string,
+  options?: {
+    query?: Partial<
+      CreateQueryOptions<
+        Awaited<ReturnType<typeof adminServiceGetNotificationPreferences>>,
+        TError,
+        TData
+      >
+    >;
+  },
+) => {
+  const { query: queryOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getAdminServiceGetNotificationPreferencesQueryKey(org);
 
   const queryFn: QueryFunction<
     Awaited<ReturnType<typeof adminServiceGetNotificationPreferences>>
-  > = ({ signal }) => adminServiceGetNotificationPreferences(signal);
+  > = ({ signal }) => adminServiceGetNotificationPreferences(org, signal);
 
-  return { queryKey, queryFn, ...queryOptions } as CreateQueryOptions<
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!org,
+    ...queryOptions,
+  } as CreateQueryOptions<
     Awaited<ReturnType<typeof adminServiceGetNotificationPreferences>>,
     TError,
     TData
@@ -17346,13 +17443,14 @@ export type AdminServiceGetNotificationPreferencesQueryResult = NonNullable<
 export type AdminServiceGetNotificationPreferencesQueryError = RpcStatus;
 
 /**
- * @summary GetNotificationPreferences returns the current user's per-category notification preferences.
+ * @summary GetNotificationPreferences returns the current user's per-category notification preferences in an organization.
  */
 
 export function createAdminServiceGetNotificationPreferences<
   TData = Awaited<ReturnType<typeof adminServiceGetNotificationPreferences>>,
   TError = RpcStatus,
 >(
+  org: string,
   options?: {
     query?: Partial<
       CreateQueryOptions<
@@ -17366,8 +17464,10 @@ export function createAdminServiceGetNotificationPreferences<
 ): CreateQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
-  const queryOptions =
-    getAdminServiceGetNotificationPreferencesQueryOptions(options);
+  const queryOptions = getAdminServiceGetNotificationPreferencesQueryOptions(
+    org,
+    options,
+  );
 
   const query = createQuery(queryOptions, queryClient) as CreateQueryResult<
     TData,
@@ -17380,16 +17480,17 @@ export function createAdminServiceGetNotificationPreferences<
 }
 
 /**
- * @summary UpdateNotificationPreferences updates the current user's per-category notification preferences.
+ * @summary UpdateNotificationPreferences updates the current user's per-category notification preferences in an organization.
  */
 export const adminServiceUpdateNotificationPreferences = (
-  v1UpdateNotificationPreferencesRequest: V1UpdateNotificationPreferencesRequest,
+  org: string,
+  adminServiceUpdateNotificationPreferencesBody: AdminServiceUpdateNotificationPreferencesBody,
 ) => {
   return httpClient<V1UpdateNotificationPreferencesResponse>({
-    url: `/v1/users/notification-preferences`,
+    url: `/v1/users/notification-preferences/${org}`,
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    data: v1UpdateNotificationPreferencesRequest,
+    data: adminServiceUpdateNotificationPreferencesBody,
   });
 };
 
@@ -17400,13 +17501,13 @@ export const getAdminServiceUpdateNotificationPreferencesMutationOptions = <
   mutation?: CreateMutationOptions<
     Awaited<ReturnType<typeof adminServiceUpdateNotificationPreferences>>,
     TError,
-    { data: V1UpdateNotificationPreferencesRequest },
+    { org: string; data: AdminServiceUpdateNotificationPreferencesBody },
     TContext
   >;
 }): CreateMutationOptions<
   Awaited<ReturnType<typeof adminServiceUpdateNotificationPreferences>>,
   TError,
-  { data: V1UpdateNotificationPreferencesRequest },
+  { org: string; data: AdminServiceUpdateNotificationPreferencesBody },
   TContext
 > => {
   const mutationKey = ["adminServiceUpdateNotificationPreferences"];
@@ -17420,11 +17521,11 @@ export const getAdminServiceUpdateNotificationPreferencesMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof adminServiceUpdateNotificationPreferences>>,
-    { data: V1UpdateNotificationPreferencesRequest }
+    { org: string; data: AdminServiceUpdateNotificationPreferencesBody }
   > = (props) => {
-    const { data } = props ?? {};
+    const { org, data } = props ?? {};
 
-    return adminServiceUpdateNotificationPreferences(data);
+    return adminServiceUpdateNotificationPreferences(org, data);
   };
 
   return { mutationFn, ...mutationOptions };
@@ -17435,11 +17536,11 @@ export type AdminServiceUpdateNotificationPreferencesMutationResult =
     Awaited<ReturnType<typeof adminServiceUpdateNotificationPreferences>>
   >;
 export type AdminServiceUpdateNotificationPreferencesMutationBody =
-  V1UpdateNotificationPreferencesRequest;
+  AdminServiceUpdateNotificationPreferencesBody;
 export type AdminServiceUpdateNotificationPreferencesMutationError = RpcStatus;
 
 /**
- * @summary UpdateNotificationPreferences updates the current user's per-category notification preferences.
+ * @summary UpdateNotificationPreferences updates the current user's per-category notification preferences in an organization.
  */
 export const createAdminServiceUpdateNotificationPreferences = <
   TError = RpcStatus,
@@ -17449,7 +17550,7 @@ export const createAdminServiceUpdateNotificationPreferences = <
     mutation?: CreateMutationOptions<
       Awaited<ReturnType<typeof adminServiceUpdateNotificationPreferences>>,
       TError,
-      { data: V1UpdateNotificationPreferencesRequest },
+      { org: string; data: AdminServiceUpdateNotificationPreferencesBody },
       TContext
     >;
   },
@@ -17457,7 +17558,7 @@ export const createAdminServiceUpdateNotificationPreferences = <
 ): CreateMutationResult<
   Awaited<ReturnType<typeof adminServiceUpdateNotificationPreferences>>,
   TError,
-  { data: V1UpdateNotificationPreferencesRequest },
+  { org: string; data: AdminServiceUpdateNotificationPreferencesBody },
   TContext
 > => {
   const mutationOptions =

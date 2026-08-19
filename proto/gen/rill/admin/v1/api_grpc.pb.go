@@ -150,6 +150,7 @@ const (
 	AdminService_CreatePushSubscription_FullMethodName                 = "/rill.admin.v1.AdminService/CreatePushSubscription"
 	AdminService_ListPushSubscriptions_FullMethodName                  = "/rill.admin.v1.AdminService/ListPushSubscriptions"
 	AdminService_DeletePushSubscription_FullMethodName                 = "/rill.admin.v1.AdminService/DeletePushSubscription"
+	AdminService_ListNotificationPreferences_FullMethodName            = "/rill.admin.v1.AdminService/ListNotificationPreferences"
 	AdminService_GetNotificationPreferences_FullMethodName             = "/rill.admin.v1.AdminService/GetNotificationPreferences"
 	AdminService_UpdateNotificationPreferences_FullMethodName          = "/rill.admin.v1.AdminService/UpdateNotificationPreferences"
 	AdminService_ListBookmarks_FullMethodName                          = "/rill.admin.v1.AdminService/ListBookmarks"
@@ -487,9 +488,11 @@ type AdminServiceClient interface {
 	ListPushSubscriptions(ctx context.Context, in *ListPushSubscriptionsRequest, opts ...grpc.CallOption) (*ListPushSubscriptionsResponse, error)
 	// DeletePushSubscription deletes one of the current user's push subscriptions.
 	DeletePushSubscription(ctx context.Context, in *DeletePushSubscriptionRequest, opts ...grpc.CallOption) (*DeletePushSubscriptionResponse, error)
-	// GetNotificationPreferences returns the current user's per-category notification preferences.
+	// ListNotificationPreferences returns the current user's notification preferences in every organization they belong to.
+	ListNotificationPreferences(ctx context.Context, in *ListNotificationPreferencesRequest, opts ...grpc.CallOption) (*ListNotificationPreferencesResponse, error)
+	// GetNotificationPreferences returns the current user's per-category notification preferences in an organization.
 	GetNotificationPreferences(ctx context.Context, in *GetNotificationPreferencesRequest, opts ...grpc.CallOption) (*GetNotificationPreferencesResponse, error)
-	// UpdateNotificationPreferences updates the current user's per-category notification preferences.
+	// UpdateNotificationPreferences updates the current user's per-category notification preferences in an organization.
 	UpdateNotificationPreferences(ctx context.Context, in *UpdateNotificationPreferencesRequest, opts ...grpc.CallOption) (*UpdateNotificationPreferencesResponse, error)
 	// ListBookmarks lists all the bookmarks for the user and global ones for dashboard
 	ListBookmarks(ctx context.Context, in *ListBookmarksRequest, opts ...grpc.CallOption) (*ListBookmarksResponse, error)
@@ -1895,6 +1898,16 @@ func (c *adminServiceClient) DeletePushSubscription(ctx context.Context, in *Del
 	return out, nil
 }
 
+func (c *adminServiceClient) ListNotificationPreferences(ctx context.Context, in *ListNotificationPreferencesRequest, opts ...grpc.CallOption) (*ListNotificationPreferencesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListNotificationPreferencesResponse)
+	err := c.cc.Invoke(ctx, AdminService_ListNotificationPreferences_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *adminServiceClient) GetNotificationPreferences(ctx context.Context, in *GetNotificationPreferencesRequest, opts ...grpc.CallOption) (*GetNotificationPreferencesResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetNotificationPreferencesResponse)
@@ -2635,9 +2648,11 @@ type AdminServiceServer interface {
 	ListPushSubscriptions(context.Context, *ListPushSubscriptionsRequest) (*ListPushSubscriptionsResponse, error)
 	// DeletePushSubscription deletes one of the current user's push subscriptions.
 	DeletePushSubscription(context.Context, *DeletePushSubscriptionRequest) (*DeletePushSubscriptionResponse, error)
-	// GetNotificationPreferences returns the current user's per-category notification preferences.
+	// ListNotificationPreferences returns the current user's notification preferences in every organization they belong to.
+	ListNotificationPreferences(context.Context, *ListNotificationPreferencesRequest) (*ListNotificationPreferencesResponse, error)
+	// GetNotificationPreferences returns the current user's per-category notification preferences in an organization.
 	GetNotificationPreferences(context.Context, *GetNotificationPreferencesRequest) (*GetNotificationPreferencesResponse, error)
-	// UpdateNotificationPreferences updates the current user's per-category notification preferences.
+	// UpdateNotificationPreferences updates the current user's per-category notification preferences in an organization.
 	UpdateNotificationPreferences(context.Context, *UpdateNotificationPreferencesRequest) (*UpdateNotificationPreferencesResponse, error)
 	// ListBookmarks lists all the bookmarks for the user and global ones for dashboard
 	ListBookmarks(context.Context, *ListBookmarksRequest) (*ListBookmarksResponse, error)
@@ -3125,6 +3140,9 @@ func (UnimplementedAdminServiceServer) ListPushSubscriptions(context.Context, *L
 }
 func (UnimplementedAdminServiceServer) DeletePushSubscription(context.Context, *DeletePushSubscriptionRequest) (*DeletePushSubscriptionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeletePushSubscription not implemented")
+}
+func (UnimplementedAdminServiceServer) ListNotificationPreferences(context.Context, *ListNotificationPreferencesRequest) (*ListNotificationPreferencesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListNotificationPreferences not implemented")
 }
 func (UnimplementedAdminServiceServer) GetNotificationPreferences(context.Context, *GetNotificationPreferencesRequest) (*GetNotificationPreferencesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetNotificationPreferences not implemented")
@@ -5640,6 +5658,24 @@ func _AdminService_DeletePushSubscription_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AdminService_ListNotificationPreferences_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListNotificationPreferencesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).ListNotificationPreferences(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_ListNotificationPreferences_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).ListNotificationPreferences(ctx, req.(*ListNotificationPreferencesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _AdminService_GetNotificationPreferences_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetNotificationPreferencesRequest)
 	if err := dec(in); err != nil {
@@ -6980,6 +7016,10 @@ var AdminService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeletePushSubscription",
 			Handler:    _AdminService_DeletePushSubscription_Handler,
+		},
+		{
+			MethodName: "ListNotificationPreferences",
+			Handler:    _AdminService_ListNotificationPreferences_Handler,
 		},
 		{
 			MethodName: "GetNotificationPreferences",

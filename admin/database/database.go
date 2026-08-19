@@ -212,10 +212,9 @@ type DB interface {
 	FindPushSubscriptionsForUser(ctx context.Context, userID string) ([]*PushSubscription, error)
 	// FindPushSubscriptionsForRecipients returns the push subscriptions of the users with the given emails
 	// that have not opted out of push notifications for the given category.
-	// Users without a notification_preferences row default to receiving all categories.
-	// projectID identifies the project the notification originates from.
-	// It does not affect filtering yet: preferences are global per user, but a future per-project override
-	// should become an additional condition in this query rather than a new code path.
+	// projectID identifies the project the notification originates from:
+	// preferences are stored per organization, so the filtering uses the organization that owns the project.
+	// Users without a notification_preferences row for that organization default to receiving all categories.
 	FindPushSubscriptionsForRecipients(ctx context.Context, projectID string, emails []string, category string) ([]*PushSubscription, error)
 	// InsertPushSubscription upserts a push subscription by endpoint:
 	// if the endpoint is already registered, its user, keys and user agent are updated.
@@ -226,10 +225,13 @@ type DB interface {
 	// It is used to purge subscriptions the push service reports as gone. It is idempotent.
 	DeletePushSubscriptionByEndpoint(ctx context.Context, endpoint string) error
 
-	// FindNotificationPreferences returns the notification preferences for a user.
-	// If the user has no stored preferences, it returns the defaults (all categories enabled).
-	FindNotificationPreferences(ctx context.Context, userID string) (*NotificationPreferences, error)
-	UpsertNotificationPreferences(ctx context.Context, userID string, opts *UpsertNotificationPreferencesOptions) (*NotificationPreferences, error)
+	// FindNotificationPreferences returns a user's notification preferences in an organization.
+	// If the user has no stored preferences for it, it returns the defaults (all categories enabled).
+	FindNotificationPreferences(ctx context.Context, userID, orgID string) (*NotificationPreferences, error)
+	// FindNotificationPreferencesForUser returns the user's notification preferences in every organization they are a member of,
+	// with the defaults filled in for the organizations they have no stored row for.
+	FindNotificationPreferencesForUser(ctx context.Context, userID string) ([]*OrganizationNotificationPreferences, error)
+	UpsertNotificationPreferences(ctx context.Context, userID, orgID string, opts *UpsertNotificationPreferencesOptions) (*NotificationPreferences, error)
 
 	FindDeviceAuthCodeByDeviceCode(ctx context.Context, deviceCode string) (*DeviceAuthCode, error)
 	FindPendingDeviceAuthCodeByUserCode(ctx context.Context, userCode string) (*DeviceAuthCode, error)
@@ -946,14 +948,26 @@ type InsertPushSubscriptionOptions struct {
 	UserAgent string
 }
 
-// NotificationPreferences stores a user's per-category notification opt-outs.
-// A user without a stored row defaults to receiving all categories.
+// NotificationPreferences stores a user's per-category notification opt-outs in one organization.
+// A user without a stored row for an organization defaults to receiving all its categories.
 type NotificationPreferences struct {
 	UserID           string    `db:"user_id"`
+	OrgID            string    `db:"org_id"`
 	PushAlerts       bool      `db:"push_alerts"`
 	PushReports      bool      `db:"push_reports"`
 	PushActApprovals bool      `db:"push_act_approvals"`
 	UpdatedOn        time.Time `db:"updated_on"`
+}
+
+// OrganizationNotificationPreferences pairs an organization with the preferences a user has in it.
+// It carries the organization's names so the settings page can list every organization in one request.
+type OrganizationNotificationPreferences struct {
+	OrgID            string `db:"org_id"`
+	OrgName          string `db:"org_name"`
+	OrgDisplayName   string `db:"org_display_name"`
+	PushAlerts       bool   `db:"push_alerts"`
+	PushReports      bool   `db:"push_reports"`
+	PushActApprovals bool   `db:"push_act_approvals"`
 }
 
 type UpsertNotificationPreferencesOptions struct {

@@ -10,8 +10,8 @@ import (
 
 // SendPushNotification sends a web push notification to all subscriptions of the given recipients,
 // skipping recipients that have opted out of the given category.
-// projectID identifies the project the notification originates from; in v1 it only scopes logging and
-// the recipient lookup's seam for future per-project preference overrides, not the actual filtering.
+// projectID identifies the project the notification originates from:
+// preferences are per organization, so they are read for the organization that owns the project.
 // It returns the number of notifications successfully sent.
 // Individual delivery failures are logged and do not abort the remaining deliveries.
 // Subscriptions the push service reports as gone are deleted.

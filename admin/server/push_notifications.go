@@ -95,13 +95,54 @@ func (s *Server) DeletePushSubscription(ctx context.Context, req *adminv1.Delete
 	return &adminv1.DeletePushSubscriptionResponse{}, nil
 }
 
-func (s *Server) GetNotificationPreferences(ctx context.Context, req *adminv1.GetNotificationPreferencesRequest) (*adminv1.GetNotificationPreferencesResponse, error) {
+func (s *Server) ListNotificationPreferences(ctx context.Context, req *adminv1.ListNotificationPreferencesRequest) (*adminv1.ListNotificationPreferencesResponse, error) {
 	claims := auth.GetClaims(ctx)
 	if claims.OwnerType() != auth.OwnerTypeUser {
 		return nil, status.Error(codes.Unauthenticated, "not authenticated as a user")
 	}
 
-	prefs, err := s.admin.DB.FindNotificationPreferences(ctx, claims.OwnerID())
+	prefs, err := s.admin.DB.FindNotificationPreferencesForUser(ctx, claims.OwnerID())
+	if err != nil {
+		return nil, err
+	}
+
+	dtos := make([]*adminv1.OrganizationNotificationPreferences, len(prefs))
+	for i, pref := range prefs {
+		dtos[i] = &adminv1.OrganizationNotificationPreferences{
+			Org:            pref.OrgName,
+			OrgDisplayName: pref.OrgDisplayName,
+			Preferences: &adminv1.NotificationPreferences{
+				PushAlerts:       pref.PushAlerts,
+				PushReports:      pref.PushReports,
+				PushActApprovals: pref.PushActApprovals,
+			},
+		}
+	}
+
+	return &adminv1.ListNotificationPreferencesResponse{
+		Organizations: dtos,
+	}, nil
+}
+
+func (s *Server) GetNotificationPreferences(ctx context.Context, req *adminv1.GetNotificationPreferencesRequest) (*adminv1.GetNotificationPreferencesResponse, error) {
+	observability.AddRequestAttributes(ctx,
+		attribute.String("args.org", req.Org),
+	)
+
+	claims := auth.GetClaims(ctx)
+	if claims.OwnerType() != auth.OwnerTypeUser {
+		return nil, status.Error(codes.Unauthenticated, "not authenticated as a user")
+	}
+
+	org, err := s.admin.DB.FindOrganizationByName(ctx, req.Org)
+	if err != nil {
+		return nil, err
+	}
+	if !claims.OrganizationPermissions(ctx, org.ID).ReadOrg {
+		return nil, status.Error(codes.PermissionDenied, "not allowed to read org")
+	}
+
+	prefs, err := s.admin.DB.FindNotificationPreferences(ctx, claims.OwnerID(), org.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -112,12 +153,24 @@ func (s *Server) GetNotificationPreferences(ctx context.Context, req *adminv1.Ge
 }
 
 func (s *Server) UpdateNotificationPreferences(ctx context.Context, req *adminv1.UpdateNotificationPreferencesRequest) (*adminv1.UpdateNotificationPreferencesResponse, error) {
+	observability.AddRequestAttributes(ctx,
+		attribute.String("args.org", req.Org),
+	)
+
 	claims := auth.GetClaims(ctx)
 	if claims.OwnerType() != auth.OwnerTypeUser {
 		return nil, status.Error(codes.Unauthenticated, "not authenticated as a user")
 	}
 
-	prefs, err := s.admin.DB.UpsertNotificationPreferences(ctx, claims.OwnerID(), &database.UpsertNotificationPreferencesOptions{
+	org, err := s.admin.DB.FindOrganizationByName(ctx, req.Org)
+	if err != nil {
+		return nil, err
+	}
+	if !claims.OrganizationPermissions(ctx, org.ID).ReadOrg {
+		return nil, status.Error(codes.PermissionDenied, "not allowed to read org")
+	}
+
+	prefs, err := s.admin.DB.UpsertNotificationPreferences(ctx, claims.OwnerID(), org.ID, &database.UpsertNotificationPreferencesOptions{
 		PushAlerts:       req.Preferences.PushAlerts,
 		PushReports:      req.Preferences.PushReports,
 		PushActApprovals: req.Preferences.PushActApprovals,

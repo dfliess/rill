@@ -889,6 +889,10 @@ export interface V1ListMagicAuthTokensResponse {
   nextPageToken?: string;
 }
 
+export interface V1ListNotificationPreferencesResponse {
+  organizations?: V1OrganizationNotificationPreferences[];
+}
+
 export interface V1ListOrganizationBillingIssuesResponse {
   issues?: V1BillingIssue[];
 }
@@ -1063,6 +1067,9 @@ export interface V1MemberUsergroup {
   resources?: Rilladminv1ResourceName[];
 }
 
+/**
+ * NotificationPreferences are a user's opt-outs for one organization: a category left on there stays on for its projects only.
+ */
 export interface V1NotificationPreferences {
   pushAlerts?: boolean;
   pushReports?: boolean;
@@ -1127,6 +1134,15 @@ export interface V1OrganizationMemberUser {
   attributes?: V1OrganizationMemberUserAttributes;
   createdOn?: string;
   updatedOn?: string;
+}
+
+/**
+ * OrganizationNotificationPreferences pairs an organization with the current user's preferences in it.
+ */
+export interface V1OrganizationNotificationPreferences {
+  org?: string;
+  orgDisplayName?: string;
+  preferences?: V1NotificationPreferences;
 }
 
 export interface V1OrganizationPermissions {
@@ -1828,10 +1844,6 @@ export interface V1UpdateBookmarkRequest {
 
 export interface V1UpdateBookmarkResponse {
   [key: string]: unknown;
-}
-
-export interface V1UpdateNotificationPreferencesRequest {
-  preferences?: V1NotificationPreferences;
 }
 
 export interface V1UpdateNotificationPreferencesResponse {
@@ -2689,6 +2701,10 @@ export type AdminServiceListBookmarksParams = {
   projectId?: string;
   resourceKind?: string;
   resourceName?: string;
+};
+
+export type AdminServiceUpdateNotificationPreferencesBody = {
+  preferences?: V1NotificationPreferences;
 };
 
 export type AdminServiceSearchUsersParams = {

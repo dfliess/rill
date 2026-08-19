@@ -1128,6 +1128,13 @@ components:
                         $ref: '#/components/schemas/v1MagicAuthToken'
                     type: array
             type: object
+        v1ListNotificationPreferencesResponse:
+            properties:
+                organizations:
+                    items:
+                        $ref: '#/components/schemas/v1OrganizationNotificationPreferences'
+                    type: array
+            type: object
         v1ListOrganizationBillingIssuesResponse:
             properties:
                 issues:
@@ -1436,6 +1443,7 @@ components:
                     type: integer
             type: object
         v1NotificationPreferences:
+            description: 'NotificationPreferences are a user''s opt-outs for one organization: a category left on there stays on for its projects only.'
             properties:
                 pushActApprovals:
                     type: boolean
@@ -1547,6 +1555,16 @@ components:
                 usergroupsCount:
                     format: int64
                     type: integer
+            type: object
+        v1OrganizationNotificationPreferences:
+            description: OrganizationNotificationPreferences pairs an organization with the current user's preferences in it.
+            properties:
+                org:
+                    type: string
+                orgDisplayName:
+                    type: string
+                preferences:
+                    $ref: '#/components/schemas/v1NotificationPreferences'
             type: object
         v1OrganizationPermissions:
             properties:
@@ -2556,11 +2574,6 @@ components:
                     type: string
             type: object
         v1UpdateBookmarkResponse:
-            type: object
-        v1UpdateNotificationPreferencesRequest:
-            properties:
-                preferences:
-                    $ref: '#/components/schemas/v1NotificationPreferences'
             type: object
         v1UpdateNotificationPreferencesResponse:
             properties:
@@ -8592,7 +8605,30 @@ paths:
             summary: GetCurrentUser returns the currently authenticated user (if any)
     /v1/users/notification-preferences:
         get:
+            operationId: AdminService_ListNotificationPreferences
+            responses:
+                "200":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/v1ListNotificationPreferencesResponse'
+                    description: A successful response.
+                default:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/rpcStatus'
+                    description: An unexpected error response.
+            summary: ListNotificationPreferences returns the current user's notification preferences in every organization they belong to.
+    /v1/users/notification-preferences/{org}:
+        get:
             operationId: AdminService_GetNotificationPreferences
+            parameters:
+                - in: path
+                  name: org
+                  required: true
+                  schema:
+                    type: string
             responses:
                 "200":
                     content:
@@ -8606,14 +8642,23 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/rpcStatus'
                     description: An unexpected error response.
-            summary: GetNotificationPreferences returns the current user's per-category notification preferences.
+            summary: GetNotificationPreferences returns the current user's per-category notification preferences in an organization.
         put:
             operationId: AdminService_UpdateNotificationPreferences
+            parameters:
+                - in: path
+                  name: org
+                  required: true
+                  schema:
+                    type: string
             requestBody:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/v1UpdateNotificationPreferencesRequest'
+                            properties:
+                                preferences:
+                                    $ref: '#/components/schemas/v1NotificationPreferences'
+                            type: object
                 required: true
                 x-originalParamName: body
             responses:
@@ -8629,7 +8674,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/rpcStatus'
                     description: An unexpected error response.
-            summary: UpdateNotificationPreferences updates the current user's per-category notification preferences.
+            summary: UpdateNotificationPreferences updates the current user's per-category notification preferences in an organization.
     /v1/users/preferences:
         put:
             operationId: AdminService_UpdateUserPreferences

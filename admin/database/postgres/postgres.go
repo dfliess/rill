@@ -1750,8 +1750,6 @@ func (c *connection) FindPushSubscriptionsForUser(ctx context.Context, userID st
 	return res, nil
 }
 
-// FindPushSubscriptionsForRecipients does not use projectID yet: preferences are global per user in v1.
-// See the interface comment in database.go.
 func (c *connection) FindPushSubscriptionsForRecipients(ctx context.Context, projectID string, emails []string, category string) ([]*database.PushSubscription, error) {
 	var categoryColumn string
 	switch category {
@@ -1770,13 +1768,16 @@ func (c *connection) FindPushSubscriptionsForRecipients(ctx context.Context, pro
 		lowered[i] = strings.ToLower(email)
 	}
 
+	// The project is joined only to resolve the organization that owns it, which is where preferences live.
+	// An unknown project therefore yields no recipients instead of ignoring everyone's preferences.
 	var res []*database.PushSubscription
 	err := c.getDB(ctx).SelectContext(ctx, &res, fmt.Sprintf(`
 		SELECT s.* FROM push_subscriptions s
 		JOIN users u ON s.user_id = u.id
-		LEFT JOIN notification_preferences p ON p.user_id = u.id
+		JOIN projects proj ON proj.id = $2
+		LEFT JOIN notification_preferences p ON p.user_id = u.id AND p.org_id = proj.org_id
 		WHERE lower(u.email) = ANY($1) AND coalesce(p.%s, true)
-	`, categoryColumn), lowered)
+	`, categoryColumn), lowered, projectID)
 	if err != nil {
 		return nil, parseErr("push subscriptions", err)
 	}
@@ -1812,13 +1813,14 @@ func (c *connection) DeletePushSubscriptionByEndpoint(ctx context.Context, endpo
 	return parseErr("push subscription", err)
 }
 
-func (c *connection) FindNotificationPreferences(ctx context.Context, userID string) (*database.NotificationPreferences, error) {
+func (c *connection) FindNotificationPreferences(ctx context.Context, userID, orgID string) (*database.NotificationPreferences, error) {
 	res := &database.NotificationPreferences{}
-	err := c.getDB(ctx).QueryRowxContext(ctx, "SELECT * FROM notification_preferences WHERE user_id=$1", userID).StructScan(res)
+	err := c.getDB(ctx).QueryRowxContext(ctx, "SELECT * FROM notification_preferences WHERE user_id=$1 AND org_id=$2", userID, orgID).StructScan(res)
 	if err != nil {
 		if errors.Is(parseErr("notification preferences", err), database.ErrNotFound) {
 			return &database.NotificationPreferences{
 				UserID:           userID,
+				OrgID:            orgID,
 				PushAlerts:       true,
 				PushReports:      true,
 				PushActApprovals: true,
@@ -1829,14 +1831,41 @@ func (c *connection) FindNotificationPreferences(ctx context.Context, userID str
 	return res, nil
 }
 
-func (c *connection) UpsertNotificationPreferences(ctx context.Context, userID string, opts *database.UpsertNotificationPreferencesOptions) (*database.NotificationPreferences, error) {
+func (c *connection) FindNotificationPreferencesForUser(ctx context.Context, userID string) ([]*database.OrganizationNotificationPreferences, error) {
+	var res []*database.OrganizationNotificationPreferences
+	err := c.getDB(ctx).SelectContext(ctx, &res, `
+		SELECT o.id AS org_id, o.name AS org_name, o.display_name AS org_display_name,
+			coalesce(p.push_alerts, true) AS push_alerts,
+			coalesce(p.push_reports, true) AS push_reports,
+			coalesce(p.push_act_approvals, true) AS push_act_approvals
+		FROM orgs o
+		LEFT JOIN notification_preferences p ON p.org_id = o.id AND p.user_id = $1
+		-- Membership counts whether the role is held directly or through a usergroup, matching
+		-- ResolveOrganizationRolesForUser and NOT the narrower FindOrganizationsForUser. Delivery only asks
+		-- whether an address is a recipient, so an org missing from this list is one whose notifications a
+		-- user would keep receiving with no switch to turn them off.
+		WHERE o.id IN (SELECT uor.org_id FROM users_orgs_roles uor WHERE uor.user_id = $1)
+		OR o.id IN (
+			SELECT ugor.org_id FROM usergroups_orgs_roles ugor
+			JOIN usergroups_users ugu ON ugor.usergroup_id = ugu.usergroup_id
+			WHERE ugu.user_id = $1
+		)
+		ORDER BY lower(o.name)
+	`, userID)
+	if err != nil {
+		return nil, parseErr("notification preferences", err)
+	}
+	return res, nil
+}
+
+func (c *connection) UpsertNotificationPreferences(ctx context.Context, userID, orgID string, opts *database.UpsertNotificationPreferencesOptions) (*database.NotificationPreferences, error) {
 	res := &database.NotificationPreferences{}
 	err := c.getDB(ctx).QueryRowxContext(ctx, `
-		INSERT INTO notification_preferences (user_id, push_alerts, push_reports, push_act_approvals)
-		VALUES ($1, $2, $3, $4)
-		ON CONFLICT (user_id) DO UPDATE SET push_alerts=excluded.push_alerts, push_reports=excluded.push_reports, push_act_approvals=excluded.push_act_approvals, updated_on=now()
+		INSERT INTO notification_preferences (user_id, org_id, push_alerts, push_reports, push_act_approvals)
+		VALUES ($1, $2, $3, $4, $5)
+		ON CONFLICT (user_id, org_id) DO UPDATE SET push_alerts=excluded.push_alerts, push_reports=excluded.push_reports, push_act_approvals=excluded.push_act_approvals, updated_on=now()
 		RETURNING *`,
-		userID, opts.PushAlerts, opts.PushReports, opts.PushActApprovals,
+		userID, orgID, opts.PushAlerts, opts.PushReports, opts.PushActApprovals,
 	).StructScan(res)
 	if err != nil {
 		return nil, parseErr("notification preferences", err)

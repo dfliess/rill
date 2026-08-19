@@ -4,6 +4,7 @@
 
 import type {
   V1NotificationPreferences,
+  V1OrganizationNotificationPreferences,
   V1PushSubscription,
 } from "@rilldata/web-admin/client";
 
@@ -117,6 +118,37 @@ export function readNotificationPreferences(
     pushReports: preferences?.pushReports ?? false,
     pushActApprovals: preferences?.pushActApprovals ?? false,
   };
+}
+
+// One organization's block of category switches. The categories are chosen per
+// organization, so a user in several of them gets one block each.
+export type OrganizationPreferences = {
+  // Organization name, as the update mutation addresses it.
+  org: string;
+  // What the block is titled with: the display name when the organization has
+  // one, its name otherwise.
+  label: string;
+  preferences: NotificationPreferences;
+};
+
+// Turns the server's per-organization preferences into blocks for the settings
+// page, keeping the admin's ordering by organization name.
+export function listOrganizationPreferences(
+  organizations: V1OrganizationNotificationPreferences[] | undefined,
+): OrganizationPreferences[] {
+  return (organizations ?? [])
+    .filter(
+      (
+        organization,
+      ): organization is V1OrganizationNotificationPreferences & {
+        org: string;
+      } => Boolean(organization.org),
+    )
+    .map((organization) => ({
+      org: organization.org,
+      label: organization.orgDisplayName || organization.org,
+      preferences: readNotificationPreferences(organization.preferences),
+    }));
 }
 
 // One row of the device list.
