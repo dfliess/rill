@@ -641,7 +641,7 @@ func (r *ReportReconciler) sendReport(ctx context.Context, self *runtimev1.Resou
 
 	// Mirror the dispatched notification as one web push to the email recipients.
 	// Best-effort and cloud-only: outside Rill Cloud it is a silent no-op.
-	org, project := instanceOrgProject(ctx, r.C)
+	org, project := r.C.Runtime.InstanceOrgProject(ctx, r.C.InstanceID)
 	dispatchPushNotification(ctx, r.C, self.Meta.Name.Name, reportPushNotification(self.Meta.Name.Name, rep.Spec, t, org, project))
 
 	return false, allWarnings, nil

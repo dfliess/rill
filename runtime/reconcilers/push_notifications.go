@@ -126,16 +126,6 @@ func dispatchPushNotification(ctx context.Context, c *runtime.Controller, resour
 	c.Logger.Debug("Sent push notifications", zap.String("resource", resourceName), zap.String("category", n.category), zap.Int("sent", sent), observability.ZapCtx(ctx))
 }
 
-// instanceOrgProject returns the org and project names from the instance annotations.
-// The annotations are set by the admin service on deployment; outside of Rill Cloud they are empty.
-func instanceOrgProject(ctx context.Context, c *runtime.Controller) (string, string) {
-	inst, err := c.Runtime.Instance(ctx, c.InstanceID)
-	if err != nil {
-		return "", ""
-	}
-	return inst.Annotations["organization_name"], inst.Annotations["project_name"]
-}
-
 // emailNotifierRecipients returns the combined recipients of the "email" notifiers in the given list.
 func emailNotifierRecipients(notifiers []*runtimev1.Notifier) []string {
 	var recipients []string

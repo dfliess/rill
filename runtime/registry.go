@@ -49,6 +49,17 @@ func (r *Runtime) Instance(ctx context.Context, instanceID string) (*drivers.Ins
 	return r.registryCache.get(instanceID)
 }
 
+// InstanceOrgProject returns the names of the org and project the instance belongs to, read from the annotations
+// the admin service sets when it deploys the project. Outside of Rill Cloud both are empty, which is how callers
+// that build links into the cloud frontend (notifications) know there is nothing to link to.
+func (r *Runtime) InstanceOrgProject(ctx context.Context, instanceID string) (org, project string) {
+	inst, err := r.Instance(ctx, instanceID)
+	if err != nil {
+		return "", ""
+	}
+	return inst.Annotations["organization_name"], inst.Annotations["project_name"]
+}
+
 // InstanceConfig returns the instance's dynamic configuration.
 func (r *Runtime) InstanceConfig(ctx context.Context, instanceID string) (drivers.InstanceConfig, error) {
 	inst, err := r.Instance(ctx, instanceID)

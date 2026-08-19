@@ -26,6 +26,11 @@ agent; execution enters **only** through `AgentExecutor`.
   `AgentState.ValidSpec`, so an agent that failed validation looks absent.
 - `Runner` / `SessionRunner` (`runner.go`) — the side-effecting seam. The workflow wraps each `Runner` call in a
   DBOS step; `SessionRunner` implements it over `runtime/ai` and an `ActionSink`.
+- `ApprovalNotifier` (`executor.go`) — optional seam told once per **pause** of a run, with the batch's actions
+  awaiting a decision. Who to tell needs the project's membership and the agent's approve policy, which this
+  package cannot reach, so Rill Cloud implements it in `runtime/server/act_approval_push.go` (web push,
+  kairos-cloud#143). Emitted right after the durable step that creates the approvals, never inside it: a replay
+  must not skip the notification, and re-notifying is the harmless direction.
 
 ## Workflow shape (spike)
 

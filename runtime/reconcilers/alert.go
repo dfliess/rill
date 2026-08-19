@@ -967,7 +967,7 @@ func (r *AlertReconciler) popCurrentExecution(ctx context.Context, self *runtime
 
 		// Mirror the dispatched notification as one web push to the email recipients.
 		// Best-effort and cloud-only: outside Rill Cloud it is a silent no-op.
-		org, project := instanceOrgProject(ctx, r.C)
+		org, project := r.C.Runtime.InstanceOrgProject(ctx, r.C.InstanceID)
 		dispatchPushNotification(ctx, r.C, self.Meta.Name.Name, alertPushNotification(self.Meta.Name.Name, a.Spec, msg, org, project))
 	}
 

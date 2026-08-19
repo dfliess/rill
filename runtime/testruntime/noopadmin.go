@@ -19,6 +19,7 @@ type noopAdminService struct {
 	mu                sync.Mutex
 	pushNotifications map[string][]PushNotification
 	pushErrs          map[string]error
+	projectMembers    map[string][]drivers.ProjectMember
 	reportDelivery    map[string]bool
 }
 
@@ -30,6 +31,7 @@ var (
 	noopAdmin = &noopAdminService{
 		pushNotifications: make(map[string][]PushNotification),
 		pushErrs:          make(map[string]error),
+		projectMembers:    make(map[string][]drivers.ProjectMember),
 		reportDelivery:    make(map[string]bool),
 	}
 )
@@ -114,6 +116,20 @@ func (c *noopAdminClient) SendPushNotification(ctx context.Context, category str
 	return len(emails), nil
 }
 
+// ListProjectMemberAttributes implements [drivers.AdminService] with the members the test configured with
+// SetProjectMembers. An instance nobody configured has no membership to enumerate, like a deployment whose admin
+// service does not implement the call (Rill Developer).
+func (c *noopAdminClient) ListProjectMemberAttributes(ctx context.Context) ([]drivers.ProjectMember, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	members, ok := c.projectMembers[c.instanceID]
+	if !ok {
+		return nil, drivers.ErrNotImplemented
+	}
+	return slices.Clone(members), nil
+}
+
 // PushNotification records a push notification sent through the noop admin service.
 type PushNotification struct {
 	Category   string
@@ -137,6 +153,14 @@ func FailPushNotifications(instanceID string, err error) {
 	noopAdmin.mu.Lock()
 	defer noopAdmin.mu.Unlock()
 	noopAdmin.pushErrs[instanceID] = err
+}
+
+// SetProjectMembers makes the admin service of the given instance report the given project members,
+// so tests can exercise the policies the runtime evaluates against a project's membership.
+func SetProjectMembers(instanceID string, members []drivers.ProjectMember) {
+	noopAdmin.mu.Lock()
+	defer noopAdmin.mu.Unlock()
+	noopAdmin.projectMembers[instanceID] = members
 }
 
 // EnableReportDelivery makes the admin service of the given instance return delivery metadata for reports,

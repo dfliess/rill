@@ -3,8 +3,11 @@ package runtime
 import (
 	"context"
 	"fmt"
+	"maps"
+	"slices"
 
 	runtimev1 "github.com/rilldata/rill/proto/gen/rill/runtime/v1"
+	"github.com/rilldata/rill/runtime/drivers"
 	"github.com/rilldata/rill/runtime/parser"
 )
 
@@ -111,6 +114,78 @@ func (r *Runtime) resolveAgentApprove(ctx context.Context, instanceID string, cl
 		return false, fmt.Errorf("failed to evaluate approve expression of agent %q: %w", res.Meta.Name.Name, err)
 	}
 	return ok, nil
+}
+
+// ResolveAgentApprovers returns the emails of the project members who may decide one proposed action of an agent.
+// It is the inverse of ResolveAgentApprove, which answers the same question for one caller: a notification has to be
+// addressed before anyone asks for it (kairos-cloud#143). It grants nothing — the decision itself is always
+// re-resolved against the deciding caller's own claims — so a member listed here still has to pass the same gate
+// when they act.
+//
+// Each member is evaluated with the claims their own runtime token would carry (see agentApproverClaims), so the
+// policy sees here exactly what it will see when they open the approval. Members without an email are skipped:
+// there is nobody to notify. A member whose evaluation errors fails the whole enumeration, because an approve
+// expression is a property of the agent, not of the member: it would fail for everyone.
+//
+// When the policy matches nobody, it falls back to the members holding EditTrigger. An approval nobody is told
+// about is a run that waits forever, and those members are exactly who the API's break-glass
+// (authorizeApprovalDecision) lets decide it anyway.
+func (r *Runtime) ResolveAgentApprovers(ctx context.Context, instanceID string, res *runtimev1.Resource, action AgentActionContext, members []drivers.ProjectMember) ([]string, error) {
+	var approvers, operators []string
+	for _, m := range members {
+		if m.Email == "" {
+			continue
+		}
+		if m.EditTrigger {
+			operators = append(operators, m.Email)
+		}
+
+		// ResolveAgentApprove resolves access itself and denies without it, so this is the same verdict
+		// resolveApprovalDecision reaches for a caller, minus its EditTrigger break-glass.
+		ok, err := r.ResolveAgentApprove(ctx, instanceID, agentApproverClaims(m), res, action)
+		if err != nil {
+			return nil, err
+		}
+		if ok {
+			approvers = append(approvers, m.Email)
+		}
+	}
+
+	if len(approvers) == 0 {
+		return operators, nil
+	}
+	return approvers, nil
+}
+
+// agentApproverPermissions are the instance permissions every member's runtime token carries whatever their role
+// is (see issueRuntimeToken in admin/server/runtime_jwt.go), so they never discriminate between members. The
+// permissions that do — EditTrigger above all — depend on the member's role in the deployment's environment, and
+// the admin service resolves them per member into drivers.ProjectMember.EditTrigger.
+var agentApproverPermissions = []Permission{ReadAPI, ReadMetrics, ReadObjects, UseAI}
+
+// agentApproverClaims rebuilds the SecurityClaims a runtime JWT issued for the member would resolve to (the
+// jwtClaims provider in runtime/server/auth): their attributes with "id" defaulted to the token's subject, the
+// token's instance permissions, and their resource restrictions as additional rules.
+func agentApproverClaims(m drivers.ProjectMember) *SecurityClaims {
+	attrs := maps.Clone(m.Attributes)
+	if attrs == nil {
+		attrs = make(map[string]any)
+	}
+	if _, ok := attrs["id"]; !ok {
+		attrs["id"] = m.UserID
+	}
+
+	permissions := slices.Clone(agentApproverPermissions)
+	if m.EditTrigger {
+		permissions = append(permissions, EditTrigger)
+	}
+
+	return &SecurityClaims{
+		UserID:          m.UserID,
+		UserAttributes:  attrs,
+		Permissions:     permissions,
+		AdditionalRules: m.SecurityRules,
+	}
 }
 
 // evaluateAgentGate resolves and evaluates one boolean gate expression against the caller's attributes,
