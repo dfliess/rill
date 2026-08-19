@@ -23,6 +23,7 @@
   } from "@rilldata/web-common/features/help/initPylonChat";
   import {
     createAdminServiceGetCurrentUser,
+    createAdminServiceGetPushNotificationConfig,
     type V1ProjectPermissions,
   } from "../../client";
   import LanguageSwitcher from "@rilldata/web-common/components/i18n/LanguageSwitcher.svelte";
@@ -35,6 +36,12 @@
 
   const { whiteLabel } = featureFlags;
   const user = createAdminServiceGetCurrentUser();
+
+  // Notification settings are only worth opening where the deployment has VAPID
+  // keys; without them the page has nothing to offer. The config is fetched
+  // once per session and shared with the settings page itself.
+  const pushConfig = createAdminServiceGetPushNotificationConfig();
+  $: pushEnabled = !!$pushConfig.data?.vapidPublicKey;
 
   let imgContainer: HTMLElement;
   let primaryMenuOpen = false;
@@ -125,6 +132,12 @@
           {m.nav_tab_reports()}
         </DropdownMenu.Item>
       {/if}
+    {/if}
+
+    {#if pushEnabled}
+      <DropdownMenu.Item href="/-/settings/notifications">
+        {m.avatar_notifications()}
+      </DropdownMenu.Item>
     {/if}
 
     <ThemeToggle />

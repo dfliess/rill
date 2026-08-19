@@ -13,14 +13,45 @@ type FetchEvent = ExtendableEvent & {
   readonly request: Request;
   respondWith(r: Promise<Response> | Response): void;
 };
+type PushEvent = ExtendableEvent & {
+  readonly data: { json(): unknown } | null;
+};
+type NotificationEvent = ExtendableEvent & {
+  readonly notification: {
+    close(): void;
+    readonly data: unknown;
+  };
+};
+type WindowClient = {
+  focus(): Promise<unknown>;
+  navigate(url: string): Promise<unknown>;
+};
 type ServiceWorkerScope = {
   addEventListener(
     type: "install" | "activate",
     listener: (event: ExtendableEvent) => void,
   ): void;
   addEventListener(type: "fetch", listener: (event: FetchEvent) => void): void;
+  addEventListener(type: "push", listener: (event: PushEvent) => void): void;
+  addEventListener(
+    type: "notificationclick",
+    listener: (event: NotificationEvent) => void,
+  ): void;
   skipWaiting(): Promise<void>;
-  clients: { claim(): Promise<void> };
+  registration: {
+    showNotification(
+      title: string,
+      options?: { body?: string; tag?: string; icon?: string; data?: unknown },
+    ): Promise<void>;
+  };
+  clients: {
+    claim(): Promise<void>;
+    matchAll(options?: {
+      type?: "window";
+      includeUncontrolled?: boolean;
+    }): Promise<WindowClient[]>;
+    openWindow(url: string): Promise<unknown>;
+  };
   location: Location;
 };
 
@@ -98,4 +129,86 @@ sw.addEventListener("fetch", (event) => {
     event.respondWith(cacheFirst(request));
   }
   // Anything else (e.g. same-origin API calls) falls through to the network.
+});
+
+// Web Push: the admin sends a JSON payload of the shape
+// {title, body, link, category, tag}; `link` is an absolute URL into this
+// frontend. A malformed or non-JSON payload is dropped silently: showing a
+// broken notification (or throwing) would be worse than showing none.
+type PushPayload = {
+  title: string;
+  body?: string;
+  link?: string;
+  tag?: string;
+};
+
+function parsePushPayload(event: PushEvent): PushPayload | null {
+  if (!event.data) return null;
+  let raw: unknown;
+  try {
+    raw = event.data.json();
+  } catch {
+    return null;
+  }
+  if (typeof raw !== "object" || raw === null) return null;
+  const { title, body, link, tag } = raw as Record<string, unknown>;
+  if (typeof title !== "string" || !title) return null;
+  return {
+    title,
+    body: typeof body === "string" ? body : undefined,
+    link: typeof link === "string" ? link : undefined,
+    tag: typeof tag === "string" ? tag : undefined,
+  };
+}
+
+sw.addEventListener("push", (event) => {
+  const payload = parsePushPayload(event);
+  if (!payload) return;
+  event.waitUntil(
+    sw.registration.showNotification(payload.title, {
+      body: payload.body,
+      tag: payload.tag,
+      icon: "/pwa-icon-192.png",
+      data: { link: payload.link },
+    }),
+  );
+});
+
+// Focus an existing app window if there is one (matchAll only returns clients
+// of this worker's origin), navigating it to the notification's link;
+// otherwise open a new window. `navigate` is refused for windows this worker
+// doesn't control, so fall back to openWindow in that case.
+async function openNotificationLink(link: string | undefined): Promise<void> {
+  const windowClients = await sw.clients.matchAll({
+    type: "window",
+    includeUncontrolled: true,
+  });
+  const client = windowClients[0];
+  if (!client) {
+    if (link) await sw.clients.openWindow(link);
+    return;
+  }
+  try {
+    await client.focus();
+  } catch {
+    // Focus can be refused (e.g. no transient activation); keep going.
+  }
+  if (!link) return;
+  try {
+    await client.navigate(link);
+  } catch {
+    await sw.clients.openWindow(link);
+  }
+}
+
+sw.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const data = event.notification.data;
+  const link =
+    typeof data === "object" &&
+    data !== null &&
+    typeof (data as { link?: unknown }).link === "string"
+      ? (data as { link: string }).link
+      : undefined;
+  event.waitUntil(openNotificationLink(link));
 });
