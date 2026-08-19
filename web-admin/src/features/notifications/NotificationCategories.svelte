@@ -134,11 +134,14 @@
 
 <style lang="postcss">
   .organizations {
-    @apply flex flex-col gap-y-5;
+    @apply flex flex-col gap-y-6 mt-2;
   }
 
+  /* The switches repeat verbatim under every organization, so the name is the only thing telling one
+     block from the next: it carries a rule and its own breathing room, or the whole section reads as
+     one long list of six identical switches. */
   .organization-name {
-    @apply text-sm font-medium text-fg-primary;
+    @apply text-sm font-semibold text-fg-primary pb-2 border-b border-gray-200;
   }
 
   .categories {
