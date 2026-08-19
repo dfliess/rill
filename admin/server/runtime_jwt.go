@@ -177,13 +177,7 @@ func (s *Server) issueRuntimeToken(ctx context.Context, opts *issueRuntimeTokenO
 	// NOTE: Only applicable for tokens issued for the claims owner (not possible to delegate to other end users).
 	var canReadStatus, canManage bool
 	if opts.forOwner {
-		if opts.deployment.Environment == "dev" {
-			canReadStatus = opts.projectPermissions.ReadDevStatus
-			canManage = opts.projectPermissions.ManageDev
-		} else {
-			canReadStatus = opts.projectPermissions.ReadProdStatus
-			canManage = opts.projectPermissions.ManageProd
-		}
+		canReadStatus, canManage = elevatedPermissionsForEnvironment(opts.deployment.Environment, opts.projectPermissions)
 	}
 
 	// Derive instance permissions from deployment config and project permissions.
@@ -249,6 +243,16 @@ func (s *Server) issueRuntimeToken(ctx context.Context, opts *issueRuntimeTokenO
 		return "", status.Errorf(codes.Internal, "could not issue jwt: %s", err.Error())
 	}
 	return jwt, nil
+}
+
+// elevatedPermissionsForEnvironment returns the project permissions that grant elevated access to a deployment in the given environment.
+// It is the single source of truth for that mapping: besides the instance permissions in a runtime JWT,
+// ListProjectMemberAttributes uses it to report whether a member would be granted runtime.EditTrigger.
+func elevatedPermissionsForEnvironment(environment string, perms *adminv1.ProjectPermissions) (canReadStatus, canManage bool) {
+	if environment == "dev" {
+		return perms.ReadDevStatus, perms.ManageDev
+	}
+	return perms.ReadProdStatus, perms.ManageProd
 }
 
 // securityRulesFromMagicAuthToken builds the security rules encoded by a magic auth token:
