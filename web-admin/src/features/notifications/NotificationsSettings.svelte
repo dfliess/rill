@@ -25,6 +25,8 @@
     browserSupportsPush,
     derivePushSectionState,
     describeUserAgent,
+    isIOS,
+    isStandalone,
     subscriptionCredentials,
   } from "./push-utils";
 
@@ -34,6 +36,8 @@
   const deleteSubscription = createAdminServiceDeletePushSubscription();
 
   const supported = browserSupportsPush();
+  const ios = isIOS();
+  const standalone = isStandalone();
 
   let permission = $state<NotificationPermission>("default");
   // Endpoint of the subscription this browser holds, if any. Read once on
@@ -48,6 +52,8 @@
       vapidPublicKey,
       supported,
       permission,
+      ios,
+      standalone,
     }),
   );
 
@@ -159,7 +165,11 @@
       </div>
     </div>
 
-    {#if sectionState === "denied"}
+    {#if sectionState === "install-required"}
+      <p class="mt-3 text-fg-secondary">
+        {m.notifications_device_install_ios()}
+      </p>
+    {:else if sectionState === "denied"}
       <p class="mt-3 text-fg-secondary">{m.notifications_device_denied()}</p>
     {:else if sectionState === "unsupported"}
       <p class="mt-3 text-fg-secondary">

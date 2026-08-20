@@ -17,14 +17,39 @@ export function browserSupportsPush(): boolean {
   );
 }
 
+// iOS exposes the Push API only to a web app launched from the Home Screen, never to a Safari tab
+// (16.4+). So on iPhone and iPad the missing API is not a browser that cannot do this: it is one asking
+// to be installed first, which is an instruction, not a dead end.
+export function isIOS(): boolean {
+  if (typeof navigator === "undefined") return false;
+  // iPadOS 13+ reports itself as a Mac, and the touch points are what tells the two apart.
+  return (
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.userAgent.includes("Macintosh") && navigator.maxTouchPoints > 1)
+  );
+}
+
+// Whether the page is running as an installed web app rather than inside browser chrome. iOS answers
+// through a non-standard flag of its own; everyone else through the display mode.
+export function isStandalone(): boolean {
+  if (typeof window === "undefined") return false;
+  const iosStandalone = (navigator as { standalone?: boolean }).standalone;
+  return (
+    iosStandalone === true ||
+    window.matchMedia?.("(display-mode: standalone)").matches === true
+  );
+}
+
 // UI state of the push settings section, in order of precedence:
 // "loading" until the server config arrives; "disabled" when the deployment
 // has no VAPID key configured (the section renders nothing at all);
-// "unsupported" when the browser lacks the Push API; "denied" when the user
+// "install-required" on an iOS browser tab, where the API only appears once the app is on the Home
+// Screen; "unsupported" when the browser lacks the Push API for good; "denied" when the user
 // blocked notifications for this site; otherwise "ready".
 export type PushSectionState =
   | "loading"
   | "disabled"
+  | "install-required"
   | "unsupported"
   | "denied"
   | "ready";
@@ -34,10 +59,16 @@ export function derivePushSectionState(args: {
   vapidPublicKey: string;
   supported: boolean;
   permission: NotificationPermission;
+  ios: boolean;
+  standalone: boolean;
 }): PushSectionState {
   if (!args.configLoaded) return "loading";
   if (!args.vapidPublicKey) return "disabled";
-  if (!args.supported) return "unsupported";
+  if (!args.supported) {
+    // An installed iOS app with no Push API is a version older than 16.4, which installing again will
+    // not fix, so that one is genuinely unsupported.
+    return args.ios && !args.standalone ? "install-required" : "unsupported";
+  }
   if (args.permission === "denied") return "denied";
   return "ready";
 }

@@ -41,6 +41,8 @@ describe("derivePushSectionState", () => {
     vapidPublicKey: "key",
     supported: true,
     permission: "granted" as NotificationPermission,
+    ios: false,
+    standalone: false,
   };
 
   it("is loading until the server config arrives", () => {
@@ -63,6 +65,31 @@ describe("derivePushSectionState", () => {
     expect(derivePushSectionState({ ...ready, supported: false })).toBe(
       "unsupported",
     );
+  });
+
+  it("asks an iOS browser tab to install instead of calling it unsupported", () => {
+    expect(
+      derivePushSectionState({ ...ready, supported: false, ios: true }),
+    ).toBe("install-required");
+  });
+
+  it("calls an installed iOS app unsupported: installing again would not add the API", () => {
+    // A Home Screen app without the Push API is iOS older than 16.4.
+    expect(
+      derivePushSectionState({
+        ...ready,
+        supported: false,
+        ios: true,
+        standalone: true,
+      }),
+    ).toBe("unsupported");
+  });
+
+  it("never asks to install where push already works", () => {
+    expect(derivePushSectionState({ ...ready, ios: true })).toBe("ready");
+    expect(
+      derivePushSectionState({ ...ready, ios: true, permission: "denied" }),
+    ).toBe("denied");
   });
 
   it("is denied when the user blocked notifications", () => {
