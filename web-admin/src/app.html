@@ -80,6 +80,17 @@
       media="(prefers-color-scheme: dark)"
       content="#232629"
     />
+    <!-- The metas above only reach browser chrome inside a tab. An installed app
+         takes its window colour from the manifest's theme_color, which is a single
+         value: iOS paints the status bar with it and Chrome paints the desktop
+         title bar with it. It is set to the antracita surface because the app is
+         dark by default (theme-control.ts), so a light frame never matched what it
+         framed. This meta is the older iOS lever, kept as a belt-and-braces for
+         versions that ignore theme_color; "black" is opaque, so the page keeps its
+         own box and needs no safe-area handling. Not "black-translucent": that one
+         forces light status-bar text over the page, which would be unreadable for
+         anyone who switches the app to the light theme. -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <meta
       name="description"
       content="Inteligencia para empresas: dashboards, alertas e informes agénticos sobre tus datos."
