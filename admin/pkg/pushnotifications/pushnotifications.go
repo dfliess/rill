@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 
 	webpush "github.com/SherClockHolmes/webpush-go"
 )
@@ -45,12 +46,22 @@ type Client struct {
 }
 
 // New creates a Client. If the keys are empty, the client is disabled.
+// The subject is accepted with or without its "mailto:" prefix; see normalizeSubject.
 func New(vapidPublicKey, vapidPrivateKey, subject string) *Client {
 	return &Client{
 		vapidPublicKey:  vapidPublicKey,
 		vapidPrivateKey: vapidPrivateKey,
-		subject:         subject,
+		subject:         normalizeSubject(subject),
 	}
+}
+
+// normalizeSubject strips a "mailto:" prefix from an email subject, because webpush-go adds one of its
+// own to anything that is not an https URL. Configured as "mailto:someone@example.com", the JWT ends up
+// claiming "sub":"mailto:mailto:someone@example.com": Google's push service accepts that, Apple's rejects
+// every message with 403 BadJwtToken, so it breaks iOS alone and only once a real device is subscribed.
+// Both spellings of the setting are valid per RFC 8292, so this normalizes rather than rejects.
+func normalizeSubject(subject string) string {
+	return strings.TrimPrefix(subject, "mailto:")
 }
 
 // Enabled returns true if the client is configured with a VAPID key pair.
