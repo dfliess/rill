@@ -27,6 +27,7 @@
   import { errorEventHandler } from "@rilldata/web-common/metrics/initMetrics";
   import { type Query, QueryClientProvider } from "@tanstack/svelte-query";
   import { onMount } from "svelte";
+  import { listenForNotificationNavigation } from "@rilldata/web-admin/features/notifications/navigate-from-notification";
   import ErrorBoundary from "../components/errors/ErrorBoundary.svelte";
   import OrgHeader from "../features/organizations/OrgHeader.svelte";
   import "@rilldata/web-common/app.css";
@@ -95,10 +96,14 @@
   onMount(() => {
     const removeNetworkRecoveryListeners =
       registerAdminNetworkRecoveryListeners(queryClient);
+    // Tapping a notification asks this page to route itself; the service worker cannot navigate it
+    // from outside in an installed iOS web app.
+    const stopNotificationNavigation = listenForNotificationNavigation();
 
     return () => {
       removeJavascriptListeners?.();
       removeNetworkRecoveryListeners();
+      stopNotificationNavigation();
     };
   });
 
