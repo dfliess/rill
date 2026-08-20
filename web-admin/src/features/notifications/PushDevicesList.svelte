@@ -64,12 +64,12 @@
   }
 </script>
 
+<!-- The list itself says what the title promises, so there is no help text: only the empty state, which
+     is the one moment the section has nothing to show for itself. -->
 <SettingsContainer title={m.notifications_devices_title()}>
-  <p>{m.notifications_devices_description()}</p>
-
   {#if isSuccess}
     {#if devices.length === 0}
-      <p class="mt-3">{m.notifications_devices_empty()}</p>
+      <p>{m.notifications_devices_empty()}</p>
     {:else}
       <ul class="devices">
         {#each devices as { id, label, createdOn, isCurrent } (id)}
