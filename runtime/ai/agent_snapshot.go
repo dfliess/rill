@@ -29,6 +29,9 @@ type AgentSnapshot struct {
 	DisplayName string
 	// Instructions is the agent-specific system prompt. It is combined with the project's ai_instructions at runtime.
 	Instructions string
+	// ProjectInstructions is the project's ai_instructions captured with the agent definition. Durable runs use this
+	// frozen value on every segment instead of re-reading a project edit after an approval wait.
+	ProjectInstructions string
 	// ModelConnector and ModelName identify the LLM to run the agent on. ModelConnector is the effective connector
 	// name (the agent's explicit selection, or the project's AI connector when the agent leaves it empty).
 	ModelConnector string

@@ -92,6 +92,8 @@ type SessionOptions struct {
 	LLMConnector  string
 	LLMDriver     string
 	LLMProperties map[string]any
+	// ProjectInstructions overrides the instance's live ai_instructions when a durable model snapshot is selected.
+	ProjectInstructions string
 }
 
 // Session creates or loads an AI session.
@@ -191,11 +193,13 @@ func (r *Runner) Session(ctx context.Context, opts *SessionOptions) (res *Sessio
 	// pass a frozen connector snapshot, which keeps provider behaviour stable across reopen/restart while resolving
 	// credentials live on each model request.
 	managedAI := instance.ResolveAIConnector() == instance.AdminConnector
+	projectInstructions := instance.AIInstructions
 	acquireLLM := func(ctx context.Context) (drivers.AIService, func(), error) {
 		return r.Runtime.AI(ctx, opts.InstanceID)
 	}
 	if opts.LLMDriver != "" {
 		managedAI = opts.LLMConnector == instance.AdminConnector
+		projectInstructions = opts.ProjectInstructions
 		acquireLLM = func(ctx context.Context) (drivers.AIService, func(), error) {
 			return r.Runtime.AIFromConnectorSnapshot(ctx, opts.InstanceID, opts.LLMConnector, opts.LLMDriver, opts.LLMProperties)
 		}
@@ -210,7 +214,7 @@ func (r *Runner) Session(ctx context.Context, opts *SessionOptions) (res *Sessio
 		runner:              r,
 		logger:              logger,
 		activity:            activityClient,
-		projectInstructions: instance.AIInstructions,
+		projectInstructions: projectInstructions,
 		managedAI:           managedAI,
 		acquireLLM:          acquireLLM,
 		acquireCatalog: func(ctx context.Context) (drivers.CatalogStore, func(), error) {

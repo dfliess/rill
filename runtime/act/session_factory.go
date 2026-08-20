@@ -49,13 +49,14 @@ func NewSessionFactory(rt *runtime.Runtime, ac *activity.Client) SessionFactory 
 		// continues the same conversation. Runner.Session loads the existing AISession and its messages (ordered by
 		// index) when SessionID is set, which is the durable substrate the resumed segment reconstructs from.
 		s, err := runner.Session(ctx, &ai.SessionOptions{
-			InstanceID:    instanceID,
-			SessionID:     sessionID,
-			Claims:        claims,
-			UserAgent:     "act-runtime",
-			LLMConnector:  snapshot.ModelConnector,
-			LLMDriver:     snapshot.ModelDriver,
-			LLMProperties: snapshot.ModelProperties,
+			InstanceID:          instanceID,
+			SessionID:           sessionID,
+			Claims:              claims,
+			UserAgent:           "act-runtime",
+			LLMConnector:        snapshot.ModelConnector,
+			LLMDriver:           snapshot.ModelDriver,
+			LLMProperties:       snapshot.ModelProperties,
+			ProjectInstructions: snapshot.ProjectInstructions,
 		})
 		if err != nil {
 			return nil, nil, err

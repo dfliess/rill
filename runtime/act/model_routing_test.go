@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"sync"
 	"testing"
 
@@ -17,8 +18,9 @@ import (
 )
 
 type modelRoutingRequest struct {
-	Model         string
-	Authorization string
+	Model          string
+	Authorization  string
+	SystemMessages []string
 }
 
 type modelRoutingServer struct {
@@ -36,14 +38,24 @@ func newModelRoutingServer(t *testing.T, response string) *modelRoutingServer {
 			return
 		}
 		var body struct {
-			Model string `json:"model"`
+			Model    string `json:"model"`
+			Messages []struct {
+				Role    string `json:"role"`
+				Content string `json:"content"`
+			} `json:"messages"`
 		}
 		if err := json.NewDecoder(req.Body).Decode(&body); err != nil {
 			http.Error(w, "invalid JSON request: "+err.Error(), http.StatusBadRequest)
 			return
 		}
+		var systemMessages []string
+		for _, message := range body.Messages {
+			if message.Role == "system" {
+				systemMessages = append(systemMessages, message.Content)
+			}
+		}
 		r.mu.Lock()
-		r.reqs = append(r.reqs, modelRoutingRequest{Model: body.Model, Authorization: req.Header.Get("Authorization")})
+		r.reqs = append(r.reqs, modelRoutingRequest{Model: body.Model, Authorization: req.Header.Get("Authorization"), SystemMessages: systemMessages})
 		r.mu.Unlock()
 
 		w.Header().Set("Content-Type", "application/json")
@@ -113,7 +125,8 @@ func TestAgentModelRoutingSurvivesSessionReopen(t *testing.T) {
 	rt, instanceID := testruntime.NewInstanceWithOptions(t, testruntime.InstanceOptions{
 		Variables: map[string]string{"agent_api_key": "initial-secret"},
 		Files: map[string]string{
-			"rill.yaml": `ai_connector: default_ai`,
+			"rill.yaml": `ai_connector: default_ai
+ai_instructions: "ORIGINAL PROJECT INSTRUCTION"`,
 			"connectors/agent_ai.yaml": modelRoutingConnectorYAML(
 				original.url(), "connector-original-model",
 			),
@@ -134,6 +147,7 @@ func TestAgentModelRoutingSurvivesSessionReopen(t *testing.T) {
 	require.Equal(t, "agent_ai", snapshot.ModelConnector)
 	require.Equal(t, "openai", snapshot.ModelDriver)
 	require.Equal(t, "agent-original-model", snapshot.ModelName)
+	require.Equal(t, "ORIGINAL PROJECT INSTRUCTION", snapshot.ProjectInstructions)
 	require.Equal(t, "agent-original-model", snapshot.ModelProperties["model"])
 	require.Equal(t, original.url(), snapshot.ModelProperties["base_url"])
 	require.NotContains(t, snapshot.ModelProperties, "api_key")
@@ -159,6 +173,8 @@ func TestAgentModelRoutingSurvivesSessionReopen(t *testing.T) {
 	// Change both possible live sources of non-secret behaviour: the agent now selects another connector/model, and
 	// the old connector itself now points at another endpoint/model. Also rotate only the secret on the instance.
 	testruntime.PutFiles(t, rt, instanceID, map[string]string{
+		"rill.yaml": `ai_connector: default_ai
+ai_instructions: "EDITED PROJECT INSTRUCTION"`,
 		"connectors/agent_ai.yaml": modelRoutingConnectorYAML(forbidden.url(), "connector-edited-model"),
 		"triage.yaml":              modelRoutingAgentYAML("edited_ai", "agent-edited-model"),
 	})
@@ -172,6 +188,7 @@ func TestAgentModelRoutingSurvivesSessionReopen(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "edited_ai", live.ModelConnector)
 	require.Equal(t, "agent-edited-model", live.ModelProperties["model"])
+	require.Equal(t, "EDITED PROJECT INSTRUCTION", live.ProjectInstructions)
 
 	_, err = runner.RunSegment(t.Context(), act.RunSegmentInput{
 		InstanceID: instanceID,
@@ -189,8 +206,15 @@ func TestAgentModelRoutingSurvivesSessionReopen(t *testing.T) {
 	require.Empty(t, forbidden.requests(), "neither the project default nor edited connector may serve this run")
 	reqs := original.requests()
 	require.Len(t, reqs, 2)
-	require.Equal(t, modelRoutingRequest{Model: "agent-original-model", Authorization: "Bearer initial-secret"}, reqs[0])
-	require.Equal(t, modelRoutingRequest{Model: "agent-original-model", Authorization: "Bearer rotated-secret"}, reqs[1])
+	require.Equal(t, "agent-original-model", reqs[0].Model)
+	require.Equal(t, "Bearer initial-secret", reqs[0].Authorization)
+	require.Contains(t, strings.Join(reqs[0].SystemMessages, "\n"), "ORIGINAL PROJECT INSTRUCTION")
+	require.Equal(t, "agent-original-model", reqs[1].Model)
+	require.Equal(t, "Bearer rotated-secret", reqs[1].Authorization)
+	require.Contains(t, strings.Join(reqs[1].SystemMessages, "\n"), "ORIGINAL PROJECT INSTRUCTION")
+	for _, system := range reqs[1].SystemMessages {
+		require.NotContains(t, system, "EDITED PROJECT INSTRUCTION")
+	}
 }
 
 // TestAgentModelRoutingRefusesDriverDrift proves live secret resolution cannot cross provider contracts. If an

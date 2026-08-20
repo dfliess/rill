@@ -86,12 +86,14 @@ func (p *CatalogAgentProvider) ListAgents(ctx context.Context, instanceID string
 // resolved once here (including the project default), so changing either the agent or rill.yaml cannot reroute a run
 // after DBOS checkpoints the snapshot. Secrets are excluded and intentionally resolved later by the session factory.
 func (p *CatalogAgentProvider) resolveModelSnapshot(ctx context.Context, instanceID string, snap *ai.AgentSnapshot) error {
+	inst, err := p.rt.Instance(ctx, instanceID)
+	if err != nil {
+		return err
+	}
+	snap.ProjectInstructions = inst.AIInstructions
+
 	connector := snap.ModelConnector
 	if connector == "" {
-		inst, err := p.rt.Instance(ctx, instanceID)
-		if err != nil {
-			return err
-		}
 		connector = inst.ResolveAIConnector()
 	}
 	// Preserve compatibility for installations with no AI connector configured. A production SessionFactory will
