@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
-  categoriesScope,
+  categoriesNeedScopeNote,
   derivePushSectionState,
   describeUserAgent,
   isIOS,
@@ -37,24 +37,15 @@ describe("urlBase64ToUint8Array", () => {
   });
 });
 
-describe("categoriesScope", () => {
+describe("categoriesNeedScopeNote", () => {
   it("says nothing when this browser has notifications on", () => {
-    expect(
-      categoriesScope({ enabledHere: true, subscriptionCount: 1 }),
-    ).toBeUndefined();
+    // The switches visibly govern the browser in front of the reader.
+    expect(categoriesNeedScopeNote(true)).toBe(false);
   });
 
-  it("points at the other browsers when this one is off but others are on", () => {
-    // The iPhone case: the switches are live, just not here.
-    expect(categoriesScope({ enabledHere: false, subscriptionCount: 2 })).toBe(
-      "elsewhere",
-    );
-  });
-
-  it("speaks in the future when no browser has them on", () => {
-    expect(categoriesScope({ enabledHere: false, subscriptionCount: 0 })).toBe(
-      "pending",
-    );
+  it("explains itself when this browser has them off", () => {
+    // The iPhone case: six live switches under a dead one need a word.
+    expect(categoriesNeedScopeNote(false)).toBe(true);
   });
 });
 

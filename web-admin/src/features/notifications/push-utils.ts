@@ -74,18 +74,10 @@ export function derivePushSectionState(args: {
 }
 
 // Whether the category switches need a word about where they take effect. They are stored per user and
-// organization, not per browser, so they keep applying wherever notifications are on: the question the
-// reader has when this browser's switch is off is whether they are choosing something live or something
-// for later, and the answer depends on the other browsers, not on this one.
-export type CategoriesScope = "elsewhere" | "pending" | undefined;
-
-export function categoriesScope(args: {
-  enabledHere: boolean;
-  subscriptionCount: number;
-}): CategoriesScope {
-  // With this browser on, the switches visibly govern it and need no explaining.
-  if (args.enabledHere) return undefined;
-  return args.subscriptionCount > 0 ? "elsewhere" : "pending";
+// organization, never per browser, so with this browser's switch off they look like settings that do
+// nothing, when they are simply not about this browser.
+export function categoriesNeedScopeNote(enabledHere: boolean): boolean {
+  return !enabledHere;
 }
 
 // The Push API wants `applicationServerKey` as raw bytes, but VAPID public
