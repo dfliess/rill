@@ -154,7 +154,7 @@ notify:
 	require.Equal(t, []string{"somebody@example.com"}, pushes[0].Recipients)
 	require.Equal(t, "Tu informe Ventas semanales está listo", pushes[0].Title)
 	require.Equal(t, "El informe de Mon, 01 Jan 2024 00:00:00 UTC ya está disponible.", pushes[0].Body)
-	require.Equal(t, "/acme/demo/-/reports/r1", pushes[0].LinkPath)
+	require.Equal(t, "/acme/demo/-/reports/r1/open?execution_time=2024-01-01T00%3A00%3A00Z", pushes[0].LinkPath)
 	require.Equal(t, "reports:acme/demo/r1", pushes[0].Tag)
 
 	// The push mirrors the email, it does not replace it.
