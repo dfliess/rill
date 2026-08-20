@@ -143,7 +143,7 @@ func TestReportPushNotificationMessage(t *testing.T) {
 		require.Equal(t, []string{"somebody@example.com"}, n.recipients)
 		require.Equal(t, "Tu informe Ventas semanales está listo", n.title)
 		require.Equal(t, "El informe de Thu, 04 Jan 2024 00:00:00 UTC ya está disponible.", n.body)
-		require.Equal(t, "/acme/demo/-/reports/r1", n.linkPath)
+		require.Equal(t, "/acme/demo/-/reports/r1/open?execution_time=2024-01-04T00%3A00%3A00Z", n.linkPath)
 		require.Equal(t, "reports:acme/demo/r1", n.tag)
 	})
 

@@ -93,9 +93,11 @@ func reportPushNotification(name string, spec *runtimev1.ReportSpec, reportTime 
 		recipients: recipients,
 		title:      fmt.Sprintf("Tu informe %s está listo", spec.DisplayName),
 		body:       fmt.Sprintf("El informe de %s ya está disponible.", reportTime.Format(time.RFC1123)),
-		// The emails open a link personalized per recipient (magic tokens, AI sessions),
-		// but one push is shared by all recipients, so it links to the report's own page.
-		linkPath: resourcePath(org, project, "reports", name),
+		// Wherever the email takes a reader, the push takes them too: the /open route, which resolves to
+		// what the report is about with the state captured when it was scheduled (the canvas, the explore
+		// dashboard, or the AI conversation). The emails add a per-recipient magic token; one push is shared
+		// by all recipients, so it goes without one and relies on the reader's session.
+		linkPath: reportOpenPath(org, project, name, reportTime),
 		tag:      resourcePushTag("reports", org, project, name),
 	}
 }
@@ -142,6 +144,13 @@ func emailNotifierRecipients(notifiers []*runtimev1.Notifier) []string {
 func alertOpenPath(org, project, name string, executionTime time.Time) string {
 	qry := url.Values{"execution_time": []string{executionTime.UTC().Format(time.RFC3339)}}
 	return fmt.Sprintf("%s/open?%s", resourcePath(org, project, "alerts", name), qry.Encode())
+}
+
+// reportOpenPath returns the path that opens what a report is about at the time it ran. It mirrors the
+// link the email carries (URLs.ReportOpen), minus the per-recipient token one shared push cannot have.
+func reportOpenPath(org, project, name string, reportTime time.Time) string {
+	qry := url.Values{"execution_time": []string{reportTime.UTC().Format(time.RFC3339)}}
+	return fmt.Sprintf("%s/open?%s", resourcePath(org, project, "reports", name), qry.Encode())
 }
 
 // resourcePath returns the frontend path of a resource's page, e.g. "/acme/demo/-/alerts/a1".
