@@ -209,8 +209,9 @@ async function openNotificationLink(link: string | undefined): Promise<void> {
     // A client that cannot receive messages can still be navigated below.
   }
 
-  // Kept for a page too old to carry the listener, and harmless where the message arrived: it lands
-  // on the same URL.
+  // For a window that was already open when this worker took over: it is still running the JavaScript
+  // it loaded earlier, which has no listener, and a deploy hands exactly that situation to whoever had
+  // Kairos open. Harmless where the message did arrive, since it lands on the same URL.
   if (typeof client.navigate === "function") {
     try {
       await client.navigate(link);
