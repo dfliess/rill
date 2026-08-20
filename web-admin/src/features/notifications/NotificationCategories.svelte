@@ -33,21 +33,20 @@
   // The switch waiting for the server, so a toggle only spins its own.
   let switching = $state<string | undefined>(undefined);
 
+  // Each label is the name of a tab the user already knows (Alerts, Reports, Agents), so it needs no
+  // gloss under it.
   let categories = $derived([
     {
       key: "pushAlerts" as NotificationCategory,
       label: m.notifications_category_alerts(),
-      description: m.notifications_category_alerts_description(),
     },
     {
       key: "pushReports" as NotificationCategory,
       label: m.notifications_category_reports(),
-      description: m.notifications_category_reports_description(),
     },
     {
       key: "pushActApprovals" as NotificationCategory,
       label: m.notifications_category_act_approvals(),
-      description: m.notifications_category_act_approvals_description(),
     },
   ]);
 
@@ -87,11 +86,11 @@
   }
 </script>
 
+<!-- No help text under the title: the organization headings below already show that the choice is made
+     per organization, and a line restating what the page displays is noise on every visit. -->
 <SettingsContainer title={m.notifications_categories_title()}>
-  <p>{m.notifications_categories_description()}</p>
-
   {#if isSuccess && organizations.length === 0}
-    <p class="mt-3">{m.notifications_categories_empty()}</p>
+    <p>{m.notifications_categories_empty()}</p>
   {:else if isSuccess}
     <div class="organizations">
       {#each organizations as { org, label, preferences } (org)}
@@ -102,15 +101,12 @@
           <div class="categories">
             {#each categories as category (category.key)}
               <div class="category">
-                <div class="flex flex-col">
-                  <Label
-                    for="notification-category-{org}-{category.key}"
-                    class="font-medium text-fg-primary"
-                  >
-                    {category.label}
-                  </Label>
-                  <span>{category.description}</span>
-                </div>
+                <Label
+                  for="notification-category-{org}-{category.key}"
+                  class="font-medium text-fg-primary"
+                >
+                  {category.label}
+                </Label>
                 <div class="ml-auto shrink-0">
                   <DelayedCircleOutlineSpinner
                     isLoading={switching === `${org}/${category.key}`}
