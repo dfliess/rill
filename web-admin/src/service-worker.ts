@@ -24,7 +24,8 @@ type NotificationEvent = ExtendableEvent & {
 };
 type WindowClient = {
   focus(): Promise<unknown>;
-  navigate(url: string): Promise<unknown>;
+  navigate?(url: string): Promise<unknown>;
+  postMessage(message: unknown): void;
 };
 type ServiceWorkerScope = {
   addEventListener(
@@ -135,6 +136,9 @@ sw.addEventListener("fetch", (event) => {
 // {title, body, link, category, tag}; `link` is an absolute URL into this
 // frontend. A malformed or non-JSON payload is dropped silently: showing a
 // broken notification (or throwing) would be worse than showing none.
+// The page listens for this to route itself; see navigate-from-notification.ts.
+const NOTIFICATION_NAVIGATE = "kairos:navigate";
+
 type PushPayload = {
   title: string;
   body?: string;
@@ -194,10 +198,26 @@ async function openNotificationLink(link: string | undefined): Promise<void> {
     // Focus can be refused (e.g. no transient activation); keep going.
   }
   if (!link) return;
+
+  // Ask the page to route itself. An installed iOS web app has no usable navigate(): it is either
+  // missing or resolves without doing anything, so the app came to the foreground still showing
+  // whatever page it was on, with no error to fall back from. The page is already loaded, so
+  // routing from inside it is also the faster path everywhere else.
   try {
-    await client.navigate(link);
+    client.postMessage({ type: NOTIFICATION_NAVIGATE, url: link });
   } catch {
-    await sw.clients.openWindow(link);
+    // A client that cannot receive messages can still be navigated below.
+  }
+
+  // Kept for a page too old to carry the listener, and harmless where the message arrived: it lands
+  // on the same URL.
+  if (typeof client.navigate === "function") {
+    try {
+      await client.navigate(link);
+    } catch {
+      // Navigation is refused for clients this worker does not control; the message above is the
+      // one that gets there.
+    }
   }
 }
 
