@@ -56,6 +56,13 @@
     },
   );
 
+  // A report whose data comes from a resolver (metrics_sql and friends) has no dashboard to open, so
+  // the mapper fails and the reader is left on an error where a link promised them their report. Send
+  // them to the report instead, which is what the sibling alert page already does.
+  $: if (reportSpec && (!queryName || !queryArgsJson)) {
+    void goto(`/${organization}/${project}/-/reports/${reportId}`);
+  }
+
   $: if ($dashboardStateForReport?.data) {
     void gotoExplorePage(
       $dashboardStateForReport.data.exploreName,
