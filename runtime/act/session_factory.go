@@ -16,30 +16,46 @@ import (
 // session. The run fails instead of escalating.
 var ErrNoInitiatorClaims = errors.New("act: run has no initiator claims; refusing to open a privileged session (fail closed)")
 
+// ErrIncompleteModelSnapshot protects upgrades from silently rerouting a durable run. Snapshots checkpointed by a
+// build from before per-agent connector capture have no ModelDriver (and may have no effective ModelConnector). They
+// cannot be reconstructed deterministically after a restart, so they must fail closed and be started again rather
+// than falling through to whichever instance-default model happens to be live after the deploy.
+var ErrIncompleteModelSnapshot = errors.New("act: run has no durable model connector snapshot; start a new run")
+
 // NewSessionFactory returns the production SessionFactory: it opens an ai.Session bound to the run's initiating
 // claims, so every tool CheckAccess in the agent loop resolves against the initiator's authority and never the
 // worker's. It differs from the test factory in one security-critical way: on nil claims it does NOT fabricate a
 // SkipChecks session, it fails closed (ErrNoInitiatorClaims). The claims are passed through exactly as received —
 // including a legitimately SkipChecks-bearing local-dev identity, which reflects the runtime's own auth posture
-// rather than a fabricated escalation. The session's model resolves from the instance's configured connector.
+// rather than a fabricated escalation. The session's model resolves from the immutable connector snapshot captured
+// at run start; only that connector's current secrets are read live.
 func NewSessionFactory(rt *runtime.Runtime, ac *activity.Client) SessionFactory {
 	// One Runner is built up front and reused across sessions: it only registers the tool set and holds no per-run
 	// state, so sharing it avoids re-registering tools on every run open.
 	runner := ai.NewRunner(rt, ac)
-	return func(ctx context.Context, instanceID, sessionID string, claims *runtime.SecurityClaims) (*ai.Session, func(), error) {
+	return func(ctx context.Context, instanceID, sessionID string, claims *runtime.SecurityClaims, snapshot *ai.AgentSnapshot) (*ai.Session, func(), error) {
 		// Fail closed: a run with no initiator identity (a not-yet-wired automatic trigger, §17.3) must not run under
 		// a privileged session. Refuse rather than escalate to the worker's own authority.
 		if claims == nil {
 			return nil, nil, ErrNoInitiatorClaims
 		}
+		if snapshot == nil {
+			return nil, nil, errors.New("act: run has no agent snapshot")
+		}
+		if snapshot.ModelConnector == "" || snapshot.ModelDriver == "" {
+			return nil, nil, ErrIncompleteModelSnapshot
+		}
 		// sessionID empty opens a fresh session (first segment); non-empty reopens that session so a resumed segment
 		// continues the same conversation. Runner.Session loads the existing AISession and its messages (ordered by
 		// index) when SessionID is set, which is the durable substrate the resumed segment reconstructs from.
 		s, err := runner.Session(ctx, &ai.SessionOptions{
-			InstanceID: instanceID,
-			SessionID:  sessionID,
-			Claims:     claims,
-			UserAgent:  "act-runtime",
+			InstanceID:    instanceID,
+			SessionID:     sessionID,
+			Claims:        claims,
+			UserAgent:     "act-runtime",
+			LLMConnector:  snapshot.ModelConnector,
+			LLMDriver:     snapshot.ModelDriver,
+			LLMProperties: snapshot.ModelProperties,
 		})
 		if err != nil {
 			return nil, nil, err

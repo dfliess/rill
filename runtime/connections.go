@@ -9,6 +9,7 @@ import (
 	runtimev1 "github.com/rilldata/rill/proto/gen/rill/runtime/v1"
 	"github.com/rilldata/rill/runtime/drivers"
 	"github.com/rilldata/rill/runtime/parser"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 var ErrAINotConfigured = fmt.Errorf("an AI service is not configured for this instance")
@@ -122,6 +123,91 @@ func (r *Runtime) AI(ctx context.Context, instanceID string) (drivers.AIService,
 		return nil, nil, fmt.Errorf("connector %q is not a valid AI service", aiConnector)
 	}
 
+	return ai, release, nil
+}
+
+// NonSecretConnectorProperties returns a JSON-safe copy of properties with every property the driver declares as
+// secret removed. It is used when a durable workflow needs to freeze connector behaviour without checkpointing
+// credentials. Connector drivers are the source of truth for which properties are secrets.
+func NonSecretConnectorProperties(driver string, properties map[string]any) (map[string]any, error) {
+	d, ok := drivers.Drivers[driver]
+	if !ok {
+		return nil, fmt.Errorf("unknown driver %q", driver)
+	}
+	if !d.Spec().ImplementsAI {
+		return nil, fmt.Errorf("driver %q is not an AI service", driver)
+	}
+
+	// Round-tripping through structpb both deep-copies nested maps/slices and constrains the checkpointed value to
+	// JSON-compatible types. Connector resources originate as protobuf Struct values, so this preserves their
+	// representation while preventing later resource mutations from reaching an in-flight run.
+	s, err := structpb.NewStruct(properties)
+	if err != nil {
+		return nil, fmt.Errorf("connector %q properties are not JSON-compatible: %w", driver, err)
+	}
+	res := s.AsMap()
+	for _, p := range d.Spec().ConfigProperties {
+		if p.Secret {
+			delete(res, strings.ToLower(p.Key))
+		}
+	}
+	return res, nil
+}
+
+// AIFromConnectorSnapshot opens an AI service using the frozen, non-secret connector behaviour captured at the
+// start of a durable run. Secret values are resolved live from the same named connector on every acquisition, so
+// credentials can rotate while a run is waiting for approval without allowing model, endpoint or provider behaviour
+// to drift underneath the run.
+func (r *Runtime) AIFromConnectorSnapshot(ctx context.Context, instanceID, connector, driver string, properties map[string]any) (drivers.AIService, func(), error) {
+	if connector == "" || driver == "" {
+		return nil, nil, fmt.Errorf("AI connector snapshot is incomplete")
+	}
+
+	current, err := r.ConnectorConfig(ctx, instanceID, connector)
+	if err != nil {
+		return nil, nil, fmt.Errorf("resolve current secrets for connector %q: %w", connector, err)
+	}
+	// A driver change means the connector's current credentials belong to a different provider contract. Passing (for
+	// example) a newly configured Anthropic key to the frozen OpenAI endpoint would both violate the snapshot and leak
+	// the credential. Freeze the driver identity and fail closed; rotate secrets without changing the driver instead.
+	if current.Driver != driver {
+		return nil, nil, fmt.Errorf("AI connector %q changed driver from %q to %q while the run was in progress", connector, driver, current.Driver)
+	}
+	live := current.Resolve()
+	frozen, err := NonSecretConnectorProperties(driver, properties)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Only copy live values for keys the frozen driver identifies as secret. All other current connector properties
+	// are deliberately ignored: they belong to a later configuration version, not this run's checkpoint.
+	for _, p := range drivers.Drivers[driver].Spec().ConfigProperties {
+		if !p.Secret {
+			continue
+		}
+		key := strings.ToLower(p.Key)
+		if value, ok := live[key]; ok {
+			frozen[key] = value
+		}
+	}
+
+	if ctx.Err() != nil {
+		return nil, nil, ctx.Err()
+	}
+	handle, release, err := r.getConnection(ctx, cachedConnectionConfig{
+		instanceID: instanceID,
+		name:       connector,
+		driver:     driver,
+		config:     frozen,
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+	ai, ok := handle.AsAI(instanceID)
+	if !ok {
+		release()
+		return nil, nil, fmt.Errorf("connector %q is not a valid AI service", connector)
+	}
 	return ai, release, nil
 }
 

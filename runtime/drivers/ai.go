@@ -28,4 +28,8 @@ type CompleteResult struct {
 	InputTokens       int
 	CachedInputTokens int
 	OutputTokens      int
+	// ReasoningTokens is the provider-reported reasoning subset of OutputTokens when available. Providers that do not
+	// expose it leave zero. Keeping it separate lets evaluations compare thinking quality, latency and cost without
+	// double-counting it in the output total.
+	ReasoningTokens int
 }

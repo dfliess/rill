@@ -86,6 +86,12 @@ type SessionOptions struct {
 	CreateIfNotExists bool
 	Claims            *runtime.SecurityClaims
 	UserAgent         string
+	// LLMConnector, LLMDriver and LLMProperties select a connector snapshot instead of the instance's default AI
+	// connector. LLMProperties must contain only non-secret, JSON-safe values; the runtime resolves current secrets
+	// from LLMConnector on every acquisition. They are primarily used by durable per-agent runs.
+	LLMConnector  string
+	LLMDriver     string
+	LLMProperties map[string]any
 }
 
 // Session creates or loads an AI session.
@@ -181,6 +187,20 @@ func (r *Runner) Session(ctx context.Context, opts *SessionOptions) (res *Sessio
 	}
 	activityClient := r.Activity.With(attrs...)
 
+	// Resolve how this session acquires its model. Ordinary sessions use the instance default. Durable agent sessions
+	// pass a frozen connector snapshot, which keeps provider behaviour stable across reopen/restart while resolving
+	// credentials live on each model request.
+	managedAI := instance.ResolveAIConnector() == instance.AdminConnector
+	acquireLLM := func(ctx context.Context) (drivers.AIService, func(), error) {
+		return r.Runtime.AI(ctx, opts.InstanceID)
+	}
+	if opts.LLMDriver != "" {
+		managedAI = opts.LLMConnector == instance.AdminConnector
+		acquireLLM = func(ctx context.Context) (drivers.AIService, func(), error) {
+			return r.Runtime.AIFromConnectorSnapshot(ctx, opts.InstanceID, opts.LLMConnector, opts.LLMDriver, opts.LLMProperties)
+		}
+	}
+
 	// Create the session
 	base := &BaseSession{
 		id:         session.ID,
@@ -191,10 +211,8 @@ func (r *Runner) Session(ctx context.Context, opts *SessionOptions) (res *Sessio
 		logger:              logger,
 		activity:            activityClient,
 		projectInstructions: instance.AIInstructions,
-		managedAI:           instance.ResolveAIConnector() == instance.AdminConnector,
-		acquireLLM: func(ctx context.Context) (drivers.AIService, func(), error) {
-			return r.Runtime.AI(ctx, opts.InstanceID)
-		},
+		managedAI:           managedAI,
+		acquireLLM:          acquireLLM,
 		acquireCatalog: func(ctx context.Context) (drivers.CatalogStore, func(), error) {
 			return r.Runtime.Catalog(ctx, opts.InstanceID)
 		},
@@ -1301,7 +1319,7 @@ func (s *Session) Complete(ctx context.Context, name string, out any, opts *Comp
 		// TODO: For durable execution, add messages from current scope.
 
 		// Telemetry
-		var iterations, truncations, inputTokens, outputTokens, cachedInputTokens int
+		var iterations, truncations, inputTokens, outputTokens, cachedInputTokens, reasoningTokens int
 		var provider string
 		s.logger.Debug("completion started",
 			zap.Int("initial_messages", len(messages)),
@@ -1355,6 +1373,9 @@ func (s *Session) Complete(ctx context.Context, name string, out any, opts *Comp
 			if cachedInputTokens > 0 {
 				s.activity.RecordMetric(ctx, "cached_input_tokens", float64(cachedInputTokens), source, managedAI, providerAttr)
 			}
+			if reasoningTokens > 0 {
+				s.activity.RecordMetric(ctx, "reasoning_tokens", float64(reasoningTokens), source, managedAI, providerAttr)
+			}
 		}()
 
 		// Complete and execute tool calls in a loop.
@@ -1398,6 +1419,7 @@ func (s *Session) Complete(ctx context.Context, name string, out any, opts *Comp
 				inputTokens += res.InputTokens
 				outputTokens += res.OutputTokens
 				cachedInputTokens += res.CachedInputTokens
+				reasoningTokens += res.ReasoningTokens
 				if res.Provider != "" {
 					provider = res.Provider
 				}

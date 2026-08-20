@@ -2,7 +2,9 @@ package parser
 
 import (
 	"fmt"
+	"strings"
 
+	"github.com/rilldata/rill/runtime/drivers"
 	"google.golang.org/protobuf/types/known/structpb"
 	"gopkg.in/yaml.v3"
 )
@@ -55,6 +57,18 @@ func (p *Parser) parseConnector(node *Node) error {
 	templatedProps, err := analyzeTemplatedProperties(tmp.Properties)
 	if err != nil {
 		return fmt.Errorf("failed to analyze templated properties: %w", err)
+	}
+	if d, ok := drivers.Drivers[tmp.Driver]; ok {
+		for _, prop := range d.Spec().ConfigProperties {
+			if !prop.NoTemplate {
+				continue
+			}
+			for _, key := range templatedProps {
+				if strings.EqualFold(key, prop.Key) {
+					return fmt.Errorf("connector driver %q property %q does not allow templates; keep secrets in properties declared secret", tmp.Driver, key)
+				}
+			}
+		}
 	}
 	var propertiesPB *structpb.Struct
 	if tmp.Properties != nil {

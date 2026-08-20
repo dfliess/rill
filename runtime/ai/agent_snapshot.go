@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 	"slices"
 )
 
@@ -28,13 +29,15 @@ type AgentSnapshot struct {
 	DisplayName string
 	// Instructions is the agent-specific system prompt. It is combined with the project's ai_instructions at runtime.
 	Instructions string
-	// ModelConnector and ModelName identify the LLM to run the agent on.
-	//
-	// NOTE: RunDynamicAgent currently executes on the Session's configured LLM (mirroring the built-in agents,
-	// which don't select a model). Per-agent model routing is left to a later integration; these fields carry the
-	// intent so the resolved snapshot is complete.
+	// ModelConnector and ModelName identify the LLM to run the agent on. ModelConnector is the effective connector
+	// name (the agent's explicit selection, or the project's AI connector when the agent leaves it empty).
 	ModelConnector string
 	ModelName      string
+	// ModelDriver and ModelProperties freeze the selected connector's effective, non-secret configuration at run
+	// start. ModelProperties is JSON-safe and never contains properties the driver marks Secret; those are resolved
+	// live from ModelConnector when a segment executes, allowing credential rotation without behaviour drift.
+	ModelDriver     string
+	ModelProperties map[string]any
 	// Tools is the exact set of built-in (analytical) tool names the agent may call. It is the upper bound on the
 	// agent's authority over Rill's own tools: the model never sees a built-in tool outside this list, and a
 	// proposed call outside it is rejected, not executed.
@@ -151,6 +154,7 @@ func (p *StaticAgentProvider) ListAgents(_ context.Context, _ string) ([]*AgentS
 func cloneSnapshot(s *AgentSnapshot) *AgentSnapshot {
 	snap := *s
 	snap.Tools = slices.Clone(s.Tools)
+	snap.ModelProperties = cloneSnapshotMap(s.ModelProperties)
 	if s.MCPConnectors != nil {
 		snap.MCPConnectors = make([]MCPConnector, len(s.MCPConnectors))
 		for i := range s.MCPConnectors {
@@ -162,4 +166,68 @@ func cloneSnapshot(s *AgentSnapshot) *AgentSnapshot {
 		}
 	}
 	return &snap
+}
+
+// cloneSnapshotMap deep-copies the JSON-shaped maps used in durable snapshots. Connector properties can contain
+// nested maps and slices (for example provider-specific request bodies), so a shallow maps.Clone would let a caller
+// mutate an in-flight run through a nested value.
+func cloneSnapshotMap(src map[string]any) map[string]any {
+	if src == nil {
+		return nil
+	}
+	dst := make(map[string]any, len(src))
+	for k, v := range src {
+		dst[k] = cloneSnapshotValue(v)
+	}
+	return dst
+}
+
+func cloneSnapshotValue(v any) any {
+	if v == nil {
+		return nil
+	}
+	return cloneSnapshotReflect(reflect.ValueOf(v)).Interface()
+}
+
+func cloneSnapshotReflect(v reflect.Value) reflect.Value {
+	if !v.IsValid() {
+		return v
+	}
+	switch v.Kind() {
+	case reflect.Interface:
+		if v.IsNil() {
+			return reflect.Zero(v.Type())
+		}
+		cloned := cloneSnapshotReflect(v.Elem())
+		wrapped := reflect.New(v.Type()).Elem()
+		wrapped.Set(cloned)
+		return wrapped
+	case reflect.Map:
+		if v.IsNil() {
+			return reflect.Zero(v.Type())
+		}
+		res := reflect.MakeMapWithSize(v.Type(), v.Len())
+		iter := v.MapRange()
+		for iter.Next() {
+			res.SetMapIndex(cloneSnapshotReflect(iter.Key()), cloneSnapshotReflect(iter.Value()))
+		}
+		return res
+	case reflect.Slice:
+		if v.IsNil() {
+			return reflect.Zero(v.Type())
+		}
+		res := reflect.MakeSlice(v.Type(), v.Len(), v.Len())
+		for i := 0; i < v.Len(); i++ {
+			res.Index(i).Set(cloneSnapshotReflect(v.Index(i)))
+		}
+		return res
+	case reflect.Array:
+		res := reflect.New(v.Type()).Elem()
+		for i := 0; i < v.Len(); i++ {
+			res.Index(i).Set(cloneSnapshotReflect(v.Index(i)))
+		}
+		return res
+	default:
+		return v
+	}
 }

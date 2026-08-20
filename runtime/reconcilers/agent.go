@@ -14,6 +14,7 @@ import (
 	"github.com/rilldata/rill/runtime"
 	"github.com/rilldata/rill/runtime/act/mcpconn"
 	"github.com/rilldata/rill/runtime/ai"
+	"github.com/rilldata/rill/runtime/drivers"
 )
 
 func init() {
@@ -128,9 +129,13 @@ func (r *AgentReconciler) validateSpec(ctx context.Context, spec *runtimev1.Agen
 	// If a model connector is declared, it must resolve in the project.
 	// ConnectorConfig resolves the connector's configuration without opening a connection.
 	if spec.ModelConnector != "" {
-		_, err := r.C.Runtime.ConnectorConfig(ctx, r.C.InstanceID, spec.ModelConnector)
+		cfg, err := r.C.Runtime.ConnectorConfig(ctx, r.C.InstanceID, spec.ModelConnector)
 		if err != nil {
 			return fmt.Errorf("invalid model connector %q: %w", spec.ModelConnector, err)
+		}
+		driver, ok := drivers.Drivers[cfg.Driver]
+		if !ok || !driver.Spec().ImplementsAI {
+			return fmt.Errorf("invalid model connector %q: driver %q is not an AI service", spec.ModelConnector, cfg.Driver)
 		}
 	}
 

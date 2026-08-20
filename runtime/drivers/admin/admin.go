@@ -32,6 +32,10 @@ var spec = drivers.Spec{
 			Secret:   true,
 		},
 	},
+	// The admin handle also proxies Rill's managed AI service (AsAI). Declaring the capability lets durable agent
+	// snapshots classify its access token as secret and freeze the remaining connector behavior like any other AI
+	// connector, instead of rejecting the existing managed-AI default path.
+	ImplementsAI: true,
 }
 
 func init() {

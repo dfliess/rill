@@ -9,12 +9,11 @@ import (
 )
 
 // SessionFactory opens an ai.Session for an instance, bound to the given security claims, and returns a release
-// function. The executor calls it inside the run_segment step with the initiating actor's claims, so the session (and
-// thus every tool CheckAccess) runs with the initiator's authority, not the worker's. sessionID selects the session:
-// empty opens a fresh one (the first segment of a run), non-empty reopens that session so a resumed segment continues
-// the same conversation from its persisted message tree. Production wires it to the instance's configured model;
-// tests wire it to a scripted model.
-type SessionFactory func(ctx context.Context, instanceID, sessionID string, claims *runtime.SecurityClaims) (*ai.Session, func(), error)
+// function. The executor calls it inside the run_segment step with the initiating actor's claims and the run's
+// checkpointed snapshot, so the session runs with the initiator's authority and the model configuration captured at
+// run start. sessionID selects the session: empty opens a fresh one (the first segment of a run), non-empty reopens
+// that session so a resumed segment continues the same conversation. Tests may replace the model with a script.
+type SessionFactory func(ctx context.Context, instanceID, sessionID string, claims *runtime.SecurityClaims, snapshot *ai.AgentSnapshot) (*ai.Session, func(), error)
 
 // ActionSink performs the run's external write. In the spike it records an observable effect; in production it is
 // the tool gateway that talks to MCP/action systems (§16). It must be idempotent per run: DBOS steps are
@@ -34,6 +33,16 @@ type SessionRunner struct {
 
 var _ Runner = (*SessionRunner)(nil)
 
+// ValidateSnapshot is the production runner's upgrade/durability guard. DBOS calls it immediately after replaying
+// the checkpointed load_snapshot step, before an old workflow can consume an approval or execute an action. A
+// pre-upgrade snapshot has no resolved driver and cannot be resumed deterministically.
+func (r *SessionRunner) ValidateSnapshot(snapshot *ai.AgentSnapshot) error {
+	if snapshot == nil || snapshot.ModelConnector == "" || snapshot.ModelDriver == "" {
+		return ErrIncompleteModelSnapshot
+	}
+	return nil
+}
+
 func (r *SessionRunner) LoadSnapshot(ctx context.Context, instanceID, agentName string) (*ai.AgentSnapshot, error) {
 	return r.Provider.GetAgent(ctx, instanceID, agentName)
 }
@@ -49,7 +58,7 @@ func (r *SessionRunner) LoadSnapshot(ctx context.Context, instanceID, agentName 
 // or a long approval wait) reopens a fully persisted tree. The opened session ID is returned even on a run/flush error
 // (the trace still exists and is worth linking); it is empty only when the session could not be opened at all.
 func (r *SessionRunner) RunSegment(ctx context.Context, in RunSegmentInput) (RunSegmentResult, error) {
-	s, release, err := r.Sessions(ctx, in.InstanceID, in.SessionID, in.Claims)
+	s, release, err := r.Sessions(ctx, in.InstanceID, in.SessionID, in.Claims, in.Snapshot)
 	if err != nil {
 		return RunSegmentResult{}, err
 	}

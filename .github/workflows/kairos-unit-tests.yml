@@ -8,7 +8,7 @@
 # This job answers "did a Kairos change break things?" unambiguously:
 #   1. go build ./...  — the WHOLE Rill tree must still compile.
 #   2. go test -short  — the Act/Kairos-owned packages must still pass.
-# It needs no external services, so green means green.
+#   3. the composed Act approval/restart path runs against Postgres and is not allowed to skip.
 name: Kairos unit tests
 
 on:
@@ -23,6 +23,20 @@ permissions:
 jobs:
   kairos-unit:
     runs-on: ubuntu-22.04
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: dbos
+          POSTGRES_DB: dbos_spike
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d dbos_spike"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -47,3 +61,12 @@ jobs:
           ./runtime/reconcilers/...
         env:
           CGO_ENABLED: "1"
+
+      - name: Durable OpenAI approval and runtime restart path passes (must not skip)
+        run: >-
+          go test -count=1 -timeout 5m ./runtime/ai
+          -run '^TestOpenAIConnectorConfigSurvives(ApprovalAndRuntime|Process)Restart$'
+        env:
+          CGO_ENABLED: "1"
+          ACT_TEST_DBOS_URL: postgres://postgres:dbos@localhost:5432/dbos_spike?sslmode=disable
+          ACT_TEST_REQUIRE_POSTGRES: "1"

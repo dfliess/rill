@@ -2,7 +2,9 @@ package act_test
 
 import (
 	"context"
+	"errors"
 	"sync"
+	"sync/atomic"
 	"testing"
 
 	"github.com/google/uuid"
@@ -12,6 +14,33 @@ import (
 	"github.com/rilldata/rill/runtime/testruntime"
 	"github.com/stretchr/testify/require"
 )
+
+// TestExecutorRejectsIncompleteModelSnapshotBeforeAnyRunSideEffect pins the upgrade guard's placement. A snapshot
+// checkpointed by a pre-routing build has no effective connector/driver; recovery must reject it before opening a
+// session or consuming an approval that could lead to an external write.
+func TestExecutorRejectsIncompleteModelSnapshotBeforeAnyRunSideEffect(t *testing.T) {
+	var sessionCalls atomic.Int32
+	sink := &recordingSink{}
+	runner := &act.SessionRunner{
+		Provider: ai.NewStaticAgentProvider(&ai.AgentSnapshot{Name: "legacy", Instructions: "old checkpoint"}),
+		Sessions: func(context.Context, string, string, *runtime.SecurityClaims, *ai.AgentSnapshot) (*ai.Session, func(), error) {
+			sessionCalls.Add(1)
+			return nil, nil, errors.New("session must not open")
+		},
+		Actions: sink,
+	}
+	e := newExecutorWithRunner(t, runner)
+	runID, err := e.Start(t.Context(), act.AgentRunInput{
+		InstanceID: "legacy-instance", AgentName: "legacy", Prompt: "resume",
+		IdempotencyKey: "legacy-" + uuid.NewString(),
+	})
+	require.NoError(t, err)
+
+	_, err = e.Result(runID)
+	require.ErrorContains(t, err, "durable model connector snapshot")
+	require.Zero(t, sessionCalls.Load(), "validation must run before the model session opens")
+	require.Empty(t, sink.snapshot(), "validation must run before an external action")
+}
 
 // TestExecutorStartApproveRunsActionOnce is the happy path: a run investigates, waits for approval, and on
 // "approved" performs its (simulated) write exactly once, ending in the succeeded state.

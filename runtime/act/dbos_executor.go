@@ -360,6 +360,18 @@ func (e *DBOSExecutor) runAgentWorkflow(ctx dbos.Context, in AgentRunInput) (Age
 	if err != nil {
 		return e.fail(ctx, in, runID, res, "load snapshot", err)
 	}
+	// Production SessionRunner validates the checkpoint itself, not only the later session open. This placement is
+	// load-bearing for upgrades: a workflow already parked on approval replays from the top after a deploy. Rejecting
+	// its legacy snapshot here prevents it from consuming an approval and executing the external write before the
+	// missing model configuration is discovered on the resumed segment. Test runners without model connectors do not
+	// implement this optional validation seam.
+	if validator, ok := e.runner.(interface {
+		ValidateSnapshot(*ai.AgentSnapshot) error
+	}); ok {
+		if err := validator.ValidateSnapshot(snapshot); err != nil {
+			return e.fail(ctx, in, runID, res, "validate snapshot", err)
+		}
+	}
 
 	// The worker has the run's definition: move it from queued to running and bind it to the agent version it
 	// executed by recording the snapshot's spec hash on the same transition. The emit is a durable step, so the

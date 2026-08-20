@@ -162,7 +162,8 @@ limits:
 func newInstanceWithAgent(t *testing.T, instructions string) (*runtime.Runtime, string) {
 	rt, instanceID := testruntime.NewInstanceWithOptions(t, testruntime.InstanceOptions{
 		Files: map[string]string{
-			"rill.yaml":   `ai_instructions: "Menciona la residencia de datos cuando sea relevante."`,
+			"rill.yaml": `ai_connector: mock_ai
+ai_instructions: "Menciona la residencia de datos cuando sea relevante."`,
 			"triage.yaml": agentYAML(instructions),
 		},
 	})
@@ -181,7 +182,7 @@ func newInstanceWithAgent(t *testing.T, instructions string) (*runtime.Runtime, 
 // without an initiator identity (nil claims: the executor's own storeless unit tests) falls back to a local-dev
 // SkipChecks session, mirroring Rill Developer where auth is disabled.
 func scriptedSessionFactory(rt *runtime.Runtime, llm drivers.AIService) act.SessionFactory {
-	return func(ctx context.Context, instanceID, sessionID string, claims *runtime.SecurityClaims) (*ai.Session, func(), error) {
+	return func(ctx context.Context, instanceID, sessionID string, claims *runtime.SecurityClaims, _ *ai.AgentSnapshot) (*ai.Session, func(), error) {
 		if claims == nil {
 			claims = &runtime.SecurityClaims{UserID: uuid.NewString(), SkipChecks: true}
 		}

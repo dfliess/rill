@@ -9,8 +9,8 @@ import (
 )
 
 func TestAgent(t *testing.T) {
-	// The model connector references "duckdb", which is a configured connector in the test instance.
-	// The reconciler only validates that the connector exists; it does not execute the agent.
+	// The model connector references the implicit mock AI connector. The reconciler validates that the connector
+	// exists and implements the AI capability, but does not execute the agent.
 	rt, id := testruntime.NewInstanceWithOptions(t, testruntime.InstanceOptions{
 		Files: map[string]string{
 			"rill.yaml": "",
@@ -19,7 +19,7 @@ type: agent
 display_name: Revenue Incident Agent
 description: Investigates revenue anomalies.
 model:
-  connector: duckdb
+  connector: mock_ai
   name: some-model
 instructions: Investigate using governed metrics only.
 tools:
@@ -43,10 +43,30 @@ limits:
 	require.NotNil(t, agent.State.ValidSpec)
 	require.NotEmpty(t, agent.State.SpecHash)
 	require.Equal(t, "Investigate using governed metrics only.", agent.State.ValidSpec.Instructions)
-	require.Equal(t, "duckdb", agent.State.ValidSpec.ModelConnector)
+	require.Equal(t, "mock_ai", agent.State.ValidSpec.ModelConnector)
 	require.Equal(t, uint32(5), agent.State.ValidSpec.Limits.MaxSteps)
 	require.Equal(t, uint32(600), agent.State.ValidSpec.Limits.TimeoutSeconds)
 	require.Equal(t, []string{"query_metrics_view"}, agent.State.ValidSpec.Tools)
+}
+
+func TestAgentRejectsNonAIModelConnector(t *testing.T) {
+	rt, id := testruntime.NewInstanceWithOptions(t, testruntime.InstanceOptions{
+		Files: map[string]string{
+			"rill.yaml": "",
+			"agents/bad.yaml": `
+type: agent
+model:
+  connector: duckdb
+instructions: Do something useful.
+`,
+		},
+	})
+	testruntime.ReconcileParserAndWait(t, rt, id)
+	testruntime.RequireReconcileState(t, rt, id, -1, 1, 0)
+	testruntime.RequireReconcileErrorContains(t, rt, id, runtime.ResourceKindAgent, "bad", "is not an AI service")
+
+	res := testruntime.GetResource(t, rt, id, runtime.ResourceKindAgent, "bad")
+	require.Nil(t, res.GetAgent().State.ValidSpec)
 }
 
 func TestAgentDisallowedTool(t *testing.T) {

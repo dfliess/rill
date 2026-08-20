@@ -5,6 +5,7 @@ import (
 
 	"github.com/rilldata/rill/runtime"
 	"github.com/rilldata/rill/runtime/act"
+	"github.com/rilldata/rill/runtime/ai"
 	"github.com/rilldata/rill/runtime/pkg/activity"
 	"github.com/stretchr/testify/require"
 )
@@ -17,7 +18,7 @@ func TestSessionFactoryFailsClosedOnNilClaims(t *testing.T) {
 	rt, _ := newInstanceWithAgent(t, "Investiga la alerta.")
 	factory := act.NewSessionFactory(rt, activity.NewNoopClient())
 
-	s, release, err := factory(t.Context(), "any-instance", "", nil)
+	s, release, err := factory(t.Context(), "any-instance", "", nil, &ai.AgentSnapshot{})
 	require.ErrorIs(t, err, act.ErrNoInitiatorClaims)
 	require.Nil(t, s)
 	require.Nil(t, release)
@@ -30,9 +31,24 @@ func TestSessionFactoryOpensSessionWithClaims(t *testing.T) {
 	rt, instanceID := newInstanceWithAgent(t, "Investiga la alerta.")
 	factory := act.NewSessionFactory(rt, activity.NewNoopClient())
 
-	s, release, err := factory(t.Context(), instanceID, "", &runtime.SecurityClaims{UserID: "u-1", SkipChecks: true})
+	s, release, err := factory(t.Context(), instanceID, "", &runtime.SecurityClaims{UserID: "u-1", SkipChecks: true}, &ai.AgentSnapshot{
+		ModelConnector: "openai", ModelDriver: "openai", ModelProperties: map[string]any{},
+	})
 	require.NoError(t, err)
 	require.NotNil(t, s)
 	require.NotNil(t, release)
 	release()
+}
+
+func TestSessionFactoryFailsClosedOnLegacyModelSnapshot(t *testing.T) {
+	rt, instanceID := newInstanceWithAgent(t, "Investiga la alerta.")
+	factory := act.NewSessionFactory(rt, activity.NewNoopClient())
+
+	s, release, err := factory(t.Context(), instanceID, "", &runtime.SecurityClaims{UserID: "u-1", SkipChecks: true}, &ai.AgentSnapshot{
+		// Old checkpoints may carry the declared name but not the resolved driver/properties added by this release.
+		ModelConnector: "deepseek",
+	})
+	require.ErrorIs(t, err, act.ErrIncompleteModelSnapshot)
+	require.Nil(t, s)
+	require.Nil(t, release)
 }

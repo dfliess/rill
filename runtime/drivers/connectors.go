@@ -48,6 +48,10 @@ type PropertySpec struct {
 	Placeholder string
 	Secret      bool
 	NoPrompt    bool
+	// NoTemplate rejects project templates anywhere inside this top-level property. It is for behavior maps that are
+	// durably checkpointed as non-secret configuration: allowing an env-backed value inside them could copy a secret
+	// into durable state even though the property itself is not classified as Secret.
+	NoTemplate bool
 }
 
 // PropertyType is an enum of types supported for connector properties.
