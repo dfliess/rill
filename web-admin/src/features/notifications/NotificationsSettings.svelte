@@ -23,7 +23,7 @@
   } from "./push-subscription";
   import {
     browserSupportsPush,
-    categoriesScope,
+    categoriesNeedScopeNote,
     derivePushSectionState,
     describeUserAgent,
     isIOS,
@@ -182,12 +182,7 @@
     {/if}
   </SettingsContainer>
 
-  <NotificationCategories
-    scope={categoriesScope({
-      enabledHere,
-      subscriptionCount: subscriptions.length,
-    })}
-  />
+  <NotificationCategories showScope={categoriesNeedScopeNote(enabledHere)} />
 
   <PushDevicesList {currentEndpoint} onRemoveCurrentDevice={disableHere} />
 {/if}
