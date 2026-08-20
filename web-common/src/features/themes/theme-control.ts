@@ -16,6 +16,20 @@ function isEmbedEnvironment(): boolean {
 const THEME_LOCAL_STORAGE_KEY = "rill:theme";
 const THEME_SESSION_STORAGE_KEY = "rill:embed:theme-mode";
 
+// The surfaces the browser paints its own chrome with: the status bar of an installed app on iOS and the
+// window title bar on desktop. They mirror --surface-base for each theme in app.css. This follows the app's
+// theme rather than the system's, so a machine in light mode never frames a dark app in a light bar.
+const THEME_COLORS: Record<"light" | "dark", string> = {
+  light: "#F4F4F1",
+  dark: "#232629",
+};
+
+function applyThemeColor(scheme: "light" | "dark") {
+  const meta = document.querySelector('meta[name="theme-color"]');
+  // web-local has no such meta; nothing to keep in step there.
+  if (meta instanceof HTMLMetaElement) meta.content = THEME_COLORS[scheme];
+}
+
 class ThemeControl {
   public current = writable<"light" | "dark">("light");
   private darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
@@ -42,6 +56,10 @@ class ThemeControl {
       (currentPreference === "system" && this.darkQuery.matches)
     ) {
       this.setDark();
+    } else {
+      // Nothing to undo on a fresh document, but the browser chrome is seeded with the dark default in
+      // app.html and has to come back to light for whoever chose it.
+      this.removeDark();
     }
 
     this.darkQuery.addEventListener("change", ({ matches }) => {
@@ -89,11 +107,13 @@ class ThemeControl {
   private setDark() {
     this.current.set("dark");
     document.documentElement.classList.add("dark");
+    applyThemeColor("dark");
   }
 
   private removeDark() {
     this.current.set("light");
     document.documentElement.classList.remove("dark");
+    applyThemeColor("light");
   }
 }
 

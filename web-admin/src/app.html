@@ -70,16 +70,12 @@
       href="%sveltekit.assets%/apple-touch-icon.png"
     />
     <link rel="manifest" href="%sveltekit.assets%/manifest.webmanifest" />
-    <meta
-      name="theme-color"
-      media="(prefers-color-scheme: light)"
-      content="#FBFBF9"
-    />
-    <meta
-      name="theme-color"
-      media="(prefers-color-scheme: dark)"
-      content="#232629"
-    />
+    <!-- One value, not a pair keyed on prefers-color-scheme: the browser chrome has
+         to match the app, and the app's theme is its own (dark by default, switchable
+         from settings), not the operating system's. With media queries here, a machine
+         in light mode framed a dark app in a near-white status bar. Seeded with the
+         default and kept in step by theme-control.ts. -->
+    <meta name="theme-color" content="#232629" />
     <!-- The metas above only reach browser chrome inside a tab. An installed app
          takes its window colour from the manifest's theme_color, which is a single
          value: iOS paints the status bar with it and Chrome paints the desktop
