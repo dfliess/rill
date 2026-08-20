@@ -23,6 +23,7 @@
   } from "./push-subscription";
   import {
     browserSupportsPush,
+    categoriesScope,
     derivePushSectionState,
     describeUserAgent,
     isIOS,
@@ -45,6 +46,9 @@
   let currentEndpoint = $state<string | undefined>(undefined);
   let switching = $state(false);
 
+  let { data: subscriptionsData } = $derived($subscriptionsQuery);
+  let subscriptions = $derived(subscriptionsData?.subscriptions ?? []);
+
   let vapidPublicKey = $derived($configQuery.data?.vapidPublicKey ?? "");
   let sectionState = $derived(
     derivePushSectionState({
@@ -61,7 +65,7 @@
   // still has the matching row: the device can be removed from another one.
   let enabledHere = $derived(
     !!currentEndpoint &&
-      !!$subscriptionsQuery.data?.subscriptions?.some(
+      subscriptions.some(
         (subscription) => subscription.endpoint === currentEndpoint,
       ),
   );
@@ -178,7 +182,12 @@
     {/if}
   </SettingsContainer>
 
-  <NotificationCategories />
+  <NotificationCategories
+    scope={categoriesScope({
+      enabledHere,
+      subscriptionCount: subscriptions.length,
+    })}
+  />
 
   <PushDevicesList {currentEndpoint} onRemoveCurrentDevice={disableHere} />
 {/if}

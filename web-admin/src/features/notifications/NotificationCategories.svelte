@@ -14,9 +14,13 @@
   import { queryClient } from "@rilldata/web-common/lib/svelte-query/globalQueryClient";
   import {
     listOrganizationPreferences,
+    type CategoriesScope,
     type NotificationCategory,
     type NotificationPreferences,
   } from "./push-utils";
+
+  // Where these switches take effect, when that is not obvious from this browser (see categoriesScope).
+  let { scope }: { scope: CategoriesScope } = $props();
 
   const preferencesQuery = createAdminServiceListNotificationPreferences();
   const updatePreferences = createAdminServiceUpdateNotificationPreferences();
@@ -87,8 +91,15 @@
 </script>
 
 <!-- No help text under the title: the organization headings below already show that the choice is made
-     per organization, and a line restating what the page displays is noise on every visit. -->
+     per organization, and a line restating what the page displays is noise on every visit. The one line
+     that can appear says what the screen cannot show, which is where the choice takes effect. -->
 <SettingsContainer title={m.notifications_categories_title()}>
+  {#if scope === "elsewhere"}
+    <p>{m.notifications_categories_scope_elsewhere()}</p>
+  {:else if scope === "pending"}
+    <p>{m.notifications_categories_scope_pending()}</p>
+  {/if}
+
   {#if isSuccess && organizations.length === 0}
     <p>{m.notifications_categories_empty()}</p>
   {:else if isSuccess}

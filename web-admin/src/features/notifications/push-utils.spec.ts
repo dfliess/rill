@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  categoriesScope,
   derivePushSectionState,
   describeUserAgent,
   isIOS,
@@ -33,6 +34,27 @@ describe("urlBase64ToUint8Array", () => {
     const bytes = Array.from({ length: 65 }, (_, i) => (i * 7) % 256);
     const encoded = Buffer.from(bytes).toString("base64url");
     expect(Array.from(urlBase64ToUint8Array(encoded))).toEqual(bytes);
+  });
+});
+
+describe("categoriesScope", () => {
+  it("says nothing when this browser has notifications on", () => {
+    expect(
+      categoriesScope({ enabledHere: true, subscriptionCount: 1 }),
+    ).toBeUndefined();
+  });
+
+  it("points at the other browsers when this one is off but others are on", () => {
+    // The iPhone case: the switches are live, just not here.
+    expect(categoriesScope({ enabledHere: false, subscriptionCount: 2 })).toBe(
+      "elsewhere",
+    );
+  });
+
+  it("speaks in the future when no browser has them on", () => {
+    expect(categoriesScope({ enabledHere: false, subscriptionCount: 0 })).toBe(
+      "pending",
+    );
   });
 });
 
