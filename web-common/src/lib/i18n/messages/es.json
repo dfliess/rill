@@ -1538,6 +1538,7 @@
   "notifications_category_reports": "Informes",
   "notifications_device_denied": "Has bloqueado las notificaciones de Kairos en este navegador. Actívalas desde el icono junto a la barra de direcciones y recarga la página.",
   "notifications_device_description": "Te avisamos aunque no tengas Kairos abierto.",
+  "notifications_device_install_ios": "En el iPhone y el iPad hay que instalar Kairos para recibir notificaciones. Toca el icono de compartir, elige «Añadir a pantalla de inicio» y vuelve aquí desde el icono de Kairos.",
   "notifications_device_disable_error": "No hemos podido desactivarlas. Inténtalo de nuevo.",
   "notifications_device_disabled_toast": "Desactivadas en este navegador.",
   "notifications_device_enable_error": "No hemos podido activarlas. Inténtalo de nuevo.",

@@ -1529,6 +1529,7 @@
   "notifications_category_reports": "Reports",
   "notifications_device_denied": "You blocked notifications from Kairos in this browser. Turn them on from the icon next to the address bar and reload the page.",
   "notifications_device_description": "We let you know even when Kairos is not open.",
+  "notifications_device_install_ios": "On iPhone and iPad, Kairos has to be installed to receive notifications. Tap the share icon, choose “Add to Home Screen”, and come back here from the Kairos icon.",
   "notifications_device_disable_error": "We could not turn them off. Try again.",
   "notifications_device_disabled_toast": "Turned off in this browser.",
   "notifications_device_enable_error": "We could not turn them on. Try again.",
