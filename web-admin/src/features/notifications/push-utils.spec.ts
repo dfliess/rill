@@ -1,7 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   derivePushSectionState,
   describeUserAgent,
+  isIOS,
   listOrganizationPreferences,
   listPushDevices,
   readNotificationPreferences,
@@ -32,6 +33,44 @@ describe("urlBase64ToUint8Array", () => {
     const bytes = Array.from({ length: 65 }, (_, i) => (i * 7) % 256);
     const encoded = Buffer.from(bytes).toString("base64url");
     expect(Array.from(urlBase64ToUint8Array(encoded))).toEqual(bytes);
+  });
+});
+
+describe("isIOS", () => {
+  const UA = {
+    iphone:
+      "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1",
+    // iPadOS 13+ claims to be a desktop Mac; only the touch points give it away.
+    ipad: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15",
+    android:
+      "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36",
+    mac: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+  };
+
+  function withNavigator(userAgent: string, maxTouchPoints: number) {
+    vi.stubGlobal("navigator", { userAgent, maxTouchPoints });
+  }
+
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("recognizes an iPhone", () => {
+    withNavigator(UA.iphone, 5);
+    expect(isIOS()).toBe(true);
+  });
+
+  it("recognizes an iPad behind its desktop user agent", () => {
+    withNavigator(UA.ipad, 5);
+    expect(isIOS()).toBe(true);
+  });
+
+  it("does not mistake Android for iOS: push works there in a plain tab", () => {
+    withNavigator(UA.android, 5);
+    expect(isIOS()).toBe(false);
+  });
+
+  it("does not mistake a desktop Mac for an iPad", () => {
+    withNavigator(UA.mac, 0);
+    expect(isIOS()).toBe(false);
   });
 });
 
