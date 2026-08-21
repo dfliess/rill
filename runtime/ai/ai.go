@@ -1700,7 +1700,12 @@ func (s *Session) MustUnmarshalMessageContent(m *Message) any {
 
 // NewCompletionMessage converts the message to an aiv1.CompletionMessage
 func (s *Session) NewCompletionMessage(m *Message) (*aiv1.CompletionMessage, error) {
-	role := RoleAssistant
+	role := m.Role
+	// Messages persisted before roles were consistently populated implicitly represented assistant output. Keep that
+	// legacy fallback while preserving explicit user/system roles on ordinary text messages during session reopen.
+	if role == "" {
+		role = RoleAssistant
+	}
 	block := &aiv1.ContentBlock{
 		BlockType: &aiv1.ContentBlock_Text{
 			Text: m.Content,

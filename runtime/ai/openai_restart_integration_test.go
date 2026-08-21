@@ -14,6 +14,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"sync"
 	"testing"
 	"time"
@@ -51,7 +52,10 @@ type restartChatRequest struct {
 
 // restartChatServer emulates the DeepSeek failure contract that motivated this regression test: replaying an
 // assistant tool call without provider-private reasoning is rejected unless thinking was disabled on the request.
-// The first turn proposes a governed MCP write; the second closes after the approved result is injected.
+// The first turn performs an inline read, the second proposes a governed MCP write, and the third closes after the
+// approved result is injected. This matches the real failure shape: more than one reasoning-bearing tool turn exists
+// before the process restart, and reopening must preserve both the original user prompt and the injected action result
+// as user messages.
 type restartChatServer struct {
 	server           *httptest.Server
 	expectedThinking string
@@ -59,7 +63,12 @@ type restartChatServer struct {
 	reqs             []restartChatRequest
 }
 
-const restartReasoningContent = "durable provider reasoning: keep this exact string across the restart"
+const (
+	restartReasoningContent      = "durable provider reasoning for the read: keep this exact string across the restart"
+	restartWriteReasoningContent = "durable provider reasoning for the write: keep this exact string across the restart"
+	restartReadToolName          = "mcp_demo_inspect_disk"
+	restartWriteToolName         = "mcp_demo_create_issue"
+)
 
 func newRestartChatServer(t *testing.T, expectedThinking ...string) *restartChatServer {
 	t.Helper()
@@ -91,33 +100,46 @@ func newRestartChatServer(t *testing.T, expectedThinking ...string) *restartChat
 			http.Error(w, fmt.Sprintf("expected thinking %q, got %q", s.expectedThinking, thinkingType), http.StatusBadRequest)
 			return
 		}
-		if turn > 0 && requestHasAssistantToolCall(body) && thinkingType != "disabled" && requestAssistantReasoning(body) != restartReasoningContent {
+		if err := validateRestartRequest(body, turn, thinkingType); err != nil {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusBadRequest)
-			_, _ = io.WriteString(w, `{"error":{"message":"The reasoning_content in the thinking mode must be passed back to the API"}}`)
+			_, _ = fmt.Fprintf(w, `{"error":{"message":%q}}`, err.Error())
 			return
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		if turn == 0 {
+		switch turn {
+		case 0:
 			reasoningField := ""
 			if thinkingType != "disabled" {
 				reasoningField = fmt.Sprintf(`"reasoning_content":%q,`, restartReasoningContent)
 			}
 			_, _ = fmt.Fprintf(w, `{
-				"id":"chatcmpl-proposal","object":"chat.completion","created":1,"model":"agent-model-v1",
+				"id":"chatcmpl-read","object":"chat.completion","created":1,"model":"agent-model-v1",
 				"choices":[{"index":0,"message":{"role":"assistant","content":"",%s"tool_calls":[{
-					"id":"provider-call-1","type":"function","function":{"name":"mcp_demo_create_issue","arguments":"{\"project\":\"OPS\",\"summary\":\"Disk full\"}"}
+					"id":"provider-call-read","type":"function","function":{"name":"mcp_demo_inspect_disk","arguments":"{\"host\":\"db-01\"}"}
 				}]} ,"finish_reason":"tool_calls"}],
 				"usage":{"prompt_tokens":10,"completion_tokens":5,"total_tokens":15}
 			}`, reasoningField)
-			return
+		case 1:
+			reasoningField := ""
+			if thinkingType != "disabled" {
+				reasoningField = fmt.Sprintf(`"reasoning_content":%q,`, restartWriteReasoningContent)
+			}
+			_, _ = fmt.Fprintf(w, `{
+				"id":"chatcmpl-proposal","object":"chat.completion","created":2,"model":"agent-model-v1",
+				"choices":[{"index":0,"message":{"role":"assistant","content":"",%s"tool_calls":[{
+					"id":"provider-call-write","type":"function","function":{"name":"mcp_demo_create_issue","arguments":"{\"project\":\"OPS\",\"summary\":\"Disk full\"}"}
+				}]} ,"finish_reason":"tool_calls"}],
+				"usage":{"prompt_tokens":12,"completion_tokens":6,"total_tokens":18}
+			}`, reasoningField)
+		default:
+			_, _ = io.WriteString(w, `{
+				"id":"chatcmpl-final","object":"chat.completion","created":3,"model":"agent-model-v1",
+				"choices":[{"index":0,"message":{"role":"assistant","content":"Done: created OPS-42."},"finish_reason":"stop"}],
+				"usage":{"prompt_tokens":14,"completion_tokens":4,"total_tokens":18}
+			}`)
 		}
-		_, _ = io.WriteString(w, `{
-			"id":"chatcmpl-final","object":"chat.completion","created":2,"model":"agent-model-v1",
-			"choices":[{"index":0,"message":{"role":"assistant","content":"Done: created OPS-42."},"finish_reason":"stop"}],
-			"usage":{"prompt_tokens":12,"completion_tokens":4,"total_tokens":16}
-		}`)
 	}))
 	t.Cleanup(s.server.Close)
 	return s
@@ -131,33 +153,87 @@ func (s *restartChatServer) requests() []restartChatRequest {
 	return append([]restartChatRequest(nil), s.reqs...)
 }
 
-func requestHasAssistantToolCall(body map[string]any) bool {
-	messages, _ := body["messages"].([]any)
-	for _, raw := range messages {
-		msg, _ := raw.(map[string]any)
-		if msg["role"] != "assistant" {
-			continue
-		}
-		if calls, ok := msg["tool_calls"].([]any); ok && len(calls) > 0 {
-			return true
-		}
-	}
-	return false
+type restartAssistantToolTurn struct {
+	tool             string
+	reasoning        string
+	hasReasoning     bool
+	hasStringContent bool
 }
 
-func requestAssistantReasoning(body map[string]any) string {
+func restartRequestRoles(body map[string]any) []string {
 	messages, _ := body["messages"].([]any)
+	roles := make([]string, 0, len(messages))
+	for _, raw := range messages {
+		msg, _ := raw.(map[string]any)
+		role, _ := msg["role"].(string)
+		roles = append(roles, role)
+	}
+	return roles
+}
+
+func restartAssistantToolTurns(body map[string]any) []restartAssistantToolTurn {
+	messages, _ := body["messages"].([]any)
+	var turns []restartAssistantToolTurn
 	for _, raw := range messages {
 		msg, _ := raw.(map[string]any)
 		if msg["role"] != "assistant" {
 			continue
 		}
-		if calls, ok := msg["tool_calls"].([]any); ok && len(calls) > 0 {
-			reasoning, _ := msg["reasoning_content"].(string)
-			return reasoning
+		calls, ok := msg["tool_calls"].([]any)
+		if !ok || len(calls) == 0 {
+			continue
+		}
+		call, _ := calls[0].(map[string]any)
+		function, _ := call["function"].(map[string]any)
+		tool, _ := function["name"].(string)
+		reasoningRaw, hasReasoning := msg["reasoning_content"]
+		reasoning, _ := reasoningRaw.(string)
+		_, hasStringContent := msg["content"].(string)
+		turns = append(turns, restartAssistantToolTurn{
+			tool: tool, reasoning: reasoning, hasReasoning: hasReasoning, hasStringContent: hasStringContent,
+		})
+	}
+	return turns
+}
+
+func validateRestartRequest(body map[string]any, turn int, thinking string) error {
+	expectedRoles := [][]string{
+		{"system", "user"},
+		{"system", "user", "assistant", "tool"},
+		{"system", "user", "assistant", "tool", "assistant", "tool", "user"},
+	}
+	if turn >= len(expectedRoles) {
+		return fmt.Errorf("unexpected model request %d", turn+1)
+	}
+	roles := restartRequestRoles(body)
+	if !slices.Equal(roles, expectedRoles[turn]) {
+		return fmt.Errorf("invalid message roles on request %d: got %v, want %v", turn+1, roles, expectedRoles[turn])
+	}
+
+	toolTurns := restartAssistantToolTurns(body)
+	expectedTools := []string{restartReadToolName, restartWriteToolName}
+	expectedReasoning := []string{restartReasoningContent, restartWriteReasoningContent}
+	if len(toolTurns) != turn {
+		return fmt.Errorf("invalid assistant tool-turn count on request %d: got %d, want %d", turn+1, len(toolTurns), turn)
+	}
+	for i, toolTurn := range toolTurns {
+		if toolTurn.tool != expectedTools[i] {
+			return fmt.Errorf("invalid tool on assistant turn %d: got %q, want %q", i+1, toolTurn.tool, expectedTools[i])
+		}
+		if !toolTurn.hasStringContent {
+			return fmt.Errorf("assistant tool turn %d must have non-null string content", i+1)
+		}
+		if thinking == "disabled" {
+			if toolTurn.hasReasoning {
+				return fmt.Errorf("assistant tool turn %d unexpectedly replayed reasoning_content with thinking disabled", i+1)
+			}
+			continue
+		}
+		if !toolTurn.hasReasoning || toolTurn.reasoning != expectedReasoning[i] {
+			return fmt.Errorf("The reasoning_content in thinking mode must be passed back for assistant tool turn %d", i+1)
 		}
 	}
-	return ""
+	return nil
 }
 
 type restartMCPCreateIssueIn struct {
@@ -169,10 +245,24 @@ type restartMCPCreateIssueOut struct {
 	Key string `json:"key"`
 }
 
+type restartMCPInspectDiskIn struct {
+	Host string `json:"host" jsonschema:"host name"`
+}
+
+type restartMCPInspectDiskOut struct {
+	UsagePercent int `json:"usage_percent"`
+}
+
 func newRestartMCPServer(t *testing.T) *httptest.Server {
 	t.Helper()
 	handler := mcp.NewStreamableHTTPHandler(func(_ *http.Request) *mcp.Server {
 		srv := mcp.NewServer(&mcp.Implementation{Name: "restart-mcp", Version: "1.0.0"}, nil)
+		mcp.AddTool(srv, &mcp.Tool{
+			Name: "inspect_disk", Description: "Inspect disk usage.",
+			Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
+		}, func(_ context.Context, _ *mcp.CallToolRequest, _ restartMCPInspectDiskIn) (*mcp.CallToolResult, restartMCPInspectDiskOut, error) {
+			return nil, restartMCPInspectDiskOut{UsagePercent: 99}, nil
+		})
 		mcp.AddTool(srv, &mcp.Tool{Name: "create_issue", Description: "Create an issue."},
 			func(_ context.Context, _ *mcp.CallToolRequest, _ restartMCPCreateIssueIn) (*mcp.CallToolResult, restartMCPCreateIssueOut, error) {
 				return nil, restartMCPCreateIssueOut{Key: "OPS-42"}, nil
@@ -211,6 +301,7 @@ mcp:
   - name: demo
     url: https://mcp.example.test/mcp
     approval: manual
+    trust_read_only_hint: true
 limits:
   max_steps: 5
 `, connector, model)
@@ -438,7 +529,7 @@ func TestOpenAIConnectorConfigSurvivesApprovalAndRuntimeRestart(t *testing.T) {
 		approval = approvals[0]
 		return true
 	}, 20*time.Second, 50*time.Millisecond)
-	require.Len(t, provider.requests(), 1)
+	require.Len(t, provider.requests(), 2)
 	require.Empty(t, forbidden.requests())
 
 	// Drift every non-secret source while the run is parked, but rotate the credential that is intentionally live.
@@ -490,14 +581,15 @@ func TestOpenAIConnectorConfigSurvivesApprovalAndRuntimeRestart(t *testing.T) {
 	require.Equal(t, 1, actionExecutor.executeCount())
 
 	reqs := provider.requests()
-	require.Len(t, reqs, 2)
+	require.Len(t, reqs, 3)
 	require.Equal(t, "Bearer initial-secret", reqs[0].Authorization)
-	require.Equal(t, "Bearer rotated-secret", reqs[1].Authorization)
-	for _, req := range reqs {
+	require.Equal(t, "Bearer initial-secret", reqs[1].Authorization)
+	require.Equal(t, "Bearer rotated-secret", reqs[2].Authorization)
+	for turn, req := range reqs {
 		require.Equal(t, "agent-model-v1", req.Body["model"])
 		require.Equal(t, map[string]any{"type": "disabled"}, req.Body["thinking"])
+		require.NoError(t, validateRestartRequest(req.Body, turn, "disabled"))
 	}
-	require.True(t, requestHasAssistantToolCall(reqs[1].Body), "resume must replay the persisted tool-call conversation")
 	require.Empty(t, forbidden.requests(), "neither the default nor drifted endpoint may serve the checkpointed run")
 }
 
@@ -720,7 +812,7 @@ func testOpenAIConnectorConfigSurvivesProcessRestart(t *testing.T, thinking stri
 	}
 
 	runRestartSubprocess(t, "phase1", environment)
-	require.Eventually(t, func() bool { return len(provider.requests()) == 1 }, 5*time.Second, 20*time.Millisecond)
+	require.Eventually(t, func() bool { return len(provider.requests()) == 2 }, 5*time.Second, 20*time.Millisecond)
 	require.Empty(t, forbidden.requests())
 
 	writeRestartProjectFile(t, repoDir, ".env", "DEEPSEEK_API_KEY=rotated-secret\n")
@@ -742,18 +834,14 @@ func testOpenAIConnectorConfigSurvivesProcessRestart(t *testing.T, thinking stri
 	require.Equal(t, 1, result.ExecuteCount)
 
 	reqs := provider.requests()
-	require.Len(t, reqs, 2)
+	require.Len(t, reqs, 3)
 	require.Equal(t, "Bearer initial-secret", reqs[0].Authorization)
-	require.Equal(t, "Bearer rotated-secret", reqs[1].Authorization)
-	for _, req := range reqs {
+	require.Equal(t, "Bearer initial-secret", reqs[1].Authorization)
+	require.Equal(t, "Bearer rotated-secret", reqs[2].Authorization)
+	for turn, req := range reqs {
 		require.Equal(t, "agent-model-v1", req.Body["model"])
 		require.Equal(t, map[string]any{"type": thinking}, req.Body["thinking"])
-	}
-	require.True(t, requestHasAssistantToolCall(reqs[1].Body))
-	if thinking == "enabled" {
-		require.Equal(t, restartReasoningContent, requestAssistantReasoning(reqs[1].Body))
-	} else {
-		require.Empty(t, requestAssistantReasoning(reqs[1].Body))
+		require.NoError(t, validateRestartRequest(req.Body, turn, thinking))
 	}
 	require.Empty(t, forbidden.requests())
 }

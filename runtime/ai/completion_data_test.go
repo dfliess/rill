@@ -59,6 +59,72 @@ func TestCompletionDataRoundTripAndToolCallGrouping(t *testing.T) {
 	require.Equal(t, "provider-call-2", completionMessages[2].Content[0].GetToolResult().Id)
 }
 
+func TestNewCompletionMessagesPreservesPersistedTextRoles(t *testing.T) {
+	// These are the two user turns a durable dynamic-agent resume reconstructs from the catalog: the original prompt
+	// and the approved action's injected result. Mislabeling either as assistant makes thinking providers interpret it
+	// as model output without the required provider metadata.
+	prompt := &Message{
+		ID: "11111111-1111-1111-1111-111111111111", Role: RoleUser, Type: MessageTypeText,
+		ContentType: MessageContentTypeText, Content: "prepare the report",
+	}
+	actionResult := &Message{
+		ID: "22222222-2222-2222-2222-222222222222", Role: RoleUser, Type: MessageTypeText,
+		Tool: InjectedActionResultTool, ContentType: MessageContentTypeText, Content: "approved and executed",
+	}
+	assistantText := &Message{
+		ID: "33333333-3333-3333-3333-333333333333", Role: RoleAssistant, Type: MessageTypeText,
+		ContentType: MessageContentTypeText, Content: "done",
+	}
+	legacyText := &Message{
+		ID: "44444444-4444-4444-4444-444444444444", Type: MessageTypeText,
+		ContentType: MessageContentTypeText, Content: "legacy assistant output",
+	}
+
+	// Mirror the catalog round trip: completion data is independently decoded after the ordinary message columns
+	// (including Role and Tool) have been restored.
+	reloaded := make([]*Message, 0, 4)
+	for _, persisted := range []*Message{prompt, actionResult, assistantText, legacyText} {
+		completionData, err := persisted.marshalCompletionData()
+		require.NoError(t, err)
+		msg := &Message{
+			ID: persisted.ID, Role: persisted.Role, Type: persisted.Type, Tool: persisted.Tool,
+			ContentType: persisted.ContentType, Content: persisted.Content,
+		}
+		require.NoError(t, msg.loadCompletionData(completionData))
+		reloaded = append(reloaded, msg)
+	}
+
+	s := &Session{BaseSession: &BaseSession{messages: reloaded}}
+	messages := s.NewCompletionMessages(reloaded)
+	require.Len(t, messages, 4)
+	require.Equal(t, "user", messages[0].Role)
+	require.Equal(t, "user", messages[1].Role)
+	require.Equal(t, "assistant", messages[2].Role)
+	require.Equal(t, "assistant", messages[3].Role, "empty legacy roles retain the historical assistant fallback")
+}
+
+func TestNewCompletionMessagePreservesCallAndResultRoles(t *testing.T) {
+	call := &Message{
+		ID: "11111111-1111-1111-1111-111111111111", Role: RoleAssistant, Type: MessageTypeCall,
+		Tool: "lookup", ContentType: MessageContentTypeJSON, Content: `{}`,
+	}
+	result := &Message{
+		ID: "22222222-2222-2222-2222-222222222222", ParentID: call.ID, Role: RoleAssistant,
+		Type: MessageTypeResult, Tool: "lookup", ContentType: MessageContentTypeJSON, Content: `{"ok":true}`,
+	}
+	s := &Session{BaseSession: &BaseSession{messages: []*Message{call, result}}}
+
+	callMessage, err := s.NewCompletionMessage(call)
+	require.NoError(t, err)
+	require.Equal(t, "assistant", callMessage.Role)
+	require.NotNil(t, callMessage.Content[0].GetToolCall())
+
+	resultMessage, err := s.NewCompletionMessage(result)
+	require.NoError(t, err)
+	require.Equal(t, "tool", resultMessage.Role)
+	require.NotNil(t, resultMessage.Content[0].GetToolResult())
+}
+
 func TestMaybeTruncateMessagesDropsPartialParallelToolBatch(t *testing.T) {
 	messages := make([]*aiv1.CompletionMessage, 105)
 	for i := range messages {
