@@ -523,7 +523,7 @@ func (c *catalogStore) UpdateAISession(ctx context.Context, s *drivers.AISession
 
 func (c *catalogStore) FindAIMessages(ctx context.Context, sessionID string) ([]*drivers.AIMessage, error) {
 	rows, err := c.db.QueryxContext(ctx, `
-		SELECT id, parent_id, session_id, created_on, updated_on, "index", role, type, tool, content_type, content
+		SELECT id, parent_id, session_id, created_on, updated_on, "index", role, type, tool, content_type, content, completion_data
 		FROM ai_messages
 		WHERE session_id = ?
 		ORDER BY "index" ASC
@@ -536,7 +536,7 @@ func (c *catalogStore) FindAIMessages(ctx context.Context, sessionID string) ([]
 	var result []*drivers.AIMessage
 	for rows.Next() {
 		var m drivers.AIMessage
-		err := rows.Scan(&m.ID, &m.ParentID, &m.SessionID, &m.CreatedOn, &m.UpdatedOn, &m.Index, &m.Role, &m.Type, &m.Tool, &m.ContentType, &m.Content)
+		err := rows.Scan(&m.ID, &m.ParentID, &m.SessionID, &m.CreatedOn, &m.UpdatedOn, &m.Index, &m.Role, &m.Type, &m.Tool, &m.ContentType, &m.Content, &m.CompletionData)
 		if err != nil {
 			return nil, err
 		}
@@ -550,9 +550,9 @@ func (c *catalogStore) FindAIMessages(ctx context.Context, sessionID string) ([]
 
 func (c *catalogStore) InsertAIMessage(ctx context.Context, m *drivers.AIMessage) error {
 	_, err := c.db.ExecContext(ctx, `
-		INSERT INTO ai_messages (id, parent_id, session_id, created_on, updated_on, "index", role, type, tool, content_type, content)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-	`, m.ID, m.ParentID, m.SessionID, m.CreatedOn, m.UpdatedOn, m.Index, m.Role, m.Type, m.Tool, m.ContentType, m.Content)
+		INSERT INTO ai_messages (id, parent_id, session_id, created_on, updated_on, "index", role, type, tool, content_type, content, completion_data)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+	`, m.ID, m.ParentID, m.SessionID, m.CreatedOn, m.UpdatedOn, m.Index, m.Role, m.Type, m.Tool, m.ContentType, m.Content, m.CompletionData)
 	if err != nil {
 		return err
 	}

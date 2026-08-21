@@ -25,6 +25,7 @@ const (
 	defaultTemperature             = 0.1
 	structuredOutputModeJSONSchema = "json_schema"
 	structuredOutputModeJSONObject = "json_object"
+	providerDataReasoningContent   = "reasoning_content"
 )
 
 // reservedExtraBodyFields are owned by Rill or would change assumptions made
@@ -472,7 +473,7 @@ func (o *openaiHandle) Complete(ctx context.Context, opts *drivers.CompleteOptio
 	return result, nil
 }
 
-// messageToOpenAI converts a single Rill CompletionMessage to one or more OpenAI ChatCompletionMessages.
+// messageToOpenAI converts one Rill CompletionMessage to one or more OpenAI ChatCompletionMessages.
 //
 // This handles the asymmetric nature of OpenAI's tool calling pattern:
 // - Tool calls: Multiple calls are grouped in ONE assistant message (how OpenAI sends them)
@@ -516,6 +517,15 @@ func messageToOpenAI(msg *aiv1.CompletionMessage) ([]openai.ChatCompletionMessag
 			}
 			if len(toolCalls) > 0 {
 				assistantMsg.ToolCalls = toolCalls
+			}
+			reasoningContent, ok, err := reasoningContentFromProviderData(msg.ProviderData)
+			if err != nil {
+				return nil, err
+			}
+			if ok {
+				assistantMsg.SetExtraFields(map[string]any{
+					providerDataReasoningContent: reasoningContent,
+				})
 			}
 			result = append(result, openai.ChatCompletionMessageParamUnion{
 				OfAssistant: &assistantMsg,
@@ -567,10 +577,62 @@ func messageFromOpenAI(message openai.ChatCompletionMessage) (*aiv1.CompletionMe
 		})
 	}
 
+	var providerData *structpb.Struct
+	// DeepSeek requires reasoning_content to be replayed with the assistant's
+	// tool calls. It explicitly ignores reasoning_content for turns without tool
+	// calls, so avoid persisting provider-private reasoning when it is not needed.
+	if len(message.ToolCalls) > 0 {
+		reasoningContent, ok, err := reasoningContentFromOpenAI(message)
+		if err != nil {
+			return nil, err
+		}
+		if ok {
+			providerData = &structpb.Struct{Fields: map[string]*structpb.Value{
+				providerDataReasoningContent: structpb.NewStringValue(reasoningContent),
+			}}
+		}
+	}
+
 	return &aiv1.CompletionMessage{
-		Role:    "assistant",
-		Content: contentBlocks,
+		Role:         "assistant",
+		Content:      contentBlocks,
+		ProviderData: providerData,
 	}, nil
+}
+
+func reasoningContentFromProviderData(providerData *structpb.Struct) (string, bool, error) {
+	if providerData == nil {
+		return "", false, nil
+	}
+
+	value, ok := providerData.Fields[providerDataReasoningContent]
+	if !ok || value == nil {
+		return "", false, nil
+	}
+
+	reasoningContent, ok := value.Kind.(*structpb.Value_StringValue)
+	if !ok {
+		return "", false, fmt.Errorf("provider_data.%s must be a string", providerDataReasoningContent)
+	}
+	return reasoningContent.StringValue, true, nil
+}
+
+func reasoningContentFromOpenAI(message openai.ChatCompletionMessage) (string, bool, error) {
+	field, ok := message.JSON.ExtraFields[providerDataReasoningContent]
+	if !ok {
+		return "", false, nil
+	}
+
+	raw := field.Raw()
+	if raw == "" || raw == "null" {
+		return "", false, nil
+	}
+
+	var reasoningContent string
+	if err := json.Unmarshal([]byte(raw), &reasoningContent); err != nil {
+		return "", false, fmt.Errorf("response field %s must be a JSON string: %w", providerDataReasoningContent, err)
+	}
+	return reasoningContent, true, nil
 }
 
 func toolCallToOpenAI(toolCall *aiv1.ToolCall) (openai.ChatCompletionMessageToolCallUnionParam, error) {

@@ -53,14 +53,20 @@ type restartChatRequest struct {
 // assistant tool call without provider-private reasoning is rejected unless thinking was disabled on the request.
 // The first turn proposes a governed MCP write; the second closes after the approved result is injected.
 type restartChatServer struct {
-	server *httptest.Server
-	mu     sync.Mutex
-	reqs   []restartChatRequest
+	server           *httptest.Server
+	expectedThinking string
+	mu               sync.Mutex
+	reqs             []restartChatRequest
 }
 
-func newRestartChatServer(t *testing.T) *restartChatServer {
+const restartReasoningContent = "durable provider reasoning: keep this exact string across the restart"
+
+func newRestartChatServer(t *testing.T, expectedThinking ...string) *restartChatServer {
 	t.Helper()
 	s := &restartChatServer{}
+	if len(expectedThinking) > 0 {
+		s.expectedThinking = expectedThinking[0]
+	}
 	s.server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		if req.URL.Path != "/v1/chat/completions" {
 			http.Error(w, "unexpected path "+req.URL.Path, http.StatusNotFound)
@@ -77,11 +83,15 @@ func newRestartChatServer(t *testing.T) *restartChatServer {
 		s.reqs = append(s.reqs, restartChatRequest{Authorization: req.Header.Get("Authorization"), Body: body})
 		s.mu.Unlock()
 
-		thinkingDisabled := false
+		thinkingType := ""
 		if thinking, ok := body["thinking"].(map[string]any); ok {
-			thinkingDisabled = thinking["type"] == "disabled"
+			thinkingType, _ = thinking["type"].(string)
 		}
-		if turn > 0 && requestHasAssistantToolCall(body) && !thinkingDisabled {
+		if s.expectedThinking != "" && thinkingType != s.expectedThinking {
+			http.Error(w, fmt.Sprintf("expected thinking %q, got %q", s.expectedThinking, thinkingType), http.StatusBadRequest)
+			return
+		}
+		if turn > 0 && requestHasAssistantToolCall(body) && thinkingType != "disabled" && requestAssistantReasoning(body) != restartReasoningContent {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = io.WriteString(w, `{"error":{"message":"The reasoning_content in the thinking mode must be passed back to the API"}}`)
@@ -90,13 +100,17 @@ func newRestartChatServer(t *testing.T) *restartChatServer {
 
 		w.Header().Set("Content-Type", "application/json")
 		if turn == 0 {
-			_, _ = io.WriteString(w, `{
+			reasoningField := ""
+			if thinkingType != "disabled" {
+				reasoningField = fmt.Sprintf(`"reasoning_content":%q,`, restartReasoningContent)
+			}
+			_, _ = fmt.Fprintf(w, `{
 				"id":"chatcmpl-proposal","object":"chat.completion","created":1,"model":"agent-model-v1",
-				"choices":[{"index":0,"message":{"role":"assistant","content":"","tool_calls":[{
+				"choices":[{"index":0,"message":{"role":"assistant","content":"",%s"tool_calls":[{
 					"id":"provider-call-1","type":"function","function":{"name":"mcp_demo_create_issue","arguments":"{\"project\":\"OPS\",\"summary\":\"Disk full\"}"}
 				}]} ,"finish_reason":"tool_calls"}],
 				"usage":{"prompt_tokens":10,"completion_tokens":5,"total_tokens":15}
-			}`)
+			}`, reasoningField)
 			return
 		}
 		_, _ = io.WriteString(w, `{
@@ -129,6 +143,21 @@ func requestHasAssistantToolCall(body map[string]any) bool {
 		}
 	}
 	return false
+}
+
+func requestAssistantReasoning(body map[string]any) string {
+	messages, _ := body["messages"].([]any)
+	for _, raw := range messages {
+		msg, _ := raw.(map[string]any)
+		if msg["role"] != "assistant" {
+			continue
+		}
+		if calls, ok := msg["tool_calls"].([]any); ok && len(calls) > 0 {
+			reasoning, _ := msg["reasoning_content"].(string)
+			return reasoning
+		}
+	}
+	return ""
 }
 
 type restartMCPCreateIssueIn struct {
@@ -637,8 +666,16 @@ func runRestartSubprocess(t *testing.T, phase string, environment []string) {
 // guard against the original class of bug: any future cache or provider state held only in package globals is gone
 // before the approval is signed, while DBOS, the agent snapshot and the catalog conversation remain.
 func TestOpenAIConnectorConfigSurvivesProcessRestart(t *testing.T) {
+	for _, thinking := range []string{"disabled", "enabled"} {
+		t.Run(thinking, func(t *testing.T) {
+			testOpenAIConnectorConfigSurvivesProcessRestart(t, thinking)
+		})
+	}
+}
+
+func testOpenAIConnectorConfigSurvivesProcessRestart(t *testing.T, thinking string) {
 	dsn := requireRestartPostgres(t)
-	provider := newRestartChatServer(t)
+	provider := newRestartChatServer(t, thinking)
 	forbidden := newRestartChatServer(t)
 	mcpServer := newRestartMCPServer(t)
 
@@ -647,7 +684,7 @@ func TestOpenAIConnectorConfigSurvivesProcessRestart(t *testing.T) {
 	require.NoError(t, os.MkdirAll(repoDir, 0o755))
 	writeRestartProjectFile(t, repoDir, "rill.yaml", "")
 	writeRestartProjectFile(t, repoDir, ".env", "DEEPSEEK_API_KEY=initial-secret\n")
-	writeRestartProjectFile(t, repoDir, "connectors/deepseek.yaml", restartTemplatedConnectorYAML(provider.url(), "connector-model-v1", "disabled"))
+	writeRestartProjectFile(t, repoDir, "connectors/deepseek.yaml", restartTemplatedConnectorYAML(provider.url(), "connector-model-v1", thinking))
 	writeRestartProjectFile(t, repoDir, "connectors/default_ai.yaml", restartTemplatedConnectorYAML(forbidden.url(), "default-model", "enabled"))
 	writeRestartProjectFile(t, repoDir, "triage.yaml", restartAgentYAML("deepseek", "agent-model-v1"))
 
@@ -687,7 +724,11 @@ func TestOpenAIConnectorConfigSurvivesProcessRestart(t *testing.T) {
 	require.Empty(t, forbidden.requests())
 
 	writeRestartProjectFile(t, repoDir, ".env", "DEEPSEEK_API_KEY=rotated-secret\n")
-	writeRestartProjectFile(t, repoDir, "connectors/deepseek.yaml", restartTemplatedConnectorYAML(forbidden.url(), "connector-model-v2", "enabled"))
+	driftThinking := "disabled"
+	if thinking == "disabled" {
+		driftThinking = "enabled"
+	}
+	writeRestartProjectFile(t, repoDir, "connectors/deepseek.yaml", restartTemplatedConnectorYAML(forbidden.url(), "connector-model-v2", driftThinking))
 	writeRestartProjectFile(t, repoDir, "triage.yaml", restartAgentYAML("default_ai", "agent-model-v2"))
 	runRestartSubprocess(t, "phase2", environment)
 
@@ -706,8 +747,13 @@ func TestOpenAIConnectorConfigSurvivesProcessRestart(t *testing.T) {
 	require.Equal(t, "Bearer rotated-secret", reqs[1].Authorization)
 	for _, req := range reqs {
 		require.Equal(t, "agent-model-v1", req.Body["model"])
-		require.Equal(t, map[string]any{"type": "disabled"}, req.Body["thinking"])
+		require.Equal(t, map[string]any{"type": thinking}, req.Body["thinking"])
 	}
 	require.True(t, requestHasAssistantToolCall(reqs[1].Body))
+	if thinking == "enabled" {
+		require.Equal(t, restartReasoningContent, requestAssistantReasoning(reqs[1].Body))
+	} else {
+		require.Empty(t, requestAssistantReasoning(reqs[1].Body))
+	}
 	require.Empty(t, forbidden.requests())
 }

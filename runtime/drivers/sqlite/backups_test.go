@@ -66,10 +66,11 @@ func TestBackup(t *testing.T) {
 		ID: "a",
 	}))
 	require.NoError(t, catalog.InsertAIMessage(t.Context(), &drivers.AIMessage{
-		ID:          "a",
-		SessionID:   "a",
-		ContentType: "text",
-		Content:     "small message",
+		ID:             "a",
+		SessionID:      "a",
+		ContentType:    "text",
+		Content:        "small message",
+		CompletionData: `{"provider_data":{"reasoning_content":"sensitive"}}`,
 	}))
 	require.NoError(t, catalog.InsertAIMessage(t.Context(), &drivers.AIMessage{
 		ID:          "b",
@@ -107,6 +108,8 @@ func TestBackup(t *testing.T) {
 	require.Equal(t, "small message", msgs[0].Content)      // "a": unchanged
 	require.Equal(t, "<truncated>", msgs[1].Content)        // "b": text truncated
 	require.Equal(t, `{"truncated":true}`, msgs[2].Content) // "c": JSON truncated
+	_, err = duckdb.ExecContext(t.Context(), fmt.Sprintf(`SELECT completion_data FROM read_parquet('%s')`, parquetPath))
+	require.Error(t, err, "opaque provider data must not be exported to analytics Parquet")
 
 	// Check it created the expected files
 	expected := []string{

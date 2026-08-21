@@ -47,4 +47,7 @@ message CompletionMessage {
   string role = 1;
   string data = 2; // Deprecated in favor of content
   repeated ContentBlock content = 3;
+  // Opaque provider-specific state that must travel with this message when replaying it to the same provider.
+  // Callers must not interpret or copy it to a message created by another provider.
+  google.protobuf.Struct provider_data = 4;
 }

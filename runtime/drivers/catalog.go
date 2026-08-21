@@ -137,4 +137,7 @@ type AIMessage struct {
 	Tool        string    `db:"tool"`
 	ContentType string    `db:"content_type"`
 	Content     string    `db:"content"`
+	// CompletionData is opaque runtime metadata needed to reconstruct the original low-level completion message.
+	// It is persisted for provider protocol correctness but is not user-visible message content.
+	CompletionData string `db:"completion_data"`
 }

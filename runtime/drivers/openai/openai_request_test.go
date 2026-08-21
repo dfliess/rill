@@ -12,6 +12,7 @@ import (
 	aiv1 "github.com/rilldata/rill/proto/gen/rill/ai/v1"
 	"github.com/rilldata/rill/runtime/drivers"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 func TestCompleteAppliesConnectorRequestBehavior(t *testing.T) {
@@ -88,12 +89,15 @@ func TestCompleteReportsReasoningTokensSeparately(t *testing.T) {
 	require.Equal(t, 5, res.ReasoningTokens)
 }
 
-func TestLegacyEnvironmentDoesNotAffectRequestsOrReplayReasoning(t *testing.T) {
+func TestCompleteReplaysReasoningContentFromMessageState(t *testing.T) {
 	t.Setenv("RILL_OPENAI_STRUCTURED_OUTPUT_FALLBACK", structuredOutputModeJSONObject)
+	reasoningContent := "provider-private-thinking\nwith \"quotes\" and unicode →"
+	reasoningJSON, err := json.Marshal(reasoningContent)
+	require.NoError(t, err)
 	fake := newFakeChatCompletionsServer(t, []string{
 		`{
 			"id":"chatcmpl-tool","object":"chat.completion","created":1,"model":"test-model",
-			"choices":[{"index":0,"message":{"role":"assistant","content":"","reasoning_content":"provider-private-thinking","tool_calls":[{"id":"call_1","type":"function","function":{"name":"do_work","arguments":"{}"}}]},"finish_reason":"tool_calls"}],
+			"choices":[{"index":0,"message":{"role":"assistant","content":"","reasoning_content":` + string(reasoningJSON) + `,"tool_calls":[{"id":"call_1","type":"function","function":{"name":"do_work","arguments":"{}"}}]},"finish_reason":"tool_calls"}],
 			"usage":{"prompt_tokens":1,"completion_tokens":1,"total_tokens":2}
 		}`,
 		completionResponse("done"),
@@ -108,6 +112,8 @@ func TestLegacyEnvironmentDoesNotAffectRequestsOrReplayReasoning(t *testing.T) {
 		OutputSchema: schema,
 	})
 	require.NoError(t, err)
+	require.NotNil(t, first.Message.ProviderData)
+	require.Equal(t, reasoningContent, first.Message.ProviderData.Fields[providerDataReasoningContent].GetStringValue())
 
 	_, err = ai.Complete(t.Context(), &drivers.CompleteOptions{
 		Messages: []*aiv1.CompletionMessage{
@@ -126,12 +132,114 @@ func TestLegacyEnvironmentDoesNotAffectRequestsOrReplayReasoning(t *testing.T) {
 	require.Equal(t, "json_schema", requireJSONObject(t, firstBody["response_format"])["type"])
 
 	secondBody := fake.request(t, 1)
-	require.False(t, containsJSONKey(secondBody, "reasoning_content"))
 	messages := requireJSONArray(t, secondBody["messages"])
 	require.Len(t, messages, 2)
 	assistant := requireJSONObject(t, messages[0])
 	require.Equal(t, "assistant", assistant["role"])
-	require.NotContains(t, assistant, "reasoning_content")
+	require.Equal(t, "", assistant["content"], "tool-calling assistant content must be non-null")
+	require.Equal(t, reasoningContent, assistant[providerDataReasoningContent])
+}
+
+func TestCompleteOmitsReasoningContentWhenItDoesNotApply(t *testing.T) {
+	fake := newFakeChatCompletionsServer(t, []string{
+		`{
+			"id":"chatcmpl-no-tool","object":"chat.completion","created":1,"model":"test-model",
+			"choices":[{"index":0,"message":{"role":"assistant","content":"done","reasoning_content":"not-needed-without-tool-calls"},"finish_reason":"stop"}],
+			"usage":{"prompt_tokens":1,"completion_tokens":1,"total_tokens":2}
+		}`,
+		completionResponse("done again"),
+	})
+	defer fake.Close()
+
+	ai := openTestAI(t, fake.URL, nil)
+	first, err := ai.Complete(t.Context(), &drivers.CompleteOptions{
+		Messages: []*aiv1.CompletionMessage{textMessage("user", "hello")},
+	})
+	require.NoError(t, err)
+	require.Nil(t, first.Message.ProviderData)
+
+	_, err = ai.Complete(t.Context(), &drivers.CompleteOptions{
+		Messages: []*aiv1.CompletionMessage{first.Message},
+	})
+	require.NoError(t, err)
+	require.False(t, containsJSONKey(fake.request(t, 1), providerDataReasoningContent))
+}
+
+func TestCompleteReplaysReasoningWithMultipleToolCalls(t *testing.T) {
+	fake := newFakeChatCompletionsServer(t, []string{
+		`{
+			"id":"chatcmpl-tools","object":"chat.completion","created":1,"model":"test-model",
+			"choices":[{"index":0,"message":{"role":"assistant","content":null,"reasoning_content":"plan both calls","tool_calls":[
+				{"id":"call_1","type":"function","function":{"name":"first","arguments":"{\"value\":1}"}},
+				{"id":"call_2","type":"function","function":{"name":"second","arguments":"{\"value\":2}"}}
+			]},"finish_reason":"tool_calls"}],
+			"usage":{"prompt_tokens":1,"completion_tokens":1,"total_tokens":2}
+		}`,
+		completionResponse("done"),
+	})
+	defer fake.Close()
+
+	ai := openTestAI(t, fake.URL, nil)
+	first, err := ai.Complete(t.Context(), &drivers.CompleteOptions{
+		Messages: []*aiv1.CompletionMessage{textMessage("user", "use both tools")},
+		Tools: []*aiv1.Tool{
+			{Name: "first", InputSchema: `{"type":"object"}`},
+			{Name: "second", InputSchema: `{"type":"object"}`},
+		},
+	})
+	require.NoError(t, err)
+	require.Len(t, first.Message.Content, 2)
+
+	_, err = ai.Complete(t.Context(), &drivers.CompleteOptions{
+		Messages: []*aiv1.CompletionMessage{
+			first.Message,
+			{
+				Role: "tool",
+				Content: []*aiv1.ContentBlock{
+					{BlockType: &aiv1.ContentBlock_ToolResult{ToolResult: &aiv1.ToolResult{Id: "call_1", Content: "one"}}},
+					{BlockType: &aiv1.ContentBlock_ToolResult{ToolResult: &aiv1.ToolResult{Id: "call_2", Content: "two"}}},
+				},
+			},
+		},
+	})
+	require.NoError(t, err)
+
+	messages := requireJSONArray(t, fake.request(t, 1)["messages"])
+	require.Len(t, messages, 3)
+	assistant := requireJSONObject(t, messages[0])
+	require.Equal(t, "", assistant["content"], "tool-calling assistant content must be non-null")
+	require.Equal(t, "plan both calls", assistant[providerDataReasoningContent])
+	require.Len(t, requireJSONArray(t, assistant["tool_calls"]), 2)
+	require.Equal(t, "call_1", requireJSONObject(t, messages[1])["tool_call_id"])
+	require.Equal(t, "call_2", requireJSONObject(t, messages[2])["tool_call_id"])
+}
+
+func TestCompleteAcceptsStringAndJSONObjectResponses(t *testing.T) {
+	for _, content := range []string{"plain response", `{"answer":"ok"}`} {
+		t.Run(content, func(t *testing.T) {
+			fake := newFakeChatCompletionsServer(t, []string{completionResponse(content)})
+			defer fake.Close()
+
+			ai := openTestAI(t, fake.URL, nil)
+			res, err := ai.Complete(t.Context(), &drivers.CompleteOptions{
+				Messages: []*aiv1.CompletionMessage{textMessage("user", "answer")},
+			})
+			require.NoError(t, err)
+			require.Equal(t, content, res.Message.Content[0].GetText())
+			require.Nil(t, res.Message.ProviderData)
+		})
+	}
+}
+
+func TestMessageToOpenAIRejectsNonStringReasoningContent(t *testing.T) {
+	_, err := messageToOpenAI(&aiv1.CompletionMessage{
+		Role:    "assistant",
+		Content: textMessage("assistant", "tool call").Content,
+		ProviderData: &structpb.Struct{Fields: map[string]*structpb.Value{
+			providerDataReasoningContent: structpb.NewBoolValue(true),
+		}},
+	})
+	require.EqualError(t, err, "provider_data.reasoning_content must be a string")
 }
 
 func TestOpenValidatesProviderRequestBehavior(t *testing.T) {

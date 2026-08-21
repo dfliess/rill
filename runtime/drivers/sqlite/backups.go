@@ -48,7 +48,9 @@ var (
 		// Table `ai_sessions`
 		"ai_sessions": "SELECT * FROM ai_sessions",
 		// Table `ai_messages`
-		"ai_messages": "SELECT * FROM ai_messages",
+		// Exclude opaque provider state (which may contain hidden reasoning) from the analytics export. It remains in
+		// snapshot.db because that file is the durable catalog backup; it is not an analytics dimension.
+		"ai_messages": "SELECT * EXCLUDE (completion_data) FROM ai_messages",
 	}
 )
 

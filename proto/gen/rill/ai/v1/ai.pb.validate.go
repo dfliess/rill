@@ -667,6 +667,35 @@ func (m *CompletionMessage) validate(all bool) error {
 
 	}
 
+	if all {
+		switch v := interface{}(m.GetProviderData()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, CompletionMessageValidationError{
+					field:  "ProviderData",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, CompletionMessageValidationError{
+					field:  "ProviderData",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetProviderData()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return CompletionMessageValidationError{
+				field:  "ProviderData",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
 	if len(errors) > 0 {
 		return CompletionMessageMultiError(errors)
 	}

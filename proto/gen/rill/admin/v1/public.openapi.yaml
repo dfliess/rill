@@ -443,6 +443,11 @@ components:
                 data:
                     title: Deprecated in favor of content
                     type: string
+                providerData:
+                    description: |-
+                        Opaque provider-specific state that must travel with this message when replaying it to the same provider.
+                        Callers must not interpret or copy it to a message created by another provider.
+                    type: object
                 role:
                     type: string
             title: Completion message for AI API calls

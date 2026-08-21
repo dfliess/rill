@@ -5423,6 +5423,11 @@ definitions:
         items:
           type: object
           $ref: '#/definitions/v1ContentBlock'
+      providerData:
+        type: object
+        description: |-
+          Opaque provider-specific state that must travel with this message when replaying it to the same provider.
+          Callers must not interpret or copy it to a message created by another provider.
     title: Completion message for AI API calls
   v1Condition:
     type: object

@@ -90,8 +90,9 @@ func (s *Server) Complete(ctx context.Context, req *adminv1.CompleteRequest) (*a
 // This function assumes the message has a non-empty data field and empty content
 func convertDataToContent(msg *aiv1.CompletionMessage) *aiv1.CompletionMessage {
 	return &aiv1.CompletionMessage{
-		Role: msg.Role,
-		Data: msg.Data, // Keep original for compatibility
+		Role:         msg.Role,
+		Data:         msg.Data, // Keep original for compatibility
+		ProviderData: msg.ProviderData,
 		Content: []*aiv1.ContentBlock{
 			{
 				BlockType: &aiv1.ContentBlock_Text{
@@ -115,8 +116,9 @@ func convertContentToData(msg *aiv1.CompletionMessage) *aiv1.CompletionMessage {
 
 	// Create new message with both content (new format) and data (old format)
 	return &aiv1.CompletionMessage{
-		Role:    msg.Role,
-		Data:    strings.Join(textParts, ""), // Populate deprecated field for old runtimes
-		Content: msg.Content,                 // Keep new format for modern runtimes
+		Role:         msg.Role,
+		Data:         strings.Join(textParts, ""), // Populate deprecated field for old runtimes
+		Content:      msg.Content,                 // Keep new format for modern runtimes
+		ProviderData: msg.ProviderData,
 	}
 }

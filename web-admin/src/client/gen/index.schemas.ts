@@ -330,10 +330,19 @@ export interface V1CompleteResponse {
   provider?: string;
 }
 
+/**
+ * Opaque provider-specific state that must travel with this message when replaying it to the same provider.
+Callers must not interpret or copy it to a message created by another provider.
+ */
+export type V1CompletionMessageProviderData = { [key: string]: unknown };
+
 export interface V1CompletionMessage {
   role?: string;
   data?: string;
   content?: V1ContentBlock[];
+  /** Opaque provider-specific state that must travel with this message when replaying it to the same provider.
+Callers must not interpret or copy it to a message created by another provider. */
+  providerData?: V1CompletionMessageProviderData;
 }
 
 export interface V1Condition {

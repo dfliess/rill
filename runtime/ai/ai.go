@@ -137,7 +137,7 @@ func (r *Runner) Session(ctx context.Context, opts *SessionOptions) (res *Sessio
 			return nil, fmt.Errorf("failed to find messages for session %q: %w", opts.SessionID, err)
 		}
 		for _, m := range ms {
-			messages = append(messages, &Message{
+			msg := &Message{
 				ID:          m.ID,
 				ParentID:    m.ParentID,
 				SessionID:   m.SessionID,
@@ -148,7 +148,11 @@ func (r *Runner) Session(ctx context.Context, opts *SessionOptions) (res *Sessio
 				Tool:        m.Tool,
 				ContentType: MessageContentType(m.ContentType),
 				Content:     m.Content,
-			})
+			}
+			if err := msg.loadCompletionData(m.CompletionData); err != nil {
+				return nil, fmt.Errorf("failed to load completion data for message %q: %w", m.ID, err)
+			}
+			messages = append(messages, msg)
 			// only load messages up to and including that retrieveUntilMessageID; messages are ordered by "Index" ascending.
 			if m.ID == retrieveUntilMessageID {
 				break
@@ -273,18 +277,23 @@ func (r *Runner) ForkSession(ctx context.Context, opts *SessionOptions) (string,
 		if !ok {
 			return "", fmt.Errorf("failed to clone message %q: parent message %q not found", m.ID, m.ParentID)
 		}
+		completionData, err := m.marshalCompletionData()
+		if err != nil {
+			return "", fmt.Errorf("failed to clone completion data for message %q: %w", m.ID, err)
+		}
 		newMsg := &drivers.AIMessage{
-			ID:          id,
-			ParentID:    pid,
-			SessionID:   forked.ID,
-			CreatedOn:   time.Now(),
-			UpdatedOn:   time.Now(),
-			Index:       m.Index,
-			Role:        string(m.Role),
-			Type:        string(m.Type),
-			Tool:        m.Tool,
-			ContentType: string(m.ContentType),
-			Content:     m.Content,
+			ID:             id,
+			ParentID:       pid,
+			SessionID:      forked.ID,
+			CreatedOn:      time.Now(),
+			UpdatedOn:      time.Now(),
+			Index:          m.Index,
+			Role:           string(m.Role),
+			Type:           string(m.Type),
+			Tool:           m.Tool,
+			ContentType:    string(m.ContentType),
+			Content:        m.Content,
+			CompletionData: completionData,
 		}
 		err = catalog.InsertAIMessage(ctx, newMsg)
 		if err != nil {
@@ -516,8 +525,49 @@ type Message struct {
 	ContentType MessageContentType `json:"content_type" yaml:"content_type"`
 	// Content is the content of the message.
 	Content string `json:"content" yaml:"content"`
+	// ProviderData is opaque metadata returned by the model provider and required to replay this low-level completion
+	// message. CompletionID groups blocks that originated in the same provider response; CompletionToolCallID preserves
+	// the provider's call/result correlation. All three fields stay out of user-facing JSON, YAML, chat APIs and logs.
+	ProviderData         *structpb.Struct `json:"-" yaml:"-"`
+	CompletionID         string           `json:"-" yaml:"-"`
+	CompletionToolCallID string           `json:"-" yaml:"-"`
 	// dirty is true if the Message has not yet been persisted.
 	dirty bool
+}
+
+type persistedCompletionData struct {
+	ProviderData *structpb.Struct `json:"provider_data,omitempty"`
+	CompletionID string           `json:"completion_id,omitempty"`
+	ToolCallID   string           `json:"tool_call_id,omitempty"`
+}
+
+func (m *Message) marshalCompletionData() (string, error) {
+	if m.ProviderData == nil && m.CompletionID == "" && m.CompletionToolCallID == "" {
+		return "", nil
+	}
+	b, err := json.Marshal(&persistedCompletionData{
+		ProviderData: m.ProviderData,
+		CompletionID: m.CompletionID,
+		ToolCallID:   m.CompletionToolCallID,
+	})
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
+}
+
+func (m *Message) loadCompletionData(data string) error {
+	if data == "" {
+		return nil
+	}
+	var state persistedCompletionData
+	if err := json.Unmarshal([]byte(data), &state); err != nil {
+		return err
+	}
+	m.ProviderData = state.ProviderData
+	m.CompletionID = state.CompletionID
+	m.CompletionToolCallID = state.ToolCallID
+	return nil
 }
 
 // sessionCtxKey is used for saving a session in a context.
@@ -618,18 +668,23 @@ func (s *BaseSession) Flush(ctx context.Context) error {
 			if !msg.dirty {
 				continue
 			}
+			completionData, err := msg.marshalCompletionData()
+			if err != nil {
+				return fmt.Errorf("failed to persist completion data for message %q: %w", msg.ID, err)
+			}
 			err = catalog.InsertAIMessage(ctx, &drivers.AIMessage{
-				ID:          msg.ID,
-				ParentID:    msg.ParentID,
-				SessionID:   msg.SessionID,
-				CreatedOn:   msg.Time,
-				UpdatedOn:   msg.Time,
-				Index:       msg.Index,
-				Role:        string(msg.Role),
-				Type:        string(msg.Type),
-				Tool:        msg.Tool,
-				ContentType: string(msg.ContentType),
-				Content:     msg.Content,
+				ID:             msg.ID,
+				ParentID:       msg.ParentID,
+				SessionID:      msg.SessionID,
+				CreatedOn:      msg.Time,
+				UpdatedOn:      msg.Time,
+				Index:          msg.Index,
+				Role:           string(msg.Role),
+				Type:           string(msg.Type),
+				Tool:           msg.Tool,
+				ContentType:    string(msg.ContentType),
+				Content:        msg.Content,
+				CompletionData: completionData,
 			})
 			if err != nil {
 				return err
@@ -945,27 +1000,33 @@ type Session struct {
 
 // AddMessageOptions provides options for Session.AddMessage.
 type AddMessageOptions struct {
-	Role        Role
-	Type        MessageType
-	Tool        string
-	ContentType MessageContentType
-	Content     string
+	Role                 Role
+	Type                 MessageType
+	Tool                 string
+	ContentType          MessageContentType
+	Content              string
+	ProviderData         *structpb.Struct
+	CompletionID         string
+	CompletionToolCallID string
 }
 
 // AddMessage adds a message linked to the current session's parent call.
 func (s *Session) AddMessage(opts *AddMessageOptions) *Message {
 	msg := &Message{
-		ID:          uuid.NewString(),
-		ParentID:    s.ParentID,
-		SessionID:   s.id,
-		Time:        time.Now(),
-		Index:       s.NextIndex(),
-		Role:        opts.Role,
-		Type:        opts.Type,
-		Tool:        opts.Tool,
-		ContentType: opts.ContentType,
-		Content:     opts.Content,
-		dirty:       true,
+		ID:                   uuid.NewString(),
+		ParentID:             s.ParentID,
+		SessionID:            s.id,
+		Time:                 time.Now(),
+		Index:                s.NextIndex(),
+		Role:                 opts.Role,
+		Type:                 opts.Type,
+		Tool:                 opts.Tool,
+		ContentType:          opts.ContentType,
+		Content:              opts.Content,
+		ProviderData:         opts.ProviderData,
+		CompletionID:         opts.CompletionID,
+		CompletionToolCallID: opts.CompletionToolCallID,
+		dirty:                true,
 	}
 
 	s.mu.Lock()
@@ -1019,12 +1080,15 @@ type CallResult struct {
 
 // CallOptions provides options for Session.Call.
 type CallOptions struct {
-	Role    Role
-	Name    string
-	Unwrap  bool
-	Out     any
-	Args    any
-	Handler func(context.Context) (any, error)
+	Role                 Role
+	Name                 string
+	Unwrap               bool
+	Out                  any
+	Args                 any
+	ProviderData         *structpb.Struct
+	CompletionID         string
+	CompletionToolCallID string
+	Handler              func(context.Context) (any, error)
 }
 
 // Call is the primary implementation for execution of tool calls.
@@ -1055,11 +1119,14 @@ func (s *Session) Call(ctx context.Context, opts *CallOptions) (*CallResult, err
 	callCtx := ctx
 	if !opts.Unwrap {
 		callMsg = s.AddMessage(&AddMessageOptions{
-			Role:        opts.Role,
-			Type:        MessageTypeCall,
-			Tool:        opts.Name,
-			ContentType: MessageContentTypeJSON,
-			Content:     string(argsJSON),
+			Role:                 opts.Role,
+			Type:                 MessageTypeCall,
+			Tool:                 opts.Name,
+			ContentType:          MessageContentTypeJSON,
+			Content:              string(argsJSON),
+			ProviderData:         opts.ProviderData,
+			CompletionID:         opts.CompletionID,
+			CompletionToolCallID: opts.CompletionToolCallID,
 		})
 		callSession = s.WithParent(callMsg.ID)
 		callCtx = WithSession(ctx, callSession)
@@ -1151,11 +1218,14 @@ func (s *Session) Call(ctx context.Context, opts *CallOptions) (*CallResult, err
 
 // CallToolOptions provides options for Session.CallTool.
 type CallToolOptions struct {
-	Role   Role
-	Tool   string
-	Unwrap bool
-	Out    any
-	Args   any
+	Role                 Role
+	Tool                 string
+	Unwrap               bool
+	Out                  any
+	Args                 any
+	ProviderData         *structpb.Struct
+	CompletionID         string
+	CompletionToolCallID string
 }
 
 // nonBillableToolCalls are high-level orchestration tools (the agents) that don't do real work themselves; all other tool calls count as billable api_calls.
@@ -1183,11 +1253,14 @@ func (s *Session) CallToolWithOptions(ctx context.Context, opts *CallToolOptions
 	}
 
 	return s.Call(ctx, &CallOptions{
-		Role:   opts.Role,
-		Name:   opts.Tool,
-		Unwrap: opts.Unwrap,
-		Out:    opts.Out,
-		Args:   json.RawMessage(argsJSON), // Prevents double serialization
+		Role:                 opts.Role,
+		Name:                 opts.Tool,
+		Unwrap:               opts.Unwrap,
+		Out:                  opts.Out,
+		Args:                 json.RawMessage(argsJSON), // Prevents double serialization
+		ProviderData:         opts.ProviderData,
+		CompletionID:         opts.CompletionID,
+		CompletionToolCallID: opts.CompletionToolCallID,
 		Handler: func(ctx context.Context) (any, error) {
 			t, ok := s.Tool(opts.Tool)
 			if !ok {
@@ -1456,24 +1529,37 @@ func (s *Session) Complete(ctx context.Context, name string, out any, opts *Comp
 				result = res.Message
 				break
 			}
+			if res.Message.ProviderData != nil {
+				providerDataJSON, err := json.Marshal(res.Message.ProviderData)
+				if err != nil {
+					return nil, fmt.Errorf("failed to serialize provider data: %w", err)
+				}
+				if len(providerDataJSON) > int(cfg.AIMaxMessageSizeBytes) {
+					return nil, fmt.Errorf("provider data size %d exceeds maximum of %d bytes", len(providerDataJSON), cfg.AIMaxMessageSizeBytes)
+				}
+			}
 
-			// Add returned blocks as messages.
+			// Preserve the provider response as one low-level assistant message. This is important for providers that
+			// attach state to a tool-calling turn and for responses containing multiple parallel tool calls. The session
+			// trace still stores one high-level Message per content block below, linked by completionID so a reopen can
+			// reconstruct this exact grouping.
+			completionID := uuid.NewString()
+			messages = append(messages, res.Message)
+
+			// Add returned blocks to the durable session trace.
 			// Run the requested tool calls.
 			// TODO: How to do durable execution here?
 			for _, block := range res.Message.Content {
 				switch block := block.BlockType.(type) {
 				case *aiv1.ContentBlock_Text:
-					msg := s.AddMessage(&AddMessageOptions{
-						Role:        RoleAssistant,
-						Type:        MessageTypeProgress,
-						ContentType: MessageContentTypeText,
-						Content:     block.Text,
+					s.AddMessage(&AddMessageOptions{
+						Role:         RoleAssistant,
+						Type:         MessageTypeProgress,
+						ContentType:  MessageContentTypeText,
+						Content:      block.Text,
+						ProviderData: res.Message.ProviderData,
+						CompletionID: completionID,
 					})
-					msgPB, err := s.NewCompletionMessage(msg)
-					if err != nil {
-						return nil, err
-					}
-					messages = append(messages, msgPB)
 				case *aiv1.ContentBlock_ToolCall:
 					// Fail-closed enforcement: when RestrictToolCalls is set, the model may only call tools that were
 					// advertised in opts.Tools. This backstops dynamic agents, whose callable set is derived from an
@@ -1482,10 +1568,13 @@ func (s *Session) Complete(ctx context.Context, name string, out any, opts *Comp
 						return nil, fmt.Errorf("model requested tool %q which is not in the allowed set", block.ToolCall.Name)
 					}
 					toolResult, err := s.CallToolWithOptions(ctx, &CallToolOptions{
-						Role: RoleAssistant,
-						Tool: block.ToolCall.Name,
-						Out:  nil,
-						Args: block.ToolCall.Input.AsMap(),
+						Role:                 RoleAssistant,
+						Tool:                 block.ToolCall.Name,
+						Out:                  nil,
+						Args:                 block.ToolCall.Input.AsMap(),
+						ProviderData:         res.Message.ProviderData,
+						CompletionID:         completionID,
+						CompletionToolCallID: block.ToolCall.Id,
 					})
 					if err != nil {
 						if ctx.Err() != nil {
@@ -1496,15 +1585,11 @@ func (s *Session) Complete(ctx context.Context, name string, out any, opts *Comp
 						}
 						// Fall through since it's a structured error that we can capture in the messages.
 					}
-					callMessage, err := s.NewCompletionMessage(toolResult.Call)
-					if err != nil {
-						return nil, err
-					}
 					resultMsg, err := s.NewCompletionMessage(toolResult.Result)
 					if err != nil {
 						return nil, err
 					}
-					messages = append(messages, callMessage, resultMsg)
+					messages = append(messages, resultMsg)
 				default:
 					return nil, fmt.Errorf("unexpected progress block type: %T", block)
 				}
@@ -1648,10 +1733,14 @@ func (s *Session) NewCompletionMessage(m *Message) (*aiv1.CompletionMessage, err
 				return nil, fmt.Errorf("failed to convert args to structpb: %w", err)
 			}
 
+			toolCallID := m.CompletionToolCallID
+			if toolCallID == "" {
+				toolCallID = completionMessageID(m.ID)
+			}
 			block = &aiv1.ContentBlock{
 				BlockType: &aiv1.ContentBlock_ToolCall{
 					ToolCall: &aiv1.ToolCall{
-						Id:    completionMessageID(m.ID),
+						Id:    toolCallID,
 						Name:  m.Tool,
 						Input: argsPB,
 					},
@@ -1684,10 +1773,14 @@ func (s *Session) NewCompletionMessage(m *Message) (*aiv1.CompletionMessage, err
 			}
 		} else {
 			role = RoleTool
+			toolCallID := completionMessageID(m.ParentID)
+			if parent, ok := s.Message(FilterByID(m.ParentID)); ok && parent.CompletionToolCallID != "" {
+				toolCallID = parent.CompletionToolCallID
+			}
 			block = &aiv1.ContentBlock{
 				BlockType: &aiv1.ContentBlock_ToolResult{
 					ToolResult: &aiv1.ToolResult{
-						Id:      completionMessageID(m.ParentID),
+						Id:      toolCallID,
 						Content: m.Content,
 						IsError: m.ContentType == MessageContentTypeError,
 					},
@@ -1697,8 +1790,9 @@ func (s *Session) NewCompletionMessage(m *Message) (*aiv1.CompletionMessage, err
 	}
 
 	return &aiv1.CompletionMessage{
-		Role:    string(role),
-		Content: []*aiv1.ContentBlock{block},
+		Role:         string(role),
+		Content:      []*aiv1.ContentBlock{block},
+		ProviderData: m.ProviderData,
 	}, nil
 }
 
@@ -1706,7 +1800,27 @@ func (s *Session) NewCompletionMessage(m *Message) (*aiv1.CompletionMessage, err
 // NOTE: To support chaining, it panics on serialization errors. TODO: Move to a better chaining setup that enables error propagation.
 func (s *Session) NewCompletionMessages(msgs []*Message) []*aiv1.CompletionMessage {
 	var res []*aiv1.CompletionMessage
+	seenCompletions := make(map[string]bool)
 	for _, msg := range msgs {
+		if msg.CompletionID != "" {
+			if seenCompletions[msg.CompletionID] {
+				continue
+			}
+			seenCompletions[msg.CompletionID] = true
+			grouped := &aiv1.CompletionMessage{Role: string(RoleAssistant), ProviderData: msg.ProviderData}
+			for _, candidate := range msgs {
+				if candidate.CompletionID != msg.CompletionID {
+					continue
+				}
+				pm, err := s.NewCompletionMessage(candidate)
+				if err != nil {
+					panic(err)
+				}
+				grouped.Content = append(grouped.Content, pm.Content...)
+			}
+			res = append(res, grouped)
+			continue
+		}
 		pm, err := s.NewCompletionMessage(msg)
 		if err != nil {
 			panic(err)
@@ -1765,23 +1879,61 @@ func maybeTruncateMessages(messages []*aiv1.CompletionMessage) []*aiv1.Completio
 	start := len(messages) - keepLast
 	result = append(result, messages[start:]...)
 
-	// Make sure there are no partial tool calls/results
-	unbalancedIDs := make(map[string]bool)
+	// Make sure there are no partial tool calls/results. Treat every message containing tool blocks as an atom: an
+	// assistant message may contain multiple parallel calls, and a tool message may contain multiple results. If one
+	// member is missing at the truncation boundary, remove the whole connected batch instead of leaving an orphan.
+	callIDs := make(map[string]bool)
+	resultIDs := make(map[string]bool)
 	for _, msg := range result {
 		for _, block := range msg.Content {
 			if call := block.GetToolCall(); call != nil {
-				unbalancedIDs[call.Id] = true
+				callIDs[call.Id] = true
 			} else if res := block.GetToolResult(); res != nil {
-				unbalancedIDs[res.Id] = !unbalancedIDs[res.Id]
+				resultIDs[res.Id] = true
+			}
+		}
+	}
+	invalidIDs := make(map[string]bool)
+	for id := range callIDs {
+		if !resultIDs[id] {
+			invalidIDs[id] = true
+		}
+	}
+	for id := range resultIDs {
+		if !callIDs[id] {
+			invalidIDs[id] = true
+		}
+	}
+	for changed := true; changed; {
+		changed = false
+		for _, msg := range result {
+			var ids []string
+			messageInvalid := false
+			for _, block := range msg.Content {
+				if call := block.GetToolCall(); call != nil {
+					ids = append(ids, call.Id)
+					messageInvalid = messageInvalid || invalidIDs[call.Id]
+				} else if toolResult := block.GetToolResult(); toolResult != nil {
+					ids = append(ids, toolResult.Id)
+					messageInvalid = messageInvalid || invalidIDs[toolResult.Id]
+				}
+			}
+			if messageInvalid {
+				for _, id := range ids {
+					if !invalidIDs[id] {
+						invalidIDs[id] = true
+						changed = true
+					}
+				}
 			}
 		}
 	}
 	result = slices.DeleteFunc(result, func(msg *aiv1.CompletionMessage) bool {
 		for _, block := range msg.Content {
 			if call := block.GetToolCall(); call != nil {
-				return unbalancedIDs[call.Id]
-			} else if res := block.GetToolResult(); res != nil {
-				return unbalancedIDs[res.Id]
+				return invalidIDs[call.Id]
+			} else if toolResult := block.GetToolResult(); toolResult != nil {
+				return invalidIDs[toolResult.Id]
 			}
 		}
 		return false
