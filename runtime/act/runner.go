@@ -12,9 +12,10 @@ import (
 // function. The executor calls it inside the run_segment step with the initiating actor's claims, so the session (and
 // thus every tool CheckAccess) runs with the initiator's authority, not the worker's. sessionID selects the session:
 // empty opens a fresh one (the first segment of a run), non-empty reopens that session so a resumed segment continues
-// the same conversation from its persisted message tree. Production wires it to the instance's configured model;
-// tests wire it to a scripted model.
-type SessionFactory func(ctx context.Context, instanceID, sessionID string, claims *runtime.SecurityClaims) (*ai.Session, func(), error)
+// the same conversation from its persisted message tree. modelConnector selects the AI connector the session runs
+// against: it is the agent's own `model.connector`, and empty means the agent named none, so the session falls back to
+// the instance's configured connector. Production wires it to that connector's model; tests wire it to a scripted model.
+type SessionFactory func(ctx context.Context, instanceID, sessionID, modelConnector string, claims *runtime.SecurityClaims) (*ai.Session, func(), error)
 
 // ActionSink performs the run's external write. In the spike it records an observable effect; in production it is
 // the tool gateway that talks to MCP/action systems (§16). It must be idempotent per run: DBOS steps are
@@ -49,7 +50,13 @@ func (r *SessionRunner) LoadSnapshot(ctx context.Context, instanceID, agentName 
 // or a long approval wait) reopens a fully persisted tree. The opened session ID is returned even on a run/flush error
 // (the trace still exists and is worth linking); it is empty only when the session could not be opened at all.
 func (r *SessionRunner) RunSegment(ctx context.Context, in RunSegmentInput) (RunSegmentResult, error) {
-	s, release, err := r.Sessions(ctx, in.InstanceID, in.SessionID, in.Claims)
+	// The agent's own connector, taken from the snapshot the run was bound to at start, so a rename or retarget of the
+	// agent mid-run cannot move a resumed segment onto a different model than the one it began on.
+	var modelConnector string
+	if in.Snapshot != nil {
+		modelConnector = in.Snapshot.ModelConnector
+	}
+	s, release, err := r.Sessions(ctx, in.InstanceID, in.SessionID, modelConnector, in.Claims)
 	if err != nil {
 		return RunSegmentResult{}, err
 	}

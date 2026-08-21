@@ -181,7 +181,7 @@ func newInstanceWithAgent(t *testing.T, instructions string) (*runtime.Runtime, 
 // without an initiator identity (nil claims: the executor's own storeless unit tests) falls back to a local-dev
 // SkipChecks session, mirroring Rill Developer where auth is disabled.
 func scriptedSessionFactory(rt *runtime.Runtime, llm drivers.AIService) act.SessionFactory {
-	return func(ctx context.Context, instanceID, sessionID string, claims *runtime.SecurityClaims) (*ai.Session, func(), error) {
+	return func(ctx context.Context, instanceID, sessionID, _ string, claims *runtime.SecurityClaims) (*ai.Session, func(), error) {
 		if claims == nil {
 			claims = &runtime.SecurityClaims{UserID: uuid.NewString(), SkipChecks: true}
 		}
