@@ -330,6 +330,7 @@ func (h *handle) Complete(ctx context.Context, opts *drivers.CompleteOptions) (*
 	return &drivers.CompleteResult{
 		Message:           resMsg,
 		Provider:          "gemini",
+		Model:             h.config.getModel(),
 		InputTokens:       inputTokens,
 		CachedInputTokens: cachedInputTokens,
 		OutputTokens:      outputTokens,

@@ -306,6 +306,7 @@ func (h *handle) Complete(ctx context.Context, opts *drivers.CompleteOptions) (*
 	return &drivers.CompleteResult{
 		Message:           resMsgs,
 		Provider:          "claude",
+		Model:             h.config.getModel(),
 		InputTokens:       int(res.Usage.InputTokens),
 		CachedInputTokens: int(res.Usage.CacheReadInputTokens),
 		OutputTokens:      int(res.Usage.OutputTokens),

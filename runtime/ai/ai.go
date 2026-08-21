@@ -1322,7 +1322,7 @@ func (s *Session) Complete(ctx context.Context, name string, out any, opts *Comp
 
 		// Telemetry
 		var iterations, truncations, inputTokens, outputTokens, cachedInputTokens int
-		var provider string
+		var provider, model string
 		s.logger.Debug("completion started",
 			zap.Int("initial_messages", len(messages)),
 			zap.Int("tools_count", len(tools)),
@@ -1357,23 +1357,27 @@ func (s *Session) Complete(ctx context.Context, name string, out any, opts *Comp
 				attribute.Int("output_tokens", outputTokens),
 				attribute.Int("cached_input_tokens", cachedInputTokens),
 				attribute.String("provider", provider),
+				attribute.String("model", model),
 			)
 
 			// Emit billable token metrics. Tagged with the request source, the LLM provider, and whether the completion used
 			// the Rill-managed AI connector, so the billable scope is decided downstream in SQL (emitted for every completion,
 			// unlike tool_call). Values are reported as the provider returns them; cached_input_tokens is emitted separately
 			// so billing can price cached input at the cheaper rate (its relationship to input_tokens is provider-specific).
+			// The model is tagged alongside the provider because the provider alone cannot price a completion once one
+			// deployment runs more than one of that provider's models: their rates differ by an order of magnitude.
 			source := attribute.String("source", string(runtime.RequestSourceFromContext(ctx)))
 			managedAI := attribute.Bool("managed_ai", s.managedAI)
 			providerAttr := attribute.String("provider", provider)
+			modelAttr := attribute.String("model", model)
 			if inputTokens > 0 {
-				s.activity.RecordMetric(ctx, "input_tokens", float64(inputTokens), source, managedAI, providerAttr)
+				s.activity.RecordMetric(ctx, "input_tokens", float64(inputTokens), source, managedAI, providerAttr, modelAttr)
 			}
 			if outputTokens > 0 {
-				s.activity.RecordMetric(ctx, "output_tokens", float64(outputTokens), source, managedAI, providerAttr)
+				s.activity.RecordMetric(ctx, "output_tokens", float64(outputTokens), source, managedAI, providerAttr, modelAttr)
 			}
 			if cachedInputTokens > 0 {
-				s.activity.RecordMetric(ctx, "cached_input_tokens", float64(cachedInputTokens), source, managedAI, providerAttr)
+				s.activity.RecordMetric(ctx, "cached_input_tokens", float64(cachedInputTokens), source, managedAI, providerAttr, modelAttr)
 			}
 		}()
 
@@ -1420,6 +1424,9 @@ func (s *Session) Complete(ctx context.Context, name string, out any, opts *Comp
 				cachedInputTokens += res.CachedInputTokens
 				if res.Provider != "" {
 					provider = res.Provider
+				}
+				if res.Model != "" {
+					model = res.Model
 				}
 			}
 			s.logger.Debug("completion iteration got response", zap.Int("iteration", i), zap.Int("response_messages_count", resMsgsCount), zap.Error(err), observability.ZapCtx(ctx))

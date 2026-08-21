@@ -359,6 +359,7 @@ func (o *openaiHandle) Complete(ctx context.Context, opts *drivers.CompleteOptio
 	result := &drivers.CompleteResult{
 		Message:           resMsgs,
 		Provider:          "openai",
+		Model:             o.config.getModel(),
 		InputTokens:       int(res.Usage.PromptTokens),
 		CachedInputTokens: int(res.Usage.PromptTokensDetails.CachedTokens),
 		OutputTokens:      int(res.Usage.CompletionTokens),
