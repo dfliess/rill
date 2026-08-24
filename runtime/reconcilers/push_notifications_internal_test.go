@@ -137,7 +137,7 @@ func TestReportPushNotificationMessage(t *testing.T) {
 	}
 
 	t.Run("ready", func(t *testing.T) {
-		n := reportPushNotification("r1", spec, pushTestTime, "acme", "demo")
+		n := reportPushNotification("r1", spec, pushTestTime, "acme", "demo", "")
 		require.NotNil(t, n)
 		require.Equal(t, drivers.PushCategoryReports, n.category)
 		require.Equal(t, []string{"somebody@example.com"}, n.recipients)
@@ -147,12 +147,24 @@ func TestReportPushNotificationMessage(t *testing.T) {
 		require.Equal(t, "reports:acme/demo/r1", n.tag)
 	})
 
+	// An AI report's analysis IS a conversation, so the push has to land on it the way the email does.
+	// Without the session the /open route has nothing to resolve and drops the reader on the report's own
+	// page, which is the bug this pins: the reader tapped a notification about one run and got a listing.
+	t.Run("AI report deep-links to its conversation", func(t *testing.T) {
+		n := reportPushNotification("r1", spec, pushTestTime, "acme", "demo", "fe6da861-0a68-4cdf-b822-d6ea333c7e9f")
+		require.NotNil(t, n)
+		require.Equal(t,
+			"/acme/demo/-/reports/r1/open?execution_time=2024-01-04T00%3A00%3A00Z&session_id=fe6da861-0a68-4cdf-b822-d6ea333c7e9f",
+			n.linkPath)
+	})
+
+
 	t.Run("without email recipients", func(t *testing.T) {
-		require.Nil(t, reportPushNotification("r1", &runtimev1.ReportSpec{DisplayName: "Ventas semanales"}, pushTestTime, "acme", "demo"))
+		require.Nil(t, reportPushNotification("r1", &runtimev1.ReportSpec{DisplayName: "Ventas semanales"}, pushTestTime, "acme", "demo", ""))
 	})
 
 	t.Run("outside Rill Cloud", func(t *testing.T) {
-		require.Nil(t, reportPushNotification("r1", spec, pushTestTime, "", ""))
+		require.Nil(t, reportPushNotification("r1", spec, pushTestTime, "", "", ""))
 	})
 }
 

@@ -82,7 +82,7 @@ func alertPushNotification(name string, spec *runtimev1.AlertSpec, status *drive
 
 // reportPushNotification builds the push mirror of a "report ready" notification.
 // It returns nil if there is nothing to push (see alertPushNotification).
-func reportPushNotification(name string, spec *runtimev1.ReportSpec, reportTime time.Time, org, project string) *pushNotification {
+func reportPushNotification(name string, spec *runtimev1.ReportSpec, reportTime time.Time, org, project, aiSessionID string) *pushNotification {
 	recipients := emailNotifierRecipients(spec.Notifiers)
 	if len(recipients) == 0 || org == "" || project == "" {
 		return nil
@@ -97,7 +97,7 @@ func reportPushNotification(name string, spec *runtimev1.ReportSpec, reportTime 
 		// what the report is about with the state captured when it was scheduled (the canvas, the explore
 		// dashboard, or the AI conversation). The emails add a per-recipient magic token; one push is shared
 		// by all recipients, so it goes without one and relies on the reader's session.
-		linkPath: reportOpenPath(org, project, name, reportTime),
+		linkPath: reportOpenPath(org, project, name, reportTime, aiSessionID),
 		tag:      resourcePushTag("reports", org, project, name),
 	}
 }
@@ -148,8 +148,17 @@ func alertOpenPath(org, project, name string, executionTime time.Time) string {
 
 // reportOpenPath returns the path that opens what a report is about at the time it ran. It mirrors the
 // link the email carries (URLs.ReportOpen), minus the per-recipient token one shared push cannot have.
-func reportOpenPath(org, project, name string, reportTime time.Time) string {
+//
+// aiSessionID carries the conversation an AI report produced, and is what makes /open resolve to that
+// conversation instead of falling back to the report's own page. It is empty for every non-AI report, and
+// also for an AI report whose recipients each got their own session: one shared push cannot name a
+// per-recipient conversation any more than it can carry a per-recipient token, so it degrades to the
+// report page rather than sending everyone to one reader's conversation.
+func reportOpenPath(org, project, name string, reportTime time.Time, aiSessionID string) string {
 	qry := url.Values{"execution_time": []string{reportTime.UTC().Format(time.RFC3339)}}
+	if aiSessionID != "" {
+		qry.Set("session_id", aiSessionID)
+	}
 	return fmt.Sprintf("%s/open?%s", resourcePath(org, project, "reports", name), qry.Encode())
 }
 

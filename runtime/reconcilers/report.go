@@ -570,6 +570,10 @@ func (r *ReportReconciler) sendReport(ctx context.Context, self *runtimev1.Resou
 
 	var allWarnings []string
 
+	// The conversation to deep-link the web push to. Only set when every recipient shares one session
+	// (creator mode); in recipient mode each reader gets their own and a single shared push cannot name one.
+	var sharedAISessionID string
+
 	// generate report contents first depending on the resolver type and then send notifications
 	switch rep.Spec.Resolver {
 	case "ai": // generate ai sessions
@@ -602,6 +606,12 @@ func (r *ReportReconciler) sendReport(ctx context.Context, self *runtimev1.Resou
 				editLink:        delivery.EditURL,
 				unsubscribeLink: delivery.UnsubscribeURL,
 				summary:         truncateSummary(report.summary, 500),
+			}
+		}
+		// One session for everyone means the push can point at it; more than one means it cannot.
+		if len(aiReports) == 1 {
+			for _, report := range aiReports {
+				sharedAISessionID = report.sessionID
 			}
 		}
 	default: // add more resolvers here, for default just generate export links
@@ -641,7 +651,7 @@ func (r *ReportReconciler) sendReport(ctx context.Context, self *runtimev1.Resou
 	// Mirror the dispatched notification as one web push to the email recipients.
 	// Best-effort and cloud-only: outside Rill Cloud it is a silent no-op.
 	org, project := r.C.Runtime.InstanceOrgProject(ctx, r.C.InstanceID)
-	dispatchPushNotification(ctx, r.C, self.Meta.Name.Name, reportPushNotification(self.Meta.Name.Name, rep.Spec, t, org, project))
+	dispatchPushNotification(ctx, r.C, self.Meta.Name.Name, reportPushNotification(self.Meta.Name.Name, rep.Spec, t, org, project, sharedAISessionID))
 
 	return false, allWarnings, nil
 }
