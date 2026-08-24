@@ -1,0 +1,152 @@
+# Kairos-owned CI (additive; NOT part of upstream Rill).
+#
+# Los cuatro gates del sync con upstream, en un unico workflow.
+#
+# Antes los ejecutaba el propio agente de la rutina dentro de su turno: cada
+# `go build ./...` y cada `npm ci` volcaba sus logs al contexto de la sesion, y
+# ese contexto se releia entero en cada turno posterior. Aqui los corre el
+# runner y el agente solo lee el veredicto.
+#
+# Paridad con lo que corria el agente:
+#   G1 <- kairos-unit-tests.yml       (build de todo el arbol + tests Act/Kairos)
+#   G2 <- go-lint.yml                 (golangci-lint v2.9.0, .golangci.yml del repo)
+#   G3 <- web-test-code-quality.yml   (con ADMIN/LOCAL/COMMON forzados a true)
+#   G4 <- prettier.yml
+#
+# Dos diferencias deliberadas respecto de lo que corria el agente:
+#   - G1 NO lleva el `-skip TestProjectStatusWaitUntilIdle`: ese skip existia
+#     porque el sandbox del agente no tenia Docker y el test levanta ClickHouse
+#     por testcontainers. El runner si lo tiene, asi que aqui se cubre.
+#   - G3 fuerza los tres filtros a true (un rebase toca de todo, y el
+#     paths-filter de upstream compara contra origin/main, que en una rama de
+#     sync no significa nada) y FAIL_FAST=false, para que acumule TODOS los
+#     fallos en vez de parar en el primero.
+#
+# El toolchain sale de go.mod y .nvmrc, no de un pin en este archivo: cuando
+# upstream sube Go o Node, el gate lo sigue solo.
+
+name: Kairos sync gates
+
+on:
+  push:
+    branches:
+      - "chore/upstream-sync-**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kairos-sync-gates-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  g1-unit:
+    name: G1 kairos-unit
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      # duckdb y otros drivers necesitan cgo.
+      - name: Whole tree compiles
+        run: go build ./...
+        env:
+          CGO_ENABLED: "1"
+
+      - name: Act/Kairos packages pass unit tests
+        run: >-
+          go test -short -count=1 -timeout 20m
+          ./runtime/act/...
+          ./runtime/ai/...
+          ./runtime/parser/...
+          ./runtime/reconcilers/...
+        env:
+          CGO_ENABLED: "1"
+
+  g2-lint:
+    name: G2 golangci-lint
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.9.0
+          args: --timeout 20m
+
+  g3-web:
+    name: G3 web code quality
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+
+      - name: Web code quality checks
+        run: bash ./scripts/web-test-code-quality.sh
+        env:
+          ADMIN: "true"
+          LOCAL: "true"
+          COMMON: "true"
+          FAIL_FAST: "false"
+
+  g4-prettier:
+    name: G4 prettier
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+
+      - name: NPM Install
+        run: npm ci
+
+      - name: Prettier check
+        run: npx prettier --check "**/*"
+
+  # Un unico check que resume los cuatro: es el que mira la rutina de sync.
+  gates:
+    name: gates
+    needs: [g1-unit, g2-lint, g3-web, g4-prettier]
+    if: always()
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Veredicto
+        run: |
+          g1='${{ needs.g1-unit.result }}'
+          g2='${{ needs.g2-lint.result }}'
+          g3='${{ needs.g3-web.result }}'
+          g4='${{ needs.g4-prettier.result }}'
+          green=0
+          {
+            echo "| Gate | Resultado |"
+            echo "|---|---|"
+            for pair in "G1 kairos-unit:$g1" "G2 golangci-lint:$g2" "G3 web code quality:$g3" "G4 prettier:$g4"; do
+              name=${pair%:*}; res=${pair##*:}
+              case "$res" in
+                success) icon="VERDE"; green=$((green + 1)) ;;
+                failure) icon="ROJO" ;;
+                *)       icon="NO EJECUTADO ($res)" ;;
+              esac
+              echo "| $name | $icon |"
+            done
+            echo
+            echo "**gates $green/4**"
+          } > gates.md
+          cat gates.md >> "$GITHUB_STEP_SUMMARY"
+          cat gates.md
+          test "$green" -eq 4
