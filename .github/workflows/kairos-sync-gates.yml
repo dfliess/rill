@@ -96,10 +96,15 @@ jobs:
         env:
           CGO_ENABLED: "1"
 
+      # CGO explicito: sin el, duckdb-go-bindings queda excluido por build
+      # constraints y el typecheck de golangci-lint falla con "could not
+      # import ... duckdb". Es el mismo motivo por el que G1a necesita gcc.
       - name: G2 - golangci-lint
         id: g2
         continue-on-error: true
         uses: golangci/golangci-lint-action@v9
+        env:
+          CGO_ENABLED: "1"
         with:
           version: v2.9.0
           args: --timeout 20m
@@ -113,6 +118,12 @@ jobs:
           LOCAL: "true"
           COMMON: "true"
           FAIL_FAST: "false"
+          # eslint sobre web-common revienta con "JavaScript heap out of
+          # memory" si V8 no puede crecer. En un runner de GitHub la maquina
+          # esta vacia; kairos-seo comparte sus 7,8 GB con Twenty CRM y un
+          # escritorio remoto, asi que el limite se fija a mano en vez de
+          # dejar que V8 lo deduzca de la RAM total.
+          NODE_OPTIONS: "--max-old-space-size=4096"
 
       # Sin npm ci propio: reutiliza el node_modules que dejo G3.
       - name: G4 - prettier
