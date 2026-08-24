@@ -14,9 +14,12 @@
 #   G4 <- prettier.yml
 #
 # Tres diferencias deliberadas respecto de lo que corria el agente:
-#   - G1 NO lleva el `-skip TestProjectStatusWaitUntilIdle`: ese skip existia
-#     porque el sandbox del agente no tenia Docker y el test levanta ClickHouse
-#     por testcontainers. El runner si lo tiene, asi que aqui se cubre.
+#   - G1 MANTIENE el `-skip TestProjectStatusWaitUntilIdle`. La idea era
+#     quitarlo (el runner si tiene Docker, a diferencia del sandbox del
+#     agente), pero en kairos-seo ese test anade ~15 min y, sobre todo,
+#     levanta ClickHouse por testcontainers: los contenedores los arranca el
+#     demonio de Docker, fuera del cgroup del runner, asi que se saltarian el
+#     limite de memoria que protege a Twenty CRM en esta maquina.
 #   - G3 fuerza los tres filtros a true (un rebase toca de todo, y el
 #     paths-filter de upstream compara contra origin/main, que en una rama de
 #     sync no significa nada) y FAIL_FAST=false, para que acumule TODOS los
@@ -89,6 +92,7 @@ jobs:
         continue-on-error: true
         run: >-
           go test -short -count=1 -timeout 20m
+          -skip 'TestProjectStatusWaitUntilIdle'
           ./runtime/act/...
           ./runtime/ai/...
           ./runtime/parser/...
@@ -105,9 +109,15 @@ jobs:
         uses: golangci/golangci-lint-action@v9
         env:
           CGO_ENABLED: "1"
+          # golangci-lint escala la memoria con la concurrencia, y en su
+          # configuracion por defecto (4 goroutines en esta maquina) pidio
+          # 6,8 GB y se lo llevo el OOM killer. Con una sola goroutina y un GC
+          # agresivo cabe en el cgroup de 4 GB del runner, a costa de tardar
+          # mas: por eso el timeout sube a 40m.
+          GOGC: "20"
         with:
           version: v2.9.0
-          args: --timeout 20m
+          args: --timeout 40m --concurrency=1
 
       - name: G3 - web code quality
         id: g3
@@ -123,7 +133,7 @@ jobs:
           # esta vacia; kairos-seo comparte sus 7,8 GB con Twenty CRM y un
           # escritorio remoto, asi que el limite se fija a mano en vez de
           # dejar que V8 lo deduzca de la RAM total.
-          NODE_OPTIONS: "--max-old-space-size=4096"
+          NODE_OPTIONS: "--max-old-space-size=3072"
 
       # Sin npm ci propio: reutiliza el node_modules que dejo G3.
       - name: G4 - prettier
