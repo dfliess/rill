@@ -27,6 +27,13 @@
 
 name: Kairos sync gates
 
+# OJO con el disparo manual: GitHub solo ofrece `workflow_dispatch` para
+# workflows que existan en la RAMA POR DEFECTO del repo, y la de este fork es
+# `2692-runtime-update-aws-sdk-to-fix-new-sso-support` (heredada del fork), no
+# `kairos-main`. Hasta que la default sea `kairos-main`, `gh workflow run` NO
+# funciona: para correr los gates sobre un SHA cualquiera, pusha ese SHA a una
+# rama `chore/upstream-sync-<lo-que-sea>` y el push los dispara. El
+# `workflow_dispatch` se queda declarado para el dia que se cambie la default.
 on:
   push:
     branches:
