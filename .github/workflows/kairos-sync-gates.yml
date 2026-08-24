@@ -36,6 +36,31 @@
 # El toolchain sale de go.mod y .nvmrc, no de un pin en este archivo: cuando
 # upstream sube Go o Node, el gate lo sigue solo.
 #
+# MEDIDO EL 25-ago-2026 en kairos-seo (4 nucleos compartidos con Twenty CRM y
+# un escritorio remoto, cgroup de 4 GB), frente a un runner de GitHub:
+#
+#   gate                     kairos-seo        runner de GitHub
+#   G1a build                ~7 min            ~3 min
+#   G1b tests                >20 min (timeout  ~2 min
+#                            de go test; por
+#                            eso ahora son 45m)
+#   G2 golangci-lint         ~25 min, y solo   ~6 min
+#                            con --concurrency=1
+#                            (con la de por
+#                            defecto pidio 6,8 GB
+#                            y lo mato el OOM)
+#   G3 web code quality      NO CABE: eslint    ~10 min
+#                            necesita >3 GB de
+#                            heap y el cgroup
+#                            son 4 GB en total
+#   G4 prettier              ~2 min            ~1 min
+#
+# O sea: el runner propio saca adelante G1, G2 y G4 en ~80 min, pero G3 no
+# entra mientras esta maquina hospede el CRM. Esto es un puente hasta que la
+# organizacion recupere minutos de Actions (plan Free, 2.000 min, limite de
+# gasto en 0 $); con la variable SYNC_GATES_RUNNER borrada, los cuatro gates
+# vuelven a los runners de GitHub y el conjunto baja a ~20 min.
+#
 # OJO con el disparo manual: GitHub solo ofrece `workflow_dispatch` para
 # workflows que existan en la RAMA POR DEFECTO del repo, y la de este fork no
 # es `kairos-main`. Hasta que la default sea `kairos-main`, `gh workflow run`
@@ -91,7 +116,7 @@ jobs:
         id: g1b
         continue-on-error: true
         run: >-
-          go test -short -count=1 -timeout 20m
+          go test -short -count=1 -timeout 45m
           -skip 'TestProjectStatusWaitUntilIdle'
           ./runtime/act/...
           ./runtime/ai/...
