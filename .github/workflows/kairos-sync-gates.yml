@@ -1,6 +1,6 @@
 # Kairos-owned CI (additive; NOT part of upstream Rill).
 #
-# Los cuatro gates del sync con upstream, en un unico workflow.
+# Los cuatro gates del sync con upstream, en un unico job.
 #
 # Antes los ejecutaba el propio agente de la rutina dentro de su turno: cada
 # `go build ./...` y cada `npm ci` volcaba sus logs al contexto de la sesion, y
@@ -13,7 +13,7 @@
 #   G3 <- web-test-code-quality.yml   (con ADMIN/LOCAL/COMMON forzados a true)
 #   G4 <- prettier.yml
 #
-# Dos diferencias deliberadas respecto de lo que corria el agente:
+# Tres diferencias deliberadas respecto de lo que corria el agente:
 #   - G1 NO lleva el `-skip TestProjectStatusWaitUntilIdle`: ese skip existia
 #     porque el sandbox del agente no tenia Docker y el test levanta ClickHouse
 #     por testcontainers. El runner si lo tiene, asi que aqui se cubre.
@@ -21,19 +21,26 @@
 #     paths-filter de upstream compara contra origin/main, que en una rama de
 #     sync no significa nada) y FAIL_FAST=false, para que acumule TODOS los
 #     fallos en vez de parar en el primero.
+#   - Los cuatro van en UN SOLO JOB, no en cuatro. Con un runner propio (un
+#     agente = un job a la vez) cuatro jobs se serializarian igual pero pagando
+#     cuatro checkouts y dos `npm ci`; asi G3 y G4 comparten node_modules.
+#
+# Cada gate lleva `continue-on-error` para que los cuatro se ejecuten siempre:
+# saber que fallan G2 y G4 en la misma corrida vale mas que enterarse de uno
+# por semana. Quien decide es el paso final `Veredicto`, que es el que pone el
+# job en rojo, y cuya salida sale por `gh run view --log-failed`.
 #
 # El toolchain sale de go.mod y .nvmrc, no de un pin en este archivo: cuando
 # upstream sube Go o Node, el gate lo sigue solo.
+#
+# OJO con el disparo manual: GitHub solo ofrece `workflow_dispatch` para
+# workflows que existan en la RAMA POR DEFECTO del repo, y la de este fork no
+# es `kairos-main`. Hasta que la default sea `kairos-main`, `gh workflow run`
+# NO funciona: para correr los gates sobre un SHA cualquiera, pusha ese SHA a
+# una rama `chore/upstream-sync-<lo-que-sea>` y el push los dispara.
 
 name: Kairos sync gates
 
-# OJO con el disparo manual: GitHub solo ofrece `workflow_dispatch` para
-# workflows que existan en la RAMA POR DEFECTO del repo, y la de este fork es
-# `2692-runtime-update-aws-sdk-to-fix-new-sso-support` (heredada del fork), no
-# `kairos-main`. Hasta que la default sea `kairos-main`, `gh workflow run` NO
-# funciona: para correr los gates sobre un SHA cualquiera, pusha ese SHA a una
-# rama `chore/upstream-sync-<lo-que-sea>` y el push los dispara. El
-# `workflow_dispatch` se queda declarado para el dia que se cambie la default.
 on:
   push:
     branches:
@@ -48,9 +55,15 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  g1-unit:
-    name: G1 kairos-unit
-    runs-on: ubuntu-22.04
+  gates:
+    name: gates
+    # Variable de repo, no un valor fijo: asi se cambia de runner sin tocar
+    # este archivo (cada commit aqui es un commit mas que rebasear cada
+    # semana). Con SYNC_GATES_RUNNER=kairos-seo corre en la maquina propia;
+    # borrando la variable vuelve a los runners de GitHub.
+    runs-on: ${{ vars.SYNC_GATES_RUNNER || 'ubuntu-22.04' }}
+    timeout-minutes: 90
+
     steps:
       - uses: actions/checkout@v5
 
@@ -58,13 +71,22 @@ jobs:
         with:
           go-version-file: go.mod
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+
       # duckdb y otros drivers necesitan cgo.
-      - name: Whole tree compiles
+      - name: G1a - whole tree compiles
+        id: g1a
+        continue-on-error: true
         run: go build ./...
         env:
           CGO_ENABLED: "1"
 
-      - name: Act/Kairos packages pass unit tests
+      - name: G1b - Act/Kairos packages pass unit tests
+        id: g1b
+        continue-on-error: true
         run: >-
           go test -short -count=1 -timeout 20m
           ./runtime/act/...
@@ -74,33 +96,17 @@ jobs:
         env:
           CGO_ENABLED: "1"
 
-  g2-lint:
-    name: G2 golangci-lint
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v5
-
-      - uses: actions/setup-go@v6
-        with:
-          go-version-file: go.mod
-
-      - uses: golangci/golangci-lint-action@v9
+      - name: G2 - golangci-lint
+        id: g2
+        continue-on-error: true
+        uses: golangci/golangci-lint-action@v9
         with:
           version: v2.9.0
           args: --timeout 20m
 
-  g3-web:
-    name: G3 web code quality
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v5
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: ".nvmrc"
-          cache: "npm"
-
-      - name: Web code quality checks
+      - name: G3 - web code quality
+        id: g3
+        continue-on-error: true
         run: bash ./scripts/web-test-code-quality.sh
         env:
           ADMIN: "true"
@@ -108,36 +114,20 @@ jobs:
           COMMON: "true"
           FAIL_FAST: "false"
 
-  g4-prettier:
-    name: G4 prettier
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v5
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: ".nvmrc"
-          cache: "npm"
-
-      - name: NPM Install
-        run: npm ci
-
-      - name: Prettier check
+      # Sin npm ci propio: reutiliza el node_modules que dejo G3.
+      - name: G4 - prettier
+        id: g4
+        continue-on-error: true
         run: npx prettier --check "**/*"
 
-  # Un unico check que resume los cuatro: es el que mira la rutina de sync.
-  gates:
-    name: gates
-    needs: [g1-unit, g2-lint, g3-web, g4-prettier]
-    if: always()
-    runs-on: ubuntu-22.04
-    steps:
       - name: Veredicto
         run: |
-          g1='${{ needs.g1-unit.result }}'
-          g2='${{ needs.g2-lint.result }}'
-          g3='${{ needs.g3-web.result }}'
-          g4='${{ needs.g4-prettier.result }}'
+          g1a='${{ steps.g1a.outcome }}'
+          g1b='${{ steps.g1b.outcome }}'
+          g2='${{ steps.g2.outcome }}'
+          g3='${{ steps.g3.outcome }}'
+          g4='${{ steps.g4.outcome }}'
+          if [ "$g1a" = "success" ] && [ "$g1b" = "success" ]; then g1=success; else g1=failure; fi
           green=0
           {
             echo "| Gate | Resultado |"
@@ -152,7 +142,7 @@ jobs:
               echo "| $name | $icon |"
             done
             echo
-            echo "**gates $green/4**"
+            echo "**gates $green/4**  (G1a build=$g1a, G1b test=$g1b)"
           } > gates.md
           cat gates.md >> "$GITHUB_STEP_SUMMARY"
           cat gates.md
