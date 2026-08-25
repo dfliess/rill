@@ -14,6 +14,7 @@
   import { queryClient } from "@rilldata/web-common/lib/svelte-query/globalQueryClient";
   import { onMount } from "svelte";
   import NotificationCategories from "./NotificationCategories.svelte";
+  import NotificationHistory from "./NotificationHistory.svelte";
   import PushDevicesList from "./PushDevicesList.svelte";
   import {
     currentPushEndpoint,
@@ -186,3 +187,8 @@
 
   <PushDevicesList {currentEndpoint} onRemoveCurrentDevice={disableHere} />
 {/if}
+
+<!-- Outside the block above on purpose: the history is not about this browser, nor about the notification channel
+     being configured. Its rows are written whether or not a deployment can send anything, so a deployment with no
+     keys still has a record to show. -->
+<NotificationHistory />
