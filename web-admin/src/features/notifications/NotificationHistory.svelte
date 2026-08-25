@@ -8,6 +8,8 @@
   const historyQuery = createAdminServiceListNotifications();
 
   let { data, isSuccess, isError } = $derived($historyQuery);
+  // Whether the history holds more than this list shows. A list that quietly stops reads as "this is everything".
+  let hasMore = $derived(data?.hasMore === true);
   let entries = $derived(listNotificationEntries(data?.notifications));
 
   // A history is read for "when", so the time is part of the answer, not a detail: two reports on the same
@@ -56,6 +58,9 @@
           </li>
         {/each}
       </ul>
+      {#if hasMore}
+        <p class="mt-2">{m.notifications_history_more()}</p>
+      {/if}
     {/if}
   {/if}
 </SettingsContainer>

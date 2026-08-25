@@ -895,6 +895,9 @@ export interface V1ListNotificationPreferencesResponse {
 
 export interface V1ListNotificationsResponse {
   notifications?: V1Notification[];
+  /** Whether the history holds more than was returned, so a reader is told the list is a window rather than
+being left to assume it is everything. */
+  hasMore?: boolean;
 }
 
 export interface V1ListOrganizationBillingIssuesResponse {
@@ -2781,7 +2784,7 @@ export type AdminServiceUpdateNotificationPreferencesBody = {
 
 export type AdminServiceListNotificationsParams = {
   /**
-   * Maximum entries to return. Defaults to a server-side page size, and is capped by it.
+   * Maximum entries to return. Defaults to a server-side limit, and is capped by it.
    */
   pageSize?: number;
 };

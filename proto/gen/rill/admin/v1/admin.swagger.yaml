@@ -4946,7 +4946,7 @@ paths:
             $ref: '#/definitions/rpcStatus'
       parameters:
         - name: pageSize
-          description: Maximum entries to return. Defaults to a server-side page size, and is capped by it.
+          description: Maximum entries to return. Defaults to a server-side limit, and is capped by it.
           in: query
           required: false
           type: integer
@@ -6206,6 +6206,11 @@ definitions:
         items:
           type: object
           $ref: '#/definitions/v1Notification'
+      hasMore:
+        type: boolean
+        description: |-
+          Whether the history holds more than was returned, so a reader is told the list is a window rather than
+          being left to assume it is everything.
   v1ListOrganizationBillingIssuesResponse:
     type: object
     properties:

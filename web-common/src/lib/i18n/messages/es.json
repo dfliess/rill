@@ -1726,6 +1726,7 @@
   "notifications_devices_unknown": "Dispositivo desconocido",
   "notifications_history_empty": "Aquí aparecerá lo que se te vaya notificando.",
   "notifications_history_error": "No se pudo cargar el historial. Inténtalo de nuevo.",
+  "notifications_history_more": "Se muestran las más recientes.",
   "notifications_history_title": "Historial",
   "notifications_page_title": "Notificaciones",
   "notifications_unavailable": "Las notificaciones aún no están disponibles en Kairos.",

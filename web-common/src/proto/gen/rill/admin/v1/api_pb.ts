@@ -9837,7 +9837,7 @@ export class DeletePushSubscriptionResponse extends Message<DeletePushSubscripti
  */
 export class ListNotificationsRequest extends Message<ListNotificationsRequest> {
   /**
-   * Maximum entries to return. Defaults to a server-side page size, and is capped by it.
+   * Maximum entries to return. Defaults to a server-side limit, and is capped by it.
    *
    * @generated from field: int32 page_size = 1;
    */
@@ -9880,6 +9880,14 @@ export class ListNotificationsResponse extends Message<ListNotificationsResponse
    */
   notifications: Notification[] = [];
 
+  /**
+   * Whether the history holds more than was returned, so a reader is told the list is a window rather than
+   * being left to assume it is everything.
+   *
+   * @generated from field: bool has_more = 2;
+   */
+  hasMore = false;
+
   constructor(data?: PartialMessage<ListNotificationsResponse>) {
     super();
     proto3.util.initPartial(data, this);
@@ -9889,6 +9897,7 @@ export class ListNotificationsResponse extends Message<ListNotificationsResponse
   static readonly typeName = "rill.admin.v1.ListNotificationsResponse";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "notifications", kind: "message", T: Notification, repeated: true },
+    { no: 2, name: "has_more", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ListNotificationsResponse {

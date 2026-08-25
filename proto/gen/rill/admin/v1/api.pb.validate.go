@@ -27332,6 +27332,8 @@ func (m *ListNotificationsResponse) validate(all bool) error {
 
 	}
 
+	// no validation rules for HasMore
+
 	if len(errors) > 0 {
 		return ListNotificationsResponseMultiError(errors)
 	}

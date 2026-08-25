@@ -96,9 +96,28 @@ func (s *Server) DeletePushSubscription(ctx context.Context, req *adminv1.Delete
 	return &adminv1.DeletePushSubscriptionResponse{}, nil
 }
 
-// notificationHistoryPageSize bounds one read of the history. It is a record to glance back over, not an archive to
-// page through, so there is one page and it is generous rather than paginated.
-const notificationHistoryPageSize = 100
+// notificationHistoryLimit bounds one read of the history. It is a block on a settings page, meant to answer "what
+// have I been told lately", so it is a fortnight's worth at the rate a real deployment notifies, not an archive.
+// Anything older is still stored until the retention sweep takes it; it is simply not what this list is for.
+const notificationHistoryLimit = 20
+
+// notificationHistoryWindow resolves how many entries one read shows. A caller may ask for fewer than the limit,
+// never for more: the limit is what the deployment is willing to serve, not a default the client can talk it out of.
+func notificationHistoryWindow(pageSize int32) int {
+	if pageSize > 0 && int(pageSize) < notificationHistoryLimit {
+		return int(pageSize)
+	}
+	return notificationHistoryLimit
+}
+
+// trimToWindow cuts a listing read one over the window down to it, and reports whether that extra entry was there.
+// A list that quietly stops reads as "this is everything", which is a different thing to say.
+func trimToWindow(deliveries []*database.NotificationDelivery, limit int) ([]*database.NotificationDelivery, bool) {
+	if len(deliveries) > limit {
+		return deliveries[:limit], true
+	}
+	return deliveries, false
+}
 
 func (s *Server) ListNotifications(ctx context.Context, req *adminv1.ListNotificationsRequest) (*adminv1.ListNotificationsResponse, error) {
 	claims := auth.GetClaims(ctx)
@@ -107,15 +126,14 @@ func (s *Server) ListNotifications(ctx context.Context, req *adminv1.ListNotific
 	}
 
 	// The history is read for the caller and only for the caller: there is no user ID in the request to get wrong.
-	limit := notificationHistoryPageSize
-	if req.PageSize > 0 && int(req.PageSize) < limit {
-		limit = int(req.PageSize)
-	}
+	limit := notificationHistoryWindow(req.PageSize)
 
-	deliveries, err := s.admin.DB.FindNotificationDeliveriesForUser(ctx, claims.OwnerID(), limit)
+	// One more than the window, to learn whether there is anything behind it without counting the table.
+	deliveries, err := s.admin.DB.FindNotificationDeliveriesForUser(ctx, claims.OwnerID(), limit+1)
 	if err != nil {
 		return nil, err
 	}
+	deliveries, hasMore := trimToWindow(deliveries, limit)
 
 	dtos := make([]*adminv1.Notification, len(deliveries))
 	for i, d := range deliveries {
@@ -130,7 +148,7 @@ func (s *Server) ListNotifications(ctx context.Context, req *adminv1.ListNotific
 			SentOn:   timestamppb.New(d.SentOn),
 		}
 	}
-	return &adminv1.ListNotificationsResponse{Notifications: dtos}, nil
+	return &adminv1.ListNotificationsResponse{Notifications: dtos, HasMore: hasMore}, nil
 }
 
 func (s *Server) ListNotificationPreferences(ctx context.Context, req *adminv1.ListNotificationPreferencesRequest) (*adminv1.ListNotificationPreferencesResponse, error) {
