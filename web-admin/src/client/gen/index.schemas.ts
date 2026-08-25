@@ -2570,6 +2570,17 @@ export type AdminServiceGetAlertMetaBody = {
   anonRecipients?: boolean;
 };
 
+/**
+ * How many things are waiting for each recipient in this project once this notification lands, keyed by
+lowercased email. It is what the installed app paints on its icon (kairos-cloud#147), so it counts pending
+work, not notifications delivered: a category with nothing to resolve leaves it unset and the badge alone.
+A recipient missing from the map has nothing pending here, which is different from not being told: the app
+badge is per browser, so it needs a number for every project, including zero.
+ */
+export type AdminServiceSendPushNotificationBodyPendingByRecipient = {
+  [key: string]: number;
+};
+
 export type AdminServiceSendPushNotificationBody = {
   /** Notification category. One of "alerts", "reports" or "act_approvals". */
   category?: string;
@@ -2580,6 +2591,12 @@ export type AdminServiceSendPushNotificationBody = {
   linkPath?: string;
   /** Notifications with the same tag replace each other in the browser. */
   tag?: string;
+  /** How many things are waiting for each recipient in this project once this notification lands, keyed by
+lowercased email. It is what the installed app paints on its icon (kairos-cloud#147), so it counts pending
+work, not notifications delivered: a category with nothing to resolve leaves it unset and the badge alone.
+A recipient missing from the map has nothing pending here, which is different from not being told: the app
+badge is per browser, so it needs a number for every project, including zero. */
+  pendingByRecipient?: AdminServiceSendPushNotificationBodyPendingByRecipient;
 };
 
 export type AdminServicePullVirtualRepoParams = {

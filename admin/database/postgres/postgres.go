@@ -1797,7 +1797,7 @@ func (c *connection) FindPushSubscriptionsForUser(ctx context.Context, userID st
 	return res, nil
 }
 
-func (c *connection) FindPushSubscriptionsForRecipients(ctx context.Context, projectID string, emails []string, category string) ([]*database.PushSubscription, error) {
+func (c *connection) FindPushSubscriptionsForRecipients(ctx context.Context, projectID string, emails []string, category string) ([]*database.PushSubscriptionRecipient, error) {
 	var categoryColumn string
 	switch category {
 	case database.NotificationCategoryAlerts:
@@ -1817,9 +1817,11 @@ func (c *connection) FindPushSubscriptionsForRecipients(ctx context.Context, pro
 
 	// The project is joined only to resolve the organization that owns it, which is where preferences live.
 	// An unknown project therefore yields no recipients instead of ignoring everyone's preferences.
-	var res []*database.PushSubscription
+	// The email travels back with each row so the caller can tell whose device a subscription is without
+	// re-querying: what it sends may differ per recipient (see database.PushSubscriptionRecipient).
+	var res []*database.PushSubscriptionRecipient
 	err := c.getDB(ctx).SelectContext(ctx, &res, fmt.Sprintf(`
-		SELECT s.* FROM push_subscriptions s
+		SELECT s.*, lower(u.email) AS recipient_email FROM push_subscriptions s
 		JOIN users u ON s.user_id = u.id
 		JOIN projects proj ON proj.id = $2
 		LEFT JOIN notification_preferences p ON p.user_id = u.id AND p.org_id = proj.org_id

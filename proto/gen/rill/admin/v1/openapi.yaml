@@ -7450,6 +7450,17 @@ paths:
                                 linkPath:
                                     description: Path relative to the frontend URL to open when the notification is clicked. Must start with "/".
                                     type: string
+                                pendingByRecipient:
+                                    additionalProperties:
+                                        format: int32
+                                        type: integer
+                                    description: |-
+                                        How many things are waiting for each recipient in this project once this notification lands, keyed by
+                                        lowercased email. It is what the installed app paints on its icon (kairos-cloud#147), so it counts pending
+                                        work, not notifications delivered: a category with nothing to resolve leaves it unset and the badge alone.
+                                        A recipient missing from the map has nothing pending here, which is different from not being told: the app
+                                        badge is per browser, so it needs a number for every project, including zero.
+                                    type: object
                                 recipientEmails:
                                     items:
                                         type: string

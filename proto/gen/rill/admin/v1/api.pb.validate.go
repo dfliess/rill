@@ -39052,6 +39052,8 @@ func (m *SendPushNotificationRequest) validate(all bool) error {
 
 	// no validation rules for Tag
 
+	// no validation rules for PendingByRecipient
+
 	if len(errors) > 0 {
 		return SendPushNotificationRequestMultiError(errors)
 	}

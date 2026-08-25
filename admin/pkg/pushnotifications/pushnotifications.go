@@ -23,11 +23,23 @@ const defaultTTL = 24 * 60 * 60
 // Message is the notification payload.
 // It is serialized to JSON and parsed by the frontend's service worker, so the field names are part of the contract.
 type Message struct {
-	Title    string `json:"title"`
-	Body     string `json:"body"`
-	Link     string `json:"link"` // Absolute URL to open when the notification is clicked
-	Category string `json:"category"`
-	Tag      string `json:"tag"` // Notifications with the same tag replace each other
+	Title    string   `json:"title"`
+	Body     string   `json:"body"`
+	Link     string   `json:"link"` // Absolute URL to open when the notification is clicked
+	Category string   `json:"category"`
+	Tag      string   `json:"tag"`               // Notifications with the same tag replace each other
+	Pending  *Pending `json:"pending,omitempty"` // What the recipient still has waiting; absent leaves the app badge untouched
+}
+
+// Pending is how much work is still waiting for this message's recipient, and where.
+// The installed app paints a single badge on its icon for the whole origin, while work is pending per project, so
+// a message carries one project's number and names it: the browser keeps the others and shows the total
+// (kairos-cloud#147). Count is deliberately allowed to be zero — "nothing waits for you here any more" is a number
+// the badge needs just as much as a positive one.
+type Pending struct {
+	// Scope is the project the count belongs to, as "organization/project", lowercased.
+	Scope string `json:"scope"`
+	Count int32  `json:"count"`
 }
 
 // Subscription identifies a browser push subscription as returned by the Push API.

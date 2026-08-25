@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/rilldata/rill/admin"
 	"github.com/rilldata/rill/admin/database"
 	"github.com/rilldata/rill/admin/pkg/pushnotifications"
 	"github.com/rilldata/rill/admin/server/auth"
@@ -215,13 +216,36 @@ func (s *Server) SendPushNotification(ctx context.Context, req *adminv1.SendPush
 	}
 	link := strings.TrimSuffix(s.admin.URLs.WithCustomDomain(org.CustomDomain).Frontend(), "/") + req.LinkPath
 
-	sent, err := s.admin.SendPushNotification(ctx, proj.ID, req.Category, req.RecipientEmails, &pushnotifications.Message{
-		Title:    req.Title,
-		Body:     req.Body,
-		Link:     link,
-		Category: req.Category,
-		Tag:      req.Tag,
-	})
+	opts := &admin.SendPushNotificationOptions{
+		ProjectID:  proj.ID,
+		Category:   req.Category,
+		Recipients: req.RecipientEmails,
+		Message: &pushnotifications.Message{
+			Title:    req.Title,
+			Body:     req.Body,
+			Link:     link,
+			Category: req.Category,
+			Tag:      req.Tag,
+		},
+	}
+	// A caller that counted what is waiting says so with the map; one that has nothing to count (a report is read,
+	// not resolved) omits it, and the notification then leaves the app badge alone. The scope is composed here
+	// rather than sent: the caller identifies the project by ID, and the names the browser keys on are the ones
+	// this service resolved for the link.
+	if req.PendingByRecipient != nil {
+		// Keyed like the subscriptions are matched, so a caller that spells an address in mixed case still
+		// reaches the right person's devices.
+		byRecipient := make(map[string]int32, len(req.PendingByRecipient))
+		for email, count := range req.PendingByRecipient {
+			byRecipient[strings.ToLower(email)] = count
+		}
+		opts.Pending = &admin.PendingCounts{
+			Scope:       strings.ToLower(org.Name + "/" + proj.Name),
+			ByRecipient: byRecipient,
+		}
+	}
+
+	sent, err := s.admin.SendPushNotification(ctx, opts)
 	if err != nil {
 		return nil, err
 	}

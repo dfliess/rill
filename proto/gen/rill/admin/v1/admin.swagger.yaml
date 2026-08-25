@@ -3871,6 +3871,17 @@ paths:
               tag:
                 type: string
                 description: Notifications with the same tag replace each other in the browser.
+              pendingByRecipient:
+                type: object
+                additionalProperties:
+                  type: integer
+                  format: int32
+                description: |-
+                  How many things are waiting for each recipient in this project once this notification lands, keyed by
+                  lowercased email. It is what the installed app paints on its icon (kairos-cloud#147), so it counts pending
+                  work, not notifications delivered: a category with nothing to resolve leaves it unset and the badge alone.
+                  A recipient missing from the map has nothing pending here, which is different from not being told: the app
+                  badge is per browser, so it needs a number for every project, including zero.
   /v1/projects/{projectId}/repo/meta:
     get:
       summary: GetRepoMeta returns credentials and other metadata for accessing a project's repo

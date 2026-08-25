@@ -216,7 +216,7 @@ type DB interface {
 	// projectID identifies the project the notification originates from:
 	// preferences are stored per organization, so the filtering uses the organization that owns the project.
 	// Users without a notification_preferences row for that organization default to receiving all categories.
-	FindPushSubscriptionsForRecipients(ctx context.Context, projectID string, emails []string, category string) ([]*PushSubscription, error)
+	FindPushSubscriptionsForRecipients(ctx context.Context, projectID string, emails []string, category string) ([]*PushSubscriptionRecipient, error)
 	// InsertPushSubscription upserts a push subscription by endpoint:
 	// if the endpoint is already registered, its user, keys and user agent are updated.
 	InsertPushSubscription(ctx context.Context, opts *InsertPushSubscriptionOptions) (*PushSubscription, error)
@@ -944,6 +944,15 @@ type PushSubscription struct {
 	Auth      string    `db:"auth"`
 	UserAgent string    `db:"user_agent"`
 	CreatedOn time.Time `db:"created_on"`
+}
+
+// PushSubscriptionRecipient is a push subscription together with the email of the user it belongs to.
+// The email is not a column of push_subscriptions: it comes from the join on users, and it is what lets a caller
+// address a per-recipient payload — an app badge count, say — to the right person's devices without a second
+// lookup. It is lowercased, as the recipient lists it is matched against are.
+type PushSubscriptionRecipient struct {
+	PushSubscription
+	Email string `db:"recipient_email"`
 }
 
 type InsertPushSubscriptionOptions struct {

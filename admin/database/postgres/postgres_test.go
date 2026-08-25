@@ -1236,40 +1236,50 @@ func testPushSubscriptions(t *testing.T, db database.DB) {
 
 	// Recipient lookup is case-insensitive on email and defaults to all categories without a preferences row
 	recipients := []string{strings.ToUpper(u1.Email), u2.Email, "unknown@rilldata.com"}
+	var recipientSubs []*database.PushSubscriptionRecipient
 	for _, category := range []string{database.NotificationCategoryAlerts, database.NotificationCategoryReports, database.NotificationCategoryActApprovals} {
-		subs, err = db.FindPushSubscriptionsForRecipients(ctx, projA.ID, recipients, category)
+		recipientSubs, err = db.FindPushSubscriptionsForRecipients(ctx, projA.ID, recipients, category)
 		require.NoError(t, err)
-		require.Len(t, subs, 3)
+		require.Len(t, recipientSubs, 3)
 	}
+
+	// Each subscription comes back with the email of the user it belongs to, lowercased however the recipient was
+	// spelled: it is what lets a caller address a per-recipient payload to the right person's devices.
+	byUser := make(map[string]string, len(recipientSubs))
+	for _, sub := range recipientSubs {
+		byUser[sub.UserID] = sub.Email
+	}
+	require.Equal(t, strings.ToLower(u1.Email), byUser[u1.ID])
+	require.Equal(t, strings.ToLower(u2.Email), byUser[u2.ID])
 
 	// An opted-out category excludes the user's subscriptions; other categories are unaffected
 	_, err = db.UpsertNotificationPreferences(ctx, u2.ID, orgA.ID, &database.UpsertNotificationPreferencesOptions{PushAlerts: false, PushReports: true, PushActApprovals: true})
 	require.NoError(t, err)
-	subs, err = db.FindPushSubscriptionsForRecipients(ctx, projA.ID, recipients, database.NotificationCategoryAlerts)
+	recipientSubs, err = db.FindPushSubscriptionsForRecipients(ctx, projA.ID, recipients, database.NotificationCategoryAlerts)
 	require.NoError(t, err)
-	require.Len(t, subs, 1)
-	require.Equal(t, u1.ID, subs[0].UserID)
-	subs, err = db.FindPushSubscriptionsForRecipients(ctx, projA.ID, recipients, database.NotificationCategoryReports)
+	require.Len(t, recipientSubs, 1)
+	require.Equal(t, u1.ID, recipientSubs[0].UserID)
+	recipientSubs, err = db.FindPushSubscriptionsForRecipients(ctx, projA.ID, recipients, database.NotificationCategoryReports)
 	require.NoError(t, err)
-	require.Len(t, subs, 3)
+	require.Len(t, recipientSubs, 3)
 
 	// The opt-out belongs to its organization: a project of the other one is unaffected by it
-	subs, err = db.FindPushSubscriptionsForRecipients(ctx, projB.ID, recipients, database.NotificationCategoryAlerts)
+	recipientSubs, err = db.FindPushSubscriptionsForRecipients(ctx, projB.ID, recipients, database.NotificationCategoryAlerts)
 	require.NoError(t, err)
-	require.Len(t, subs, 3)
+	require.Len(t, recipientSubs, 3)
 
 	// Opting out in the second organization too excludes the user from both
 	_, err = db.UpsertNotificationPreferences(ctx, u2.ID, orgB.ID, &database.UpsertNotificationPreferencesOptions{PushAlerts: false, PushReports: true, PushActApprovals: true})
 	require.NoError(t, err)
-	subs, err = db.FindPushSubscriptionsForRecipients(ctx, projB.ID, recipients, database.NotificationCategoryAlerts)
+	recipientSubs, err = db.FindPushSubscriptionsForRecipients(ctx, projB.ID, recipients, database.NotificationCategoryAlerts)
 	require.NoError(t, err)
-	require.Len(t, subs, 1)
-	require.Equal(t, u1.ID, subs[0].UserID)
+	require.Len(t, recipientSubs, 1)
+	require.Equal(t, u1.ID, recipientSubs[0].UserID)
 
 	// A project that doesn't exist has no organization to read preferences from, so it reaches nobody
-	subs, err = db.FindPushSubscriptionsForRecipients(ctx, "11111111-0000-0000-0000-000000000001", recipients, database.NotificationCategoryAlerts)
+	recipientSubs, err = db.FindPushSubscriptionsForRecipients(ctx, "11111111-0000-0000-0000-000000000001", recipients, database.NotificationCategoryAlerts)
 	require.NoError(t, err)
-	require.Len(t, subs, 0)
+	require.Len(t, recipientSubs, 0)
 
 	_, err = db.FindPushSubscriptionsForRecipients(ctx, projA.ID, recipients, "invalid")
 	require.ErrorIs(t, err, database.ErrValidation)
