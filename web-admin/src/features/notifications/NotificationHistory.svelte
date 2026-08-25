@@ -5,7 +5,16 @@
   import { getLocale } from "@rilldata/web-common/lib/i18n/gen/runtime";
   import { listNotificationEntries } from "./notification-history";
 
-  const historyQuery = createAdminServiceListNotifications();
+  // The history changes from outside this page: an alert fires, a report lands, an agent asks for a decision.
+  // The app's query client refetches nothing by default, so without this the list is whatever it held when the
+  // tab first opened, and a reader who came here *because* a notification arrived would not find it
+  // (kairos-cloud#148). Refetching on focus covers coming back to an app that stayed open.
+  const historyQuery = createAdminServiceListNotifications(undefined, {
+    query: {
+      refetchOnMount: true,
+      refetchOnWindowFocus: true,
+    },
+  });
 
   let { data, isSuccess, isError } = $derived($historyQuery);
   // Whether the history holds more than this list shows. A list that quietly stops reads as "this is everything".
