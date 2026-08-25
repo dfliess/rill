@@ -115,6 +115,7 @@ func New(ctx context.Context, dsn string, adm *admin.Service) (jobs.Client, erro
 	river.AddWorker(workers, &DeleteExpiredAuthCodesWorker{admin: adm, logger: adm.Logger})
 	river.AddWorker(workers, &DeleteExpiredDeviceAuthCodesWorker{admin: adm, logger: adm.Logger})
 	river.AddWorker(workers, &DeleteExpiredTokensWorker{admin: adm})
+	river.AddWorker(workers, &DeleteExpiredNotificationsWorker{admin: adm})
 	river.AddWorker(workers, &DeleteExpiredVirtualFilesWorker{admin: adm})
 	river.AddWorker(workers, &DeleteUnusedAssetsWorker{admin: adm})
 	river.AddWorker(workers, &DeploymentsHealthCheckWorker{admin: adm, logger: adm.Logger})
@@ -136,6 +137,7 @@ func New(ctx context.Context, dsn string, adm *admin.Service) (jobs.Client, erro
 		{&DeleteExpiredAuthCodesArgs{}, "0 */6 * * *", true},       // every 6 hours
 		{&DeleteExpiredDeviceAuthCodesArgs{}, "0 */6 * * *", true}, // every 6 hours
 		{&DeleteExpiredTokensArgs{}, "0 */6 * * *", true},          // every 6 hours
+		{&DeleteExpiredNotificationsArgs{}, "30 2 * * *", true},    // daily at 2:30am UTC
 		{&DeleteExpiredVirtualFilesArgs{}, "0 */6 * * *", true},    // every 6 hours
 		{&DeleteUnusedAssetsArgs{}, "0 */6 * * *", true},           // every 6 hours
 		{&DeploymentsHealthCheckArgs{}, "0 */10 * * *", true},      // every 10 minutes

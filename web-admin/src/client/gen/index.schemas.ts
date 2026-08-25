@@ -893,6 +893,10 @@ export interface V1ListNotificationPreferencesResponse {
   organizations?: V1OrganizationNotificationPreferences[];
 }
 
+export interface V1ListNotificationsResponse {
+  notifications?: V1Notification[];
+}
+
 export interface V1ListOrganizationBillingIssuesResponse {
   issues?: V1BillingIssue[];
 }
@@ -1065,6 +1069,23 @@ export interface V1MemberUsergroup {
   updatedOn?: string;
   restrictResources?: boolean;
   resources?: Rilladminv1ResourceName[];
+}
+
+/**
+ * Notification is one entry of a user's notification history: something that concerned them, and when.
+It is a record, not an inbox — there is no read state, because an alert or a report has nothing to resolve.
+ */
+export interface V1Notification {
+  id?: string;
+  /** One of "alerts", "reports" or "act_approvals". */
+  category?: string;
+  org?: string;
+  project?: string;
+  title?: string;
+  body?: string;
+  /** Path relative to the frontend URL, as the notification carried it. */
+  linkPath?: string;
+  sentOn?: string;
 }
 
 /**
@@ -2756,6 +2777,13 @@ When both resource_kind and resource_name are unset, all bookmarks in the projec
 
 export type AdminServiceUpdateNotificationPreferencesBody = {
   preferences?: V1NotificationPreferences;
+};
+
+export type AdminServiceListNotificationsParams = {
+  /**
+   * Maximum entries to return. Defaults to a server-side page size, and is capped by it.
+   */
+  pageSize?: number;
 };
 
 export type AdminServiceSearchUsersParams = {

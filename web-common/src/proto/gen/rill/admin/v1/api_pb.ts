@@ -9833,6 +9833,168 @@ export class DeletePushSubscriptionResponse extends Message<DeletePushSubscripti
 }
 
 /**
+ * @generated from message rill.admin.v1.ListNotificationsRequest
+ */
+export class ListNotificationsRequest extends Message<ListNotificationsRequest> {
+  /**
+   * Maximum entries to return. Defaults to a server-side page size, and is capped by it.
+   *
+   * @generated from field: int32 page_size = 1;
+   */
+  pageSize = 0;
+
+  constructor(data?: PartialMessage<ListNotificationsRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rill.admin.v1.ListNotificationsRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "page_size", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ListNotificationsRequest {
+    return new ListNotificationsRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ListNotificationsRequest {
+    return new ListNotificationsRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ListNotificationsRequest {
+    return new ListNotificationsRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ListNotificationsRequest | PlainMessage<ListNotificationsRequest> | undefined, b: ListNotificationsRequest | PlainMessage<ListNotificationsRequest> | undefined): boolean {
+    return proto3.util.equals(ListNotificationsRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message rill.admin.v1.ListNotificationsResponse
+ */
+export class ListNotificationsResponse extends Message<ListNotificationsResponse> {
+  /**
+   * @generated from field: repeated rill.admin.v1.Notification notifications = 1;
+   */
+  notifications: Notification[] = [];
+
+  constructor(data?: PartialMessage<ListNotificationsResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rill.admin.v1.ListNotificationsResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "notifications", kind: "message", T: Notification, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ListNotificationsResponse {
+    return new ListNotificationsResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ListNotificationsResponse {
+    return new ListNotificationsResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ListNotificationsResponse {
+    return new ListNotificationsResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ListNotificationsResponse | PlainMessage<ListNotificationsResponse> | undefined, b: ListNotificationsResponse | PlainMessage<ListNotificationsResponse> | undefined): boolean {
+    return proto3.util.equals(ListNotificationsResponse, a, b);
+  }
+}
+
+/**
+ * Notification is one entry of a user's notification history: something that concerned them, and when.
+ * It is a record, not an inbox — there is no read state, because an alert or a report has nothing to resolve.
+ *
+ * @generated from message rill.admin.v1.Notification
+ */
+export class Notification extends Message<Notification> {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id = "";
+
+  /**
+   * One of "alerts", "reports" or "act_approvals".
+   *
+   * @generated from field: string category = 2;
+   */
+  category = "";
+
+  /**
+   * @generated from field: string org = 3;
+   */
+  org = "";
+
+  /**
+   * @generated from field: string project = 4;
+   */
+  project = "";
+
+  /**
+   * @generated from field: string title = 5;
+   */
+  title = "";
+
+  /**
+   * @generated from field: string body = 6;
+   */
+  body = "";
+
+  /**
+   * Path relative to the frontend URL, as the notification carried it.
+   *
+   * @generated from field: string link_path = 7;
+   */
+  linkPath = "";
+
+  /**
+   * @generated from field: google.protobuf.Timestamp sent_on = 8;
+   */
+  sentOn?: Timestamp;
+
+  constructor(data?: PartialMessage<Notification>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rill.admin.v1.Notification";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "category", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "org", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "project", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "title", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 6, name: "body", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 7, name: "link_path", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 8, name: "sent_on", kind: "message", T: Timestamp },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Notification {
+    return new Notification().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): Notification {
+    return new Notification().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): Notification {
+    return new Notification().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: Notification | PlainMessage<Notification> | undefined, b: Notification | PlainMessage<Notification> | undefined): boolean {
+    return proto3.util.equals(Notification, a, b);
+  }
+}
+
+/**
  * NotificationPreferences are a user's opt-outs for one organization: a category left on there stays on for its projects only.
  *
  * @generated from message rill.admin.v1.NotificationPreferences

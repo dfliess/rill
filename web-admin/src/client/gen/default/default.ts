@@ -66,6 +66,7 @@ import type {
   AdminServiceListBookmarksParams,
   AdminServiceListDeploymentsParams,
   AdminServiceListMagicAuthTokensParams,
+  AdminServiceListNotificationsParams,
   AdminServiceListOrganizationBillingIssuesParams,
   AdminServiceListOrganizationInvitesParams,
   AdminServiceListOrganizationMemberUsergroupsParams,
@@ -199,6 +200,7 @@ import type {
   V1ListGithubUserReposResponse,
   V1ListMagicAuthTokensResponse,
   V1ListNotificationPreferencesResponse,
+  V1ListNotificationsResponse,
   V1ListOrganizationBillingIssuesResponse,
   V1ListOrganizationInvitesResponse,
   V1ListOrganizationMemberUsergroupsResponse,
@@ -17671,6 +17673,100 @@ export const createAdminServiceUpdateNotificationPreferences = <
 
   return createMutation(mutationOptions, queryClient);
 };
+/**
+ * @summary ListNotifications returns the current user's notification history, newest first.
+ */
+export const adminServiceListNotifications = (
+  params?: AdminServiceListNotificationsParams,
+  signal?: AbortSignal,
+) => {
+  return httpClient<V1ListNotificationsResponse>({
+    url: `/v1/users/notifications`,
+    method: "GET",
+    params,
+    signal,
+  });
+};
+
+export const getAdminServiceListNotificationsQueryKey = (
+  params?: AdminServiceListNotificationsParams,
+) => {
+  return [`/v1/users/notifications`, ...(params ? [params] : [])] as const;
+};
+
+export const getAdminServiceListNotificationsQueryOptions = <
+  TData = Awaited<ReturnType<typeof adminServiceListNotifications>>,
+  TError = RpcStatus,
+>(
+  params?: AdminServiceListNotificationsParams,
+  options?: {
+    query?: Partial<
+      CreateQueryOptions<
+        Awaited<ReturnType<typeof adminServiceListNotifications>>,
+        TError,
+        TData
+      >
+    >;
+  },
+) => {
+  const { query: queryOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getAdminServiceListNotificationsQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof adminServiceListNotifications>>
+  > = ({ signal }) => adminServiceListNotifications(params, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as CreateQueryOptions<
+    Awaited<ReturnType<typeof adminServiceListNotifications>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AdminServiceListNotificationsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof adminServiceListNotifications>>
+>;
+export type AdminServiceListNotificationsQueryError = RpcStatus;
+
+/**
+ * @summary ListNotifications returns the current user's notification history, newest first.
+ */
+
+export function createAdminServiceListNotifications<
+  TData = Awaited<ReturnType<typeof adminServiceListNotifications>>,
+  TError = RpcStatus,
+>(
+  params?: AdminServiceListNotificationsParams,
+  options?: {
+    query?: Partial<
+      CreateQueryOptions<
+        Awaited<ReturnType<typeof adminServiceListNotifications>>,
+        TError,
+        TData
+      >
+    >;
+  },
+  queryClient?: QueryClient,
+): CreateQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getAdminServiceListNotificationsQueryOptions(
+    params,
+    options,
+  );
+
+  const query = createQuery(queryOptions, queryClient) as CreateQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
 /**
  * @summary UpdateUserPreferences updates the preferences for the user
  */

@@ -96,6 +96,43 @@ func (s *Server) DeletePushSubscription(ctx context.Context, req *adminv1.Delete
 	return &adminv1.DeletePushSubscriptionResponse{}, nil
 }
 
+// notificationHistoryPageSize bounds one read of the history. It is a record to glance back over, not an archive to
+// page through, so there is one page and it is generous rather than paginated.
+const notificationHistoryPageSize = 100
+
+func (s *Server) ListNotifications(ctx context.Context, req *adminv1.ListNotificationsRequest) (*adminv1.ListNotificationsResponse, error) {
+	claims := auth.GetClaims(ctx)
+	if claims.OwnerType() != auth.OwnerTypeUser {
+		return nil, status.Error(codes.Unauthenticated, "not authenticated as a user")
+	}
+
+	// The history is read for the caller and only for the caller: there is no user ID in the request to get wrong.
+	limit := notificationHistoryPageSize
+	if req.PageSize > 0 && int(req.PageSize) < limit {
+		limit = int(req.PageSize)
+	}
+
+	deliveries, err := s.admin.DB.FindNotificationDeliveriesForUser(ctx, claims.OwnerID(), limit)
+	if err != nil {
+		return nil, err
+	}
+
+	dtos := make([]*adminv1.Notification, len(deliveries))
+	for i, d := range deliveries {
+		dtos[i] = &adminv1.Notification{
+			Id:       d.ID,
+			Category: d.Category,
+			Org:      d.OrgName,
+			Project:  d.ProjectName,
+			Title:    d.Title,
+			Body:     d.Body,
+			LinkPath: d.LinkPath,
+			SentOn:   timestamppb.New(d.SentOn),
+		}
+	}
+	return &adminv1.ListNotificationsResponse{Notifications: dtos}, nil
+}
+
 func (s *Server) ListNotificationPreferences(ctx context.Context, req *adminv1.ListNotificationPreferencesRequest) (*adminv1.ListNotificationPreferencesResponse, error) {
 	claims := auth.GetClaims(ctx)
 	if claims.OwnerType() != auth.OwnerTypeUser {
@@ -220,6 +257,7 @@ func (s *Server) SendPushNotification(ctx context.Context, req *adminv1.SendPush
 		ProjectID:  proj.ID,
 		Category:   req.Category,
 		Recipients: req.RecipientEmails,
+		LinkPath:   req.LinkPath,
 		Message: &pushnotifications.Message{
 			Title:    req.Title,
 			Body:     req.Body,

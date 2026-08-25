@@ -1135,6 +1135,13 @@ components:
                         $ref: '#/components/schemas/v1OrganizationNotificationPreferences'
                     type: array
             type: object
+        v1ListNotificationsResponse:
+            properties:
+                notifications:
+                    items:
+                        $ref: '#/components/schemas/v1Notification'
+                    type: array
+            type: object
         v1ListOrganizationBillingIssuesResponse:
             properties:
                 issues:
@@ -1441,6 +1448,31 @@ components:
                 usersCount:
                     format: int64
                     type: integer
+            type: object
+        v1Notification:
+            description: |-
+                Notification is one entry of a user's notification history: something that concerned them, and when.
+                It is a record, not an inbox — there is no read state, because an alert or a report has nothing to resolve.
+            properties:
+                body:
+                    type: string
+                category:
+                    description: One of "alerts", "reports" or "act_approvals".
+                    type: string
+                id:
+                    type: string
+                linkPath:
+                    description: Path relative to the frontend URL, as the notification carried it.
+                    type: string
+                org:
+                    type: string
+                project:
+                    type: string
+                sentOn:
+                    format: date-time
+                    type: string
+                title:
+                    type: string
             type: object
         v1NotificationPreferences:
             description: 'NotificationPreferences are a user''s opt-outs for one organization: a category left on there stays on for its projects only.'
@@ -4231,6 +4263,7 @@ paths:
     /v1/users/current: {}
     /v1/users/notification-preferences: {}
     /v1/users/notification-preferences/{org}: {}
+    /v1/users/notifications: {}
     /v1/users/preferences: {}
     /v1/users/push-notifications/subscriptions: {}
     /v1/users/push-notifications/subscriptions/{id}: {}

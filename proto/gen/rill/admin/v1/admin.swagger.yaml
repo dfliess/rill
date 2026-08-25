@@ -4931,6 +4931,26 @@ paths:
             properties:
               preferences:
                 $ref: '#/definitions/v1NotificationPreferences'
+  /v1/users/notifications:
+    get:
+      summary: ListNotifications returns the current user's notification history, newest first.
+      operationId: AdminService_ListNotifications
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1ListNotificationsResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: pageSize
+          description: Maximum entries to return. Defaults to a server-side page size, and is capped by it.
+          in: query
+          required: false
+          type: integer
+          format: int32
   /v1/users/preferences:
     put:
       summary: UpdateUserPreferences updates the preferences for the user
@@ -6178,6 +6198,14 @@ definitions:
         items:
           type: object
           $ref: '#/definitions/v1OrganizationNotificationPreferences'
+  v1ListNotificationsResponse:
+    type: object
+    properties:
+      notifications:
+        type: array
+        items:
+          type: object
+          $ref: '#/definitions/v1Notification'
   v1ListOrganizationBillingIssuesResponse:
     type: object
     properties:
@@ -6514,6 +6542,31 @@ definitions:
         items:
           type: object
           $ref: '#/definitions/rilladminv1ResourceName'
+  v1Notification:
+    type: object
+    properties:
+      id:
+        type: string
+      category:
+        type: string
+        description: One of "alerts", "reports" or "act_approvals".
+      org:
+        type: string
+      project:
+        type: string
+      title:
+        type: string
+      body:
+        type: string
+      linkPath:
+        type: string
+        description: Path relative to the frontend URL, as the notification carried it.
+      sentOn:
+        type: string
+        format: date-time
+    description: |-
+      Notification is one entry of a user's notification history: something that concerned them, and when.
+      It is a record, not an inbox — there is no read state, because an alert or a report has nothing to resolve.
   v1NotificationPreferences:
     type: object
     properties:

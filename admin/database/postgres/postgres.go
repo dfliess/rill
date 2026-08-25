@@ -1857,6 +1857,57 @@ func (c *connection) DeletePushSubscription(ctx context.Context, id, userID stri
 	return checkDeleteRow("push subscription", res, err)
 }
 
+func (c *connection) InsertNotificationDeliveries(ctx context.Context, opts *database.InsertNotificationDeliveriesOptions) (int, error) {
+	if err := database.Validate(opts); err != nil {
+		return 0, err
+	}
+	if len(opts.Recipients) == 0 {
+		return 0, nil
+	}
+
+	lowered := make([]string, len(opts.Recipients))
+	for i, email := range opts.Recipients {
+		lowered[i] = strings.ToLower(email)
+	}
+
+	// Resolving the addresses and writing the rows in one statement is what makes "recipients that are not users
+	// are skipped" a property of the query rather than of a loop that has to remember to skip them.
+	res, err := c.getDB(ctx).ExecContext(ctx, `
+		INSERT INTO notification_deliveries (user_id, project_id, category, title, body, link_path)
+		SELECT u.id, $1, $2, $3, $4, $5 FROM users u WHERE lower(u.email) = ANY($6)
+	`, opts.ProjectID, opts.Category, opts.Title, opts.Body, opts.LinkPath, lowered)
+	if err != nil {
+		return 0, parseErr("notification delivery", err)
+	}
+	written, err := res.RowsAffected()
+	if err != nil {
+		return 0, parseErr("notification delivery", err)
+	}
+	return int(written), nil
+}
+
+func (c *connection) FindNotificationDeliveriesForUser(ctx context.Context, userID string, limit int) ([]*database.NotificationDelivery, error) {
+	var res []*database.NotificationDelivery
+	err := c.getDB(ctx).SelectContext(ctx, &res, `
+		SELECT d.*, o.name AS org_name, p.name AS project_name
+		FROM notification_deliveries d
+		JOIN projects p ON p.id = d.project_id
+		JOIN orgs o ON o.id = p.org_id
+		WHERE d.user_id = $1
+		ORDER BY d.sent_on DESC
+		LIMIT $2
+	`, userID, limit)
+	if err != nil {
+		return nil, parseErr("notification deliveries", err)
+	}
+	return res, nil
+}
+
+func (c *connection) DeleteExpiredNotificationDeliveries(ctx context.Context, retention time.Duration) error {
+	_, err := c.getDB(ctx).ExecContext(ctx, "DELETE FROM notification_deliveries WHERE sent_on + $1 < now()", retention)
+	return parseErr("notification deliveries", err)
+}
+
 func (c *connection) DeletePushSubscriptionByEndpoint(ctx context.Context, endpoint string) error {
 	_, err := c.getDB(ctx).ExecContext(ctx, "DELETE FROM push_subscriptions WHERE endpoint=$1", endpoint)
 	return parseErr("push subscription", err)

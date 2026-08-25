@@ -50,6 +50,7 @@ func TestPostgres(t *testing.T) {
 	t.Run("TestOrganizationInviteUsergroups", func(t *testing.T) { testOrganizationInviteUsergroups(t, db) })
 	t.Run("TestAttributeValidation", func(t *testing.T) { testAttributeValidation(t, db) })
 	t.Run("TestPushSubscriptions", func(t *testing.T) { testPushSubscriptions(t, db) })
+	t.Run("TestNotificationDeliveries", func(t *testing.T) { testNotificationDeliveries(t, db) })
 	t.Run("TestNotificationPreferences", func(t *testing.T) { testNotificationPreferences(t, db) })
 
 	t.Run("TestOrgNameValidation", func(t *testing.T) {
@@ -1411,4 +1412,93 @@ func randomName() string {
 		panic(err)
 	}
 	return "test_" + hex.EncodeToString(id)
+}
+
+// testNotificationDeliveries covers the notification history (kairos-cloud#148): who gets a row, who does not, whose
+// history they land in, and that age is what removes them.
+func testNotificationDeliveries(t *testing.T, db database.DB) {
+	ctx := context.Background()
+
+	u1, err := db.InsertUser(ctx, &database.InsertUserOptions{Email: randomName() + "@Rilldata.com"})
+	require.NoError(t, err)
+	u2, err := db.InsertUser(ctx, &database.InsertUserOptions{Email: randomName() + "@rilldata.com"})
+	require.NoError(t, err)
+
+	org, err := db.InsertOrganization(ctx, &database.InsertOrganizationOptions{Name: randomName()})
+	require.NoError(t, err)
+	proj, err := db.InsertProject(ctx, &database.InsertProjectOptions{OrganizationID: org.ID, Name: randomName()})
+	require.NoError(t, err)
+
+	// Required fields are validated rather than written half-formed.
+	_, err = db.InsertNotificationDeliveries(ctx, &database.InsertNotificationDeliveriesOptions{
+		ProjectID: proj.ID, Recipients: []string{u1.Email}, Category: "alerts",
+	})
+	require.ErrorIs(t, err, database.ErrValidation)
+
+	// An address that is nobody's is skipped, and matching is case-insensitive: an alert's YAML may name any
+	// address, and one without an account has no history to appear in.
+	written, err := db.InsertNotificationDeliveries(ctx, &database.InsertNotificationDeliveriesOptions{
+		ProjectID:  proj.ID,
+		Recipients: []string{strings.ToUpper(u1.Email), "nadie@example.com"},
+		Category:   "act_approvals",
+		Title:      "Aprobación pendiente: Cobranza",
+		Body:       "La acción \"create_issue\" espera tu aprobación.",
+		LinkPath:   "/acme/demo/-/agents/cobranza/runs/r1",
+	})
+	require.NoError(t, err)
+	require.Equal(t, 1, written)
+
+	// No recipients is not an error, and writes nothing: an alert whose notifier names nobody still reconciles.
+	written, err = db.InsertNotificationDeliveries(ctx, &database.InsertNotificationDeliveriesOptions{
+		ProjectID: proj.ID, Recipients: nil, Category: "alerts", Title: "sin destinatarios",
+	})
+	require.NoError(t, err)
+	require.Equal(t, 0, written)
+
+	// One notification to two recipients is one row each.
+	written, err = db.InsertNotificationDeliveries(ctx, &database.InsertNotificationDeliveriesOptions{
+		ProjectID:  proj.ID,
+		Recipients: []string{u1.Email, u2.Email},
+		Category:   "reports",
+		Title:      "Tu informe está listo",
+		LinkPath:   "/acme/demo/-/reports/cierre",
+	})
+	require.NoError(t, err)
+	require.Equal(t, 2, written)
+
+	// A history is one person's: u2 sees only what was addressed to them.
+	list, err := db.FindNotificationDeliveriesForUser(ctx, u2.ID, 10)
+	require.NoError(t, err)
+	require.Len(t, list, 1)
+	require.Equal(t, "reports", list[0].Category)
+	require.Equal(t, org.Name, list[0].OrgName)
+	require.Equal(t, proj.Name, list[0].ProjectName)
+
+	// Newest first, and the limit is honoured.
+	list, err = db.FindNotificationDeliveriesForUser(ctx, u1.ID, 10)
+	require.NoError(t, err)
+	require.Len(t, list, 2)
+	require.Equal(t, "reports", list[0].Category, "newest first")
+	require.Equal(t, "act_approvals", list[1].Category)
+	require.Equal(t, "Aprobación pendiente: Cobranza", list[1].Title)
+	require.Equal(t, "/acme/demo/-/agents/cobranza/runs/r1", list[1].LinkPath)
+	require.Less(t, time.Since(list[0].SentOn), 10*time.Second)
+
+	list, err = db.FindNotificationDeliveriesForUser(ctx, u1.ID, 1)
+	require.NoError(t, err)
+	require.Len(t, list, 1)
+
+	// Retention removes by age and leaves the recent alone: a purge that took everything would be indistinguishable
+	// from one that took nothing, on rows this fresh.
+	err = db.DeleteExpiredNotificationDeliveries(ctx, time.Hour)
+	require.NoError(t, err)
+	list, err = db.FindNotificationDeliveriesForUser(ctx, u1.ID, 10)
+	require.NoError(t, err)
+	require.Len(t, list, 2, "nothing is old enough to purge yet")
+
+	err = db.DeleteExpiredNotificationDeliveries(ctx, 0)
+	require.NoError(t, err)
+	list, err = db.FindNotificationDeliveriesForUser(ctx, u1.ID, 10)
+	require.NoError(t, err)
+	require.Empty(t, list)
 }

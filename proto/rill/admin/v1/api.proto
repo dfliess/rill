@@ -1156,6 +1156,11 @@ service AdminService {
     option (google.api.http) = {delete: "/v1/users/push-notifications/subscriptions/{id}"};
   }
 
+  // ListNotifications returns the current user's notification history, newest first.
+  rpc ListNotifications(ListNotificationsRequest) returns (ListNotificationsResponse) {
+    option (google.api.http) = {get: "/v1/users/notifications"};
+  }
+
   // ListNotificationPreferences returns the current user's notification preferences in every organization they belong to.
   rpc ListNotificationPreferences(ListNotificationPreferencesRequest) returns (ListNotificationPreferencesResponse) {
     option (google.api.http) = {get: "/v1/users/notification-preferences"};
@@ -2667,6 +2672,30 @@ message DeletePushSubscriptionRequest {
 }
 
 message DeletePushSubscriptionResponse {}
+
+message ListNotificationsRequest {
+  // Maximum entries to return. Defaults to a server-side page size, and is capped by it.
+  int32 page_size = 1 [(validate.rules).int32 = {ignore_empty: true, gte: 1}];
+}
+
+message ListNotificationsResponse {
+  repeated Notification notifications = 1;
+}
+
+// Notification is one entry of a user's notification history: something that concerned them, and when.
+// It is a record, not an inbox — there is no read state, because an alert or a report has nothing to resolve.
+message Notification {
+  string id = 1;
+  // One of "alerts", "reports" or "act_approvals".
+  string category = 2;
+  string org = 3;
+  string project = 4;
+  string title = 5;
+  string body = 6;
+  // Path relative to the frontend URL, as the notification carried it.
+  string link_path = 7;
+  google.protobuf.Timestamp sent_on = 8;
+}
 
 // NotificationPreferences are a user's opt-outs for one organization: a category left on there stays on for its projects only.
 message NotificationPreferences {

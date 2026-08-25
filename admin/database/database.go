@@ -222,6 +222,16 @@ type DB interface {
 	InsertPushSubscription(ctx context.Context, opts *InsertPushSubscriptionOptions) (*PushSubscription, error)
 	// DeletePushSubscription deletes a push subscription scoped to its owning user.
 	DeletePushSubscription(ctx context.Context, id, userID string) error
+	// InsertNotificationDeliveries records one notification against every recipient that is a user of this
+	// deployment, and returns how many rows it wrote. Recipients that resolve to nobody are skipped: an alert's
+	// YAML may name any address, and an address without an account has no history to appear in.
+	// It is deliberately not filtered by notification preferences: those govern the interruption, not the record.
+	InsertNotificationDeliveries(ctx context.Context, opts *InsertNotificationDeliveriesOptions) (int, error)
+	// FindNotificationDeliveriesForUser returns a user's notification history, newest first.
+	FindNotificationDeliveriesForUser(ctx context.Context, userID string, limit int) ([]*NotificationDelivery, error)
+	// DeleteExpiredNotificationDeliveries deletes history older than the given retention. It is idempotent.
+	DeleteExpiredNotificationDeliveries(ctx context.Context, retention time.Duration) error
+
 	// DeletePushSubscriptionByEndpoint deletes a push subscription by endpoint.
 	// It is used to purge subscriptions the push service reports as gone. It is idempotent.
 	DeletePushSubscriptionByEndpoint(ctx context.Context, endpoint string) error
@@ -961,6 +971,33 @@ type InsertPushSubscriptionOptions struct {
 	P256dh    string `validate:"required"`
 	Auth      string `validate:"required"`
 	UserAgent string
+}
+
+// InsertNotificationDeliveriesOptions is one notification and the addresses it went to. The recipients are matched
+// against user emails case-insensitively, as push subscriptions are.
+type InsertNotificationDeliveriesOptions struct {
+	ProjectID  string `validate:"required"`
+	Recipients []string
+	Category   string `validate:"required"`
+	Title      string `validate:"required"`
+	Body       string
+	LinkPath   string
+}
+
+// NotificationDelivery is one entry of a user's notification history, with the project it came from named.
+type NotificationDelivery struct {
+	ID        string    `db:"id"`
+	UserID    string    `db:"user_id"`
+	ProjectID string    `db:"project_id"`
+	Category  string    `db:"category"`
+	Title     string    `db:"title"`
+	Body      string    `db:"body"`
+	LinkPath  string    `db:"link_path"`
+	SentOn    time.Time `db:"sent_on"`
+	// OrgName and ProjectName come from the join, so a reader can see where a notification came from without the
+	// frontend resolving IDs it was never given.
+	OrgName     string `db:"org_name"`
+	ProjectName string `db:"project_name"`
 }
 
 // NotificationPreferences stores a user's per-category notification opt-outs in one organization.
