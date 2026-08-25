@@ -87,14 +87,14 @@ func (n *actApprovalPushNotifier) NotifyPendingApprovals(ctx context.Context, pe
 		body = fmt.Sprintf("%d acciones esperan tu aprobación, empezando por %q.", len(pending.Actions), pending.Actions[0].Tool)
 	}
 
-	sent, err := admin.SendPushNotification(ctx,
-		drivers.PushCategoryActApprovals,
-		recipients,
-		fmt.Sprintf("Aprobación pendiente: %s", displayName),
-		body,
-		agentRunPath(org, project, pending.AgentName, pending.IdempotencyKey),
-		fmt.Sprintf("act:%s/%s/%s", org, project, pending.RunID),
-	)
+	sent, err := admin.SendPushNotification(ctx, &drivers.PushNotification{
+		Category:   drivers.PushCategoryActApprovals,
+		Recipients: recipients,
+		Title:      fmt.Sprintf("Aprobación pendiente: %s", displayName),
+		Body:       body,
+		LinkPath:   agentRunPath(org, project, pending.AgentName, pending.IdempotencyKey),
+		Tag:        fmt.Sprintf("act:%s/%s/%s", org, project, pending.RunID),
+	})
 	if err != nil {
 		n.warn(ctx, "Failed to send act approval push", pending, err)
 		return

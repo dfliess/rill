@@ -27,22 +27,12 @@ import (
 // and browsers truncate long bodies anyway.
 const pushBodyMaxLen = 200
 
-// pushNotification describes one web push dispatch that mirrors an email notification.
-type pushNotification struct {
-	category   string
-	recipients []string
-	title      string
-	body       string
-	linkPath   string
-	tag        string
-}
-
 // alertPushNotification builds the push mirror of an alert status notification.
 // The wording mirrors the alert emails in runtime/pkg/email/templates.
 // It returns nil if there is nothing to push:
 // no "email" notifier recipients, no org/project annotations (not running in Rill Cloud),
 // or a status that does not notify.
-func alertPushNotification(name string, spec *runtimev1.AlertSpec, status *drivers.AlertStatus, org, project string) *pushNotification {
+func alertPushNotification(name string, spec *runtimev1.AlertSpec, status *drivers.AlertStatus, org, project string) *drivers.PushNotification {
 	recipients := emailNotifierRecipients(spec.Notifiers)
 	if len(recipients) == 0 || org == "" || project == "" {
 		return nil
@@ -70,42 +60,42 @@ func alertPushNotification(name string, spec *runtimev1.AlertSpec, status *drive
 		return nil
 	}
 
-	return &pushNotification{
-		category:   drivers.PushCategoryAlerts,
-		recipients: recipients,
-		title:      title,
-		body:       body,
-		linkPath:   linkPath,
-		tag:        resourcePushTag("alerts", org, project, name),
+	return &drivers.PushNotification{
+		Category:   drivers.PushCategoryAlerts,
+		Recipients: recipients,
+		Title:      title,
+		Body:       body,
+		LinkPath:   linkPath,
+		Tag:        resourcePushTag("alerts", org, project, name),
 	}
 }
 
 // reportPushNotification builds the push mirror of a "report ready" notification.
 // It returns nil if there is nothing to push (see alertPushNotification).
-func reportPushNotification(name string, spec *runtimev1.ReportSpec, reportTime time.Time, org, project, aiSessionID string) *pushNotification {
+func reportPushNotification(name string, spec *runtimev1.ReportSpec, reportTime time.Time, org, project, aiSessionID string) *drivers.PushNotification {
 	recipients := emailNotifierRecipients(spec.Notifiers)
 	if len(recipients) == 0 || org == "" || project == "" {
 		return nil
 	}
 
-	return &pushNotification{
-		category:   drivers.PushCategoryReports,
-		recipients: recipients,
-		title:      fmt.Sprintf("Tu informe %s está listo", spec.DisplayName),
-		body:       fmt.Sprintf("El informe de %s ya está disponible.", reportTime.Format(time.RFC1123)),
+	return &drivers.PushNotification{
+		Category:   drivers.PushCategoryReports,
+		Recipients: recipients,
+		Title:      fmt.Sprintf("Tu informe %s está listo", spec.DisplayName),
+		Body:       fmt.Sprintf("El informe de %s ya está disponible.", reportTime.Format(time.RFC1123)),
 		// Wherever the email takes a reader, the push takes them too: the /open route, which resolves to
 		// what the report is about with the state captured when it was scheduled (the canvas, the explore
 		// dashboard, or the AI conversation). The emails add a per-recipient magic token; one push is shared
 		// by all recipients, so it goes without one and relies on the reader's session.
-		linkPath: reportOpenPath(org, project, name, reportTime, aiSessionID),
-		tag:      resourcePushTag("reports", org, project, name),
+		LinkPath: reportOpenPath(org, project, name, reportTime, aiSessionID),
+		Tag:      resourcePushTag("reports", org, project, name),
 	}
 }
 
 // dispatchPushNotification sends n through the admin service.
 // It is best-effort: errors are logged as warnings and must never fail the reconcile.
 // A nil n is a no-op, as is an admin service that does not implement push (Rill Developer).
-func dispatchPushNotification(ctx context.Context, c *runtime.Controller, resourceName string, n *pushNotification) {
+func dispatchPushNotification(ctx context.Context, c *runtime.Controller, resourceName string, n *drivers.PushNotification) {
 	if n == nil {
 		return
 	}
@@ -117,15 +107,15 @@ func dispatchPushNotification(ctx context.Context, c *runtime.Controller, resour
 	}
 	defer release()
 
-	sent, err := admin.SendPushNotification(ctx, n.category, n.recipients, n.title, n.body, n.linkPath, n.tag)
+	sent, err := admin.SendPushNotification(ctx, n)
 	if err != nil {
 		if !errors.Is(err, drivers.ErrNotImplemented) && !errors.Is(err, context.Canceled) {
-			c.Logger.Warn("Failed to send push notification", zap.String("resource", resourceName), zap.String("category", n.category), zap.Error(err), observability.ZapCtx(ctx))
+			c.Logger.Warn("Failed to send push notification", zap.String("resource", resourceName), zap.String("category", n.Category), zap.Error(err), observability.ZapCtx(ctx))
 		}
 		return
 	}
 
-	c.Logger.Debug("Sent push notifications", zap.String("resource", resourceName), zap.String("category", n.category), zap.Int("sent", sent), observability.ZapCtx(ctx))
+	c.Logger.Debug("Sent push notifications", zap.String("resource", resourceName), zap.String("category", n.Category), zap.Int("sent", sent), observability.ZapCtx(ctx))
 }
 
 // emailNotifierRecipients returns the combined recipients of the "email" notifiers in the given list.

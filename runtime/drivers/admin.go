@@ -13,12 +13,10 @@ var ErrNotAuthenticated = errors.New("not authenticated")
 type AdminService interface {
 	GetReportMetadata(ctx context.Context, reportName, ownerID, webOpenMode string, emailRecipients []string, anonRecipients bool, executionTime time.Time) (*ReportMetadata, error)
 	GetAlertMetadata(ctx context.Context, alertName, ownerID string, emailRecipients []string, anonRecipients bool, annotations map[string]string, queryForUserID, queryForUserEmail string) (*AlertMetadata, error)
-	// SendPushNotification sends a web push notification to the subscriptions of the given recipient emails.
-	// The category must be one of the PushCategory constants; recipients that opted out of it are skipped.
-	// linkPath is the frontend path to open when the notification is clicked (must start with "/");
-	// notifications with the same tag replace each other in the browser.
+	// SendPushNotification sends a web push notification to the subscriptions of its recipients.
+	// Recipients that opted out of its category are skipped.
 	// It returns the number of notifications sent, which may be zero if push is disabled or nobody is subscribed.
-	SendPushNotification(ctx context.Context, category string, emails []string, title, body, linkPath, tag string) (int, error)
+	SendPushNotification(ctx context.Context, n *PushNotification) (int, error)
 	// ListProjectMemberAttributes returns the project's members with the identity a runtime JWT issued for them would carry.
 	// It lets the runtime evaluate a security policy for members that are not making a request,
 	// which is what turns "may this user decide?" into "who may decide?" (see Runtime.ResolveAgentApprovers).
@@ -27,6 +25,27 @@ type AdminService interface {
 	GetConfig(ctx context.Context) (*Config, error)
 	ListDeployments(ctx context.Context) ([]*Deployment, error)
 	UpdateProjectVariables(ctx context.Context, environment string, variables map[string]string) error
+}
+
+// PushNotification is one web push dispatch: what it says, who it goes to, and what it leaves behind on their
+// app icon.
+type PushNotification struct {
+	// Category must be one of the PushCategory constants. It is what recipients opt out of.
+	Category   string
+	Recipients []string
+	Title      string
+	Body       string
+	// LinkPath is the frontend path to open when the notification is clicked. It must start with "/".
+	LinkPath string
+	// Tag makes notifications replace each other in the browser: a second one with the same tag takes the place
+	// of the first instead of stacking under it.
+	Tag string
+	// PendingByRecipient, when non-nil, is how many things are left waiting for each recipient in this project
+	// once this notification lands, keyed by email. It is what the installed app paints on its icon
+	// (kairos-cloud#147), so it counts work to resolve, not notifications delivered: a category with nothing to
+	// resolve leaves it nil and the badge untouched. A recipient absent from a non-nil map has nothing pending,
+	// which the badge needs to hear just as much as a positive count.
+	PendingByRecipient map[string]int32
 }
 
 // Categories of web push notifications, matching the notification preferences users can toggle in the admin.

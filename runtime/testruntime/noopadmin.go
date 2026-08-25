@@ -97,7 +97,7 @@ func (c *noopAdminClient) GetReportMetadata(ctx context.Context, reportName, own
 // SendPushNotification implements [drivers.AdminService] by recording the notification,
 // so tests can assert on push dispatches the way they assert on emails through [email.TestSender].
 // It fails instead of recording if the instance was set up with FailPushNotifications.
-func (c *noopAdminClient) SendPushNotification(ctx context.Context, category string, emails []string, title, body, linkPath, tag string) (int, error) {
+func (c *noopAdminClient) SendPushNotification(ctx context.Context, n *drivers.PushNotification) (int, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -105,15 +105,8 @@ func (c *noopAdminClient) SendPushNotification(ctx context.Context, category str
 		return 0, err
 	}
 
-	c.pushNotifications[c.instanceID] = append(c.pushNotifications[c.instanceID], PushNotification{
-		Category:   category,
-		Recipients: emails,
-		Title:      title,
-		Body:       body,
-		LinkPath:   linkPath,
-		Tag:        tag,
-	})
-	return len(emails), nil
+	c.pushNotifications[c.instanceID] = append(c.pushNotifications[c.instanceID], *n)
+	return len(n.Recipients), nil
 }
 
 // ListProjectMemberAttributes implements [drivers.AdminService] with the members the test configured with
@@ -130,15 +123,8 @@ func (c *noopAdminClient) ListProjectMemberAttributes(ctx context.Context) ([]dr
 	return slices.Clone(members), nil
 }
 
-// PushNotification records a push notification sent through the noop admin service.
-type PushNotification struct {
-	Category   string
-	Recipients []string
-	Title      string
-	Body       string
-	LinkPath   string
-	Tag        string
-}
+// PushNotification is what the noop admin service records: the dispatch exactly as the caller built it.
+type PushNotification = drivers.PushNotification
 
 // PushNotifications returns the push notifications recorded for the given instance, in dispatch order.
 func PushNotifications(instanceID string) []PushNotification {

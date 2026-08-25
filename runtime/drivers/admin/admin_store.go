@@ -89,15 +89,16 @@ func (h *Handle) GetAlertMetadata(ctx context.Context, alertName, ownerID string
 	return meta, nil
 }
 
-func (h *Handle) SendPushNotification(ctx context.Context, category string, emails []string, title, body, linkPath, tag string) (int, error) {
+func (h *Handle) SendPushNotification(ctx context.Context, n *drivers.PushNotification) (int, error) {
 	res, err := h.admin.SendPushNotification(ctx, &adminv1.SendPushNotificationRequest{
-		ProjectId:       h.config.ProjectID,
-		Category:        category,
-		RecipientEmails: emails,
-		Title:           title,
-		Body:            body,
-		LinkPath:        linkPath,
-		Tag:             tag,
+		ProjectId:          h.config.ProjectID,
+		Category:           n.Category,
+		RecipientEmails:    n.Recipients,
+		Title:              n.Title,
+		Body:               n.Body,
+		LinkPath:           n.LinkPath,
+		Tag:                n.Tag,
+		PendingByRecipient: n.PendingByRecipient,
 	})
 	if err != nil {
 		return 0, err

@@ -90,7 +90,7 @@ func (l *localAdminService) GetReportMetadata(ctx context.Context, reportName, o
 }
 
 // SendPushNotification implements drivers.AdminService.
-func (l *localAdminService) SendPushNotification(ctx context.Context, category string, emails []string, title, body, linkPath, tag string) (int, error) {
+func (l *localAdminService) SendPushNotification(ctx context.Context, n *drivers.PushNotification) (int, error) {
 	return 0, drivers.ErrNotImplemented
 }
 

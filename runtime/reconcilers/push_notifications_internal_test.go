@@ -23,13 +23,13 @@ func TestAlertPushNotificationMessage(t *testing.T) {
 			Status:        runtimev1.AssertionStatus_ASSERTION_STATUS_FAIL,
 		}, "acme", "demo")
 		require.NotNil(t, n)
-		require.Equal(t, drivers.PushCategoryAlerts, n.category)
-		require.Equal(t, []string{"somebody@example.com"}, n.recipients)
-		require.Equal(t, "Alerta: Ventas diarias", n.title)
-		require.Equal(t, "Tu alerta se activó el Thu, 04 Jan 2024 00:00:00 UTC.", n.body)
+		require.Equal(t, drivers.PushCategoryAlerts, n.Category)
+		require.Equal(t, []string{"somebody@example.com"}, n.Recipients)
+		require.Equal(t, "Alerta: Ventas diarias", n.Title)
+		require.Equal(t, "Tu alerta se activó el Thu, 04 Jan 2024 00:00:00 UTC.", n.Body)
 		// Same destination as the "Open" button of the alert email: the dashboard at the execution time.
-		require.Equal(t, "/acme/demo/-/alerts/a1/open?execution_time=2024-01-04T00%3A00%3A00Z", n.linkPath)
-		require.Equal(t, "alerts:acme/demo/a1", n.tag)
+		require.Equal(t, "/acme/demo/-/alerts/a1/open?execution_time=2024-01-04T00%3A00%3A00Z", n.LinkPath)
+		require.Equal(t, "alerts:acme/demo/a1", n.Tag)
 	})
 
 	t.Run("recover", func(t *testing.T) {
@@ -40,11 +40,11 @@ func TestAlertPushNotificationMessage(t *testing.T) {
 			IsRecover:     true,
 		}, "acme", "demo")
 		require.NotNil(t, n)
-		require.Equal(t, "Recuperada: Ventas diarias", n.title)
-		require.Equal(t, "La alerta se recuperó el Thu, 04 Jan 2024 00:00:00 UTC de un fallo anterior.", n.body)
-		require.Equal(t, "/acme/demo/-/alerts/a1/open?execution_time=2024-01-04T00%3A00%3A00Z", n.linkPath)
+		require.Equal(t, "Recuperada: Ventas diarias", n.Title)
+		require.Equal(t, "La alerta se recuperó el Thu, 04 Jan 2024 00:00:00 UTC de un fallo anterior.", n.Body)
+		require.Equal(t, "/acme/demo/-/alerts/a1/open?execution_time=2024-01-04T00%3A00%3A00Z", n.LinkPath)
 		// A recovery replaces the notification of the failure it recovers from.
-		require.Equal(t, "alerts:acme/demo/a1", n.tag)
+		require.Equal(t, "alerts:acme/demo/a1", n.Tag)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -55,10 +55,10 @@ func TestAlertPushNotificationMessage(t *testing.T) {
 			ExecutionError: "table not found",
 		}, "acme", "demo")
 		require.NotNil(t, n)
-		require.Equal(t, "Error en la alerta: Ventas diarias", n.title)
-		require.Equal(t, "La alerta no se pudo evaluar el Thu, 04 Jan 2024 00:00:00 UTC: table not found", n.body)
+		require.Equal(t, "Error en la alerta: Ventas diarias", n.Title)
+		require.Equal(t, "La alerta no se pudo evaluar el Thu, 04 Jan 2024 00:00:00 UTC: table not found", n.Body)
 		// Errors open the alert itself instead of a dashboard, like the alert error email.
-		require.Equal(t, "/acme/demo/-/alerts/a1", n.linkPath)
+		require.Equal(t, "/acme/demo/-/alerts/a1", n.LinkPath)
 	})
 
 	t.Run("error with a long message", func(t *testing.T) {
@@ -69,8 +69,8 @@ func TestAlertPushNotificationMessage(t *testing.T) {
 			ExecutionError: strings.Repeat("é", 500),
 		}, "acme", "demo")
 		require.NotNil(t, n)
-		require.Equal(t, pushBodyMaxLen+1, len([]rune(n.body)))
-		require.True(t, strings.HasSuffix(n.body, "…"))
+		require.Equal(t, pushBodyMaxLen+1, len([]rune(n.Body)))
+		require.True(t, strings.HasSuffix(n.Body, "…"))
 	})
 
 	t.Run("a pass that is not a recovery does not notify", func(t *testing.T) {
@@ -116,7 +116,7 @@ func TestAlertPushNotificationMessage(t *testing.T) {
 			Status:        runtimev1.AssertionStatus_ASSERTION_STATUS_FAIL,
 		}, "acme", "demo")
 		require.NotNil(t, n)
-		require.Equal(t, []string{"a@example.com", "b@example.com", "c@example.com"}, n.recipients)
+		require.Equal(t, []string{"a@example.com", "b@example.com", "c@example.com"}, n.Recipients)
 	})
 
 	t.Run("names that need escaping", func(t *testing.T) {
@@ -126,7 +126,7 @@ func TestAlertPushNotificationMessage(t *testing.T) {
 			Status:        runtimev1.AssertionStatus_ASSERTION_STATUS_ERROR,
 		}, "acme corp", "demo/1")
 		require.NotNil(t, n)
-		require.Equal(t, "/acme%20corp/demo%2F1/-/alerts/mi%20alerta", n.linkPath)
+		require.Equal(t, "/acme%20corp/demo%2F1/-/alerts/mi%20alerta", n.LinkPath)
 	})
 }
 
@@ -139,12 +139,12 @@ func TestReportPushNotificationMessage(t *testing.T) {
 	t.Run("ready", func(t *testing.T) {
 		n := reportPushNotification("r1", spec, pushTestTime, "acme", "demo", "")
 		require.NotNil(t, n)
-		require.Equal(t, drivers.PushCategoryReports, n.category)
-		require.Equal(t, []string{"somebody@example.com"}, n.recipients)
-		require.Equal(t, "Tu informe Ventas semanales está listo", n.title)
-		require.Equal(t, "El informe de Thu, 04 Jan 2024 00:00:00 UTC ya está disponible.", n.body)
-		require.Equal(t, "/acme/demo/-/reports/r1/open?execution_time=2024-01-04T00%3A00%3A00Z", n.linkPath)
-		require.Equal(t, "reports:acme/demo/r1", n.tag)
+		require.Equal(t, drivers.PushCategoryReports, n.Category)
+		require.Equal(t, []string{"somebody@example.com"}, n.Recipients)
+		require.Equal(t, "Tu informe Ventas semanales está listo", n.Title)
+		require.Equal(t, "El informe de Thu, 04 Jan 2024 00:00:00 UTC ya está disponible.", n.Body)
+		require.Equal(t, "/acme/demo/-/reports/r1/open?execution_time=2024-01-04T00%3A00%3A00Z", n.LinkPath)
+		require.Equal(t, "reports:acme/demo/r1", n.Tag)
 	})
 
 	// An AI report's analysis IS a conversation, so the push has to land on it the way the email does.
@@ -155,7 +155,7 @@ func TestReportPushNotificationMessage(t *testing.T) {
 		require.NotNil(t, n)
 		require.Equal(t,
 			"/acme/demo/-/reports/r1/open?execution_time=2024-01-04T00%3A00%3A00Z&session_id=fe6da861-0a68-4cdf-b822-d6ea333c7e9f",
-			n.linkPath)
+			n.LinkPath)
 	})
 
 
