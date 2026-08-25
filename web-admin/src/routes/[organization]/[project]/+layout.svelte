@@ -48,6 +48,7 @@
   import { resolveRuntimeConnection } from "@rilldata/web-admin/features/projects/project-runtime";
   import RedeployProjectCta from "@rilldata/web-admin/features/projects/RedeployProjectCTA.svelte";
   import SlimProjectHeader from "@rilldata/web-admin/features/projects/SlimProjectHeader.svelte";
+  import AppBadgeTracker from "@rilldata/web-admin/features/notifications/AppBadgeTracker.svelte";
   import { createAdminServiceGetProjectWithBearerToken } from "@rilldata/web-admin/features/public-urls/get-project-with-bearer-token";
   import { cloudVersion } from "@rilldata/web-admin/features/telemetry/initCloudMetrics";
   import { getThemedLogoUrl } from "@rilldata/web-admin/features/themes/organization-logo";
@@ -342,6 +343,11 @@
         jwt={runtime.jwt}
         authContext={runtime.authContext}
       >
+        <!-- The app icon's badge counts what is waiting for the person signed in, so it is left alone for a
+             visitor holding a public URL and while an admin is looking through someone else's permissions. -->
+        {#if !onPublicURLPage && !mockUser}
+          <AppBadgeTracker {organization} {project} />
+        {/if}
         {#if !onWelcomePage}
           <ProjectHeader
             {organization}

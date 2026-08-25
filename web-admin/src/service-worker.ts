@@ -1,6 +1,10 @@
 /// <reference types="@sveltejs/kit" />
 
 import { build, files, version } from "$service-worker";
+import {
+  readPendingUpdate,
+  syncBadge,
+} from "./features/notifications/app-badge";
 
 // Typed locally instead of via `/// <reference lib="webworker" />` with
 // no-default-lib: those directives apply to the whole tsc program, and the
@@ -132,9 +136,11 @@ sw.addEventListener("fetch", (event) => {
 });
 
 // Web Push: the admin sends a JSON payload of the shape
-// {title, body, link, category, tag}; `link` is an absolute URL into this
-// frontend. A malformed or non-JSON payload is dropped silently: showing a
-// broken notification (or throwing) would be worse than showing none.
+// {title, body, link, category, tag, pending}; `link` is an absolute URL into
+// this frontend and `pending` is what the notification leaves waiting for its
+// recipient (see app-badge.ts). A malformed or non-JSON payload is dropped
+// silently: showing a broken notification (or throwing) would be worse than
+// showing none.
 // The page listens for this to route itself; see navigate-from-notification.ts.
 const NOTIFICATION_NAVIGATE = "kairos:navigate";
 
@@ -143,6 +149,7 @@ type PushPayload = {
   body?: string;
   link?: string;
   tag?: string;
+  pending?: { scope: string; count: number };
 };
 
 function parsePushPayload(event: PushEvent): PushPayload | null {
@@ -154,26 +161,33 @@ function parsePushPayload(event: PushEvent): PushPayload | null {
     return null;
   }
   if (typeof raw !== "object" || raw === null) return null;
-  const { title, body, link, tag } = raw as Record<string, unknown>;
+  const { title, body, link, tag, pending } = raw as Record<string, unknown>;
   if (typeof title !== "string" || !title) return null;
   return {
     title,
     body: typeof body === "string" ? body : undefined,
     link: typeof link === "string" ? link : undefined,
     tag: typeof tag === "string" ? tag : undefined,
+    pending: readPendingUpdate(pending) ?? undefined,
   };
 }
 
 sw.addEventListener("push", (event) => {
   const payload = parsePushPayload(event);
   if (!payload) return;
+  // The badge is updated alongside the notification rather than after it: the two say the same thing to someone
+  // who is not looking at the app, and the icon is the half that survives the notification being dismissed. A
+  // payload that carries no count (a report, an alert) leaves the badge as it was.
   event.waitUntil(
-    sw.registration.showNotification(payload.title, {
-      body: payload.body,
-      tag: payload.tag,
-      icon: "/pwa-icon-192.png",
-      data: { link: payload.link },
-    }),
+    Promise.all([
+      sw.registration.showNotification(payload.title, {
+        body: payload.body,
+        tag: payload.tag,
+        icon: "/pwa-icon-192.png",
+        data: { link: payload.link },
+      }),
+      payload.pending ? syncBadge(payload.pending) : Promise.resolve(),
+    ]),
   );
 });
 

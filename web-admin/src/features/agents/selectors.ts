@@ -10,6 +10,7 @@ import {
   createAgentServiceStartAgentRunMutation,
   getAgentServiceListAgentRunsQueryOptions,
 } from "@rilldata/web-common/runtime-client/v2/gen/agent-service";
+import { countPendingRuns } from "@rilldata/web-admin/features/notifications/app-badge";
 import type { RuntimeClient } from "@rilldata/web-common/runtime-client/v2";
 import { createQuery } from "@tanstack/svelte-query";
 import { derived, type Readable } from "svelte/store";
@@ -105,6 +106,30 @@ export function useAgentApprovals(
         enabled: !!client.instanceId,
         refetchOnMount: true,
         refetchInterval,
+      },
+    },
+  );
+}
+
+// The app badge follows the viewer around the whole project, not just the Act tab, so its query polls far more
+// gently than the lists do. It refetches on focus as well: coming back to the app is exactly when a decision taken
+// on another device has to show up here (kairos-cloud#147).
+const BADGE_REFETCH_INTERVAL = 60_000;
+
+// usePendingApprovalRunCount counts the runs of this project that are waiting on a decision the viewer may make.
+// The server resolves can_decide per approval, so the count is already theirs alone; see countPendingRuns for why
+// runs rather than approvals.
+export function usePendingApprovalRunCount(client: RuntimeClient) {
+  return createAgentServiceListAgentApprovals(
+    client,
+    { status: "pending" },
+    {
+      query: {
+        enabled: !!client.instanceId,
+        refetchOnMount: true,
+        refetchOnWindowFocus: true,
+        refetchInterval: BADGE_REFETCH_INTERVAL,
+        select: (data) => countPendingRuns(data.approvals),
       },
     },
   );
