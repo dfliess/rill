@@ -118,8 +118,9 @@ func (s *Server) BootstrapAct(ctx context.Context, cfg ActConfig) (io.Closer, er
 		Gateway:            act.NewMCPGateway(s.runtime, runStore, logger),
 		Proposer:           act.NewCapturedProposer(),
 		// Whenever a run pauses, whoever the agent's approve policy authorizes gets a web push (kairos-cloud#143),
-		// so an approval does not depend on someone happening to have the inbox open.
-		Approvals: &actApprovalPushNotifier{runtime: s.runtime, logger: s.logger},
+		// so an approval does not depend on someone happening to have the inbox open. It reads the store back to
+		// tell each of them how much is waiting for them, which is what the installed app shows on its icon.
+		Approvals: &actApprovalPushNotifier{runtime: s.runtime, runs: runStore, logger: s.logger},
 		Logger:    logger,
 	})
 	if err != nil {

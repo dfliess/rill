@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"errors"
 	"testing"
 
@@ -13,7 +14,8 @@ import (
 )
 
 // These tests cover the push that announces a paused run (kairos-cloud#143): who receives it, that one pause is one
-// notification however many actions it holds, and that nothing about it can affect the run.
+// notification however many actions it holds, and that nothing about it can affect the run. They also cover the
+// number it carries for each recipient's app badge (kairos-cloud#147).
 
 // actPushProjectFiles is a project with two agents: one whose approve policy names a group, one that discriminates
 // by tool (so a batch mixing tools has to reach the union of both audiences).
@@ -65,8 +67,44 @@ func actPushMembers() []drivers.ProjectMember {
 	}
 }
 
+// actPushRunStore is the approval store as the badge count reads it. Only ListApprovals is answered, because
+// counting is the only thing the notifier asks of the store; the embedded nil interface turns any other call into
+// a panic, which is the signal wanted if that ever stops being true.
+type actPushRunStore struct {
+	act.RunStore
+	approvals []*act.Approval
+	err       error
+	// filter records what the notifier asked for, so a test can pin that the count reads pending approvals of its
+	// own instance and nothing else.
+	filter act.ListApprovalsFilter
+}
+
+func (s *actPushRunStore) ListApprovals(_ context.Context, f act.ListApprovalsFilter) ([]*act.Approval, error) {
+	s.filter = f
+	if s.err != nil {
+		return nil, s.err
+	}
+	return s.approvals, nil
+}
+
+// actStoredApproval is one pending approval as the store holds it, with the fields the approve policy discriminates
+// on. runKey is the run's idempotency key: two approvals sharing it belong to the same pause of the same run.
+func actStoredApproval(instanceID, agentName, runKey, tool, connector string) *act.Approval {
+	return &act.Approval{
+		ApprovalID:      runKey + ":" + tool,
+		RunID:           act.ComposeRunID(instanceID, agentName, runKey),
+		InstanceID:      instanceID,
+		AgentName:       agentName,
+		RunActorSubject: "usr_marta",
+		ToolName:        tool,
+		Connector:       connector,
+		Status:          act.ApprovalStatusPending,
+	}
+}
+
 // newActPushNotifier builds the notifier over an instance that runs in Rill Cloud (it has the org and project
 // annotations the admin service sets on deployment) and reports the given members.
+// Its store holds nothing pending; a test about the badge count replaces it with one that does.
 func newActPushNotifier(t *testing.T, members []drivers.ProjectMember) (*actApprovalPushNotifier, string) {
 	t.Helper()
 	rt, instanceID := testruntime.NewInstanceWithOptions(t, testruntime.InstanceOptions{
@@ -75,7 +113,11 @@ func newActPushNotifier(t *testing.T, members []drivers.ProjectMember) (*actAppr
 	})
 	testruntime.ReconcileParserAndWait(t, rt, instanceID)
 	testruntime.SetProjectMembers(instanceID, members)
-	return &actApprovalPushNotifier{runtime: rt, logger: zap.NewNop()}, instanceID
+	return &actApprovalPushNotifier{
+		runtime: rt,
+		runs:    &actPushRunStore{},
+		logger:  zap.NewNop(),
+	}, instanceID
 }
 
 func actPendingApprovals(instanceID string, agentName string, actions ...act.PendingAction) act.PendingApprovals {
@@ -181,7 +223,7 @@ func TestActApprovalPushOutsideRillCloud(t *testing.T) {
 	rt, instanceID := testruntime.NewInstanceWithOptions(t, testruntime.InstanceOptions{Files: actPushProjectFiles()})
 	testruntime.ReconcileParserAndWait(t, rt, instanceID)
 	testruntime.SetProjectMembers(instanceID, actPushMembers())
-	notifier := &actApprovalPushNotifier{runtime: rt, logger: zap.NewNop()}
+	notifier := &actApprovalPushNotifier{runtime: rt, runs: &actPushRunStore{}, logger: zap.NewNop()}
 
 	notifier.NotifyPendingApprovals(t.Context(), actPendingApprovals(instanceID, "cobranza",
 		act.PendingAction{Tool: "create_issue", Connector: "jira_ops"}))
@@ -197,7 +239,7 @@ func TestActApprovalPushWithoutMemberAttributes(t *testing.T) {
 		Annotations: map[string]string{"organization_name": "acme", "project_name": "demo"},
 	})
 	testruntime.ReconcileParserAndWait(t, rt, instanceID)
-	notifier := &actApprovalPushNotifier{runtime: rt, logger: zap.NewNop()}
+	notifier := &actApprovalPushNotifier{runtime: rt, runs: &actPushRunStore{}, logger: zap.NewNop()}
 
 	notifier.NotifyPendingApprovals(t.Context(), actPendingApprovals(instanceID, "cobranza",
 		act.PendingAction{Tool: "create_issue", Connector: "jira_ops"}))
@@ -240,9 +282,107 @@ func TestAgentRunPathMirrorsFrontend(t *testing.T) {
 func TestActApprovalPushResolvesAgentByName(t *testing.T) {
 	notifier, instanceID := newActPushNotifier(t, actPushMembers())
 
-	res := notifier.agentResource(t.Context(), instanceID, "finanzas")
+	resolver := notifier.approverResolver(instanceID, actPushMembers())
+	res := resolver.agent(t.Context(), "finanzas")
 	require.NotNil(t, res)
 	require.Equal(t, "finanzas", res.Meta.Name.Name)
 	require.Equal(t, runtime.ResourceKindAgent, res.Meta.Name.Kind)
-	require.Nil(t, notifier.agentResource(t.Context(), instanceID, "no_existe"))
+	require.Nil(t, resolver.agent(t.Context(), "no_existe"))
+
+	// The second lookup of a name is answered from the resolver's memory, including the "it is gone" answer.
+	require.Same(t, res, resolver.agent(t.Context(), "finanzas"))
+	require.Nil(t, resolver.agent(t.Context(), "no_existe"))
+}
+
+// TestActApprovalPushBadgeCountsPerRecipient is the core of the app badge (kairos-cloud#147): the number is each
+// recipient's own. Authority discriminates by action, so two people told about the same pause can genuinely have
+// different amounts of work waiting, and a shared number would be wrong for at least one of them.
+func TestActApprovalPushBadgeCountsPerRecipient(t *testing.T) {
+	notifier, instanceID := newActPushNotifier(t, actPushMembers())
+	// Two runs of "finanzas" are waiting. Ana signs everything; Anafin signs only refunds, so only the second run
+	// is hers.
+	notifier.runs = &actPushRunStore{approvals: []*act.Approval{
+		actStoredApproval(instanceID, "finanzas", "alerta/2024", "close_account", "core"),
+		actStoredApproval(instanceID, "finanzas", "alerta/2025", "issue_refund", "core"),
+	}}
+
+	notifier.NotifyPendingApprovals(t.Context(), actPendingApprovals(instanceID, "finanzas",
+		act.PendingAction{Tool: "close_account", Connector: "core"},
+		act.PendingAction{Tool: "issue_refund", Connector: "core"},
+	))
+
+	pushes := testruntime.PushNotifications(instanceID)
+	require.Len(t, pushes, 1)
+	require.Equal(t, map[string]int32{
+		"ana@example.com":    2,
+		"anafin@example.com": 1,
+	}, pushes[0].PendingByRecipient)
+}
+
+// TestActApprovalPushBadgeCountsRunsNotApprovals pins the unit of the count against the unit of the inbox: a run
+// that proposed three actions in one turn is one pause, one notification and one row to look at, so it is one on
+// the icon. It mirrors countPendingRuns in web-admin/src/features/notifications/app-badge.ts, which is what the app
+// recomputes for itself; if the two disagreed the badge would jump on every launch.
+func TestActApprovalPushBadgeCountsRunsNotApprovals(t *testing.T) {
+	notifier, instanceID := newActPushNotifier(t, actPushMembers())
+	// One pause of one run that proposed three actions: three approvals, one thing to look at.
+	notifier.runs = &actPushRunStore{approvals: []*act.Approval{
+		actStoredApproval(instanceID, "cobranza", "alerta/2024", "create_issue", "jira_ops"),
+		actStoredApproval(instanceID, "cobranza", "alerta/2024", "close_issue", "jira_ops"),
+		actStoredApproval(instanceID, "cobranza", "alerta/2024", "assign_issue", "jira_ops"),
+	}}
+
+	notifier.NotifyPendingApprovals(t.Context(), actPendingApprovals(instanceID, "cobranza",
+		act.PendingAction{Tool: "create_issue", Connector: "jira_ops"}))
+
+	pushes := testruntime.PushNotifications(instanceID)
+	require.Len(t, pushes, 1)
+	require.Equal(t, map[string]int32{"ana@example.com": 1}, pushes[0].PendingByRecipient)
+}
+
+// TestActApprovalPushBadgeSendsZero covers the number that clears the badge. A recipient with nothing left waiting
+// has to be told so explicitly: the app adds up one number per project, so a recipient simply left out of the map
+// would keep whatever the icon was showing for this one.
+func TestActApprovalPushBadgeSendsZero(t *testing.T) {
+	// The store holds nothing pending, which is what a decision taken between the pause and the notification
+	// leaves behind.
+	notifier, instanceID := newActPushNotifier(t, actPushMembers())
+
+	notifier.NotifyPendingApprovals(t.Context(), actPendingApprovals(instanceID, "cobranza",
+		act.PendingAction{Tool: "create_issue", Connector: "jira_ops"}))
+
+	pushes := testruntime.PushNotifications(instanceID)
+	require.Len(t, pushes, 1)
+	require.Equal(t, map[string]int32{"ana@example.com": 0}, pushes[0].PendingByRecipient)
+}
+
+// TestActApprovalPushBadgeReadsOwnInstance pins what the count is read from: the pending approvals of this
+// instance. A count that reached across instances would put another tenant's work on someone's icon.
+func TestActApprovalPushBadgeReadsOwnInstance(t *testing.T) {
+	notifier, instanceID := newActPushNotifier(t, actPushMembers())
+	store := &actPushRunStore{}
+	notifier.runs = store
+
+	notifier.NotifyPendingApprovals(t.Context(), actPendingApprovals(instanceID, "cobranza",
+		act.PendingAction{Tool: "create_issue", Connector: "jira_ops"}))
+
+	require.Equal(t, instanceID, store.filter.InstanceID)
+	require.Equal(t, act.ApprovalStatusPending, store.filter.Status)
+	require.Equal(t, maxPendingApprovalsCounted, store.filter.Limit)
+}
+
+// TestActApprovalPushSurvivesUncountableBadge pins the priority between the two: the notification is what people
+// act on, the badge is a convenience. A store that cannot be read costs the number, not the notification.
+func TestActApprovalPushSurvivesUncountableBadge(t *testing.T) {
+	notifier, instanceID := newActPushNotifier(t, actPushMembers())
+	notifier.runs = &actPushRunStore{err: errors.New("act store unreachable")}
+
+	notifier.NotifyPendingApprovals(t.Context(), actPendingApprovals(instanceID, "cobranza",
+		act.PendingAction{Tool: "create_issue", Connector: "jira_ops"}))
+
+	pushes := testruntime.PushNotifications(instanceID)
+	require.Len(t, pushes, 1)
+	require.Equal(t, []string{"ana@example.com"}, pushes[0].Recipients)
+	// No number rather than a wrong one: the app leaves the icon as it was.
+	require.Nil(t, pushes[0].PendingByRecipient)
 }
