@@ -80,7 +80,9 @@
   }
 
   // When alert is loading we will have a "missing require field" error in dashboardStateForAlert so check loading for both queries.
-  $: loading = $dashboardStateForAlert?.isLoading;
+  // A store that has not emitted yet is still loading: reading it as "not loading" fell through to the error
+  // branch below and threw on undefined, leaving a blank page instead of the message it has ready.
+  $: loading = !$dashboardStateForAlert || $dashboardStateForAlert.isLoading;
 </script>
 
 <CtaLayoutContainer>
@@ -89,7 +91,7 @@
       <div class="mt-10">
         <LoadingSpinner />
       </div>
-    {:else if $dashboardStateForAlert.error}
+    {:else if $dashboardStateForAlert?.error}
       <div class="flex flex-col gap-y-2">
         <h2 class="text-lg font-semibold">{m.alert_unable_to_open()}</h2>
         <CtaMessage>

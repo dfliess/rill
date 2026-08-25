@@ -95,11 +95,11 @@
 
 <CtaLayoutContainer>
   <CtaContentContainer>
-    {#if $dashboardStateForReport.isLoading}
+    {#if !$dashboardStateForReport || $dashboardStateForReport.isLoading}
       <div class="mt-10">
         <LoadingSpinner />
       </div>
-    {:else if $dashboardStateForReport.error}
+    {:else if $dashboardStateForReport?.error}
       <div class="flex flex-col gap-y-2">
         <h2 class="text-lg font-semibold">{m.report_unable_to_open()}</h2>
         <CtaMessage>
