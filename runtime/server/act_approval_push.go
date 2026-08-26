@@ -176,8 +176,11 @@ func (n *actApprovalPushNotifier) pendingRunsByRecipient(ctx context.Context, in
 	// A run is counted once for a recipient however many of its approvals they may decide.
 	counted := make(map[string]map[string]bool, len(counts))
 	for _, a := range approvals {
+		// The stored tool name is qualified for MCP actions ("mcp.<connector>.<tool>"), while an approve
+		// expression is written against the bare name. Normalising here is what makes this count agree with
+		// who may actually decide: resolveApprovalDecision and the notification batch both do the same.
 		emails, err := resolver.approversOf(ctx, a.AgentName, runtime.AgentActionContext{
-			Tool:      a.ToolName,
+			Tool:      act.RawToolName(a.ToolName, a.Connector),
 			Connector: a.Connector,
 			RunActor:  a.RunActorSubject,
 		})

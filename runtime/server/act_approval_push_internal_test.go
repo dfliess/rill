@@ -386,3 +386,27 @@ func TestActApprovalPushSurvivesUncountableBadge(t *testing.T) {
 	// No number rather than a wrong one: the app leaves the icon as it was.
 	require.Nil(t, pushes[0].PendingByRecipient)
 }
+
+// TestActApprovalPushBadgeNormalisesMCPToolName pins the count against who may actually decide. An MCP action is
+// stored under its qualified name ("mcp.<connector>.<tool>") while an approve expression names the bare tool, so
+// evaluating the stored name as-is would leave the person the policy names out of their own count: the push would
+// carry a zero and the number would appear the moment they opened the app, which resolves the same approval
+// through RawToolName. Found by Codex reviewing kairos-cloud#147.
+func TestActApprovalPushBadgeNormalisesMCPToolName(t *testing.T) {
+	notifier, instanceID := newActPushNotifier(t, actPushMembers())
+	// The same refund, reached over MCP rather than the built-in connector.
+	notifier.runs = &actPushRunStore{approvals: []*act.Approval{
+		actStoredApproval(instanceID, "finanzas", "alerta/2025", "mcp.core.issue_refund", "core"),
+	}}
+
+	notifier.NotifyPendingApprovals(t.Context(), actPendingApprovals(instanceID, "finanzas",
+		act.PendingAction{Tool: "issue_refund", Connector: "core"},
+	))
+
+	pushes := testruntime.PushNotifications(instanceID)
+	require.Len(t, pushes, 1)
+	require.Equal(t, map[string]int32{
+		"ana@example.com":    1,
+		"anafin@example.com": 1,
+	}, pushes[0].PendingByRecipient)
+}
