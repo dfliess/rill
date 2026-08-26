@@ -925,11 +925,37 @@ func (e *DBOSExecutor) governProposedActions(ctx dbos.Context, in AgentRunInput,
 			return nil, true, err
 		}
 
-		// Tell whoever may decide that the run is waiting on them (kairos-cloud#143). Deliberately AFTER the step and
-		// not inside it: a completed step is never re-executed, so a notification sent from within it would be skipped
-		// on the recovery path, which is the one where a run has waited longest. Out here a replay notifies again
-		// instead, which is the harmless direction: the push is tagged per run, so the browser collapses the duplicate.
-		e.notifyPendingApprovals(ctx, in, runID, actions)
+		// Tell whoever may decide that the run is waiting on them (kairos-cloud#143), in a durable step of its own.
+		//
+		// This used to sit outside any step, so that a recovery would notify again rather than risk staying silent.
+		// The duplicate was not as harmless as that assumed: the tag collapses the banner but not the buzz, and once
+		// a notification leaves a record (kairos-cloud#148) a replay leaves another row. A run recovered after days
+		// would announce itself again as if it were new.
+		//
+		// A step is where DBOS says this belongs: calling a third-party API from the workflow body is the thing its
+		// determinism rules tell you not to do, and it was being done here. A completed step is never re-executed,
+		// so recovery no longer re-announces every parked run.
+		//
+		// Its own step rather than sharing the one above is what keeps the other half: if the process dies between
+		// the two, the notification step never completed and recovery does send it.
+		//
+		// This is at-least-once, not exactly-once, and DBOS is explicit about it: a crash after the push leaves the
+		// notifier but before the checkpoint lands will notify again on recovery. That window is narrow and its
+		// duplicate is the harmless direction. What it replaces was not narrow at all — every restart re-announced
+		// every parked run, so a runtime with ten waiting sent ten notifications to every device.
+		_, err = dbos.RunAsStep(ctx, func(stepCtx context.Context) (bool, error) {
+			e.notifyPendingApprovals(stepCtx, in, runID, actions)
+			// The notifier's contract is that it never fails, and a notification is not worth a run: reporting an
+			// error here would only make DBOS retry a step whose work is already done.
+			return true, nil
+		}, dbos.WithStepName(fmt.Sprintf("notify_approvals_%d", seg)))
+		if err != nil {
+			// DBOS failed to record the step, not the notifier. The approvals are committed and the run must reach
+			// its wait, so this is logged and swallowed like the notification itself.
+			if e.logger != nil {
+				e.logger.Error("act: recording the approval notification step failed", "run", runID, "err", err)
+			}
+		}
 	}
 
 	// Phase 3: process each action in proposal order. Auto-approved actions execute immediately; manual ones wait for

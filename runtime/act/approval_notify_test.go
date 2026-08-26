@@ -242,3 +242,69 @@ func TestApprovalNotifierFailureDoesNotBreakRun(t *testing.T) {
 	require.Equal(t, act.RunStatusSucceeded, res.Status)
 	require.Equal(t, 1, exec.executeCount())
 }
+
+// TestApprovalNotifierDoesNotRenotifyOnRecovery pins that a run recovered after the process restarts does not
+// announce itself to its approvers again.
+//
+// The notification used to sit outside any durable step, deliberately: better a duplicate than a silence, made when
+// a notification was only a banner that the per-run tag would collapse. Two things made that wrong. Notifications
+// now leave a record (kairos-cloud#148), so a replay writes another row; and the runtime recovers every parked run
+// at once, so a restart with ten pending approvals announced ten of them on every device, days after the fact.
+//
+// Putting the call in a step is also what DBOS asks for: a third-party call belongs in one, not in the workflow
+// body, and a completed step is never re-executed. Note what this does not claim — steps are at-least-once, so a
+// crash between the push leaving and its checkpoint landing still notifies again. That window is narrow; the
+// behaviour it replaces was not.
+func TestApprovalNotifierDoesNotRenotifyOnRecovery(t *testing.T) {
+	dsn, schema := requirePostgres(t)
+	store := newRunStore(t)
+	notifier := &recordingApprovalNotifier{}
+
+	// Both executors share a version, a database and a store: that is what lets the second recover the first's
+	// pending workflow rather than treating it as somebody else's.
+	version := "act-renotify-" + uuid.NewString()
+	newExecutor := func() *act.DBOSExecutor {
+		e, err := act.NewDBOSExecutor(t.Context(), act.Config{
+			DatabaseURL: dsn, DatabaseSchema: schema, ApplicationVersion: version,
+			Runner: &notifyRunner{pauses: []int{1}, tool: "mcp.jira_ops.create_issue"},
+			Store:  store, Proposer: batchProposer{},
+			Gateway: &act.Gateway{
+				Registry: act.NewMapToolRegistry(mcpCreateIssueDescriptor()),
+				Ledger:   store,
+				Executor: &fakeExecutor{result: act.ExecuteResult{Outcome: act.OutcomeSucceeded, ExternalReference: "PROJ-1"}},
+			},
+			Approvals: notifier,
+		})
+		require.NoError(t, err)
+		return e
+	}
+
+	const inst = "inst-notify-recovery"
+	key := "notify-recovery-" + uuid.NewString()
+
+	first := newExecutor()
+	_, err := first.Start(t.Context(), act.AgentRunInput{
+		InstanceID: inst, AgentName: "triage", Prompt: "actua", IdempotencyKey: key,
+		Actor: act.Actor{Subject: "usr_marta"},
+	})
+	require.NoError(t, err)
+	require.Eventually(t, func() bool { return len(notifier.all()) == 1 }, 15*time.Second, 50*time.Millisecond,
+		"the run pausing on approval announces itself once")
+
+	// Drain the way a deploy does, leaving the run parked and its workflow pending.
+	first.Close(5 * time.Second)
+
+	// A fresh process over the same database recovers it. Nobody should hear about it a second time.
+	second := newExecutor()
+	t.Cleanup(func() { second.Close(5 * time.Second) })
+
+	// The run stays parked: what is under test is the recovery replay, not the decision. Deliberately not approving
+	// keeps the run in the state a restart really finds it in, which is what used to produce the second notification.
+	require.Never(t, func() bool { return len(notifier.all()) > 1 }, 5*time.Second, 100*time.Millisecond,
+		"recovering a parked run must not announce it to its approvers again")
+	require.Len(t, notifier.all(), 1)
+
+	// The count staying at one only means something if recovery actually replayed the workflow, and nothing here can
+	// assert that directly. It is pinned by mutation instead: move the notification back out of its step and this
+	// test sees two, which also proves the replay happens. That is what keeps it from being a test that cannot fail.
+}
