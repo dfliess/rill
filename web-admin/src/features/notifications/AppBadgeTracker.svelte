@@ -9,6 +9,7 @@
   right deployment.
 -->
 <script lang="ts">
+  import { createAdminServiceGetCurrentUser } from "@rilldata/web-admin/client";
   import { usePendingApprovalRunCount } from "@rilldata/web-admin/features/agents/selectors";
   import { useRuntimeClient } from "@rilldata/web-common/runtime-client/v2";
   import { scopeOf, syncBadge } from "./app-badge";
@@ -18,15 +19,21 @@
 
   const runtimeClient = useRuntimeClient();
   const countQuery = usePendingApprovalRunCount(runtimeClient);
+  // The ledger is keyed by who this count belongs to: a browser outlives a session, so a count written without a
+  // name would be added to the next person to sign in here.
+  const userQuery = createAdminServiceGetCurrentUser();
 
   // Only a successful read is worth writing down. A project where Act is off, or a viewer without access to it,
   // answers with an error, and an error is not the same fact as "nothing is waiting for you here": treating it as
   // zero would wipe a badge that other projects are still entitled to.
   $effect(() => {
     if (!$countQuery.isSuccess) return;
+    const user = $userQuery.data?.user?.id;
+    if (!user) return;
     void syncBadge({
       scope: scopeOf(organization, project),
       count: $countQuery.data,
+      user,
     });
   });
 </script>

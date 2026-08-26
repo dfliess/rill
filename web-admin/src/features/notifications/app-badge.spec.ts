@@ -59,19 +59,17 @@ describe("countPendingRuns", () => {
 
 describe("readPendingUpdate", () => {
   it("reads a count for a project", () => {
-    expect(readPendingUpdate({ scope: "kairos/ecommerce", count: 3 })).toEqual({
-      scope: "kairos/ecommerce",
-      count: 3,
-    });
+    expect(
+      readPendingUpdate({ scope: "kairos/ecommerce", count: 3, user: "u1" }),
+    ).toEqual({ scope: "kairos/ecommerce", count: 3, user: "u1" });
   });
 
   it("reads a missing count as zero, because proto3 JSON omits one", () => {
     // This is the payload that clears the badge, so reading it as "no instruction" would leave the icon
     // showing work that is already done.
-    expect(readPendingUpdate({ scope: "kairos/ecommerce" })).toEqual({
-      scope: "kairos/ecommerce",
-      count: 0,
-    });
+    expect(
+      readPendingUpdate({ scope: "kairos/ecommerce", user: "u1" }),
+    ).toEqual({ scope: "kairos/ecommerce", count: 0, user: "u1" });
   });
 
   it("ignores a payload that carries no count at all", () => {
@@ -81,16 +79,27 @@ describe("readPendingUpdate", () => {
   });
 
   it("ignores a malformed one rather than putting a number nobody can explain on the icon", () => {
-    expect(readPendingUpdate({ count: 2 })).toBeNull();
-    expect(readPendingUpdate({ scope: "", count: 2 })).toBeNull();
+    expect(readPendingUpdate({ count: 2, user: "u1" })).toBeNull();
+    expect(readPendingUpdate({ scope: "", count: 2, user: "u1" })).toBeNull();
     expect(
-      readPendingUpdate({ scope: "kairos/ecommerce", count: -1 }),
+      readPendingUpdate({ scope: "kairos/ecommerce", count: -1, user: "u1" }),
     ).toBeNull();
     expect(
-      readPendingUpdate({ scope: "kairos/ecommerce", count: 1.5 }),
+      readPendingUpdate({ scope: "kairos/ecommerce", count: 1.5, user: "u1" }),
     ).toBeNull();
     expect(
-      readPendingUpdate({ scope: "kairos/ecommerce", count: "2" }),
+      readPendingUpdate({ scope: "kairos/ecommerce", count: "2", user: "u1" }),
+    ).toBeNull();
+  });
+
+  it("ignores a count that names nobody, rather than crediting it to whoever is here", () => {
+    // A browser outlives a session. A count with no owner cannot be attributed, and guessing would mean adding
+    // one person's work to another person's icon.
+    expect(
+      readPendingUpdate({ scope: "kairos/ecommerce", count: 2 }),
+    ).toBeNull();
+    expect(
+      readPendingUpdate({ scope: "kairos/ecommerce", count: 2, user: "" }),
     ).toBeNull();
   });
 });
@@ -99,8 +108,8 @@ describe("ledgerTotal", () => {
   it("adds up what every project is waiting on", () => {
     expect(
       ledgerTotal(
-        { "kairos/ecommerce": 2, "kairos/educacion": 1 },
-        { scope: "kairos/logistica", count: 3 },
+        { "u1\nkairos/ecommerce": 2, "u1\nkairos/educacion": 1 },
+        { scope: "kairos/logistica", count: 3, user: "u1" },
       ),
     ).toBe(6);
   });
@@ -108,8 +117,8 @@ describe("ledgerTotal", () => {
   it("replaces the reporting project's count instead of adding to it", () => {
     expect(
       ledgerTotal(
-        { "kairos/ecommerce": 2, "kairos/educacion": 1 },
-        { scope: "kairos/ecommerce", count: 5 },
+        { "u1\nkairos/ecommerce": 2, "u1\nkairos/educacion": 1 },
+        { scope: "kairos/ecommerce", count: 5, user: "u1" },
       ),
     ).toBe(6);
   });
@@ -119,8 +128,8 @@ describe("ledgerTotal", () => {
     // the others. Clearing them would hide work that is genuinely waiting.
     expect(
       ledgerTotal(
-        { "kairos/ecommerce": 2, "kairos/educacion": 1 },
-        { scope: "kairos/ecommerce", count: 0 },
+        { "u1\nkairos/ecommerce": 2, "u1\nkairos/educacion": 1 },
+        { scope: "kairos/ecommerce", count: 0, user: "u1" },
       ),
     ).toBe(1);
   });
@@ -128,8 +137,8 @@ describe("ledgerTotal", () => {
   it("reaches zero only when every project has reported nothing", () => {
     expect(
       ledgerTotal(
-        { "kairos/ecommerce": 0, "kairos/educacion": 0 },
-        { scope: "kairos/ecommerce", count: 0 },
+        { "u1\nkairos/ecommerce": 0, "u1\nkairos/educacion": 0 },
+        { scope: "kairos/ecommerce", count: 0, user: "u1" },
       ),
     ).toBe(0);
   });
@@ -137,13 +146,33 @@ describe("ledgerTotal", () => {
   it("skips an entry that is not a count", () => {
     expect(
       ledgerTotal(
-        { "kairos/ecommerce": Number.NaN, "kairos/educacion": 1 } as Record<
-          string,
-          number
-        >,
-        { scope: "kairos/logistica", count: 2 },
+        {
+          "u1\nkairos/ecommerce": Number.NaN,
+          "u1\nkairos/educacion": 1,
+        } as Record<string, number>,
+        { scope: "kairos/logistica", count: 2, user: "u1" },
       ),
     ).toBe(3);
+  });
+
+  it("leaves out what another account left behind on this browser", () => {
+    // Two people signing in on the same browser share one ledger and one icon. Adding up both would show each of
+    // them the other's pending work (found by Codex reviewing kairos-cloud#147).
+    expect(
+      ledgerTotal(
+        { "alice\nkairos/ecommerce": 2, "bob\nkairos/educacion": 1 },
+        { scope: "kairos/logistica", count: 1, user: "bob" },
+      ),
+    ).toBe(2);
+  });
+
+  it("keeps each account's projects apart even in the same project", () => {
+    expect(
+      ledgerTotal(
+        { "alice\nkairos/ecommerce": 5 },
+        { scope: "kairos/ecommerce", count: 1, user: "bob" },
+      ),
+    ).toBe(1);
   });
 });
 

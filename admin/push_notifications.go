@@ -66,6 +66,7 @@ func (s *Service) SendPushNotification(ctx context.Context, opts *SendPushNotifi
 			perRecipient.Pending = &pushnotifications.Pending{
 				Scope: opts.Pending.Scope,
 				Count: opts.Pending.ByRecipient[sub.Email],
+				User:  sub.UserID,
 			}
 			msg = &perRecipient
 		}

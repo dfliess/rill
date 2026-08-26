@@ -149,7 +149,7 @@ type PushPayload = {
   body?: string;
   link?: string;
   tag?: string;
-  pending?: { scope: string; count: number };
+  pending?: { scope: string; count: number; user: string };
 };
 
 function parsePushPayload(event: PushEvent): PushPayload | null {

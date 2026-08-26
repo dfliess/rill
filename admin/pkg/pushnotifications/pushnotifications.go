@@ -40,6 +40,10 @@ type Pending struct {
 	// Scope is the project the count belongs to, as "organization/project", lowercased.
 	Scope string `json:"scope"`
 	Count int32  `json:"count"`
+	// User is who this count belongs to: the owner of the subscription it is being sent to. A browser outlives a
+	// session, so without it two people signing in on the same one would add up each other's work
+	// (kairos-cloud#147).
+	User string `json:"user"`
 }
 
 // Subscription identifies a browser push subscription as returned by the Push API.

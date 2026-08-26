@@ -12,15 +12,25 @@
 // where the app should report errors.
 
 const DB_NAME = "kairos-app-badge";
-const DB_VERSION = 1;
-// One record per project: the key is its scope, the value the count last known for it.
+// Version 2 keys each record by user as well as project. Version 1 keyed by project alone, so its records cannot
+// be attributed to anyone and are dropped on upgrade rather than counted for whoever signs in next.
+const DB_VERSION = 2;
+// One record per user and project: the key is ledgerKey(user, scope), the value the count last known for it.
 const STORE = "pending";
+
+// ledgerKey separates the two halves with a newline, which appears in neither a user id nor a project scope.
+function ledgerKey(user: string, scope: string): string {
+  return `${user}\n${scope}`;
+}
 
 // PendingUpdate is what a push payload carries about the badge: one project's count, and which project it is.
 export type PendingUpdate = {
   // "organization/project", lowercased. Composed by the admin service for a push; by scopeOf for the open app.
   scope: string;
   count: number;
+  // Whose count this is. A browser outlives a session and this ledger outlives both, so without it one person's
+  // pending work would be added to the next person's badge on a shared browser.
+  user: string;
 };
 
 // scopeOf keys the ledger the same way the admin service does, so a push and the open app write the same entry
@@ -34,14 +44,16 @@ export function scopeOf(organization: string, project: string): string {
 // malformed one: an app icon showing a number nobody can explain is worse than one showing yesterday's.
 export function readPendingUpdate(raw: unknown): PendingUpdate | null {
   if (typeof raw !== "object" || raw === null) return null;
-  const { scope, count } = raw as Record<string, unknown>;
+  const { scope, count, user } = raw as Record<string, unknown>;
   if (typeof scope !== "string" || !scope) return null;
+  // A count nobody owns cannot be put on an icon: there is no telling whose work it is.
+  if (typeof user !== "string" || !user) return null;
   // Proto3 JSON omits a zero, so a payload with a scope and no count means zero, not "unset".
   const parsed = count === undefined ? 0 : count;
   if (typeof parsed !== "number" || !Number.isInteger(parsed) || parsed < 0) {
     return null;
   }
-  return { scope, count: parsed };
+  return { scope, count: parsed, user };
 }
 
 // countPendingRuns is the number this app puts in the ledger for the project it is looking at: how many runs are
@@ -72,14 +84,18 @@ export function ledgerTotal(
   stored: Record<string, number>,
   update: PendingUpdate,
 ): number {
+  // Only this person's entries. The ledger may also hold what another account left behind on this browser, and
+  // their pending work is not something to put on this icon.
+  const prefix = `${update.user}\n`;
   let total = 0;
-  for (const [scope, count] of Object.entries({
+  for (const [key, count] of Object.entries({
     ...stored,
-    [update.scope]: update.count,
+    [ledgerKey(update.user, update.scope)]: update.count,
   })) {
+    if (!key.startsWith(prefix)) continue;
     // A value that is not a count is a ledger entry from a version that wrote something else, or storage that came
     // back corrupted. Skipping it beats adding NaN to the icon.
-    if (scope && Number.isInteger(count) && count > 0) total += count;
+    if (Number.isInteger(count) && count > 0) total += count;
   }
   return total;
 }
@@ -103,12 +119,12 @@ async function recordPending(update: PendingUpdate): Promise<number | null> {
       values.onsuccess = () => {
         const stored: Record<string, number> = {};
         (keys.result ?? []).forEach((key, i) => {
-          // Scopes are strings. Anything else is a key this never wrote, and there is no project it names.
+          // Keys are strings. Anything else is a key this never wrote, and there is no entry it names.
           if (typeof key !== "string") return;
           stored[key] = (values.result ?? [])[i] as number;
         });
         total = ledgerTotal(stored, update);
-        store.put(update.count, update.scope);
+        store.put(update.count, ledgerKey(update.user, update.scope));
       };
 
       tx.oncomplete = () => resolve(total);
@@ -133,9 +149,12 @@ function openLedger(): Promise<IDBDatabase | null> {
       return;
     }
     request.onupgradeneeded = () => {
-      if (!request.result.objectStoreNames.contains(STORE)) {
-        request.result.createObjectStore(STORE);
+      // Records written before the key carried a user belong to nobody in particular, so they go rather than
+      // being inherited by whoever opens the app next.
+      if (request.result.objectStoreNames.contains(STORE)) {
+        request.result.deleteObjectStore(STORE);
       }
+      request.result.createObjectStore(STORE);
     };
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => resolve(null);
