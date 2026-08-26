@@ -1424,9 +1424,22 @@ func testNotificationDeliveries(t *testing.T, db database.DB) {
 	u2, err := db.InsertUser(ctx, &database.InsertUserOptions{Email: randomName() + "@rilldata.com"})
 	require.NoError(t, err)
 
+	// u3 is a user like any other, except that no browser of theirs is subscribed.
+	u3, err := db.InsertUser(ctx, &database.InsertUserOptions{Email: randomName() + "@rilldata.com"})
+	require.NoError(t, err)
+
 	org, err := db.InsertOrganization(ctx, &database.InsertOrganizationOptions{Name: randomName()})
 	require.NoError(t, err)
 	proj, err := db.InsertProject(ctx, &database.InsertProjectOptions{OrganizationID: org.ID, Name: randomName()})
+	require.NoError(t, err)
+
+	// The history records what this channel delivered, so it takes a subscribed browser. Two of them for u1, to
+	// pin that the row is per person and not per device.
+	_, err = db.InsertPushSubscription(ctx, &database.InsertPushSubscriptionOptions{UserID: u1.ID, Endpoint: "https://push.example.com/n1", P256dh: "p1", Auth: "a1"})
+	require.NoError(t, err)
+	_, err = db.InsertPushSubscription(ctx, &database.InsertPushSubscriptionOptions{UserID: u1.ID, Endpoint: "https://push.example.com/n2", P256dh: "p2", Auth: "a2"})
+	require.NoError(t, err)
+	_, err = db.InsertPushSubscription(ctx, &database.InsertPushSubscriptionOptions{UserID: u2.ID, Endpoint: "https://push.example.com/n3", P256dh: "p3", Auth: "a3"})
 	require.NoError(t, err)
 
 	// Required fields are validated rather than written half-formed.
@@ -1455,7 +1468,19 @@ func testNotificationDeliveries(t *testing.T, db database.DB) {
 	require.NoError(t, err)
 	require.Equal(t, 0, written)
 
-	// One notification to two recipients is one row each.
+	// A recipient with no browser subscribed gets no history: nothing was delivered to them through this channel,
+	// and writing it anyway would put rows in the personal history of anyone with an account (kairos-cloud#148).
+	written, err = db.InsertNotificationDeliveries(ctx, &database.InsertNotificationDeliveriesOptions{
+		ProjectID: proj.ID, Recipients: []string{u3.Email}, Category: "alerts", Title: "sin navegador",
+	})
+	require.NoError(t, err)
+	require.Equal(t, 0, written)
+
+	list, err := db.FindNotificationDeliveriesForUser(ctx, u3.ID, 10)
+	require.NoError(t, err)
+	require.Empty(t, list)
+
+	// One notification to two recipients is one row each, and u1's two browsers do not make it two.
 	written, err = db.InsertNotificationDeliveries(ctx, &database.InsertNotificationDeliveriesOptions{
 		ProjectID:  proj.ID,
 		Recipients: []string{u1.Email, u2.Email},
@@ -1467,7 +1492,7 @@ func testNotificationDeliveries(t *testing.T, db database.DB) {
 	require.Equal(t, 2, written)
 
 	// A history is one person's: u2 sees only what was addressed to them.
-	list, err := db.FindNotificationDeliveriesForUser(ctx, u2.ID, 10)
+	list, err = db.FindNotificationDeliveriesForUser(ctx, u2.ID, 10)
 	require.NoError(t, err)
 	require.Len(t, list, 1)
 	require.Equal(t, "reports", list[0].Category)
@@ -1487,6 +1512,23 @@ func testNotificationDeliveries(t *testing.T, db database.DB) {
 	list, err = db.FindNotificationDeliveriesForUser(ctx, u1.ID, 1)
 	require.NoError(t, err)
 	require.Len(t, list, 1)
+
+	// Turning a category off silences the interruption, not the record. The email still reaches them, so dropping
+	// the row here would hide something they did receive. This is the one filter the history deliberately ignores.
+	role, err := db.FindOrganizationRole(ctx, database.OrganizationRoleNameAdmin)
+	require.NoError(t, err)
+	_, err = db.InsertOrganizationMemberUser(ctx, org.ID, u2.ID, role.ID, nil, false)
+	require.NoError(t, err)
+	_, err = db.UpsertNotificationPreferences(ctx, u2.ID, org.ID, &database.UpsertNotificationPreferencesOptions{
+		PushAlerts: false, PushReports: false, PushActApprovals: false,
+	})
+	require.NoError(t, err)
+
+	written, err = db.InsertNotificationDeliveries(ctx, &database.InsertNotificationDeliveriesOptions{
+		ProjectID: proj.ID, Recipients: []string{u2.Email}, Category: "alerts", Title: "categoría apagada",
+	})
+	require.NoError(t, err)
+	require.Equal(t, 1, written)
 
 	// Retention removes by age and leaves the recent alone: a purge that took everything would be indistinguishable
 	// from one that took nothing, on rows this fresh.

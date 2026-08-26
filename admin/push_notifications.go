@@ -44,11 +44,11 @@ func (s *Service) SendPushNotification(ctx context.Context, opts *SendPushNotifi
 		return 0, nil
 	}
 
-	s.recordNotificationHistory(ctx, opts)
-
 	if !s.Push.Enabled() {
 		return 0, nil
 	}
+
+	s.recordNotificationHistory(ctx, opts)
 
 	subs, err := s.DB.FindPushSubscriptionsForRecipients(ctx, opts.ProjectID, opts.Recipients, opts.Category)
 	if err != nil {
@@ -94,12 +94,15 @@ func (s *Service) SendPushNotification(ctx context.Context, opts *SendPushNotifi
 	return sent, nil
 }
 
-// recordNotificationHistory writes the notification into the history of every recipient that is a user of this
-// deployment (kairos-cloud#148).
+// recordNotificationHistory writes the notification into the history of every recipient with a browser subscribed
+// to notifications (kairos-cloud#148).
 //
-// It runs before the notification is sent, and whether or not push is configured at all. What is recorded is that
-// this concerned that person, which is true of a deployment with no VAPID keys, of a recipient with no browser
-// subscribed, and of one who turned the category off: they turned off the interruption, not the record.
+// The history lives on the notifications page, under the devices and the category switches, so it answers "what
+// have I been notified about" for this channel: a person with no browser subscribed was never notified here, and
+// a deployment with no keys notified nobody. Someone who turned the category off is still recorded, though: they
+// turned off the interruption, not the record, and the email reached them anyway.
+//
+// It is written per recipient, not per subscription: three browsers is still one notification.
 //
 // It is best-effort, like the delivery it accompanies: a history that cannot be written is logged and swallowed,
 // never returned. Nobody should miss a notification because we failed to remember it.

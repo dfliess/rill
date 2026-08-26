@@ -1872,9 +1872,14 @@ func (c *connection) InsertNotificationDeliveries(ctx context.Context, opts *dat
 
 	// Resolving the addresses and writing the rows in one statement is what makes "recipients that are not users
 	// are skipped" a property of the query rather than of a loop that has to remember to skip them.
+	// EXISTS rather than a join: a person with three browsers subscribed still gets one row.
+	// It deliberately does not look at notification_preferences. Turning a category off turns off the
+	// interruption, not the record: the email still arrives, and hiding it here would hide what they did receive.
 	res, err := c.getDB(ctx).ExecContext(ctx, `
 		INSERT INTO notification_deliveries (user_id, project_id, category, title, body, link_path)
-		SELECT u.id, $1, $2, $3, $4, $5 FROM users u WHERE lower(u.email) = ANY($6)
+		SELECT u.id, $1, $2, $3, $4, $5 FROM users u
+		WHERE lower(u.email) = ANY($6)
+		  AND EXISTS (SELECT 1 FROM push_subscriptions s WHERE s.user_id = u.id)
 	`, opts.ProjectID, opts.Category, opts.Title, opts.Body, opts.LinkPath, lowered)
 	if err != nil {
 		return 0, parseErr("notification delivery", err)
