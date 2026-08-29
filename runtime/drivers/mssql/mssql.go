@@ -110,8 +110,9 @@ var spec = drivers.Spec{
 			Hint:        "Enable logging of all SQL queries (useful for debugging)",
 		},
 	},
-	ImplementsSQLStore: true,
-	ImplementsOLAP:     true,
+	ImplementsSQLStore:  true,
+	ImplementsOLAP:      true,
+	ImplementsWarehouse: true,
 }
 
 type driver struct{}
@@ -200,6 +201,7 @@ func (d driver) Open(_, instanceID string, config map[string]any, st *storage.Cl
 
 	return &connection{
 		config:     config,
+		storage:    st,
 		logger:     logger,
 		logQueries: conf.LogQueries,
 		dbMu:       semaphore.NewWeighted(1),
@@ -220,6 +222,7 @@ func (d driver) TertiarySourceConnectors(ctx context.Context, src map[string]any
 
 type connection struct {
 	config     map[string]any
+	storage    *storage.Client
 	logger     *zap.Logger
 	logQueries bool
 
@@ -322,7 +325,7 @@ func (c *connection) AsFileStore() (drivers.FileStore, bool) {
 
 // AsWarehouse implements drivers.Handle.
 func (c *connection) AsWarehouse() (drivers.Warehouse, bool) {
-	return nil, false
+	return c, true
 }
 
 // AsNotifier implements drivers.Connection.
