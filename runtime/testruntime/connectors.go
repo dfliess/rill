@@ -20,6 +20,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/azure/azurite"
+	"github.com/testcontainers/testcontainers-go/modules/mssql"
 	"github.com/testcontainers/testcontainers-go/modules/mysql"
 	"github.com/testcontainers/testcontainers-go/wait"
 )
@@ -219,6 +220,40 @@ var Connectors = map[string]ConnectorAcquireFunc{
 
 		dsn := fmt.Sprintf("mysql://mysql:mysql@%v:%v/mysql", host, port.Port())
 		ip, err := mysqlContainer.ContainerIP(context.Background())
+		require.NoError(t, err)
+
+		return map[string]string{"dsn": dsn, "ip": ip}
+	},
+	"mssql": func(t TestingT) map[string]string {
+		_, currentFile, _, _ := goruntime.Caller(0)
+		testdataPath := filepath.Join(currentFile, "..", "testdata")
+		mssqlInitData := filepath.Join(testdataPath, "init_data", "mssql_init_data.sql")
+
+		initSQL, err := os.Open(mssqlInitData)
+		require.NoError(t, err)
+		defer initSQL.Close()
+
+		ctx := context.Background()
+		mssqlContainer, err := mssql.Run(ctx,
+			"mcr.microsoft.com/mssql/server:2022-latest",
+			mssql.WithAcceptEULA(),
+			mssql.WithPassword("Rill@12345"),
+			mssql.WithInitSQL(initSQL),
+		)
+		require.NoError(t, err)
+
+		t.Cleanup(func() {
+			err := mssqlContainer.Terminate(ctx)
+			require.NoError(t, err)
+		})
+
+		host, err := mssqlContainer.Host(ctx)
+		require.NoError(t, err)
+		port, err := mssqlContainer.MappedPort(ctx, "1433/tcp")
+		require.NoError(t, err)
+
+		dsn := fmt.Sprintf("sqlserver://sa:Rill%%4012345@%v:%v?database=test", host, port.Port())
+		ip, err := mssqlContainer.ContainerIP(context.Background())
 		require.NoError(t, err)
 
 		return map[string]string{"dsn": dsn, "ip": ip}

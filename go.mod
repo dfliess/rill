@@ -77,6 +77,7 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/lensesio/tableprinter v0.0.0-20201125135848-89e81fc956e7
 	github.com/mazznoer/csscolorparser v0.1.3
+	github.com/microsoft/go-mssqldb v1.9.3
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/modelcontextprotocol/go-sdk v1.4.1
 	github.com/openai/openai-go/v3 v3.17.0
@@ -103,6 +104,7 @@ require (
 	github.com/testcontainers/testcontainers-go/modules/azure v0.41.1-0.20260401114404-cc0e33ddcfcf
 	github.com/testcontainers/testcontainers-go/modules/clickhouse v0.41.1-0.20260401114404-cc0e33ddcfcf
 	github.com/testcontainers/testcontainers-go/modules/compose v0.41.1-0.20260401114404-cc0e33ddcfcf
+	github.com/testcontainers/testcontainers-go/modules/mssql v0.41.1-0.20260401114404-cc0e33ddcfcf
 	github.com/testcontainers/testcontainers-go/modules/mysql v0.41.1-0.20260401114404-cc0e33ddcfcf
 	github.com/xuri/excelize/v2 v2.11.0
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.63.0
@@ -170,6 +172,8 @@ require (
 	github.com/go-openapi/swag/stringutils v0.26.0 // indirect
 	github.com/go-openapi/swag/typeutils v0.26.0 // indirect
 	github.com/go-openapi/swag/yamlutils v0.26.0 // indirect
+	github.com/golang-sql/civil v0.0.0-20220223132316-b832511892a9 // indirect
+	github.com/golang-sql/sqlexp v0.1.0 // indirect
 	github.com/in-toto/attestation v1.2.0 // indirect
 	github.com/jackc/pgerrcode v0.0.0-20250907135507-afb5586c32a6 // indirect
 	github.com/mitchellh/hashstructure/v2 v2.0.2 // indirect

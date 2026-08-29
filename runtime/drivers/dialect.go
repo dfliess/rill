@@ -22,6 +22,7 @@ const (
 	DialectNameDatabricks = "databricks"
 	DialectNameDuckDB     = "duckdb"
 	DialectNameDruid      = "druid"
+	DialectNameMSSQL      = "mssql"
 	DialectNameMySQL      = "mysql"
 	DialectNamePinot      = "pinot"
 	DialectNamePostgres   = "postgres"
