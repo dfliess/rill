@@ -14,6 +14,7 @@ import GoogleCloudStorage from "../../../components/icons/connectors/GoogleCloud
 import Https from "../../../components/icons/connectors/HTTPS.svelte";
 import LocalFile from "../../../components/icons/connectors/LocalFile.svelte";
 import MicrosoftAzureBlobStorage from "../../../components/icons/connectors/MicrosoftAzureBlobStorage.svelte";
+import MicrosoftSQLServer from "../../../components/icons/connectors/MicrosoftSQLServer.svelte";
 import MotherDuck from "../../../components/icons/connectors/MotherDuck.svelte";
 import Postgres from "../../../components/icons/connectors/Postgres.svelte";
 import Salesforce from "../../../components/icons/connectors/Salesforce.svelte";
@@ -35,6 +36,7 @@ export const ICONS = {
   ducklake: DuckLake,
   motherduck: MotherDuck,
   postgres: Postgres,
+  mssql: MicrosoftSQLServer,
   mysql: MySQL,
   sqlite: SQLite,
   snowflake: Snowflake,

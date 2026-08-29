@@ -14,6 +14,7 @@ import GoogleBigQueryIcon from "../../components/icons/connectors/GoogleBigQuery
 import AthenaIcon from "../../components/icons/connectors/AthenaIcon.svelte";
 import OpenAIIcon from "../../components/icons/connectors/OpenAIIcon.svelte";
 import PostgresIcon from "../../components/icons/connectors/PostgresIcon.svelte";
+import MicrosoftSQLServerIcon from "../../components/icons/connectors/MicrosoftSQLServerIcon.svelte";
 import MySqlIcon from "../../components/icons/connectors/MySqlIcon.svelte";
 import MotherDuckIcon from "../../components/icons/connectors/MotherDuckIcon.svelte";
 import RedshiftIcon from "../../components/icons/connectors/RedshiftIcon.svelte";
@@ -43,6 +44,7 @@ export const connectorIconMapping = {
   ducklake: DuckLakeIcon,
   gcs: GoogleCloudStorageIcon,
   iceberg: ApacheIcebergIcon,
+  mssql: MicrosoftSQLServerIcon,
   mysql: MySqlIcon,
   openai: OpenAIIcon,
   pinot: ApachePinotIcon,
@@ -93,6 +95,7 @@ export const connectorKeywordMapping = {
     "parquet",
     "iceberg alternative",
   ],
+  mssql: ["relational", "rdbms", "database", "microsoft", "sql server"],
   mysql: ["relational", "rdbms", "database"],
   pinot: ["apache", "olap", "real-time analytics"],
   postgres: ["relational", "rdbms", "database"],

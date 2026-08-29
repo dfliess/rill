@@ -11,6 +11,7 @@ import { databricksSchema } from "../../templates/schemas/databricks";
 import { clickhouseSchema } from "../../templates/schemas/clickhouse";
 import { gcsSchema } from "../../templates/schemas/gcs";
 import { geminiSchema } from "../../templates/schemas/gemini";
+import { mssqlSchema } from "../../templates/schemas/mssql";
 import { mysqlSchema } from "../../templates/schemas/mysql";
 import { openaiSchema } from "../../templates/schemas/openai";
 import { postgresSchema } from "../../templates/schemas/postgres";
@@ -37,6 +38,7 @@ export const multiStepFormSchemas: Record<string, MultiStepFormSchema> = {
   athena: athenaSchema,
   bigquery: bigquerySchema,
   clickhouse: clickhouseSchema,
+  mssql: mssqlSchema,
   mysql: mysqlSchema,
   postgres: postgresSchema,
   redshift: redshiftSchema,
