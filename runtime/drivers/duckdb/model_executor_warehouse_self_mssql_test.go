@@ -61,25 +61,23 @@ func TestMSSQLToDuckDBTransfer(t *testing.T) {
 
 	res, err := olap.Query(context.Background(), &drivers.Statement{Query: "SELECT COUNT(*) FROM sink"})
 	require.NoError(t, err)
-	for res.Next() {
-		var count int
-		err = res.Rows.Scan(&count)
-		require.NoError(t, err)
-		require.Equal(t, 3, count)
-	}
+	// Assert the row exists before scanning: inside a bare `for res.Next()` these checks
+	// are skipped on an empty result and the test passes without asserting anything.
+	require.True(t, res.Next())
+	var count int
+	require.NoError(t, res.Rows.Scan(&count))
+	require.Equal(t, 3, count)
 	require.NoError(t, res.Err())
 	require.NoError(t, res.Close())
 
 	// decimal survives as a decimal with its precision and scale, and its value is exact
 	res, err = olap.Query(context.Background(), &drivers.Statement{Query: "SELECT typeof(decimal_col), decimal_col::VARCHAR FROM sink WHERE int_col = 2147483647"})
 	require.NoError(t, err)
-	for res.Next() {
-		var typ, val string
-		err = res.Rows.Scan(&typ, &val)
-		require.NoError(t, err)
-		require.Equal(t, "DECIMAL(10,2)", typ)
-		require.Equal(t, "3.30", val)
-	}
+	require.True(t, res.Next())
+	var typ, val string
+	require.NoError(t, res.Rows.Scan(&typ, &val))
+	require.Equal(t, "DECIMAL(10,2)", typ)
+	require.Equal(t, "3.30", val)
 	require.NoError(t, res.Err())
 	require.NoError(t, res.Close())
 

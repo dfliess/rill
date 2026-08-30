@@ -2,7 +2,6 @@ package mssql_test
 
 import (
 	"context"
-	"errors"
 	"io"
 	"os"
 	"testing"
@@ -194,7 +193,9 @@ func testCancellation(t *testing.T, w drivers.Warehouse) {
 	}()
 	_, err = iter2.Next(ctx)
 	require.Error(t, err)
-	require.True(t, errors.Is(err, context.Canceled) || errors.Is(ctx.Err(), context.Canceled))
+	// Assert on the error the iterator returned, not on ctx.Err(): the latter is always
+	// context.Canceled after cancel(), so an OR over it can never fail.
+	require.ErrorIs(t, err, context.Canceled)
 }
 
 func testUnsupportedType(t *testing.T, w drivers.Warehouse) {
