@@ -86,9 +86,21 @@
   $: noteQuery = createQuery(queryOptions, queryClient);
 
   $: note = $noteQuery?.data ?? "";
-  $: errorMessage = $noteQuery?.error
-    ? extractErrorMessage($noteQuery.error)
-    : "";
+
+  // THE DETAIL GOES TO THE CONSOLE, NEVER TO THE PANEL. A failed run's error
+  // arrives verbatim from the runtime, and for a provider failure that string
+  // carries a full Go stack trace: `runtime/ai/ai.go` wraps the error as
+  // "completion failed: %w (stack: %s)" with `debug.Stack()` inside. Rendering
+  // it put ~40 lines of goroutine dump, with absolute source paths from the
+  // server that built the binary, into a dashboard panel. Notes are read by
+  // business users and are shareable by public link, so the reader gets one
+  // sentence and a retry; whoever is debugging opens the console.
+  $: if ($noteQuery?.isError) {
+    console.error(
+      "[agent_note] run failed:",
+      extractErrorMessage($noteQuery.error),
+    );
+  }
 
   function regenerate() {
     nonce += 1;
@@ -108,7 +120,7 @@
     </div>
   {:else if $noteQuery?.isError}
     <div class="agent-note-error">
-      <p>{errorMessage}</p>
+      <p>{m.canvas_agent_note_failed()}</p>
       <button type="button" on:click={regenerate}>
         {m.canvas_agent_note_regenerate()}
       </button>
