@@ -60,6 +60,22 @@ const (
 	// int64 nanoseconds). The wait is durable and cheap (a parked workflow blocked on Recv), and Cancel is the human's
 	// way to abort a run nobody will decide.
 	approvalWaitForever = 100 * 365 * 24 * time.Hour
+
+	// maxRecoveryAttempts is the recovery budget of the agent workflow, raised far above the DBOS default of 100
+	// because that default silently contradicts approvalWaitForever above.
+	//
+	// To DBOS, a run parked on a human decision is indistinguishable from one that keeps failing: it sits PENDING,
+	// and every process start recovers it and spends one attempt (`IncrementAttempts` is set on both the recovery
+	// path and the dequeue path, so re-enqueueing does not avoid it either). At 100 the wait is not "forever", it is
+	// however long 100 restarts take. Measured in production on 2026-09-02: runs parked since 2026-08-17 had already
+	// spent 13 attempts, ~0.8/day, which exhausts the default within months — the run would then be dead-lettered as
+	// MAX_RECOVERY_ATTEMPTS_EXCEEDED and, per the Status switch below, treated as terminal. A client must never lose
+	// a run because nobody signed it yet, least of all against a deadline the signer cannot see.
+	//
+	// Raised rather than disabled: 0 switches dead-lettering off entirely, and the budget still has one job — a
+	// genuine poison pill, a run that crashes the process on every recovery, must stop instead of looping forever.
+	// A crash loop spends this budget in about a day; an approval, at the rate measured above, in about 34 years.
+	maxRecoveryAttempts = 10000
 )
 
 // Config configures a DBOSExecutor and the DBOS worker it embeds.
@@ -172,7 +188,10 @@ func NewDBOSExecutor(ctx context.Context, cfg Config) (*DBOSExecutor, error) {
 	// Register the ONE generic workflow. It is a bound method so the workflow body reaches the runner (and, in
 	// production, the runtime) without those crossing the serialized workflow boundary. Recovery re-invokes this
 	// same registered closure by name, so a recovered run uses the recovering process's runner.
-	dbos.RegisterWorkflow(dctx, e.runAgentWorkflow, dbos.WithWorkflowName(workflowName))
+	dbos.RegisterWorkflow(dctx, e.runAgentWorkflow,
+		dbos.WithWorkflowName(workflowName),
+		dbos.WithMaxRecoveryAttempts(maxRecoveryAttempts),
+	)
 
 	if err := dbos.Launch(dctx); err != nil {
 		_ = dbos.Shutdown(dctx, 5*time.Second) // best effort: we are already failing to start
