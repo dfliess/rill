@@ -59,6 +59,11 @@ const (
 	// a zero timeout fires immediately, so we pass this effectively-infinite duration (~100 years, comfortably within
 	// int64 nanoseconds). The wait is durable and cheap (a parked workflow blocked on Recv), and Cancel is the human's
 	// way to abort a run nobody will decide.
+	//
+	// Do not read this number as a promise about calendar time. What actually bounds the wait is maxRecoveryAttempts
+	// below: every process start spends one attempt of a parked run's budget, so the wait ends at whichever comes
+	// first — and it is never the hundred years. At DBOS's default of 100 attempts and the ~0.8 restarts/day measured
+	// in production on 2026-09-02, "forever" was about four months.
 	approvalWaitForever = 100 * 365 * 24 * time.Hour
 
 	// maxRecoveryAttempts is the recovery budget of the agent workflow, raised far above the DBOS default of 100
