@@ -8,7 +8,18 @@
 # This job answers "did a Kairos change break things?" unambiguously:
 #   1. go build ./...  — the WHOLE Rill tree must still compile.
 #   2. go test -short  — the Act/Kairos-owned packages must still pass.
-# It needs no external services, so green means green.
+#
+# Act's durable execution is DBOS on Postgres and its tests dial a real database,
+# so this job runs one. It used to say "it needs no external services, so green
+# means green", and that was the whole problem: with no database every Act test
+# called t.Skipf, `go test` printed ok, and the gate was green over 175 tests it
+# never ran. That silence is how a change to the workflow's step sequence reached
+# production on 2026-09-02 and killed 19 runs parked on a human approval.
+#
+# Two halves make the signal real, and neither works alone: the service below, and
+# ACT_TEST_REQUIRE_POSTGRES, which turns "no database" into a failure here instead
+# of a skip. Without the flag a broken service would put us straight back to a
+# green that ran nothing.
 name: Kairos unit tests
 
 on:
@@ -23,6 +34,24 @@ permissions:
 jobs:
   kairos-unit:
     runs-on: ubuntu-22.04
+    # Only this job gets the database, and only because Act needs it: Actions
+    # minutes are a shared budget and the org already exhausted them once (the
+    # fork had no CI at all from 2026-08-24 to 2026-09-01). Port 55432 and the
+    # dbos_spike database mirror the local dbos-spike-pg container on purpose, so
+    # the tests' built-in default DSN is the same string here and on a laptop.
+    services:
+      postgres:
+        image: postgres:17.5
+        env:
+          POSTGRES_PASSWORD: dbos
+          POSTGRES_DB: dbos_spike
+        ports:
+          - 55432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d dbos_spike"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -47,3 +76,6 @@ jobs:
           ./runtime/reconcilers/...
         env:
           CGO_ENABLED: "1"
+          ACT_TEST_DBOS_URL: postgres://postgres:dbos@localhost:55432/dbos_spike?sslmode=disable
+          # A database that does not answer must fail this job, never skip it.
+          ACT_TEST_REQUIRE_POSTGRES: "1"

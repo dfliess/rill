@@ -28,6 +28,13 @@ import (
 
 // requirePostgres returns the DSN and schema for the DBOS system tables, skipping the test if Postgres is
 // unreachable. The spike reuses WS1's local container (docker start dbos-spike-pg) unless overridden by env.
+//
+// Skipping is right on a laptop that has no container and wrong on a machine whose job is to catch regressions. Until
+// 2026-09-03 the Kairos gate ran this suite with no database at all: every test skipped, `go test` printed ok, and the
+// green said nothing — which is how a change that killed 19 runs parked on human approval reached production. CI now
+// provides Postgres and sets ACT_TEST_REQUIRE_POSTGRES, which turns an unreachable database into a failure there while
+// leaving the local skip alone. The other two helpers that dial this database do the same (pgledger_internal_test.go,
+// trigger/dispatcher_test.go).
 func requirePostgres(t *testing.T) (dsn, schema string) {
 	t.Helper()
 	dsn = os.Getenv("ACT_TEST_DBOS_URL")
@@ -43,6 +50,9 @@ func requirePostgres(t *testing.T) (dsn, schema string) {
 	require.NoError(t, err)
 	conn, err := net.DialTimeout("tcp", u.Host, 2*time.Second)
 	if err != nil {
+		if os.Getenv("ACT_TEST_REQUIRE_POSTGRES") != "" {
+			t.Fatalf("ACT_TEST_REQUIRE_POSTGRES is set, so a missing database is a failure, not a skip: Postgres at %s is unreachable: %v", u.Host, err)
+		}
 		t.Skipf("act tests need Postgres at %s (start it with: docker start dbos-spike-pg): %v", u.Host, err)
 	}
 	_ = conn.Close()

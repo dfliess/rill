@@ -24,6 +24,10 @@ func requirePostgresInternal(t *testing.T) string {
 	require.NoError(t, err)
 	conn, err := net.DialTimeout("tcp", u.Host, 2*time.Second)
 	if err != nil {
+		// Same rule as the external helper: a skip is for a laptop, never for CI. See requirePostgres in act_test.go.
+		if os.Getenv("ACT_TEST_REQUIRE_POSTGRES") != "" {
+			t.Fatalf("ACT_TEST_REQUIRE_POSTGRES is set, so a missing database is a failure, not a skip: Postgres at %s is unreachable: %v", u.Host, err)
+		}
 		t.Skipf("act internal tests need Postgres at %s (docker start dbos-spike-pg): %v", u.Host, err)
 	}
 	_ = conn.Close()
