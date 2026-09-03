@@ -37,9 +37,22 @@ const (
 	// which does not expose the ledger.
 	payloadKeyDecidedBy = "decided_by"
 
-	// defaultApplicationVersion pins the DBOS application version. It MUST be stable across process restarts:
-	// otherwise every rebuild is a fresh "version" and a restarted worker ignores runs the previous binary started,
-	// which hangs recovery. In production this is the deploy SHA (§19.1).
+	// defaultApplicationVersion pins the DBOS application version to a constant, overriding DBOS's default of
+	// versioning the application by the binary's SHA-256. That default is not unstable across restarts — it is
+	// stable per binary, by design: only a worker running the exact code that recorded a workflow's checkpoints
+	// will recover it, which is what makes replay safe. We override it anyway because a run parked on a human
+	// approval must survive a deploy (the premise of the whole HITL design), and this deployment replaces the
+	// binary in place: under per-binary versioning no worker with the old hash would ever come back for the run.
+	//
+	// The price of the constant is that a new binary replays checkpoints written by DIFFERENT code, so every
+	// change to the workflow's step sequence MUST be gated behind a named dbos.Patch (armed via EnablePatching
+	// below). Deploying an unguarded new step killed 19 parked runs on 2026-09-02: the step ran in the slot the
+	// parked Recv had not recorded yet, and the run died with "UnexpectedStep: DBOS.sleep was recorded when
+	// DBOS.recv was expected". And the Patch call must sit where every in-flight run already has a checkpoint in
+	// the next slot — in practice before the workflow's first step — NOT at the point of the change: a parked
+	// Recv records nothing in its own slot (only its timeout sleep, one slot later), so a Patch placed just
+	// before the wait reads that empty slot as "new workflow" and steers the parked run into the new branch,
+	// reproducing the same incident. TestPatchGuardsShapeChangeAgainstParkedRuns pins both halves of this rule.
 	defaultApplicationVersion = "act-spike-v1"
 
 	// approvalWaitForever is the duration a run waits for a human decision. dbos.Recv has no "wait forever" argument and
@@ -132,7 +145,14 @@ func NewDBOSExecutor(ctx context.Context, cfg Config) (*DBOSExecutor, error) {
 		DatabaseURL:        cfg.DatabaseURL,
 		DatabaseSchema:     cfg.DatabaseSchema,
 		ApplicationVersion: version,
-		Logger:             cfg.Logger,
+		// The pinned ApplicationVersion means a deploy replays checkpoints recorded by older code, so any future
+		// change to the workflow's step sequence must hide behind a named dbos.Patch — see the rule (and the
+		// 2026-09-02 incident that wrote it) at defaultApplicationVersion. This only arms the mechanism; Patch is
+		// independent of the version string, and the existing steps stay unwrapped on purpose: a Patch consumes a
+		// step slot of its own, so wrapping an already-deployed step would shift the numbering and be a shape
+		// change in itself.
+		EnablePatching: true,
+		Logger:         cfg.Logger,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("act: init DBOS: %w", err)
