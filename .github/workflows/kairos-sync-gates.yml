@@ -92,6 +92,29 @@ jobs:
     runs-on: ${{ vars.SYNC_GATES_RUNNER || 'ubuntu-22.04' }}
     timeout-minutes: 90
 
+    # La ejecucion durable de Act es DBOS sobre Postgres y sus tests marcan una
+    # base de verdad: sin ella hacen t.Skipf y G1b da "ok" sin ejecutar nada.
+    # Ese verde mudo es el que dejo pasar el cambio que el 2026-09-02 mato 19
+    # runs parados esperando una firma, y aqui pesa mas que en las PRs, porque
+    # este es el gate que decide si se ADOPTA un rebase semanal.
+    # Puerto y base replican el contenedor local dbos-spike-pg a proposito: el
+    # DSN por defecto que llevan los tests dentro es la misma cadena aqui y en
+    # un portatil. Si SYNC_GATES_RUNNER apunta a la maquina propia, esto sigue
+    # valiendo: los service containers solo piden Docker, que kairos-seo tiene.
+    services:
+      postgres:
+        image: postgres:17.5
+        env:
+          POSTGRES_PASSWORD: dbos
+          POSTGRES_DB: dbos_spike
+        ports:
+          - 55432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d dbos_spike"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+
     steps:
       - uses: actions/checkout@v5
 
@@ -124,6 +147,11 @@ jobs:
           ./runtime/reconcilers/...
         env:
           CGO_ENABLED: "1"
+          ACT_TEST_DBOS_URL: postgres://postgres:dbos@localhost:55432/dbos_spike?sslmode=disable
+          # Sin base, este gate falla en vez de saltar. El servicio de arriba no
+          # basta solo: si algun dia deja de arrancar, sin esta variable G1b
+          # volveria a dar verde sin haber probado Act.
+          ACT_TEST_REQUIRE_POSTGRES: "1"
 
       # CGO explicito: sin el, duckdb-go-bindings queda excluido por build
       # constraints y el typecheck de golangci-lint falla con "could not
