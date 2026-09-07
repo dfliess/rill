@@ -1,4 +1,5 @@
 <script lang="ts">
+  import AnimatedDots from "@rilldata/web-common/features/chat/core/messages/AnimatedDots.svelte";
   import RefreshIcon from "@rilldata/web-common/components/icons/RefreshIcon.svelte";
   import Markdown from "@rilldata/web-common/components/markdown/Markdown.svelte";
   import { extractErrorMessage } from "@rilldata/web-common/lib/errors";
@@ -148,8 +149,7 @@
     <p class="agent-note-hint">{m.canvas_agent_note_unconfigured()}</p>
   {:else if $noteQuery?.isFetching}
     <div class="agent-note-loading" aria-live="polite">
-      <span class="agent-note-pulse"></span>
-      <span>{m.canvas_agent_note_generating()}</span>
+      <AnimatedDots>{m.canvas_agent_note_generating()}</AnimatedDots>
     </div>
   {:else if $noteQuery?.isError}
     <div class="agent-note-error">
@@ -197,21 +197,11 @@
   .agent-note-idle {
     @apply text-sm text-fg-muted;
   }
+  /* The waiting state is Rill's shared one (AnimatedDots), the same affordance the chat's thinking block
+     and the canvas's other AI states use, so the trailing dots are animated and never written into the
+     string. */
   .agent-note-loading {
-    @apply flex items-center gap-x-2 text-sm text-fg-muted;
-  }
-  .agent-note-pulse {
-    @apply size-2 rounded-full bg-accent-primary;
-    animation: agent-note-pulse 1.2s ease-in-out infinite;
-  }
-  @keyframes agent-note-pulse {
-    0%,
-    100% {
-      opacity: 0.3;
-    }
-    50% {
-      opacity: 1;
-    }
+    @apply text-sm text-fg-muted;
   }
   .agent-note-error {
     @apply text-sm text-fg-secondary;
