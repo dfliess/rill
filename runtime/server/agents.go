@@ -323,6 +323,16 @@ func (s *Server) StartAgentRun(ctx context.Context, req *runtimev1.StartAgentRun
 		idempotencyKey = uuid.NewString()
 	} else {
 		idempotencyKey = scopeKeyToActor(claims.UserID, idempotencyKey)
+		// A key deduplicates runs so a repeat does not pay twice, but a FAILED run is not an answer: inheriting it
+		// pins the caller to a transient provider error for as long as the key lives (issue #154, ADR-0023). Resolve
+		// the key's family here, on the manual path only. The executor's Start is deliberately NOT changed: the
+		// trigger dispatcher calls it directly and DEPENDS on inheriting a failure, because its delivery is
+		// at-least-once and that inheritance is what stops a redelivered event from re-running an external effect
+		// the dead run may already have performed.
+		idempotencyKey, err = s.resolveKeyFamily(ctx, req.InstanceId, req.Name, idempotencyKey)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// This is the public manual-trigger API, so the run is always recorded as "manual": we ignore any caller-
@@ -370,6 +380,29 @@ func (s *Server) StartAgentRun(ctx context.Context, req *runtimev1.StartAgentRun
 		AgentName: run.AgentName,
 		SpecHash:  run.SpecHash,
 	}, nil
+}
+
+// resolveKeyFamily returns the key the run should start under: the caller's own key when nothing has come of it
+// yet or when the run it produced is good (or still in flight), and a fresh retry attempt when that run FAILED.
+//
+// It asks the store rather than probing keys through Start, because starting an unseen key is what brings a run
+// into being: a caller that walked attempt keys to find the live one would create the very runs it meant to
+// inspect. One indexed lookup also keeps the cost flat however long an outage made the family.
+//
+// Only "failed" is skipped. "rejected" and "cancelled" are terminal too, but they are deliberate human outcomes:
+// re-running them would undo the decision that produced them.
+func (s *Server) resolveKeyFamily(ctx context.Context, instanceID, agentName, key string) (string, error) {
+	run, err := s.agentRuns.LatestRunInKeyFamily(ctx, instanceID, agentName, key)
+	if errors.Is(err, act.ErrRunNotFound) {
+		return key, nil
+	}
+	if err != nil {
+		return "", mapActError(err)
+	}
+	if run.Status != act.RunStatusFailed {
+		return run.IdempotencyKey, nil
+	}
+	return act.NextRetryAttemptKey(run.IdempotencyKey), nil
 }
 
 // scopeKeyToActor namespaces a caller-supplied idempotency key by the user the run acts for.

@@ -282,6 +282,11 @@ type RunStore interface {
 	SetRunConversationID(ctx context.Context, instanceID, runID, conversationID string) error
 	// GetRun returns a run scoped to instanceID, or ErrRunNotFound.
 	GetRun(ctx context.Context, instanceID, runID string) (*Run, error)
+	// LatestRunInKeyFamily returns the newest run started under idempotency key `key` or under one of its retry
+	// attempts (see RetryAttemptKey), or ErrRunNotFound when no run of the family exists. It is what lets a caller
+	// ask "what came of this key so far?" in one query, without walking attempt keys through Start — which would
+	// CREATE the runs it means to inspect, since starting an unseen key is what brings a run into being.
+	LatestRunInKeyFamily(ctx context.Context, instanceID, agentName, key string) (*Run, error)
 	// ListRuns returns runs matching the filter, newest first.
 	ListRuns(ctx context.Context, f ListRunsFilter) ([]*Run, error)
 	// ListRunEvents returns a run's events with ID greater than afterID, oldest first, capped by limit (a store

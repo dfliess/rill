@@ -5,6 +5,8 @@
   import { m } from "@rilldata/web-common/lib/i18n/gen/messages";
   import { queryClient } from "@rilldata/web-common/lib/svelte-query/globalQueryClient";
   import { useRuntimeClient } from "@rilldata/web-common/runtime-client/v2";
+  import { runtimeServiceGetResource } from "@rilldata/web-common/runtime-client/v2/gen/runtime-service";
+  import { ResourceKind } from "@rilldata/web-common/features/entity-management/resource-selectors";
   import { createQuery } from "@tanstack/svelte-query";
   import type { AgentNoteCanvasComponent } from "./";
   import {
@@ -60,10 +62,39 @@
     filterMap,
   });
 
+  // The agent's version belongs in the key. A note is an answer about (dashboard, agent), so editing the agent has
+  // to produce a new answer instead of serving the one its previous version wrote. It also gives a note whose agent
+  // was misconfigured a way out: fixing the agent moves the key, where a retry of the old one could only fail again.
+  // Rill already publishes the version as the resource's spec hash, so reading it costs nothing new in the API.
+  $: agentSpecQuery = createQuery(
+    {
+      queryKey: ["agent-note-spec", runtimeClient.instanceId, agent],
+      queryFn: ({ signal }: { signal: AbortSignal }) =>
+        runtimeServiceGetResource(
+          runtimeClient,
+          { name: { kind: ResourceKind.Agent, name: agent } },
+          { signal },
+        ),
+      enabled: !!agent,
+      retry: false,
+    },
+    queryClient,
+  );
+
+  // The cast is the same type-level formality the dashboard context needs in util.ts: the v2 client returns proto
+  // JSON typed as the REST client's `V1GetResourceResponse`, whose generated `V1Resource` predates the Agent
+  // resource and so does not declare the field. The bytes carry it; only the type has not caught up.
+  $: agentSpecHash =
+    (
+      $agentSpecQuery?.data?.resource as
+        | { agent?: { state?: { specHash?: string } } }
+        | undefined
+    )?.agent?.state?.specHash ?? "";
+
   $: idempotencyKey = agentNoteIdempotencyKey({
     agent,
     prompt,
-    context: `${runtimeClient.instanceId ?? ""}|${dashboardContextKey(dashboardContext)}`,
+    context: `${runtimeClient.instanceId ?? ""}|${agentSpecHash}|${dashboardContextKey(dashboardContext)}`,
     nonce,
   });
 
@@ -75,7 +106,9 @@
         { agent, prompt, idempotencyKey, dashboardContext },
         signal,
       ),
-    enabled: configured && (autoRun || requested),
+    // Wait for the agent's version before starting anything: generating under an empty hash and again under the
+    // real one would pay for two completions and leave the first orphaned under a key nothing asks for again.
+    enabled: configured && $agentSpecQuery?.isSuccess && (autoRun || requested),
     // The answer is pinned to its idempotency key, so it never goes stale on its own: a new answer
     // requires a new key, which only "regenerate" or an edited prompt produces.
     staleTime: Infinity,

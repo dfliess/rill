@@ -1,11 +1,13 @@
 package server
 
 import (
+	"context"
 	"strings"
 	"testing"
 	"time"
 
 	runtimev1 "github.com/rilldata/rill/proto/gen/rill/runtime/v1"
+	"github.com/rilldata/rill/runtime/act"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -105,4 +107,78 @@ func TestStreamAgentRunEventsGetsAWatchTimeout(t *testing.T) {
 
 	// The same scale as Rill's own watches, which is where this belongs.
 	require.Equal(t, timeoutSelector(runtimev1.RuntimeService_WatchResources_FullMethodName), streamTimeout)
+}
+
+// keyFamilyStore is a RunStore that answers only the family lookup. Embedding the interface leaves every other
+// method nil: resolveKeyFamily must not reach for anything else, and a panic here would say it did.
+type keyFamilyStore struct {
+	act.RunStore
+	run *act.Run
+	err error
+}
+
+func (s keyFamilyStore) LatestRunInKeyFamily(_ context.Context, _, _, _ string) (*act.Run, error) {
+	return s.run, s.err
+}
+
+// TestResolveKeyFamilyStartsFreshWhenNothingCameOfTheKey: an untouched key is used verbatim, so a caller that never
+// fails is stored under exactly the key it supplied and the derived form stays invisible.
+func TestResolveKeyFamilyStartsFreshWhenNothingCameOfTheKey(t *testing.T) {
+	s := &Server{agentRuns: keyFamilyStore{err: act.ErrRunNotFound}}
+
+	got, err := s.resolveKeyFamily(t.Context(), "inst", "narrador", "key-1")
+	require.NoError(t, err)
+	require.Equal(t, "key-1", got)
+}
+
+// TestResolveKeyFamilyInheritsAnswers is the property the key exists for: a run that is good, or still working, is
+// attached to rather than repeated. Losing this would pay for a completion on every page load.
+func TestResolveKeyFamilyInheritsAnswers(t *testing.T) {
+	for _, status := range []act.RunStatus{
+		act.RunStatusSucceeded,
+		act.RunStatusRunning,
+		act.RunStatusQueued,
+		act.RunStatusWaitingApproval,
+		// Rejected and cancelled are terminal but deliberate: a human decided them, and re-running would undo that.
+		act.RunStatusRejected,
+		act.RunStatusCancelled,
+	} {
+		t.Run(string(status), func(t *testing.T) {
+			s := &Server{agentRuns: keyFamilyStore{run: &act.Run{IdempotencyKey: "key-1", Status: status}}}
+
+			got, err := s.resolveKeyFamily(t.Context(), "inst", "narrador", "key-1")
+			require.NoError(t, err)
+			require.Equal(t, "key-1", got)
+		})
+	}
+}
+
+// TestResolveKeyFamilyDoesNotInheritAFailure is issue #154 itself: a failed run is not an answer, so the caller gets
+// a fresh attempt instead of the dead one. Without this, one transient provider error pins a dashboard note to a
+// stored stack trace for as long as the key lives.
+func TestResolveKeyFamilyDoesNotInheritAFailure(t *testing.T) {
+	s := &Server{agentRuns: keyFamilyStore{run: &act.Run{IdempotencyKey: "key-1", Status: act.RunStatusFailed}}}
+
+	got, err := s.resolveKeyFamily(t.Context(), "inst", "narrador", "key-1")
+	require.NoError(t, err)
+	require.NotEqual(t, "key-1", got)
+
+	// The fresh key stays in the same family, or the next visit would not find what this attempt produces.
+	base, attempt := act.SplitRetryAttemptKey(got)
+	require.Equal(t, "key-1", base)
+	require.Equal(t, 1, attempt)
+}
+
+// TestResolveKeyFamilyAdvancesFromTheNewestAttempt: a second outage must move the chain forward rather than reuse
+// an attempt that already failed, which DBOS would refuse to re-execute anyway.
+func TestResolveKeyFamilyAdvancesFromTheNewestAttempt(t *testing.T) {
+	newest := act.NextRetryAttemptKey("key-1")
+	s := &Server{agentRuns: keyFamilyStore{run: &act.Run{IdempotencyKey: newest, Status: act.RunStatusFailed}}}
+
+	got, err := s.resolveKeyFamily(t.Context(), "inst", "narrador", "key-1")
+	require.NoError(t, err)
+
+	base, attempt := act.SplitRetryAttemptKey(got)
+	require.Equal(t, "key-1", base)
+	require.Equal(t, 2, attempt)
 }

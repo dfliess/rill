@@ -169,6 +169,9 @@ func (s *PostgresRunStore) Migrate(ctx context.Context) error {
 		fmt.Sprintf(`CREATE INDEX IF NOT EXISTS agent_runs_instance_created_idx ON %s (instance_id, created_on DESC)`, s.t("agent_runs")),
 		fmt.Sprintf(`CREATE INDEX IF NOT EXISTS agent_runs_instance_agent_idx ON %s (instance_id, agent_name, created_on DESC)`, s.t("agent_runs")),
 		fmt.Sprintf(`CREATE INDEX IF NOT EXISTS agent_runs_instance_status_idx ON %s (instance_id, status, created_on DESC)`, s.t("agent_runs")),
+		// Backs the idempotency-key family lookup: "what came of this key so far?" resolved in one query rather
+		// than by probing attempt keys through Start, which would create the runs it means to inspect.
+		fmt.Sprintf(`CREATE INDEX IF NOT EXISTS agent_runs_instance_agent_idem_idx ON %s (instance_id, agent_name, idempotency_key)`, s.t("agent_runs")),
 
 		// Backfill trigger_ref onto an agent_runs table created by an earlier build: CREATE TABLE IF NOT EXISTS never
 		// alters an existing table, so a database migrated before this column existed would lack it and every run
@@ -652,6 +655,26 @@ func (s *PostgresRunStore) GetRun(ctx context.Context, instanceID, runID string)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("act: get run: %w", err)
+	}
+	return run, nil
+}
+
+func (s *PostgresRunStore) LatestRunInKeyFamily(ctx context.Context, instanceID, agentName, key string) (*Run, error) {
+	if instanceID == "" || agentName == "" || key == "" {
+		return nil, errors.New("act: LatestRunInKeyFamily requires InstanceID, AgentName and key")
+	}
+	// The family is the key itself plus its retry attempts. Newest first by created_on, which is the order the
+	// attempts were minted in: the caller only cares about the last thing that came of the key.
+	row := s.pool.QueryRow(ctx, s.selectRunSQL()+`
+		WHERE instance_id=$1 AND agent_name=$2 AND (idempotency_key=$3 OR idempotency_key LIKE $4 ESCAPE '\')
+		ORDER BY created_on DESC LIMIT 1`,
+		instanceID, agentName, key, KeyFamilyLikePattern(key))
+	run, err := scanRun(row)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, ErrRunNotFound
+	}
+	if err != nil {
+		return nil, fmt.Errorf("act: latest run in key family: %w", err)
 	}
 	return run, nil
 }
