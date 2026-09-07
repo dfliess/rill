@@ -181,12 +181,17 @@ jobs:
           LOCAL: "true"
           COMMON: "true"
           FAIL_FAST: "false"
-          # eslint sobre web-common revienta con "JavaScript heap out of
-          # memory" si V8 no puede crecer. En un runner de GitHub la maquina
-          # esta vacia; kairos-seo comparte sus 7,8 GB con Twenty CRM y un
-          # escritorio remoto, asi que el limite se fija a mano en vez de
-          # dejar que V8 lo deduzca de la RAM total.
-          NODE_OPTIONS: "--max-old-space-size=3072"
+          # eslint sobre web-admin revienta con "JavaScript heap out of
+          # memory" si V8 no puede crecer, asi que el limite se fija a mano en
+          # vez de dejar que V8 lo deduzca de la RAM total. El 3072 anterior se
+          # calibro para kairos-seo, que comparte sus 7,8 GB con Twenty CRM,
+          # pero con el arbol de hoy ya no llega: el sync del 2026-09-07 salio
+          # rojo por OOM aqui, y identico sobre la base, o sea que el tope era
+          # la causa y no el rebase. Los gates corren en runners hosted de
+          # GitHub (~16 GB, ver el runs-on de mas arriba), donde 6144 cabe de
+          # sobra. Si algun dia se define SYNC_GATES_RUNNER y vuelven a
+          # kairos-seo, hay que bajarlo o subir el MemoryMax=4G del servicio.
+          NODE_OPTIONS: "--max-old-space-size=6144"
 
       # Sin npm ci propio: reutiliza el node_modules que dejo G3.
       - name: G4 - prettier
