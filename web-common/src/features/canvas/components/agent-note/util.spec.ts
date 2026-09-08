@@ -8,6 +8,7 @@ import {
   agentNoteIdempotencyKey,
   buildDashboardContext,
   dashboardContextKey,
+  noteContextReady,
 } from "./util";
 
 function ctxWithFilters(order: string[]): V1AnalystAgentContext {
@@ -131,5 +132,78 @@ describe("agentNoteIdempotencyKey", () => {
         context: "campus=sur",
       }),
     );
+  });
+});
+
+describe("noteContextReady", () => {
+  const window = Interval.fromDateTimes(
+    DateTime.utc(2026, 8, 1),
+    DateTime.utc(2026, 9, 1),
+  ) as Interval<true>;
+  const spec = { metricsViews: { sales: {} } };
+
+  // The bug of issue #155: without waiting, the note runs once with no window and again with it, paying
+  // for two completions and leaving the windowless answer on screen.
+  it("waits while the canvas window is still resolving", () => {
+    expect(
+      noteContextReady({
+        canvasData: spec,
+        hasTimeSeriesMap: new Map([["sales", true]]),
+        interval: undefined,
+      }),
+    ).toBe(false);
+
+    expect(
+      noteContextReady({
+        canvasData: spec,
+        hasTimeSeriesMap: new Map([["sales", true]]),
+        interval: window,
+      }),
+    ).toBe(true);
+  });
+
+  // The half that is easy to miss: before the spec is processed the map is EMPTY, so asking only "does
+  // any metrics view have a time dimension" reads false and lets the premature run through — which is
+  // exactly the state the first of the two runs was composed in.
+  it("does not mistake an unprocessed spec for a canvas without time", () => {
+    expect(
+      noteContextReady({
+        canvasData: spec,
+        hasTimeSeriesMap: new Map(),
+        interval: undefined,
+      }),
+    ).toBe(false);
+  });
+
+  // And the mirror image: a canvas whose metrics views carry no time dimension never gets a window, so
+  // waiting for one would leave its note unwritten forever.
+  it("does not wait for a window a canvas without time will never have", () => {
+    expect(
+      noteContextReady({
+        canvasData: spec,
+        hasTimeSeriesMap: new Map([["sales", false]]),
+        interval: undefined,
+      }),
+    ).toBe(true);
+  });
+
+  it("does not wait on a canvas that declares no metrics view at all", () => {
+    expect(
+      noteContextReady({
+        canvasData: { metricsViews: {} },
+        hasTimeSeriesMap: new Map(),
+        interval: undefined,
+      }),
+    ).toBe(true);
+  });
+
+  it("waits while the canvas spec itself is in flight", () => {
+    expect(
+      noteContextReady({
+        canvasData: undefined,
+        hasTimeSeriesMap: new Map([["sales", true]]),
+        interval: window,
+      }),
+    ).toBe(false);
   });
 });

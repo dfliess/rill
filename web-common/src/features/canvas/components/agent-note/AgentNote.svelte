@@ -14,6 +14,7 @@
     agentNoteIdempotencyKey,
     buildDashboardContext,
     dashboardContextKey,
+    noteContextReady,
     runAgentNote,
   } from "./util";
 
@@ -56,6 +57,28 @@
   $: globalInterval = globalIntervalStore ? $globalIntervalStore : undefined;
   $: localInterval = localIntervalStore ? $localIntervalStore : undefined;
   $: interval = spec?.time_filters ? localInterval : globalInterval;
+
+  // WAIT FOR THE CONTEXT BEFORE ASKING (issue #155). The canvas window does not exist until two round
+  // trips have landed: the canvas spec (which fills hasTimeSeriesMap, and until then rangeStore returns
+  // undefined — stores/time-state.ts:91), and then deriveInterval's own query that turns "P12M" into
+  // dates. A note that does not wait composes its key WITHOUT the window, runs, and then runs a second
+  // time under the key the window produces: two completions per load, and the answer left on screen is
+  // the one computed without the reader's time range.
+  //
+  // The shape is the markdown component's (markdown/util.ts:167-172), which narrates the same dashboards
+  // and has the same "with or without time" requirement. Both halves are needed, one per round trip: the
+  // time half alone would let the first render through, because before the spec the map is EMPTY, so
+  // hasTimeSeries reads false and "no time series" is indistinguishable from "not yet".
+  $: canvasSpecStore = component?.parent?.specStore;
+  $: canvasData = canvasSpecStore ? $canvasSpecStore?.data : undefined;
+  $: hasTimeSeriesStore = component?.parent?.timeManager?.hasTimeSeriesMap;
+  $: hasTimeSeriesMap = hasTimeSeriesStore ? $hasTimeSeriesStore : undefined;
+
+  $: contextReady = noteContextReady({
+    canvasData,
+    hasTimeSeriesMap,
+    interval,
+  });
 
   $: dashboardContext = buildDashboardContext({
     canvas: component?.parent?.name,
@@ -109,7 +132,11 @@
       ),
     // Wait for the agent's version before starting anything: generating under an empty hash and again under the
     // real one would pay for two completions and leave the first orphaned under a key nothing asks for again.
-    enabled: configured && $agentSpecQuery?.isSuccess && (autoRun || requested),
+    enabled:
+      configured &&
+      contextReady &&
+      $agentSpecQuery?.isSuccess &&
+      (autoRun || requested),
     // The answer is pinned to its idempotency key, so it never goes stale on its own: a new answer
     // requires a new key, which only "regenerate" or an edited prompt produces.
     staleTime: Infinity,

@@ -182,6 +182,45 @@ function sleep(ms: number, signal?: AbortSignal): Promise<void> {
 }
 
 /**
+ * Reports whether the dashboard context the note will be generated against has settled.
+ *
+ * The canvas window does not exist until two round trips have landed: the canvas spec, which is what
+ * fills `hasTimeSeriesMap` (and until then the range store returns undefined — stores/time-state.ts:91),
+ * and then deriveInterval's own query that turns a range like "P12M" into dates. A note that does not
+ * wait composes its key WITHOUT the window, runs, and runs a second time under the key the window
+ * produces: two completions per load, and the answer left on screen is the one computed without the
+ * reader's time range (issue #155).
+ *
+ * Both halves are needed, one per round trip. The time half alone would let the first render through,
+ * because before the spec arrives the map is EMPTY, so "no time series" and "not known yet" look
+ * identical. The shape mirrors the markdown component (markdown/util.ts:167-172), which narrates the
+ * same dashboards and has the same "with or without time" requirement.
+ */
+export function noteContextReady(input: {
+  /** The canvas spec, once fetched. Undefined while the query is in flight. */
+  canvasData?: { metricsViews?: Record<string, unknown> };
+  /** One entry per metrics view of the canvas, filled when the spec is PROCESSED, not merely fetched. */
+  hasTimeSeriesMap?: Map<string, boolean>;
+  /** The resolved window, or undefined while it resolves. */
+  interval?: Interval<true>;
+}): boolean {
+  const { canvasData, hasTimeSeriesMap, interval } = input;
+  if (!canvasData || !hasTimeSeriesMap) return false;
+
+  // processSpec is what fills the map, and it skips the spec store's first emission
+  // (canvas-entity.ts:565), so `canvasData` alone can precede it. A canvas that declares no metrics view
+  // never fills the map, and must not wait for something that will never arrive.
+  const declaresMetricsViews =
+    Object.keys(canvasData.metricsViews ?? {}).length > 0;
+  if (declaresMetricsViews && hasTimeSeriesMap.size === 0) return false;
+
+  // The note names no single metrics view, so it asks what the global time state asks: does ANY of them
+  // carry a time dimension (stores/time-state.ts:88).
+  const hasTimeSeries = [...hasTimeSeriesMap.values()].some(Boolean);
+  return !hasTimeSeries || !!interval;
+}
+
+/**
  * Builds the context the note is generated against: the canvas the reader is on, the window they are
  * looking at, and the filters in force per metrics view.
  *
