@@ -32,10 +32,21 @@ var utcMicros = &arrow.TimestampType{Unit: arrow.Microsecond, TimeZone: "UTC"}
 // read instead of flattening a list into a cell.
 func columnsFor(fields []string, info map[string]fieldInfo) ([]column, error) {
 	cols := make([]column, 0, len(fields))
+	// owner tracks, per output column name, which requested field produced it, so a collision
+	// between a plain field and the "_name" column a many2one adds automatically is caught
+	// instead of silently duplicating a column name (DuckDB refuses to read the resulting Parquet).
+	owner := make(map[string]string, len(fields))
+	claim := func(name, from string) error {
+		if prev, dup := owner[name]; dup {
+			return fmt.Errorf("odoo: fields %q and %q would both produce a column named %q; rename or drop one of them", prev, from, name)
+		}
+		owner[name] = from
+		return nil
+	}
 	for _, f := range fields {
 		fi, ok := info[f]
 		if !ok {
-			return nil, fmt.Errorf("odoo: the model has no field %q", f)
+			return nil, fmt.Errorf("odoo: the model has no field %q, or the API user cannot read it", f)
 		}
 		c := column{name: f, field: f, kind: fi.Type}
 		switch fi.Type {
@@ -53,10 +64,20 @@ func columnsFor(fields []string, info map[string]fieldInfo) ([]column, error) {
 			c.typ = utcMicros
 		case "many2one":
 			c.typ = arrow.PrimitiveTypes.Int64
-			cols = append(cols, c, column{name: f + "_name", field: f, kind: fi.Type, part: 1, typ: arrow.BinaryTypes.String})
+			nameCol := f + "_name"
+			if err := claim(f, f); err != nil {
+				return nil, err
+			}
+			if err := claim(nameCol, f); err != nil {
+				return nil, err
+			}
+			cols = append(cols, c, column{name: nameCol, field: f, kind: fi.Type, part: 1, typ: arrow.BinaryTypes.String})
 			continue
 		default:
 			return nil, fmt.Errorf("odoo: field %q has type %q, which the driver does not read; read the related model instead", f, fi.Type)
+		}
+		if err := claim(f, f); err != nil {
+			return nil, err
 		}
 		cols = append(cols, c)
 	}
@@ -130,6 +151,12 @@ func (c column) appendValue(b array.Builder, v any) error {
 				return err
 			}
 			b.(*array.Int64Builder).Append(n)
+			return nil
+		}
+		// A related record with an empty _rec_name comes back as [id, false] instead of
+		// [id, "some name"]: the id is still valid, but there is no display name to show.
+		if pair[1] == false {
+			b.AppendNull()
 			return nil
 		}
 		s, ok := pair[1].(string)

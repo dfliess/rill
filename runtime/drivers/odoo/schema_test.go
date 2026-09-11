@@ -39,7 +39,23 @@ func TestColumnsForRejectsListsAndUnknownFields(t *testing.T) {
 	_, err := columnsFor([]string{"line_ids"}, map[string]fieldInfo{"line_ids": {"one2many"}})
 	require.ErrorContains(t, err, `field "line_ids" has type "one2many"`)
 	_, err = columnsFor([]string{"nope"}, map[string]fieldInfo{})
-	require.ErrorContains(t, err, `no field "nope"`)
+	require.ErrorContains(t, err, `no field "nope", or the API user cannot read it`)
+}
+
+// A field genuinely missing from fields_get and a field the API user cannot read look identical
+// from the driver's side (fields_get silently omits fields gated by record rules or groups), so
+// the error must not claim the field does not exist.
+func TestColumnsForRejectsCollisionWithMany2oneNameColumn(t *testing.T) {
+	info := map[string]fieldInfo{
+		"partner_id":      {"many2one"},
+		"partner_id_name": {"char"},
+	}
+	_, err := columnsFor([]string{"partner_id", "partner_id_name"}, info)
+	require.ErrorContains(t, err, `partner_id_name`)
+
+	// Order must not matter: the same collision, requested the other way round.
+	_, err = columnsFor([]string{"partner_id_name", "partner_id"}, info)
+	require.ErrorContains(t, err, `partner_id_name`)
 }
 
 func TestAppendValue(t *testing.T) {
@@ -60,9 +76,14 @@ func TestAppendValue(t *testing.T) {
 		{"date", 0, "2026-08-31", "2026-08-31"},
 		{"date", 0, false, nil},
 		{"datetime", 0, "2026-08-31 08:15:00", "2026-08-31 08:15:00"},
+		{"datetime", 0, false, nil},
 		{"many2one", 0, []any{json.Number("12"), "Cliente SL"}, int64(12)},
 		{"many2one", 1, []any{json.Number("12"), "Cliente SL"}, "Cliente SL"},
 		{"many2one", 1, false, nil},
+		// A related record whose _rec_name is empty comes back as [id, false]: the id is still
+		// readable, the display name is null instead of aborting the whole load.
+		{"many2one", 0, []any{json.Number("12"), false}, int64(12)},
+		{"many2one", 1, []any{json.Number("12"), false}, nil},
 	}
 	for _, tc := range cases {
 		cols, err := columnsFor([]string{"f"}, map[string]fieldInfo{"f": {tc.kind}})
