@@ -58,7 +58,23 @@ func main() {
 		os.Exit(2)
 	}
 
-	var added, violations []string
+	added, violations := check(upstream, head)
+	if len(violations) > 0 {
+		fmt.Printf("Kairos fields added to upstream messages must be numbered from %d (kairos-cloud#158):\n", minKairosFieldNumber)
+		for _, v := range violations {
+			fmt.Printf("  %s\n", v)
+		}
+		os.Exit(1)
+	}
+	fmt.Printf("OK: %d Kairos fields in upstream messages (%s vs %s), all numbered from %d:\n", len(added), headRev, upstreamRev, minKairosFieldNumber)
+	for _, a := range added {
+		fmt.Printf("  %s\n", a)
+	}
+}
+
+// check returns the fields of head that Kairos added to messages that exist in upstream, and those of them numbered
+// below minKairosFieldNumber. Both are sorted and described as "file:line: message.field = number".
+func check(upstream, head messages) (added, violations []string) {
 	for msg, fields := range head {
 		upstreamFields, ok := upstream[msg]
 		if !ok {
@@ -77,18 +93,7 @@ func main() {
 	}
 	sort.Strings(added)
 	sort.Strings(violations)
-
-	if len(violations) > 0 {
-		fmt.Printf("Kairos fields added to upstream messages must be numbered from %d (kairos-cloud#158):\n", minKairosFieldNumber)
-		for _, v := range violations {
-			fmt.Printf("  %s\n", v)
-		}
-		os.Exit(1)
-	}
-	fmt.Printf("OK: %d Kairos fields in upstream messages (%s vs %s), all numbered from %d:\n", len(added), headRev, upstreamRev, minKairosFieldNumber)
-	for _, a := range added {
-		fmt.Printf("  %s\n", a)
-	}
+	return added, violations
 }
 
 // loadMessages parses every .proto file under proto/ at the given git revision.
