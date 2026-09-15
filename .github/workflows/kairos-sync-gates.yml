@@ -9,6 +9,7 @@
 #
 # Paridad con lo que corria el agente:
 #   G1 <- kairos-unit-tests.yml       (build de todo el arbol + tests Act/Kairos)
+#         + G1c, numeracion de campos proto de Kairos (kairos-cloud#158)
 #   G2 <- go-lint.yml                 (golangci-lint v2.9.0, .golangci.yml del repo)
 #   G3 <- web-test-code-quality.yml   (con ADMIN/LOCAL/COMMON forzados a true)
 #   G4 <- prettier.yml
@@ -153,6 +154,19 @@ jobs:
           # volveria a dar verde sin haber probado Act.
           ACT_TEST_REQUIRE_POSTGRES: "1"
 
+      # Un campo que Kairos anade a un mensaje proto que tambien existe en upstream
+      # se numera desde 1000; con un numero bajo, tarde o temprano choca con uno
+      # que anade upstream (como Skill = 18 contra Agent = 18,
+      # kairos-cloud#158). Compara con la punta de rilldata/rill main, que es
+      # sobre la que se rebasa la rama del sync. Va dentro de G1 y no como gate
+      # aparte para no cambiar la cuenta de gates que lee la rutina.
+      - name: G1c - Kairos proto field numbers
+        id: g1c
+        continue-on-error: true
+        run: |
+          git fetch --no-tags --depth=1 https://github.com/rilldata/rill.git main
+          go run ./scripts/kairos-proto-field-numbers FETCH_HEAD
+
       # CGO explicito: sin el, duckdb-go-bindings queda excluido por build
       # constraints y el typecheck de golangci-lint falla con "could not
       # import ... duckdb". Es el mismo motivo por el que G1a necesita gcc.
@@ -203,10 +217,11 @@ jobs:
         run: |
           g1a='${{ steps.g1a.outcome }}'
           g1b='${{ steps.g1b.outcome }}'
+          g1c='${{ steps.g1c.outcome }}'
           g2='${{ steps.g2.outcome }}'
           g3='${{ steps.g3.outcome }}'
           g4='${{ steps.g4.outcome }}'
-          if [ "$g1a" = "success" ] && [ "$g1b" = "success" ]; then g1=success; else g1=failure; fi
+          if [ "$g1a" = "success" ] && [ "$g1b" = "success" ] && [ "$g1c" = "success" ]; then g1=success; else g1=failure; fi
           green=0
           {
             echo "| Gate | Resultado |"
@@ -221,7 +236,7 @@ jobs:
               echo "| $name | $icon |"
             done
             echo
-            echo "**gates $green/4**  (G1a build=$g1a, G1b test=$g1b)"
+            echo "**gates $green/4**  (G1a build=$g1a, G1b test=$g1b, G1c proto=$g1c)"
           } > gates.md
           cat gates.md >> "$GITHUB_STEP_SUMMARY"
           cat gates.md
