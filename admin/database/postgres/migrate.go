@@ -12,7 +12,10 @@ import (
 // Embed migrations directory in the binary
 //
 //go:embed migrations/*.sql
-var migrationsFS embed.FS
+var embeddedMigrationsFS embed.FS
+
+// Kairos: a variable so tests can simulate a new upstream migration (kairos-cloud#158).
+var migrationsFS migrationFS = embeddedMigrationsFS
 
 // Fixed advisory lock number to prevent concurrent migrations.
 var migrationLockNumber = int64(5103805673824918) // random number
@@ -48,6 +51,12 @@ func (c *connection) Migrate(ctx context.Context) (err error) {
 			err = unlockErr
 		}
 	}()
+
+	// Kairos: take Kairos migrations out of upstream's sequence before running it (kairos-cloud#158)
+	err = c.bootstrapKairosMigrations(ctx)
+	if err != nil {
+		return err
+	}
 
 	// Check if migrationVersionTable exists
 	var exists int
@@ -107,7 +116,8 @@ func (c *connection) Migrate(ctx context.Context) (err error) {
 		}
 	}
 
-	return nil
+	// Kairos: run Kairos migrations after upstream's, under the same lock (kairos-cloud#158)
+	return c.migrateKairos(ctx)
 }
 
 func (c *connection) migrateSingle(ctx context.Context, name string, sql []byte, version int) (err error) {
