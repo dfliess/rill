@@ -41,9 +41,11 @@ func (r *Runtime) SetExecutionObserver(obs ExecutionObserver) {
 	r.executionObserver.Store(&executionObserverHolder{obs: obs})
 }
 
-// ObserveExecution forwards a just-persisted execution to the registered observer, if any. It is safe to call with
-// no observer registered (the common, upstream case), where it is a no-op.
+// ObserveExecution meters a just-persisted execution (see meterExecution) and forwards it to the registered observer,
+// if any. Metering does not depend on an observer being registered; forwarding is a no-op without one.
 func (r *Runtime) ObserveExecution(ctx context.Context, instanceID string, self *runtimev1.Resource) {
+	r.meterExecution(ctx, instanceID, self)
+
 	h := r.executionObserver.Load()
 	if h == nil || h.obs == nil {
 		return
