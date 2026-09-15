@@ -22,6 +22,15 @@ func TestCatalogDropsActResourceWithStaleFieldNumber(t *testing.T) {
 type: agent
 instructions: Investigate using governed metrics only.
 `,
+			"triggers/nightly.yaml": `
+type: agent_trigger
+agent: stale
+source:
+  kind: schedule
+  cron: "0 3 * * *"
+input:
+  prompt: Run the nightly summary.
+`,
 			"agents/healthy.yaml": `
 type: agent
 instructions: Summarize the weekly report.
@@ -33,31 +42,24 @@ instructions: Summarize the weekly report.
 	ctx := t.Context()
 
 	stale := testruntime.GetResource(t, rt, id, runtime.ResourceKindAgent, "stale")
+	trigger := testruntime.GetResource(t, rt, id, runtime.ResourceKindAgentTrigger, "nightly")
 	healthy := testruntime.GetResource(t, rt, id, runtime.ResourceKindAgent, "healthy")
-	require.NotNil(t, stale.GetAgent().Spec)
+	require.NotNil(t, stale.GetAgent().State.ValidSpec)
+	require.NotNil(t, trigger.GetAgentTrigger().State.ValidSpec)
 
-	// Persist what the controller holds in memory, so both rows exist in the store.
+	// Persist what the controller holds in memory, so the rows exist in the store.
 	ctrl, err := rt.Controller(ctx, id)
 	require.NoError(t, err)
 	require.NoError(t, ctrl.Flush(ctx))
 
-	// Rewrite the stale agent's row as it was stored while Agent was field 18 of Resource.
-	data, err := proto.Marshal(&runtimev1.Resource{Meta: stale.Meta})
-	require.NoError(t, err)
-	agent, err := proto.Marshal(stale.GetAgent())
-	require.NoError(t, err)
-	data = protowire.AppendTag(data, 18, protowire.BytesType)
-	data = protowire.AppendBytes(data, agent)
-
-	decoded := &runtimev1.Resource{}
-	require.NoError(t, proto.Unmarshal(data, decoded))
-	require.Nil(t, decoded.GetAgent())
-
+	// Rewrite the agent and trigger rows as they were stored while Agent and AgentTrigger were fields 18 and 19.
 	catalog, release, err := rt.Catalog(ctx, id)
 	require.NoError(t, err)
 	v, err := catalog.NextControllerVersion(ctx)
 	require.NoError(t, err)
-	err = catalog.UpdateResource(ctx, v, drivers.Resource{Kind: runtime.ResourceKindAgent, Name: "stale", Data: data})
+	err = catalog.UpdateResource(ctx, v, staleActRow(t, stale, 18, stale.GetAgent()))
+	require.NoError(t, err)
+	err = catalog.UpdateResource(ctx, v, staleActRow(t, trigger, 19, trigger.GetAgentTrigger()))
 	require.NoError(t, err)
 	release()
 
@@ -65,23 +67,57 @@ instructions: Summarize the weekly report.
 	inst, err := rt.Instance(ctx, id)
 	require.NoError(t, err)
 	require.NoError(t, rt.EditInstance(ctx, inst, true))
+
+	// No manual reconcile: starting the controller enqueues every resource, the parser included, and that alone must
+	// bring both back. Waiting for idle is retried because the new controller may be ready before it has enqueued
+	// anything, and then it is idle right away.
 	require.Eventually(t, func() bool {
 		c, err := rt.Controller(ctx, id)
-		return err == nil && c != ctrl
+		if err != nil || c == ctrl || c.WaitUntilIdle(ctx, false) != nil {
+			return false
+		}
+		a, err := c.Get(ctx, stale.Meta.Name, false)
+		if err != nil || a.GetAgent().GetState().GetValidSpec() == nil {
+			return false
+		}
+		tr, err := c.Get(ctx, trigger.Meta.Name, false)
+		return err == nil && tr.GetAgentTrigger().GetState().GetValidSpec() != nil
 	}, 10*time.Second, 50*time.Millisecond)
-
-	testruntime.ReconcileParserAndWait(t, rt, id)
 	testruntime.RequireReconcileState(t, rt, id, -1, 0, 0)
 
-	// The stale row was dropped and the parser recreated the agent from its file.
+	// The stale rows were dropped and the parser recreated both resources from their files.
 	recreated := testruntime.GetResource(t, rt, id, runtime.ResourceKindAgent, "stale")
-	require.NotNil(t, recreated.GetAgent())
 	require.Equal(t, "Investigate using governed metrics only.", recreated.GetAgent().State.ValidSpec.Instructions)
 	require.True(t, recreated.Meta.CreatedOn.AsTime().After(stale.Meta.CreatedOn.AsTime()))
+
+	recreatedTrigger := testruntime.GetResource(t, rt, id, runtime.ResourceKindAgentTrigger, "nightly")
+	require.Empty(t, recreatedTrigger.Meta.ReconcileError)
+	require.Equal(t, "stale", recreatedTrigger.GetAgentTrigger().State.ValidSpec.Agent)
+	require.True(t, recreatedTrigger.Meta.CreatedOn.AsTime().After(trigger.Meta.CreatedOn.AsTime()))
+	require.Len(t, recreatedTrigger.Meta.Refs, 1)
+	require.Equal(t, runtime.ResourceKindAgent, recreatedTrigger.Meta.Refs[0].Kind)
+	require.Equal(t, "stale", recreatedTrigger.Meta.Refs[0].Name)
 
 	// The healthy row was loaded as it was.
 	kept := testruntime.GetResource(t, rt, id, runtime.ResourceKindAgent, "healthy")
 	require.NotNil(t, kept.GetAgent())
 	require.True(t, kept.Meta.CreatedOn.AsTime().Equal(healthy.Meta.CreatedOn.AsTime()))
 	require.Equal(t, healthy.GetAgent().State.SpecHash, kept.GetAgent().State.SpecHash)
+}
+
+// staleActRow encodes r as it was stored while its Act payload was the given field of Resource.
+func staleActRow(t *testing.T, r *runtimev1.Resource, field protowire.Number, payload proto.Message) drivers.Resource {
+	data, err := proto.Marshal(&runtimev1.Resource{Meta: r.Meta})
+	require.NoError(t, err)
+	b, err := proto.Marshal(payload)
+	require.NoError(t, err)
+	data = protowire.AppendTag(data, field, protowire.BytesType)
+	data = protowire.AppendBytes(data, b)
+
+	// Sanity check: under the current numbering the row decodes with no resource at all.
+	decoded := &runtimev1.Resource{}
+	require.NoError(t, proto.Unmarshal(data, decoded))
+	require.Nil(t, decoded.GetResource())
+
+	return drivers.Resource{Kind: r.Meta.Name.Kind, Name: r.Meta.Name.Name, Data: data}
 }
