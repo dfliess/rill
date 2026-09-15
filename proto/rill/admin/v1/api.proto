@@ -3993,7 +3993,10 @@ message ReportOptions {
   repeated string slack_users = 10;
   repeated string slack_channels = 11;
   repeated string slack_webhooks = 12;
-  repeated string webhook_urls = 24;
+
+  // Kairos: fields added to upstream messages start at 1000 (kairos-cloud#158).
+
+  repeated string webhook_urls = 1000;
   string web_open_path = 15; // Annotation for the subpath of <UI host>/org/project to open for the report.
   string web_open_state = 14; // Annotation for the base64-encoded UI state to open for the report.
   string explore = 16; // either canvas or explore should be set
@@ -4028,7 +4031,10 @@ message AlertOptions {
   repeated string slack_users = 9;
   repeated string slack_channels = 10;
   repeated string slack_webhooks = 11;
-  repeated string webhook_urls = 18;
+
+  // Kairos: fields added to upstream messages start at 1000 (kairos-cloud#158).
+
+  repeated string webhook_urls = 1000;
   string web_open_path = 15; // Annotation for the subpath of <UI host>/org/project to open for the report.
   string web_open_state = 12; // Annotation for the base64-encoded UI state to open for the report.
 }
