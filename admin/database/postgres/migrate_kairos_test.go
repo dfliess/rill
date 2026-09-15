@@ -93,6 +93,26 @@ func TestKairosMigrations(t *testing.T) {
 			requireKairosMigrated(t, c, 97)
 		})
 	})
+
+	t.Run("UnknownVersionAboveKairos", func(t *testing.T) {
+		ctx := context.Background()
+		c := openKairosTestDatabase(t, pg.DatabaseURL, "unknown_version_above_kairos")
+
+		// A database at 0100 before kairos-cloud#158: no binary had a migration numbered 0100
+		applyMigrationsBefore158(t, c, 99)
+		_, err := c.db.ExecContext(ctx, fmt.Sprintf("UPDATE %s SET version=100", migrationVersionTable))
+		require.NoError(t, err)
+
+		err = c.Migrate(ctx)
+		require.ErrorContains(t, err, "is at version 100")
+		require.ErrorContains(t, err, "requires manual intervention")
+
+		// Nothing changed
+		version, err := c.FindMigrationVersion(ctx)
+		require.NoError(t, err)
+		require.Equal(t, 100, version)
+		requireTableExists(t, c, kairosMigrationVersionTable, false)
+	})
 }
 
 // openKairosTestDatabase creates a database named name in the Postgres at databaseURL and connects to it.

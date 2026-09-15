@@ -40,7 +40,8 @@ type migrationFS interface {
 
 // bootstrapKairosMigrations creates kairosMigrationVersionTable the first time it runs. In a database that applied
 // Kairos migrations as upstream 0097 to 0099, it moves them to kairosMigrationVersionTable and sets
-// migrationVersionTable back to the last upstream version, so upstream's own 0097 is not skipped.
+// migrationVersionTable back to the last upstream version, so upstream's own 0097 is not skipped. It fails, changing
+// nothing, if migrationVersionTable is above 0099.
 // It must run under the migration lock, before upstream migrations.
 func (c *connection) bootstrapKairosMigrations(ctx context.Context) (err error) {
 	// A single transaction: DDL is transactional in Postgres, so either both version tables change or neither does
@@ -72,7 +73,13 @@ func (c *connection) bootstrapKairosMigrations(ctx context.Context) (err error) 
 		}
 	}
 
-	kairosVersion := min(max(upstreamVersion-kairosLastSharedUpstreamVersion, 0), kairosMigrationsNumberedAsUpstream)
+	// No binary ever recorded a version above the last Kairos migration numbered as upstream: whatever ran there is
+	// unknown, and guessing would hide it
+	if upstreamVersion > kairosLastSharedUpstreamVersion+kairosMigrationsNumberedAsUpstream {
+		return fmt.Errorf("%s is at version %d, above %d, the last Kairos migration numbered as upstream: cannot tell which migrations ran, requires manual intervention (kairos-cloud#158)", migrationVersionTable, upstreamVersion, kairosLastSharedUpstreamVersion+kairosMigrationsNumberedAsUpstream)
+	}
+
+	kairosVersion := max(upstreamVersion-kairosLastSharedUpstreamVersion, 0)
 
 	_, err = tx.ExecContext(ctx, fmt.Sprintf("create table %s(version int4 not null)", kairosMigrationVersionTable))
 	if err != nil {
