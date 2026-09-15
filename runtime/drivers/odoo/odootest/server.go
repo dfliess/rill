@@ -166,16 +166,25 @@ func strs(v any) []string {
 }
 
 func writeJSON(w http.ResponseWriter, v any) {
-	w.Header().Set("Content-Type", "application/json")
-	_ = json.NewEncoder(w).Encode(v)
+	writeJSONStatus(w, http.StatusOK, v)
 }
 
 // writeError answers like Odoo does, traceback included, so tests can check it never leaks.
 func writeError(w http.ResponseWriter, status int, name, message string) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	_ = json.NewEncoder(w).Encode(map[string]any{
+	writeJSONStatus(w, status, map[string]any{
 		"name": name, "message": message, "arguments": []any{message}, "context": map[string]any{},
 		"debug": "Traceback (most recent call last):\n  File \"/opt/odoo/odoo/http.py\" ...",
 	})
+}
+
+// writeJSONStatus encodes v before sending the status, so a value that cannot be encoded is answered as a 500.
+func writeJSONStatus(w http.ResponseWriter, status int, v any) {
+	body, err := json.Marshal(v)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("odootest: cannot encode response: %v", err), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	_, _ = w.Write(body)
 }
