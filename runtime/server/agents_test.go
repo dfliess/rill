@@ -31,6 +31,10 @@ import (
 
 // requireStorePostgres returns a DSN for the Act store's Postgres, skipping the test if it is unreachable. It reuses
 // the DBOS spike container (docker start dbos-spike-pg) unless overridden by env.
+//
+// ACT_TEST_REQUIRE_POSTGRES turns that skip into a failure, as it does in runtime/act: on a machine whose job is to
+// catch regressions, a database that does not answer must be a red job and not 23 tests that quietly pass, agent
+// security among them.
 func requireStorePostgres(t *testing.T) string {
 	t.Helper()
 	dsn := os.Getenv("ACT_TEST_DBOS_URL")
@@ -41,6 +45,9 @@ func requireStorePostgres(t *testing.T) string {
 	require.NoError(t, err)
 	conn, err := net.DialTimeout("tcp", u.Host, 2*time.Second)
 	if err != nil {
+		if os.Getenv("ACT_TEST_REQUIRE_POSTGRES") != "" {
+			t.Fatalf("ACT_TEST_REQUIRE_POSTGRES is set, so a missing database is a failure, not a skip: Postgres at %s is unreachable: %v", u.Host, err)
+		}
 		t.Skipf("act server tests need Postgres at %s (start it with: docker start dbos-spike-pg): %v", u.Host, err)
 	}
 	_ = conn.Close()
