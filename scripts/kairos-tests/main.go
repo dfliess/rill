@@ -40,6 +40,14 @@ import (
 // dir holds this command's own files, relative to the repository root.
 const dir = "scripts/kairos-tests"
 
+// pkg is a package declared in packages.txt. Reason is what it is doing there when Kairos owns no test in it, which
+// happens when upstream absorbs a contribution: the tests become upstream's, and whether the package still runs here
+// stops being derivable and becomes a decision somebody has to write down.
+type pkg struct {
+	Path   string
+	Reason string
+}
+
 // testRef is a top-level test function, identified by the package that declares it.
 type testRef struct {
 	Pkg  string // package path relative to the repository root, e.g. "runtime/server"
@@ -91,12 +99,16 @@ func run(args []string, stdout io.Writer) error {
 		return fmt.Errorf("no Kairos test files found against %s: is it an upstream revision?", upstreamRev)
 	}
 
-	declared, err := readList(path.Join(dir, "packages.txt"))
+	declared, err := readPackages(path.Join(dir, "packages.txt"))
 	if err != nil {
 		return err
 	}
 	if err := checkPackages(own, declared); err != nil {
 		return err
+	}
+	paths := make([]string, len(declared))
+	for i, p := range declared {
+		paths[i] = p.Path
 	}
 
 	skips, err := readSkips(path.Join(dir, "skips.txt"))
@@ -112,7 +124,7 @@ func run(args []string, stdout io.Writer) error {
 		return err
 	}
 
-	results, testErr := goTest(declared, extra, module, stdout)
+	results, testErr := goTest(paths, extra, module, stdout)
 	if err := checkRan(own, skips, results); err != nil {
 		return err
 	}
@@ -224,26 +236,28 @@ func count(own map[string]map[string]bool) int {
 	return n
 }
 
-// checkPackages fails when the declared list and the packages holding Kairos tests have drifted apart.
-func checkPackages(own map[string]map[string]bool, declared []string) error {
+// checkPackages fails when the declared list and the packages holding Kairos tests have drifted apart: a package with
+// Kairos tests that nobody declared, or a declared package whose tests are no longer Kairos' and that nobody said why
+// it still runs.
+func checkPackages(own map[string]map[string]bool, declared []pkg) error {
 	declaredSet := map[string]bool{}
 	for _, p := range declared {
-		declaredSet[p] = true
+		declaredSet[p.Path] = true
 	}
 	var missing []string
-	for pkg := range own {
-		if !declaredSet[pkg] {
-			missing = append(missing, pkg)
+	for path := range own {
+		if !declaredSet[path] {
+			missing = append(missing, path)
 		}
 	}
-	var extra []string
+	var unexplained []string
 	for _, p := range declared {
-		if own[p] == nil {
-			extra = append(extra, p)
+		if own[p.Path] == nil && p.Reason == "" {
+			unexplained = append(unexplained, p.Path)
 		}
 	}
 	sort.Strings(missing)
-	sort.Strings(extra)
+	sort.Strings(unexplained)
 
 	var b strings.Builder
 	if len(missing) > 0 {
@@ -252,9 +266,9 @@ func checkPackages(own map[string]map[string]bool, declared []string) error {
 			fmt.Fprintf(&b, "  %s (%d tests)\n", p, len(own[p]))
 		}
 	}
-	if len(extra) > 0 {
-		fmt.Fprintf(&b, "These packages are in %s/packages.txt and hold no Kairos test any more:\n", dir)
-		for _, p := range extra {
+	if len(unexplained) > 0 {
+		fmt.Fprintf(&b, "These packages are in %s/packages.txt and hold no Kairos test any more, which is what upstream absorbing a contribution looks like. Drop them, or write after a # why they still run here:\n", dir)
+		for _, p := range unexplained {
 			fmt.Fprintf(&b, "  %s\n", p)
 		}
 	}
@@ -393,23 +407,26 @@ func modulePath() (string, error) {
 	return "", fmt.Errorf("no module line in go.mod")
 }
 
-// readList reads a file of one entry per line, ignoring blank lines and # comments.
-func readList(file string) ([]string, error) {
+// readPackages reads packages.txt: one package per line, with an optional reason after a #. A line that is only a
+// comment is a section heading and is skipped.
+func readPackages(file string) ([]pkg, error) {
 	b, err := os.ReadFile(file)
 	if err != nil {
 		return nil, err
 	}
-	return parseList(string(b)), nil
+	return parsePackages(string(b)), nil
 }
 
-func parseList(s string) []string {
-	var out []string
+func parsePackages(s string) []pkg {
+	var out []pkg
 	for _, l := range strings.Split(s, "\n") {
-		if i := strings.Index(l, "#"); i >= 0 {
-			l = l[:i]
+		line := strings.TrimSpace(l)
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
 		}
-		if l = strings.TrimSpace(l); l != "" {
-			out = append(out, l)
+		p, reason, _ := strings.Cut(line, "#")
+		if p = strings.TrimSpace(p); p != "" {
+			out = append(out, pkg{Path: p, Reason: strings.TrimSpace(reason)})
 		}
 	}
 	return out

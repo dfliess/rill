@@ -22,7 +22,7 @@ runtime
 
 # Connectors Kairos wrote or extended
 runtime/drivers/duckdb
-runtime/drivers/gemini
+runtime/drivers/gemini # upstream absorbió sus tests con rilldata/rill#9888 el 2026-09-16; se siguen corriendo aquí porque el fork lleva cambios propios en el driver y el chat de los demos depende de él
 runtime/drivers/mssql
 runtime/drivers/odoo
 runtime/drivers/webhook

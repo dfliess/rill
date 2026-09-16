@@ -64,18 +64,23 @@ func TestCheckPackages(t *testing.T) {
 		"runtime/server": {"TestA": true, "TestB": true},
 		"runtime/act":    {"TestC": true},
 	}
+	declared := []pkg{{Path: "runtime/act"}, {Path: "runtime/server"}}
 
-	require.NoError(t, checkPackages(own, []string{"runtime/act", "runtime/server"}))
+	require.NoError(t, checkPackages(own, declared))
 
-	err := checkPackages(own, []string{"runtime/act"})
+	err := checkPackages(own, []pkg{{Path: "runtime/act"}})
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "runtime/server (2 tests)")
 	require.Contains(t, err.Error(), "nothing runs them")
 
-	err = checkPackages(own, []string{"runtime/act", "runtime/server", "runtime/gone"})
+	// A package whose tests upstream absorbed: red while nobody says why it stays, fine once someone does.
+	err = checkPackages(own, append(declared, pkg{Path: "runtime/drivers/gemini"}))
 	require.Error(t, err)
-	require.Contains(t, err.Error(), "runtime/gone")
+	require.Contains(t, err.Error(), "runtime/drivers/gemini")
 	require.Contains(t, err.Error(), "hold no Kairos test any more")
+
+	reasoned := append(declared, pkg{Path: "runtime/drivers/gemini", Reason: "upstream absorbed its tests; the fork still carries changes in the driver"})
+	require.NoError(t, checkPackages(own, reasoned))
 }
 
 func TestParseSkips(t *testing.T) {
@@ -101,14 +106,17 @@ runtime/drivers/odoo  TestAgainstLocalOdoo   # needs ODOO_TEST_URL
 	require.ErrorContains(t, err, "expected \"<package> <Test> # <reason>\"")
 }
 
-func TestParseList(t *testing.T) {
-	require.Equal(t, []string{"runtime/act", "runtime/server"}, parseList(`
-# Packages
+func TestParsePackages(t *testing.T) {
+	require.Equal(t, []pkg{
+		{Path: "runtime/act"},
+		{Path: "runtime/server", Reason: "the agent API"},
+	}, parsePackages(`
+# A section heading, not a package
 runtime/act
 
 runtime/server  # the agent API
 `))
-	require.Nil(t, parseList("# only comments\n\n"))
+	require.Nil(t, parsePackages("# only comments\n\n"))
 }
 
 func TestCheckStaleSkips(t *testing.T) {
