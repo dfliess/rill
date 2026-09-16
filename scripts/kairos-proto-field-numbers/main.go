@@ -1,6 +1,8 @@
-// Command kairos-proto-field-numbers fails if Kairos added a field numbered below 1000 to a proto message that also
-// exists upstream (kairos-cloud#158). Upstream numbers its fields from 1 up, so a low number chosen by Kairos collides
-// sooner or later with a field upstream adds, and messages that are entirely Kairos' own are not checked.
+// Command kairos-proto-field-numbers fails if Kairos added a field numbered below 1000 to a proto message, or a value
+// numbered below 1000 to an enum, that also exists upstream (kairos-cloud#158). Upstream numbers from 1 up, so a low
+// number chosen by Kairos collides sooner or later with one upstream adds, and messages and enums that are entirely
+// Kairos' own are not checked. Both carry the same risk: a field number and an enum value are what a serialized
+// message holds, so a collision is not a rename away, it is already written in every row stored with it.
 //
 // It compares the .proto files under proto/ of two git revisions:
 //
@@ -29,8 +31,14 @@ type field struct {
 	line   int
 }
 
-// messages maps a message's fully-qualified name to its fields by name.
+// messages maps a message's fully-qualified name to its fields by name, and an enum's to its values by name.
 type messages map[string]map[string]field
+
+// decls are the numbered declarations of a revision: message fields and enum values, which the check treats alike.
+type decls struct {
+	messages messages
+	enums    messages
+}
 
 func main() {
 	if len(os.Args) != 2 && len(os.Args) != 3 {
@@ -43,16 +51,16 @@ func main() {
 		headRev = os.Args[2]
 	}
 
-	upstream, err := loadMessages(upstreamRev)
+	upstream, err := loadDecls(upstreamRev)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)
 		os.Exit(2)
 	}
-	if len(upstream) == 0 {
+	if len(upstream.messages) == 0 {
 		fmt.Fprintf(os.Stderr, "error: no proto messages found under proto/ in %s\n", upstreamRev)
 		os.Exit(2)
 	}
-	head, err := loadMessages(headRev)
+	head, err := loadDecls(headRev)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)
 		os.Exit(2)
@@ -60,21 +68,32 @@ func main() {
 
 	added, violations := check(upstream, head)
 	if len(violations) > 0 {
-		fmt.Printf("Kairos fields added to upstream messages must be numbered from %d (kairos-cloud#158):\n", minKairosFieldNumber)
+		fmt.Printf("Kairos fields and enum values added to upstream messages and enums must be numbered from %d (kairos-cloud#158):\n", minKairosFieldNumber)
 		for _, v := range violations {
 			fmt.Printf("  %s\n", v)
 		}
 		os.Exit(1)
 	}
-	fmt.Printf("OK: %d Kairos fields in upstream messages (%s vs %s), all numbered from %d:\n", len(added), headRev, upstreamRev, minKairosFieldNumber)
+	fmt.Printf("OK: %d Kairos fields and enum values in upstream messages and enums (%s vs %s), all numbered from %d:\n", len(added), headRev, upstreamRev, minKairosFieldNumber)
 	for _, a := range added {
 		fmt.Printf("  %s\n", a)
 	}
 }
 
-// check returns the fields of head that Kairos added to messages that exist in upstream, and those of them numbered
-// below minKairosFieldNumber. Both are sorted and described as "file:line: message.field = number".
-func check(upstream, head messages) (added, violations []string) {
+// check returns what Kairos added to messages and enums that exist in upstream, and those of them numbered below
+// minKairosFieldNumber. Both are sorted and described as "file:line: message.field = number".
+func check(upstream, head decls) (added, violations []string) {
+	added, violations = checkDecls(upstream.messages, head.messages)
+	addedEnums, violationsEnums := checkDecls(upstream.enums, head.enums)
+	added = append(added, addedEnums...)
+	violations = append(violations, violationsEnums...)
+	sort.Strings(added)
+	sort.Strings(violations)
+	return added, violations
+}
+
+// checkDecls is check for one kind of declaration: message fields, or enum values.
+func checkDecls(upstream, head messages) (added, violations []string) {
 	for msg, fields := range head {
 		upstreamFields, ok := upstream[msg]
 		if !ok {
@@ -96,23 +115,23 @@ func check(upstream, head messages) (added, violations []string) {
 	return added, violations
 }
 
-// loadMessages parses every .proto file under proto/ at the given git revision.
-func loadMessages(rev string) (messages, error) {
+// loadDecls parses every .proto file under proto/ at the given git revision.
+func loadDecls(rev string) (decls, error) {
 	out, err := exec.Command("git", "ls-tree", "-r", "--name-only", rev, "--", "proto").Output()
 	if err != nil {
-		return nil, fmt.Errorf("git ls-tree %s: %w", rev, err)
+		return decls{}, fmt.Errorf("git ls-tree %s: %w", rev, err)
 	}
-	res := make(messages)
+	res := decls{messages: make(messages), enums: make(messages)}
 	for _, path := range strings.Split(strings.TrimSpace(string(out)), "\n") {
 		if !strings.HasSuffix(path, ".proto") {
 			continue
 		}
 		src, err := exec.Command("git", "show", rev+":"+path).Output()
 		if err != nil {
-			return nil, fmt.Errorf("git show %s:%s: %w", rev, path, err)
+			return decls{}, fmt.Errorf("git show %s:%s: %w", rev, path, err)
 		}
-		if err := parseFile(res, path, string(src)); err != nil {
-			return nil, fmt.Errorf("%s at %s: %w", path, rev, err)
+		if err := parseFile(&res, path, string(src)); err != nil {
+			return decls{}, fmt.Errorf("%s at %s: %w", path, rev, err)
 		}
 	}
 	return res, nil
@@ -123,33 +142,46 @@ type token struct {
 	line int
 }
 
-// parseFile adds the messages declared in a .proto source to res. It understands just enough of the language to find
-// message fields: blocks, statements, and option values (bracketed or aggregate) that may contain braces themselves.
-func parseFile(res messages, path, src string) error {
+// parseFile adds the messages and enums declared in a .proto source to res. It understands just enough of the language
+// to find message fields and enum values: blocks, statements, and option values (bracketed or aggregate) that may
+// contain braces themselves.
+func parseFile(res *decls, path, src string) error {
 	toks, err := tokenize(src)
 	if err != nil {
 		return err
 	}
 
 	type scope struct {
-		kind string // "message", "oneof" or "other"
-		name string // fully-qualified name, for messages
+		kind string // "message", "enum", "oneof" or "other"
+		name string // fully-qualified name, for messages and enums
 	}
 	var pkg string
 	var stack []scope
 	var stmt []token
 	depth := 0 // nesting of brackets, parentheses and aggregate values inside the current statement
 
-	enclosingMessage := func() string {
+	// enclosing returns the message or enum a statement belongs to: the innermost one, skipping oneof blocks, and
+	// nothing at all inside a service or another block whose statements are not numbered.
+	enclosing := func() scope {
 		for i := len(stack) - 1; i >= 0; i-- {
 			switch stack[i].kind {
-			case "message":
-				return stack[i].name
+			case "message", "enum":
+				return stack[i]
 			case "other":
-				return ""
+				return scope{}
 			}
 		}
-		return ""
+		return scope{}
+	}
+
+	// qualify names a declaration by the message that holds it, or by the package.
+	qualify := func(name string) string {
+		if parent := enclosing(); parent.kind == "message" {
+			return parent.name + "." + name
+		} else if pkg != "" {
+			return pkg + "." + name
+		}
+		return name
 	}
 
 	for _, tok := range toks {
@@ -179,15 +211,16 @@ func parseFile(res messages, path, src string) error {
 			}
 			switch {
 			case stmt[0].text == "message" && len(stmt) == 2:
-				name := stmt[1].text
-				if parent := enclosingMessage(); parent != "" {
-					name = parent + "." + name
-				} else if pkg != "" {
-					name = pkg + "." + name
-				}
+				name := qualify(stmt[1].text)
 				stack = append(stack, scope{kind: "message", name: name})
-				if res[name] == nil {
-					res[name] = make(map[string]field)
+				if res.messages[name] == nil {
+					res.messages[name] = make(map[string]field)
+				}
+			case stmt[0].text == "enum" && len(stmt) == 2:
+				name := qualify(stmt[1].text)
+				stack = append(stack, scope{kind: "enum", name: name})
+				if res.enums[name] == nil {
+					res.enums[name] = make(map[string]field)
 				}
 			case stmt[0].text == "oneof":
 				stack = append(stack, scope{kind: "oneof"})
@@ -204,10 +237,16 @@ func parseFile(res messages, path, src string) error {
 			if len(stmt) >= 2 && stmt[0].text == "package" {
 				pkg = stmt[1].text
 			}
-			if msg := enclosingMessage(); msg != "" {
+			switch decl := enclosing(); decl.kind {
+			case "message":
 				if name, f, ok := parseField(stmt); ok {
 					f.file = path
-					res[msg][name] = f
+					res.messages[decl.name][name] = f
+				}
+			case "enum":
+				if name, f, ok := parseEnumValue(stmt); ok {
+					f.file = path
+					res.enums[decl.name][name] = f
 				}
 			}
 			stmt = nil
@@ -244,6 +283,22 @@ func parseField(stmt []token) (string, field, bool) {
 		return stmt[i-1].text, field{number: n, line: stmt[i-1].line}, true
 	}
 	return "", field{}, false
+}
+
+// parseEnumValue recognizes an enum value statement such as `STATE_READY = 4` or `STATE_READY = 4 [deprecated = true]`.
+func parseEnumValue(stmt []token) (string, field, bool) {
+	if len(stmt) < 3 || stmt[1].text != "=" {
+		return "", field{}, false
+	}
+	switch stmt[0].text {
+	case "option", "reserved":
+		return "", field{}, false
+	}
+	n, err := strconv.ParseInt(stmt[2].text, 0, 64)
+	if err != nil {
+		return "", field{}, false
+	}
+	return stmt[0].text, field{number: n, line: stmt[0].line}, true
 }
 
 func hasToken(toks []token, text string) bool {

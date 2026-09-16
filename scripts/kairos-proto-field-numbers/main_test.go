@@ -62,32 +62,40 @@ message Theme {
 }
 `
 
-func parseProto(t *testing.T, src string) messages {
+func parseProto(t *testing.T, src string) decls {
 	t.Helper()
-	res := make(messages)
-	require.NoError(t, parseFile(res, "demo.proto", src))
+	res := decls{messages: make(messages), enums: make(messages)}
+	require.NoError(t, parseFile(&res, "demo.proto", src))
 	return res
+}
+
+// numbers flattens declarations to name -> member -> number, which is what the assertions care about.
+func numbers(d messages) map[string]map[string]int64 {
+	out := make(map[string]map[string]int64, len(d))
+	for name, members := range d {
+		out[name] = make(map[string]int64, len(members))
+		for member, f := range members {
+			out[name][member] = f.number
+		}
+	}
+	return out
 }
 
 func TestParseFile(t *testing.T) {
 	got := parseProto(t, upstreamProto)
 
-	numbers := make(map[string]map[string]int64)
-	for msg, fields := range got {
-		numbers[msg] = make(map[string]int64)
-		for name, f := range fields {
-			numbers[msg][name] = f.number
-		}
-	}
 	require.Equal(t, map[string]map[string]int64{
 		"demo.v1.GetRequest":     {"name": 1},
 		"demo.v1.GetResponse":    {"resource": 1},
 		"demo.v1.Resource":       {"labels": 1, "model": 2, "theme": 3, "state": 5},
 		"demo.v1.Resource.Model": {"tags": 1},
 		"demo.v1.Theme":          {"color": 1},
-	}, numbers)
+	}, numbers(got.messages))
+	require.Equal(t, map[string]map[string]int64{
+		"demo.v1.Resource.State": {"STATE_UNSPECIFIED": 0, "STATE_READY": 4},
+	}, numbers(got.enums))
 
-	labels := got["demo.v1.Resource"]["labels"]
+	labels := got.messages["demo.v1.Resource"]["labels"]
 	require.Equal(t, "demo.proto", labels.file)
 	require.Equal(t, strings.Count(upstreamProto[:strings.Index(upstreamProto, "map<string")], "\n")+1, labels.line)
 }
@@ -175,9 +183,26 @@ func TestCheck(t *testing.T) {
 			insert: "  message Extra {\n    string x = 1;\n  }\n",
 		},
 		{
-			name:   "value added to an upstream enum",
+			name:           "value added to an upstream enum",
+			after:          "    STATE_READY = 4;\n",
+			insert:         "    STATE_FAILED = 7;\n",
+			wantAdded:      1,
+			wantViolations: []string{"demo.v1.Resource.State.STATE_FAILED = 7"},
+		},
+		{
+			name:      "value added to an upstream enum from 1000",
+			after:     "    STATE_READY = 4;\n",
+			insert:    "    STATE_FAILED = 1000;\n",
+			wantAdded: 1,
+		},
+		{
+			name:   "values of a Kairos-only enum",
+			insert: "\nenum TriggerSourceKind {\n  TRIGGER_SOURCE_KIND_UNSPECIFIED = 0;\n  TRIGGER_SOURCE_KIND_ALERT = 1;\n}\n",
+		},
+		{
+			name:   "option and reserved inside an upstream enum",
 			after:  "    STATE_READY = 4;\n",
-			insert: "    STATE_FAILED = 7;\n",
+			insert: "    option allow_alias = true;\n    reserved 5, 6;\n",
 		},
 		{
 			name:   "reserved range added to an upstream message",
@@ -221,7 +246,8 @@ func TestParseFileErrors(t *testing.T) {
 	}
 	for name, src := range tt {
 		t.Run(name, func(t *testing.T) {
-			require.Error(t, parseFile(make(messages), "bad.proto", src))
+			res := decls{messages: make(messages), enums: make(messages)}
+			require.Error(t, parseFile(&res, "bad.proto", src))
 		})
 	}
 }
