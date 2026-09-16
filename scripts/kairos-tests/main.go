@@ -24,13 +24,17 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"go/ast"
+	"go/parser"
+	"go/token"
 	"io"
 	"os"
 	"os/exec"
 	"path"
-	"regexp"
 	"sort"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 )
 
 // dir holds this command's own files, relative to the repository root.
@@ -79,7 +83,10 @@ func run(args []string, stdout io.Writer) error {
 		}
 		sources[f] = string(b)
 	}
-	own := ownTests(sources)
+	own, err := ownTests(sources)
+	if err != nil {
+		return err
+	}
 	if len(own) == 0 {
 		return fmt.Errorf("no Kairos test files found against %s: is it an upstream revision?", upstreamRev)
 	}
@@ -166,25 +173,47 @@ func treeFiles(rev string) (map[string]bool, error) {
 	return files, nil
 }
 
-var testFuncRe = regexp.MustCompile(`(?m)^func (Test[\p{Lu}\p{N}_][\p{L}\p{N}_]*)\s*\(`)
-
-// ownTests maps each package to the top-level tests declared in the given sources, keyed by file path. TestMain is
-// not one of them: it is the test binary's entry point, and reports no result of its own.
-func ownTests(sources map[string]string) map[string]map[string]bool {
+// ownTests maps each package to the top-level tests declared in the given sources, keyed by file path. It parses the
+// sources rather than matching text, because a test file may hold Go source inside a string literal, as this command's
+// own tests do. TestMain is not a test: it is the binary's entry point and reports no result of its own.
+func ownTests(sources map[string]string) (map[string]map[string]bool, error) {
 	own := map[string]map[string]bool{}
+	fset := token.NewFileSet()
 	for file, src := range sources {
-		pkg := path.Dir(file)
-		for _, m := range testFuncRe.FindAllStringSubmatch(src, -1) {
-			if m[1] == "TestMain" {
+		f, err := parser.ParseFile(fset, file, src, 0)
+		if err != nil {
+			return nil, fmt.Errorf("parse %s: %w", file, err)
+		}
+		for _, decl := range f.Decls {
+			fn, ok := decl.(*ast.FuncDecl)
+			if !ok || fn.Recv != nil || !isTestName(fn.Name.Name) {
 				continue
 			}
+			if fn.Type.Params == nil || len(fn.Type.Params.List) != 1 { // A test takes one parameter, *testing.T
+				continue
+			}
+			pkg := path.Dir(file)
 			if own[pkg] == nil {
 				own[pkg] = map[string]bool{}
 			}
-			own[pkg][m[1]] = true
+			own[pkg][fn.Name.Name] = true
 		}
 	}
-	return own
+	return own, nil
+}
+
+// isTestName reports whether a function name is a test's, by the rule `go test` applies: Test followed by something
+// that does not start with a lower-case letter. TestMain is excluded: it runs the binary, and reports nothing.
+func isTestName(name string) bool {
+	rest, ok := strings.CutPrefix(name, "Test")
+	if !ok || name == "TestMain" {
+		return false
+	}
+	if rest == "" {
+		return true
+	}
+	r, _ := utf8.DecodeRuneInString(rest)
+	return !unicode.IsLower(r)
 }
 
 func count(own map[string]map[string]bool) int {

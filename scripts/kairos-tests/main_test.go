@@ -7,9 +7,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestOwnTests(t *testing.T) {
-	src := `package server_test
-
+// ownTestsFixture is a test file as the command finds one on disk. Everything in it other than TestOne and TestTwo is
+// something the command must not count: a commented-out declaration, a helper, a benchmark, a method, a function whose
+// signature is not a test's, the binary's entry point, and a test declared inside a string literal, which is what this
+// command's own tests hold.
+const ownTestsFixture = "package server_test\n" + `
 import "testing"
 
 // func TestCommentedOut(t *testing.T) is not a declaration
@@ -19,29 +21,42 @@ func TestTwo (t *testing.T) {
 	t.Run("subtest", func(t *testing.T) {})
 }
 
-func testHelper(t *testing.T)   {}
-func TestingSomething(t *T)     {}
-func BenchmarkThree(b *testing.B) {}
+func testHelper(t *testing.T)               {}
+func TestingSomething(t *testing.T)         {}
+func BenchmarkThree(b *testing.B)           {}
+func TestWithTwoParams(t *testing.T, n int) {}
 
-// The test binary's entry point reports no result of its own, so it is not a test to account for.
+func (s *suite) TestMethod(t *testing.T) {}
+
 func TestMain(m *testing.M) {}
+
+const embedded = "func TestInsideAStringLiteral(t *testing.T) {}"
 `
-	own := ownTests(map[string]string{"runtime/server/agents_test.go": src})
+
+func TestOwnTests(t *testing.T) {
+	own, err := ownTests(map[string]string{"runtime/server/agents_test.go": ownTestsFixture})
+	require.NoError(t, err)
 	require.Equal(t, map[string]map[string]bool{
 		"runtime/server": {"TestOne": true, "TestTwo": true},
 	}, own)
 }
 
 func TestOwnTestsGroupsFilesByPackage(t *testing.T) {
-	own := ownTests(map[string]string{
-		"runtime/server/a_test.go": "func TestA(t *testing.T) {}\n",
-		"runtime/server/b_test.go": "func TestB(t *testing.T) {}\n",
-		"runtime/c_test.go":        "func TestC(t *testing.T) {}\n",
+	own, err := ownTests(map[string]string{
+		"runtime/server/a_test.go": "package server_test\nfunc TestA(t *testing.T) {}\n",
+		"runtime/server/b_test.go": "package server_test\nfunc TestB(t *testing.T) {}\n",
+		"runtime/c_test.go":        "package runtime_test\nfunc TestC(t *testing.T) {}\n",
 	})
+	require.NoError(t, err)
 	require.Equal(t, map[string]map[string]bool{
 		"runtime/server": {"TestA": true, "TestB": true},
 		"runtime":        {"TestC": true},
 	}, own)
+}
+
+func TestOwnTestsRejectsUnparseableSource(t *testing.T) {
+	_, err := ownTests(map[string]string{"runtime/server/broken_test.go": "package server_test\nfunc TestA(\n"})
+	require.ErrorContains(t, err, "parse runtime/server/broken_test.go")
 }
 
 func TestCheckPackages(t *testing.T) {
