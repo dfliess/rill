@@ -114,10 +114,12 @@ func staleActRow(t *testing.T, r *runtimev1.Resource, field protowire.Number, pa
 	data = protowire.AppendTag(data, field, protowire.BytesType)
 	data = protowire.AppendBytes(data, b)
 
-	// Sanity check: under the current numbering the row decodes with no resource at all.
+	// Sanity check: under the current numbering the row no longer decodes as what it is. Field 18 decodes as
+	// upstream's Skill and field 19 as nothing at all, and neither is the Act resource the kind column claims.
 	decoded := &runtimev1.Resource{}
 	require.NoError(t, proto.Unmarshal(data, decoded))
-	require.Nil(t, decoded.GetResource())
+	require.Nil(t, decoded.GetAgent())
+	require.Nil(t, decoded.GetAgentTrigger())
 
 	return drivers.Resource{Kind: r.Meta.Name.Kind, Name: r.Meta.Name.Name, Data: data}
 }
