@@ -75,14 +75,6 @@ func newCatalogCache(ctx context.Context, ctrl *Controller, instanceID string) (
 		return nil, err
 	}
 	for _, r := range rs {
-		// TODO(kairos-cloud#158): remove once dev and prod have started with fields 1000/1001.
-		dropped, err := c.dropStaleActResource(ctx, r)
-		if err != nil {
-			return nil, err
-		}
-		if dropped {
-			continue
-		}
 		r2 := resourceFromDriver(r)
 		c.link(r2)
 		c.stored[nameStr(r2.Meta.Name)] = true
