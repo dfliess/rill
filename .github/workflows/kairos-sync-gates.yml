@@ -8,7 +8,8 @@
 # runner y el agente solo lee el veredicto.
 #
 # Paridad con lo que corria el agente:
-#   G1 <- kairos-unit-tests.yml       (build de todo el arbol + tests Act/Kairos)
+#   G1 <- kairos-unit-tests.yml       (build de todo el arbol + tests propios de
+#                                      Kairos, via scripts/kairos-tests)
 #         + G1c, numeracion de campos proto de Kairos (kairos-cloud#158)
 #   G2 <- go-lint.yml                 (golangci-lint v2.9.0, .golangci.yml del repo)
 #   G3 <- web-test-code-quality.yml   (con ADMIN/LOCAL/COMMON forzados a true)
@@ -136,16 +137,21 @@ jobs:
         env:
           CGO_ENABLED: "1"
 
-      - name: G1b - Act/Kairos packages pass unit tests
+      # scripts/kairos-tests corre los paquetes de scripts/kairos-tests/packages.txt y, comparando HEAD con la punta de
+      # upstream, falla si un test de Kairos vive en un paquete que nadie declaro, salta sin motivo declarado, o no
+      # produce resultado ninguno. Hasta el 2026-09-16 este paso listaba cuatro paquetes a mano y los 31 tests que
+      # Kairos habia escrito en otros doce (la seguridad de agentes entre ellos) no los corria nadie
+      # (kairos-cloud#166). Hace su propio fetch de upstream, igual que G1c: cada gate se basta a si mismo, que es lo
+      # que permite que los cuatro corran siempre.
+      #
+      # Los dos -skip son de upstream, no nuestros: TestProjectStatusWaitUntilIdle por lo dicho arriba, y
+      # TestDedicatedConnector porque falla (no salta) sin credenciales de S3, que este fork no lleva.
+      - name: G1b - Kairos-owned tests all run and pass
         id: g1b
         continue-on-error: true
-        run: >-
-          go test -short -count=1 -timeout 45m
-          -skip 'TestProjectStatusWaitUntilIdle'
-          ./runtime/act/...
-          ./runtime/ai/...
-          ./runtime/parser/...
-          ./runtime/reconcilers/...
+        run: |
+          git fetch --no-tags --depth=1 https://github.com/rilldata/rill.git main
+          go run ./scripts/kairos-tests FETCH_HEAD -- -timeout 45m -skip 'TestProjectStatusWaitUntilIdle|TestDedicatedConnector'
         env:
           CGO_ENABLED: "1"
           ACT_TEST_DBOS_URL: postgres://postgres:dbos@localhost:55432/dbos_spike?sslmode=disable

@@ -67,13 +67,17 @@ jobs:
         env:
           CGO_ENABLED: "1"
 
-      - name: Act/Kairos packages pass unit tests
-        run: >-
-          go test -short -count=1 -timeout 20m
-          ./runtime/act/...
-          ./runtime/ai/...
-          ./runtime/parser/...
-          ./runtime/reconcilers/...
+      # scripts/kairos-tests runs the packages listed in scripts/kairos-tests/packages.txt and, comparing HEAD with
+      # upstream's tip, fails if a Kairos test lives in a package nobody declared, skips without a declared reason, or
+      # produces no result at all. Until 2026-09-16 this step listed four packages by hand, and the 31 tests Kairos had
+      # written in twelve other packages (agent security among them) ran nowhere (kairos-cloud#166).
+      #
+      # -skip TestDedicatedConnector: upstream's test in ./runtime fails, rather than skipping, without S3 credentials
+      # this fork does not carry.
+      - name: Kairos-owned tests all run and pass
+        run: |
+          git fetch --no-tags --depth=1 https://github.com/rilldata/rill.git main
+          go run ./scripts/kairos-tests FETCH_HEAD -- -timeout 20m -skip TestDedicatedConnector
         env:
           CGO_ENABLED: "1"
           ACT_TEST_DBOS_URL: postgres://postgres:dbos@localhost:55432/dbos_spike?sslmode=disable

@@ -1,0 +1,7 @@
+# Kairos tests allowed to skip, and why (kairos-cloud#166). Anything that skips and is not here fails the run: an
+# exclusion nobody wrote down is an exclusion nobody reviews. Format: <package> <Test> # <reason>
+
+runtime/drivers/mssql TestOLAP # needs a real SQL Server (mcr.microsoft.com/mssql/server, ~1.5 GB), skipped by -short. The driver was verified against the Uniflex ERP in cloud; revisit when the Standard Project runs in prod
+runtime/drivers/mssql TestQueryAsFiles # same SQL Server container as TestOLAP
+runtime/drivers/duckdb TestMSSQLToDuckDBTransfer # same SQL Server container, from the DuckDB side
+runtime/drivers/odoo TestAgainstLocalOdoo # needs the local Odoo of plan 1 (ODOO_TEST_URL), which is a developer's machine, not CI

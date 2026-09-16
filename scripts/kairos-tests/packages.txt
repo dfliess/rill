@@ -1,0 +1,38 @@
+# Packages holding tests Kairos wrote, run by kairos-unit-tests.yml and by gate G1b of kairos-sync-gates.yml
+# (kairos-cloud#166). The list is checked against the packages that actually hold Kairos test files on every run,
+# so it cannot go stale in silence: add the package here in the same commit as the test.
+
+# Act: the agent loop, its store, its MCP connections and its triggers
+runtime/act
+runtime/act/mcpconn
+runtime/act/trigger
+
+# The AI layer Act and the analyst chat sit on
+runtime/ai
+
+# Parsing and reconciling the resources Kairos added (agents, agent triggers)
+runtime/parser
+runtime/reconcilers
+
+# The agent API and its access checks, the chat handlers, the Act bootstrap
+runtime/server
+
+# Runtime internals Kairos touched: agent security, consumption metering, the Act catalog migration
+runtime
+
+# Connectors Kairos wrote or extended
+runtime/drivers/duckdb
+runtime/drivers/gemini
+runtime/drivers/mssql
+runtime/drivers/odoo
+runtime/drivers/webhook
+
+# Admin: push notifications, the Kairos migration sequence, per-organization attributes, runtime JWTs
+admin/database/postgres
+admin/pkg/pushnotifications
+admin/server
+
+# CLI and tooling, this command included: it has tests of its own, and the rule holds for it too
+cli/pkg/adminenv
+scripts/kairos-proto-field-numbers
+scripts/kairos-tests
