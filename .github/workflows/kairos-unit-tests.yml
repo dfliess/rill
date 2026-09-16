@@ -41,7 +41,7 @@ jobs:
     # the tests' built-in default DSN is the same string here and on a laptop.
     services:
       postgres:
-        image: postgres:17.5
+        image: postgres:17.11
         env:
           POSTGRES_PASSWORD: dbos
           POSTGRES_DB: dbos_spike

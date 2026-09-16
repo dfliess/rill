@@ -112,7 +112,7 @@ jobs:
     # valiendo: los service containers solo piden Docker, que kairos-seo tiene.
     services:
       postgres:
-        image: postgres:17.5
+        image: postgres:17.11
         env:
           POSTGRES_PASSWORD: dbos
           POSTGRES_DB: dbos_spike
