@@ -27,12 +27,12 @@ func TestKairosMigrations(t *testing.T) {
 		c := openKairosTestDatabase(t, pg.DatabaseURL, "new_database")
 
 		require.NoError(t, c.Migrate(ctx))
-		requireKairosMigrated(t, c, 96)
+		requireKairosMigrated(t, c, latestUpstreamVersion(t))
 
 		// Migrating again runs nothing: a preference stored in between survives 0002's DROP TABLE
 		userID, orgID := insertNotificationPreference(t, c)
 		require.NoError(t, c.Migrate(ctx))
-		requireKairosMigrated(t, c, 96)
+		requireKairosMigrated(t, c, latestUpstreamVersion(t))
 		requireNotificationPreference(t, c, userID, orgID)
 	})
 
@@ -45,11 +45,11 @@ func TestKairosMigrations(t *testing.T) {
 		requireTableExists(t, c, "push_subscriptions", false)
 
 		require.NoError(t, c.Migrate(ctx))
-		requireKairosMigrated(t, c, 96)
+		requireKairosMigrated(t, c, latestUpstreamVersion(t))
 
 		userID, orgID := insertNotificationPreference(t, c)
 		require.NoError(t, c.Migrate(ctx))
-		requireKairosMigrated(t, c, 96)
+		requireKairosMigrated(t, c, latestUpstreamVersion(t))
 		requireNotificationPreference(t, c, userID, orgID)
 	})
 
@@ -59,18 +59,20 @@ func TestKairosMigrations(t *testing.T) {
 
 		// A database migrated to 0099 before kairos-cloud#158, when Kairos migrations were upstream 0097 to 0099
 		applyMigrationsBefore158(t, c, 99)
-		userID, orgID := insertNotificationPreference(t, c)
+		userID, orgID := insertNotificationPreferenceBefore158(t, c)
 
+		// Bootstrapping takes upstream back to 0096, so upstream's own migrations from 0097 on run instead of being skipped
 		require.NoError(t, c.Migrate(ctx))
-		requireKairosMigrated(t, c, 96)
+		requireKairosMigrated(t, c, latestUpstreamVersion(t))
 		requireNotificationPreference(t, c, userID, orgID)
 
 		require.NoError(t, c.Migrate(ctx))
-		requireKairosMigrated(t, c, 96)
+		requireKairosMigrated(t, c, latestUpstreamVersion(t))
 		requireNotificationPreference(t, c, userID, orgID)
 
 		t.Run("NewUpstreamMigration", func(t *testing.T) {
-			// Upstream publishes its own 0097
+			// Upstream publishes a migration after the last one this binary embeds
+			next := latestUpstreamVersion(t) + 1
 			upstream := fstest.MapFS{}
 			files, err := embeddedMigrationsFS.ReadDir("migrations")
 			require.NoError(t, err)
@@ -79,18 +81,18 @@ func TestKairosMigrations(t *testing.T) {
 				require.NoError(t, err)
 				upstream[path.Join("migrations", file.Name())] = &fstest.MapFile{Data: data}
 			}
-			upstream["migrations/0097.sql"] = &fstest.MapFile{Data: []byte("CREATE TABLE upstream_0097 (id INT);")}
+			upstream[fmt.Sprintf("migrations/%04d.sql", next)] = &fstest.MapFile{Data: []byte("CREATE TABLE upstream_next (id INT);")}
 			migrationsFS = upstream
 			t.Cleanup(func() { migrationsFS = embeddedMigrationsFS })
 
 			require.NoError(t, c.Migrate(ctx))
-			requireKairosMigrated(t, c, 97)
-			requireTableExists(t, c, "upstream_0097", true)
+			requireKairosMigrated(t, c, next)
+			requireTableExists(t, c, "upstream_next", true)
 			requireNotificationPreference(t, c, userID, orgID)
 
 			// The next start does not take upstream back to 0096
 			require.NoError(t, c.Migrate(ctx))
-			requireKairosMigrated(t, c, 97)
+			requireKairosMigrated(t, c, next)
 		})
 	})
 
@@ -139,7 +141,7 @@ func applyMigrationsBefore158(t *testing.T, c *connection, upTo int) {
 	_, err = c.db.ExecContext(ctx, fmt.Sprintf("insert into %s(version) values (0)", migrationVersionTable))
 	require.NoError(t, err)
 
-	apply := func(fsys migrationFS, dir string, offset int) {
+	apply := func(fsys migrationFS, dir string, offset, upTo int) {
 		files, err := fsys.ReadDir(dir)
 		require.NoError(t, err)
 		for _, file := range files {
@@ -155,8 +157,9 @@ func applyMigrationsBefore158(t *testing.T, c *connection, upTo int) {
 			require.NoError(t, c.migrateSingle(ctx, file.Name(), data, version))
 		}
 	}
-	apply(embeddedMigrationsFS, "migrations", 0)
-	apply(kairosMigrationsFS, "migrations_kairos", kairosLastSharedUpstreamVersion)
+	// Binaries from before kairos-cloud#158 had upstream migrations only up to 0096: later ones did not exist yet
+	apply(embeddedMigrationsFS, "migrations", 0, min(upTo, kairosLastSharedUpstreamVersion))
+	apply(kairosMigrationsFS, "migrations_kairos", kairosLastSharedUpstreamVersion, upTo)
 
 	version, err := c.FindMigrationVersion(ctx)
 	require.NoError(t, err)
@@ -180,6 +183,17 @@ func requireKairosMigrated(t *testing.T, c *connection, upstreamVersion int) {
 	}
 }
 
+// latestUpstreamVersion is the number of the last upstream migration this binary embeds.
+// It moves every time upstream publishes a migration, so tests must not hardcode it.
+func latestUpstreamVersion(t *testing.T) int {
+	files, err := embeddedMigrationsFS.ReadDir("migrations")
+	require.NoError(t, err)
+	var version int
+	_, err = fmt.Sscanf(files[len(files)-1].Name(), "%04d.sql", &version)
+	require.NoError(t, err)
+	return version
+}
+
 func requireTableExists(t *testing.T, c *connection, table string, exists bool) {
 	var found bool
 	require.NoError(t, c.db.QueryRowContext(context.Background(), "select to_regclass($1) is not null", table).Scan(&found))
@@ -197,6 +211,18 @@ func insertNotificationPreference(t *testing.T, c *connection) (userID, orgID st
 	_, err = c.UpsertNotificationPreferences(ctx, u.ID, org.ID, &database.UpsertNotificationPreferencesOptions{PushAlerts: false, PushReports: true, PushActApprovals: false})
 	require.NoError(t, err)
 	return u.ID, org.ID
+}
+
+// insertNotificationPreferenceBefore158 is insertNotificationPreference with plain SQL, for a database still at its schema
+// from before kairos-cloud#158: the current queries write columns that upstream added since, which it does not have yet.
+func insertNotificationPreferenceBefore158(t *testing.T, c *connection) (userID, orgID string) {
+	ctx := context.Background()
+
+	require.NoError(t, c.db.QueryRowContext(ctx, "INSERT INTO users (email, display_name) VALUES ($1, '') RETURNING id", randomName()+"@rilldata.com").Scan(&userID))
+	require.NoError(t, c.db.QueryRowContext(ctx, "INSERT INTO orgs (name, description) VALUES ($1, '') RETURNING id", randomName()).Scan(&orgID))
+	_, err := c.db.ExecContext(ctx, "INSERT INTO notification_preferences (user_id, org_id, push_alerts, push_reports, push_act_approvals) VALUES ($1, $2, false, true, false)", userID, orgID)
+	require.NoError(t, err)
+	return userID, orgID
 }
 
 func requireNotificationPreference(t *testing.T, c *connection, userID, orgID string) {
