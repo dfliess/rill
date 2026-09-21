@@ -1,5 +1,4 @@
 import { paraglideVitePlugin } from "@inlang/paraglide-js";
-import { svelteTesting } from "@testing-library/svelte/vite";
 import { sveltekit } from "@sveltejs/kit/vite";
 import { svelteTesting } from "@testing-library/svelte/vite";
 import dns from "dns";
@@ -66,19 +65,8 @@ export default defineConfig({
     ],
     exclude: ["sveltekit-superforms"],
   },
-  // web-admin had no component-test environment: its specs ran in node, so a
-  // .svelte file could not be mounted at all and any bug living in a template
-  // rather than in a function was untestable. This mirrors web-common's own
-  // setup so components here can be covered too.
-  test: {
-    environment: "jsdom",
-    setupFiles: ["../web-common/vitest-setup.ts"],
-    clearMocks: true,
-    globals: true,
-  },
   plugins: [
     sveltekit(),
-    svelteTesting(),
     paraglideVitePlugin({
       project: "../web-common/src/lib/i18n/project.inlang",
       outdir: "../web-common/src/lib/i18n/gen",
