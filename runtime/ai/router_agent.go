@@ -267,6 +267,9 @@ func (t *RouterAgent) chatReferenceLabeler(ctx context.Context, s *Session) func
 		}
 		return spec
 	}
+	canvasDisplayName := func(name string) string {
+		return t.accessibleResource(ctx, s, runtime.ResourceKindCanvas, name).GetCanvas().GetState().GetValidSpec().GetDisplayName()
+	}
 
 	return func(attrs map[string]string) string {
 		switch attrs["type"] {
@@ -290,16 +293,28 @@ func (t *RouterAgent) chatReferenceLabeler(ctx context.Context, s *Session) func
 			}
 			return attrs["dimension"]
 		case "canvas":
-			spec := t.accessibleResource(ctx, s, runtime.ResourceKindCanvas, attrs["canvas"]).GetCanvas().GetState().GetValidSpec()
-			if name := spec.GetDisplayName(); name != "" {
+			if name := canvasDisplayName(attrs["canvas"]); name != "" {
 				return name
 			}
 			return attrs["canvas"]
+		case "canvasComponent":
+			// Components defined in a canvas are named after their position, so prefer their title, and then the canvas they belong to.
+			spec := t.accessibleResource(ctx, s, runtime.ResourceKindComponent, attrs["canvasComponent"]).GetComponent().GetState().GetValidSpec()
+			if title := spec.GetRendererProperties().GetFields()["title"].GetStringValue(); title != "" {
+				return title
+			}
+			if name := spec.GetDisplayName(); name != "" {
+				return name
+			}
+			if name := canvasDisplayName(attrs["canvas"]); name != "" {
+				return name
+			}
+			return attrs["canvasComponent"]
 		case "timeRange":
 			return formatTimeRangeReference(attrs["timeRange"], attrs["timeZone"])
 		case "skill":
 			return "/" + attrs["skill"]
-		case "canvasComponent", "model", "column":
+		case "model", "column":
 			return attrs[attrs["type"]]
 		default:
 			return ""

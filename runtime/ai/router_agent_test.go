@@ -91,10 +91,20 @@ rows:
   - kpi_grid:
       metrics_view: orders
       measures: [revenue]
+- items:
+  - bar_chart:
+      metrics_view: orders
+      title: Revenue by country
+      x:
+        field: country
+        type: nominal
+      y:
+        field: revenue
+        type: quantitative
 `,
 		},
 	})
-	testruntime.RequireReconcileState(t, rt, instanceID, 6, 0, 0)
+	testruntime.RequireReconcileState(t, rt, instanceID, 7, 0, 0)
 
 	cases := []struct {
 		prompt string
@@ -115,6 +125,16 @@ rows:
 		{
 			prompt: `Summarize <chat-reference>type="canvas" canvas="overview"</chat-reference>`,
 			title:  "Summarize Sales Overview",
+		},
+		{
+			// A canvas component is shown by its title.
+			prompt: `Explain <chat-reference>type="canvasComponent" canvas="overview" canvasComponent="overview--component-1-0"</chat-reference>`,
+			title:  "Explain Revenue by country",
+		},
+		{
+			// A canvas component without a title is shown by the canvas it belongs to.
+			prompt: `Explain <chat-reference>type="canvasComponent" canvas="overview" canvasComponent="overview--component-0-0"</chat-reference>`,
+			title:  "Explain Sales Overview",
 		},
 		{
 			// The time range is shown as dates in the reference's time zone.
