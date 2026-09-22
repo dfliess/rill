@@ -81,7 +81,7 @@ func (t *RouterAgent) Handler(ctx context.Context, args *RouterAgentArgs) (*Rout
 
 	// Handle title
 	if s.Title() == "" && args.Prompt != "" {
-		err := s.UpdateTitle(ctx, promptToTitle(args.Prompt, t.chatReferenceLabeler(ctx, s)))
+		err := s.UpdateTitle(ctx, promptToTitle(t.readableChatReferences(ctx, args.Prompt)))
 		if err != nil {
 			return nil, err
 		}
@@ -231,15 +231,9 @@ You must answer with a single agent choice and no further explanation. Pick only
 var whitespaceRegexp = regexp.MustCompile(`\s+`)
 
 // promptToTitle generates a truncated conversation title from a prompt.
-// The chat references in the prompt are replaced with the text that label returns for their attributes.
-func promptToTitle(message string, label func(attrs map[string]string) string) string {
-	// Replace chat references with readable text, so the title doesn't show their markup.
-	title := chatReferenceRegexp.ReplaceAllStringFunc(message, func(ref string) string {
-		return label(chatReferenceAttrs(ref))
-	})
-
+func promptToTitle(message string) string {
 	// Collapse whitespace to single spaces.
-	title = whitespaceRegexp.ReplaceAllString(title, " ")
+	title := whitespaceRegexp.ReplaceAllString(message, " ")
 	title = strings.TrimSpace(title)
 
 	// Truncate to 50 bytes, without splitting a multi-byte rune.
@@ -254,59 +248,51 @@ func promptToTitle(message string, label func(attrs map[string]string) string) s
 	return title
 }
 
-// chatReferenceLabeler returns a func that maps the attributes of a chat reference to the text shown for it in a conversation title.
+// readableChatReferences replaces the chat references in a prompt with readable text, so that a conversation title made from it doesn't show their markup.
 // Resources that the session can access are shown by their display name, and other references by their name.
-func (t *RouterAgent) chatReferenceLabeler(ctx context.Context, s *Session) func(attrs map[string]string) string {
-	// Metrics views are looked up once, since a prompt can reference several of their measures and dimensions.
-	metricsViews := map[string]*runtimev1.MetricsViewSpec{}
-	metricsView := func(name string) *runtimev1.MetricsViewSpec {
-		spec, ok := metricsViews[name]
-		if !ok {
-			spec = t.accessibleResource(ctx, s, runtime.ResourceKindMetricsView, name).GetMetricsView().GetState().GetValidSpec()
-			metricsViews[name] = spec
-		}
-		return spec
-	}
-	canvasDisplayName := func(name string) string {
-		return t.accessibleResource(ctx, s, runtime.ResourceKindCanvas, name).GetCanvas().GetState().GetValidSpec().GetDisplayName()
-	}
-
-	return func(attrs map[string]string) string {
+func (t *RouterAgent) readableChatReferences(ctx context.Context, prompt string) string {
+	return chatReferenceRegexp.ReplaceAllStringFunc(prompt, func(ref string) string {
+		attrs := chatReferenceAttrs(ref)
 		switch attrs["type"] {
 		case "metricsView":
-			if name := metricsView(attrs["metricsView"]).GetDisplayName(); name != "" {
+			mv := t.accessibleResource(ctx, runtime.ResourceKindMetricsView, attrs["metricsView"]).GetMetricsView().GetState().GetValidSpec()
+			if name := mv.GetDisplayName(); name != "" {
 				return name
 			}
 			return attrs["metricsView"]
 		case "measure":
-			for _, m := range metricsView(attrs["metricsView"]).GetMeasures() {
+			mv := t.accessibleResource(ctx, runtime.ResourceKindMetricsView, attrs["metricsView"]).GetMetricsView().GetState().GetValidSpec()
+			for _, m := range mv.GetMeasures() {
 				if m.Name == attrs["measure"] && m.DisplayName != "" {
 					return m.DisplayName
 				}
 			}
 			return attrs["measure"]
 		case "dimension", "dimensionValues":
-			for _, d := range metricsView(attrs["metricsView"]).GetDimensions() {
+			mv := t.accessibleResource(ctx, runtime.ResourceKindMetricsView, attrs["metricsView"]).GetMetricsView().GetState().GetValidSpec()
+			for _, d := range mv.GetDimensions() {
 				if d.Name == attrs["dimension"] && d.DisplayName != "" {
 					return d.DisplayName
 				}
 			}
 			return attrs["dimension"]
 		case "canvas":
-			if name := canvasDisplayName(attrs["canvas"]); name != "" {
+			canvas := t.accessibleResource(ctx, runtime.ResourceKindCanvas, attrs["canvas"]).GetCanvas().GetState().GetValidSpec()
+			if name := canvas.GetDisplayName(); name != "" {
 				return name
 			}
 			return attrs["canvas"]
 		case "canvasComponent":
 			// Components defined in a canvas are named after their position, so prefer their title, and then the canvas they belong to.
-			spec := t.accessibleResource(ctx, s, runtime.ResourceKindComponent, attrs["canvasComponent"]).GetComponent().GetState().GetValidSpec()
-			if title := spec.GetRendererProperties().GetFields()["title"].GetStringValue(); title != "" {
+			cmp := t.accessibleResource(ctx, runtime.ResourceKindComponent, attrs["canvasComponent"]).GetComponent().GetState().GetValidSpec()
+			if title := cmp.GetRendererProperties().GetFields()["title"].GetStringValue(); title != "" {
 				return title
 			}
-			if name := spec.GetDisplayName(); name != "" {
+			if name := cmp.GetDisplayName(); name != "" {
 				return name
 			}
-			if name := canvasDisplayName(attrs["canvas"]); name != "" {
+			canvas := t.accessibleResource(ctx, runtime.ResourceKindCanvas, attrs["canvas"]).GetCanvas().GetState().GetValidSpec()
+			if name := canvas.GetDisplayName(); name != "" {
 				return name
 			}
 			return attrs["canvasComponent"]
@@ -314,18 +300,22 @@ func (t *RouterAgent) chatReferenceLabeler(ctx context.Context, s *Session) func
 			return formatTimeRangeReference(attrs["timeRange"], attrs["timeZone"])
 		case "skill":
 			return "/" + attrs["skill"]
-		case "model", "column":
-			return attrs[attrs["type"]]
+		case "model":
+			return attrs["model"]
+		case "column":
+			return attrs["column"]
 		default:
 			return ""
 		}
-	}
+	})
 }
 
 // accessibleResource returns the named resource if it exists and the session can access it, and nil otherwise.
 // It doesn't return errors because the title falls back to the reference's name when the resource can't be read.
-func (t *RouterAgent) accessibleResource(ctx context.Context, s *Session, kind, name string) *runtimev1.Resource {
-	ctrl, err := t.Runtime.Controller(ctx, s.InstanceID())
+func (t *RouterAgent) accessibleResource(ctx context.Context, kind, name string) *runtimev1.Resource {
+	session := GetSession(ctx)
+
+	ctrl, err := t.Runtime.Controller(ctx, session.InstanceID())
 	if err != nil {
 		return nil
 	}
@@ -333,7 +323,7 @@ func (t *RouterAgent) accessibleResource(ctx context.Context, s *Session, kind, 
 	if err != nil {
 		return nil
 	}
-	r, access, err := t.Runtime.ApplySecurityPolicy(ctx, s.InstanceID(), s.Claims(), r)
+	r, access, err := t.Runtime.ApplySecurityPolicy(ctx, session.InstanceID(), session.Claims(), r)
 	if err != nil || !access {
 		return nil
 	}
