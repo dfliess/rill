@@ -1,9 +1,13 @@
 package ai_test
 
 import (
+	"strings"
 	"testing"
 
+	"github.com/google/uuid"
+	"github.com/rilldata/rill/runtime"
 	"github.com/rilldata/rill/runtime/ai"
+	"github.com/rilldata/rill/runtime/pkg/activity"
 	"github.com/rilldata/rill/runtime/testruntime"
 	"github.com/stretchr/testify/require"
 )
@@ -102,9 +106,26 @@ rows:
         field: revenue
         type: quantitative
 `,
+			"canvases/restricted.yaml": `
+type: canvas
+display_name: Restricted
+security:
+  access: false
+rows:
+- items:
+  - bar_chart:
+      metrics_view: orders
+      title: Revenue by customer
+      x:
+        field: country
+        type: nominal
+      y:
+        field: revenue
+        type: quantitative
+`,
 		},
 	})
-	testruntime.RequireReconcileState(t, rt, instanceID, 7, 0, 0)
+	testruntime.RequireReconcileState(t, rt, instanceID, 9, 0, 0)
 
 	cases := []struct {
 		prompt string
@@ -137,6 +158,11 @@ rows:
 			title:  "Explain Sales Overview",
 		},
 		{
+			// A component that doesn't belong to the referenced canvas isn't shown by its title.
+			prompt: `Explain <chat-reference>type="canvasComponent" canvas="overview" canvasComponent="restricted--component-0-0"</chat-reference>`,
+			title:  "Explain Sales Overview",
+		},
+		{
 			// The time range is shown as dates in the reference's time zone.
 			prompt: `<chat-reference>type="timeRange" timeZone="Europe/Madrid" granularity="day" timeRange="2026-07-31T22:00:00.000Z to 2026-08-30T22:00:00.000Z"</chat-reference> vs last year`,
 			title:  "2026-08-01 – 2026-08-31 vs last year",
@@ -164,6 +190,11 @@ rows:
 			prompt: `<chat-reference>type="metricsView" metricsView="orders"</chat-reference> how much did we sell to each customer last month?`,
 			title:  "Sales how much did we sell to each customer las...",
 		},
+		{
+			// The truncation doesn't split a multi-byte rune: the 47-byte cut lands inside the first "ú".
+			prompt: strings.Repeat("a", 46) + "úúúú",
+			title:  strings.Repeat("a", 46) + "...",
+		},
 	}
 	for _, c := range cases {
 		s := newSession(t, rt, instanceID)
@@ -176,4 +207,20 @@ rows:
 		require.NoError(t, err)
 		require.Equal(t, c.title, s.Title(), "prompt: %q", c.prompt)
 	}
+
+	// With security checks, a component of a canvas that the session can't access isn't shown by its title.
+	s, err := ai.NewRunner(rt, activity.NewNoopClient()).Session(t.Context(), &ai.SessionOptions{
+		InstanceID: instanceID,
+		Claims:     &runtime.SecurityClaims{UserID: uuid.NewString(), Permissions: []runtime.Permission{runtime.UseAI, runtime.ReadObjects}},
+		UserAgent:  "rill-evals",
+	})
+	require.NoError(t, err)
+	var res *ai.RouterAgentResult
+	_, err = s.CallTool(t.Context(), ai.RoleUser, ai.RouterAgentName, &res, ai.RouterAgentArgs{
+		Prompt:      `Explain <chat-reference>type="canvasComponent" canvas="restricted" canvasComponent="restricted--component-0-0"</chat-reference>`,
+		Agent:       ai.AnalystAgentName,
+		SkipHandoff: true,
+	})
+	require.NoError(t, err)
+	require.Equal(t, "Explain restricted--component-0-0", s.Title())
 }
