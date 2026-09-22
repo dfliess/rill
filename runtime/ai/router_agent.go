@@ -7,10 +7,12 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/google/jsonschema-go/jsonschema"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 	aiv1 "github.com/rilldata/rill/proto/gen/rill/ai/v1"
+	runtimev1 "github.com/rilldata/rill/proto/gen/rill/runtime/v1"
 	"github.com/rilldata/rill/runtime"
 	"github.com/rilldata/rill/runtime/metricsview"
 )
@@ -79,7 +81,7 @@ func (t *RouterAgent) Handler(ctx context.Context, args *RouterAgentArgs) (*Rout
 
 	// Handle title
 	if s.Title() == "" && args.Prompt != "" {
-		err := s.UpdateTitle(ctx, promptToTitle(args.Prompt))
+		err := s.UpdateTitle(ctx, promptToTitle(args.Prompt, t.chatReferenceLabeler(ctx, s)))
 		if err != nil {
 			return nil, err
 		}
@@ -229,9 +231,15 @@ You must answer with a single agent choice and no further explanation. Pick only
 var whitespaceRegexp = regexp.MustCompile(`\s+`)
 
 // promptToTitle generates a truncated conversation title from a prompt.
-func promptToTitle(message string) string {
+// The chat references in the prompt are replaced with the text that label returns for their attributes.
+func promptToTitle(message string, label func(attrs map[string]string) string) string {
+	// Replace chat references with readable text, so the title doesn't show their markup.
+	title := chatReferenceRegexp.ReplaceAllStringFunc(message, func(ref string) string {
+		return label(chatReferenceAttrs(ref))
+	})
+
 	// Collapse whitespace to single spaces.
-	title := whitespaceRegexp.ReplaceAllString(message, " ")
+	title = whitespaceRegexp.ReplaceAllString(title, " ")
 	title = strings.TrimSpace(title)
 
 	// Truncate to 50 bytes, without splitting a multi-byte rune.
@@ -244,6 +252,95 @@ func promptToTitle(message string) string {
 		return "New Conversation"
 	}
 	return title
+}
+
+// chatReferenceLabeler returns a func that maps the attributes of a chat reference to the text shown for it in a conversation title.
+// Resources that the session can access are shown by their display name, and other references by their name.
+func (t *RouterAgent) chatReferenceLabeler(ctx context.Context, s *Session) func(attrs map[string]string) string {
+	// Metrics views are looked up once, since a prompt can reference several of their measures and dimensions.
+	metricsViews := map[string]*runtimev1.MetricsViewSpec{}
+	metricsView := func(name string) *runtimev1.MetricsViewSpec {
+		spec, ok := metricsViews[name]
+		if !ok {
+			spec = t.accessibleResource(ctx, s, runtime.ResourceKindMetricsView, name).GetMetricsView().GetState().GetValidSpec()
+			metricsViews[name] = spec
+		}
+		return spec
+	}
+
+	return func(attrs map[string]string) string {
+		switch attrs["type"] {
+		case "metricsView":
+			if name := metricsView(attrs["metricsView"]).GetDisplayName(); name != "" {
+				return name
+			}
+			return attrs["metricsView"]
+		case "measure":
+			for _, m := range metricsView(attrs["metricsView"]).GetMeasures() {
+				if m.Name == attrs["measure"] && m.DisplayName != "" {
+					return m.DisplayName
+				}
+			}
+			return attrs["measure"]
+		case "dimension", "dimensionValues":
+			for _, d := range metricsView(attrs["metricsView"]).GetDimensions() {
+				if d.Name == attrs["dimension"] && d.DisplayName != "" {
+					return d.DisplayName
+				}
+			}
+			return attrs["dimension"]
+		case "canvas":
+			spec := t.accessibleResource(ctx, s, runtime.ResourceKindCanvas, attrs["canvas"]).GetCanvas().GetState().GetValidSpec()
+			if name := spec.GetDisplayName(); name != "" {
+				return name
+			}
+			return attrs["canvas"]
+		case "timeRange":
+			return formatTimeRangeReference(attrs["timeRange"], attrs["timeZone"])
+		case "skill":
+			return "/" + attrs["skill"]
+		case "canvasComponent", "model", "column":
+			return attrs[attrs["type"]]
+		default:
+			return ""
+		}
+	}
+}
+
+// accessibleResource returns the named resource if it exists and the session can access it, and nil otherwise.
+// It doesn't return errors because the title falls back to the reference's name when the resource can't be read.
+func (t *RouterAgent) accessibleResource(ctx context.Context, s *Session, kind, name string) *runtimev1.Resource {
+	ctrl, err := t.Runtime.Controller(ctx, s.InstanceID())
+	if err != nil {
+		return nil
+	}
+	r, err := ctrl.Get(ctx, &runtimev1.ResourceName{Kind: kind, Name: name}, false)
+	if err != nil {
+		return nil
+	}
+	r, access, err := t.Runtime.ApplySecurityPolicy(ctx, s.InstanceID(), s.Claims(), r)
+	if err != nil || !access {
+		return nil
+	}
+	return r
+}
+
+// formatTimeRangeReference formats the value of a time range reference, "<start>" or "<start> to <end>" in RFC3339, as dates in the given time zone.
+// It returns the value unchanged if it can't be parsed.
+func formatTimeRangeReference(value, timeZone string) string {
+	loc, err := time.LoadLocation(timeZone)
+	if err != nil {
+		loc = time.UTC
+	}
+	var dates []string
+	for _, part := range strings.Split(value, " to ") {
+		ts, err := time.Parse(time.RFC3339, part)
+		if err != nil {
+			return value
+		}
+		dates = append(dates, ts.In(loc).Format(time.DateOnly))
+	}
+	return strings.Join(dates, " – ")
 }
 
 // mapAgentErr maps common agent errors to more user-friendly messages.

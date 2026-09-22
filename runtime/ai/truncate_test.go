@@ -41,7 +41,7 @@ func TestProposedSummaryKeepsRealisticValuesIntact(t *testing.T) {
 func TestPromptToTitleValidUTF8OnMultibyteBoundary(t *testing.T) {
 	// 46 ASCII bytes + 'ú' (2 bytes) …: the 47-byte cut lands mid-rune.
 	prompt := strings.Repeat("a", 46) + "úúúú"
-	got := promptToTitle(prompt)
+	got := promptToTitle(prompt, func(map[string]string) string { return "" })
 	require.True(t, utf8.ValidString(got), "conversation title must be valid UTF-8, got %q", got)
 }
 
