@@ -77,6 +77,9 @@ var defaultFeatureFlags = map[string]string{
 	// handlers, which enforce it as the kill switch. Off by default; a project enables it in rill.yaml, and can
 	// point it at a variable to turn Act off per project and environment without a redeploy.
 	"agents": "false",
+	// Controls the project-wide bookmark manager: the Bookmarks tab and the home page section. Kairos keeps it off
+	// because it crowds the UI; bookmarks stay reachable from each dashboard's dropdown (kairos-cloud#193).
+	"bookmarks": "false",
 }
 
 // ResolveFeatureFlags resolves feature flags for the given instance and the provided user attributes.

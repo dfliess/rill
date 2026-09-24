@@ -24,7 +24,7 @@
   import BookmarksTable from "@rilldata/web-admin/features/bookmarks/listing/BookmarksTable.svelte";
   import { BookmarkTableSortOptions } from "@rilldata/web-admin/features/bookmarks/listing/bookmark-listing-utils.ts";
 
-  const { chat, personalCanvases, agents } = featureFlags;
+  const { chat, personalCanvases, agents, bookmarks } = featureFlags;
 
   const runtimeClient = useRuntimeClient();
 
@@ -158,7 +158,7 @@
     </div>
 
     <!-- Bookmarks Section -->
-    {#if hasUser}
+    {#if hasUser && $bookmarks}
       <div class="flex flex-col gap-y-4">
         <h2
           class="flex flex-row gap-x-2 items-center text-xl font-semibold text-fg-secondary"

@@ -18,7 +18,7 @@
   // Bookmarks belong to users, so anonymous viewers of public projects have none to manage.
   export let hasUser: boolean = false;
 
-  const { chat, reports, alerts, agents } = featureFlags;
+  const { chat, reports, alerts, agents, bookmarks } = featureFlags;
 
   $: tabs = [
     {
@@ -39,7 +39,7 @@
     {
       route: `/${organization}/${project}${branchPrefix}/-/bookmarks`,
       label: m.nav_tab_bookmarks(),
-      hasPermission: hasUser,
+      hasPermission: hasUser && $bookmarks,
     },
     {
       route: `/${organization}/${project}${branchPrefix}/-/query`,

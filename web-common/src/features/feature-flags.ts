@@ -79,6 +79,9 @@ class FeatureFlags {
   customCharts = new FeatureFlag("user", false);
   disablePersistentDashboardState = new FeatureFlag("user", false);
   personalCanvases = new FeatureFlag("user", false);
+  // Kairos hides upstream's project-wide bookmark manager (tab and home page
+  // section) unless a project opts in from rill.yaml (kairos-cloud#193).
+  bookmarks = new FeatureFlag("user", false);
 
   private flagsUnsub?: () => void;
 

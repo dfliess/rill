@@ -47,6 +47,7 @@ func Test_ResolveFeatureFlags(t *testing.T) {
 				"customCharts":                    false,
 				"personalCanvases":                false,
 				"agents":                          false,
+				"bookmarks":                       false,
 				"disablePersistentDashboardState": false,
 			},
 		},
@@ -76,6 +77,7 @@ func Test_ResolveFeatureFlags(t *testing.T) {
 				"customCharts":                    false,
 				"personalCanvases":                false,
 				"agents":                          false,
+				"bookmarks":                       false,
 				"disablePersistentDashboardState": false,
 			},
 		},
@@ -105,6 +107,7 @@ func Test_ResolveFeatureFlags(t *testing.T) {
 				"customCharts":                    false,
 				"personalCanvases":                false,
 				"agents":                          false,
+				"bookmarks":                       false,
 				"disablePersistentDashboardState": false,
 			},
 		},
@@ -134,6 +137,7 @@ func Test_ResolveFeatureFlags(t *testing.T) {
 				"customCharts":                    false,
 				"personalCanvases":                false,
 				"agents":                          false,
+				"bookmarks":                       false,
 				"disablePersistentDashboardState": false,
 			},
 		},
@@ -187,6 +191,27 @@ func Test_ResolveFeatureFlags_CloudEditingDisabledAnnotation(t *testing.T) {
 				}
 				require.Equal(t, test.expected, featureFlags[key])
 			}
+		})
+	}
+}
+
+// Kairos hides upstream's project-wide bookmark manager (the Bookmarks tab and the home page section) unless a
+// project opts in from rill.yaml (kairos-cloud#193).
+func Test_ResolveFeatureFlags_Bookmarks(t *testing.T) {
+	tests := []struct {
+		name         string
+		featureFlags map[string]string
+		expected     bool
+	}{
+		{name: "off by default", expected: false},
+		{name: "a project opts in", featureFlags: map[string]string{"bookmarks": "true"}, expected: true},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			featureFlags, err := ResolveFeatureFlags(&drivers.Instance{FeatureFlags: test.featureFlags}, nil, true)
+			require.NoError(t, err)
+			require.Equal(t, test.expected, featureFlags["bookmarks"])
 		})
 	}
 }
