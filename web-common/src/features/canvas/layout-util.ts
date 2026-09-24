@@ -37,6 +37,23 @@ export const initialHeights: Record<CanvasComponentType, number> = {
   agent_note: 40,
 };
 
+// Components whose content sets its own height, so the row's height acts as a
+// floor and the item grows past it. Everything else is a fixed box that clips.
+//
+// A component belongs here when its content length is not knowable in advance.
+// `agent_note` is the clearest case: a model writes it, so no fixed height is
+// ever right, and a short row cut the sentence in half in production.
+const EXPANDABLE_TYPES = new Set<string>([
+  "kpi_grid",
+  "markdown",
+  "leaderboard",
+  "agent_note",
+]);
+
+export function isExpandable(type: string | undefined): boolean {
+  return type !== undefined && EXPANDABLE_TYPES.has(type);
+}
+
 // Minimum heights a component can shrink to, when smaller than its initial
 // height. Used as the CSS floor so components like pivots (whose content can be
 // short, e.g. a low row limit) don't reserve their full initial height.

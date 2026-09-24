@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getMinHeight } from "./layout-util";
+  import { getMinHeight, isExpandable } from "./layout-util";
 
   export let zIndex: number;
   export let type: string | undefined = undefined;
@@ -8,8 +8,7 @@
   // full row's worth of empty space below the button.
   export let fitContent = false;
 
-  $: expandable =
-    type === "kpi_grid" || type === "markdown" || type === "leaderboard";
+  $: expandable = isExpandable(type);
   $: minHeight = getMinHeight(type) + "px";
 </script>
 
@@ -35,6 +34,14 @@
 
   .expandable:not(.fit-content) {
     min-height: var(--row-height);
+    /* Cancels the `height: 100%` that `size-full` applies. Blink resolves that
+       100% against an auto-sized grid track as `auto`, so the item still grew
+       and nobody noticed; WebKit treats it as a definite height, so the item
+       stayed at the floor and clipped its content. Visible on every iOS
+       browser and in desktop Safari once the row wraps to one column, and not
+       reproducible in Chrome at any width. The item still fills a taller row,
+       because a grid item stretches by default. */
+    height: auto;
   }
 
   :not(.expandable):not(.fit-content) {
