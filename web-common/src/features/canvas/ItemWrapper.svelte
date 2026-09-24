@@ -44,6 +44,18 @@
     height: auto;
   }
 
+  /* The card inside an expandable item carries `size-full` too, so it asks for
+     exactly 100% of the wrapper and clips its own content with
+     `overflow: hidden`. Freeing the wrapper alone is not enough: WebKit still
+     resolves that 100% against the wrapper's floor. `min-height` keeps the card
+     filling a taller row while letting it grow when its content needs more.
+     Measured in Safari 26.6.2 at a 510px canvas: three cards hiding 71, 56 and
+     71 pixels before, none after. */
+  .expandable:not(.fit-content) > :global(.component-card) {
+    height: auto;
+    min-height: 100%;
+  }
+
   :not(.expandable):not(.fit-content) {
     height: max(var(--row-height), var(--min-height));
     min-height: 100%;
