@@ -25,6 +25,9 @@ import (
 // a worker subprocess never runs the test suite (and never forks further workers).
 func TestMain(m *testing.M) {
 	if os.Getenv("ACT_TEST_WORKER") == "1" {
+		if os.Getenv("ACT_WORKER_PATH") == "gateway" {
+			runGatewayCrashWorker() // never returns
+		}
 		runCrashWorker() // never returns
 	}
 	os.Exit(m.Run())
