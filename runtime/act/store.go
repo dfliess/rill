@@ -272,9 +272,9 @@ type RunStore interface {
 	CreateRun(ctx context.Context, run NewRun) error
 	// CreateRunAndEnqueue creates the run and runs enqueue inside the same transaction, so the run exists if and only
 	// if its workflow was launched (ADR-0032). A run already recorded under the same (instance, agent, idempotency key)
-	// wins: nothing is created or enqueued and its ID is returned, whatever format that ID has (ADR-0034). Otherwise it
-	// returns run.RunID.
-	CreateRunAndEnqueue(ctx context.Context, run NewRun, enqueue func(ctx context.Context, tx pgx.Tx) error) (string, error)
+	// wins: nothing is created, and its ID, whatever format it has (ADR-0034), is what enqueue receives and what is
+	// returned. Otherwise both get run.RunID.
+	CreateRunAndEnqueue(ctx context.Context, run NewRun, enqueue func(ctx context.Context, tx pgx.Tx, runID string) error) (string, error)
 	// RecordTransition applies a status change and appends its event in one transaction. It is idempotent per edge:
 	// re-applying an already-recorded transition leaves the row unchanged and appends no duplicate event.
 	RecordTransition(ctx context.Context, t RunTransition) error

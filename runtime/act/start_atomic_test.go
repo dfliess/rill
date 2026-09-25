@@ -22,10 +22,10 @@ type failAfterEnqueue struct {
 	runID string // the ID Start tried to create the run under
 }
 
-func (s *failAfterEnqueue) CreateRunAndEnqueue(ctx context.Context, run act.NewRun, enqueue func(context.Context, pgx.Tx) error) (string, error) {
+func (s *failAfterEnqueue) CreateRunAndEnqueue(ctx context.Context, run act.NewRun, enqueue func(context.Context, pgx.Tx, string) error) (string, error) {
 	s.runID = run.RunID
-	return s.PostgresRunStore.CreateRunAndEnqueue(ctx, run, func(ctx context.Context, tx pgx.Tx) error {
-		if err := enqueue(ctx, tx); err != nil {
+	return s.PostgresRunStore.CreateRunAndEnqueue(ctx, run, func(ctx context.Context, tx pgx.Tx, runID string) error {
+		if err := enqueue(ctx, tx, runID); err != nil {
 			return err
 		}
 		return s.err

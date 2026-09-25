@@ -101,9 +101,9 @@ type Config struct {
 	ApplicationVersion string
 	// Runner performs the side-effecting work of each run. Required.
 	Runner Runner
-	// Store, when set, is the queryable run store the executor writes lifecycle state and events to (§15). It is the
-	// product's state plane, separate from the DBOS system tables: the API reads runs from it without touching the
-	// workflow engine. Optional: a nil Store emits no state, which only tests that do not read it use.
+	// Store is the queryable run store the executor writes lifecycle state and events to (§15). It is the product's
+	// state plane, separate from the DBOS system tables: the API reads runs from it without touching the workflow
+	// engine. Required: it also holds the one run of each idempotency key that makes Start idempotent (ADR-0034).
 	Store RunStore
 	// Gateway governs every write a run proposes: policy, the action ledger, secrets, the idempotent external call and
 	// its verification (§16.2, §12). Proposer surfaces the write the model loop captured. Both are required. The
@@ -282,18 +282,14 @@ func (e *DBOSExecutor) Start(ctx context.Context, in AgentRunInput) (string, err
 	}
 
 	// Record the run and enqueue its workflow in ONE transaction, so the run is queryable the instant Start returns
-	// (§14.2) and exists if and only if its workflow does (ADR-0032). If the key already has a run, the store returns
-	// it and enqueues nothing.
-	enqueue := func(ctx context.Context, tx pgx.Tx) error {
-		opts := []dbos.EnqueueOption{
+	// (§14.2) and exists if and only if its workflow does (ADR-0032). If the key already has a run, the store hands
+	// enqueue that run's ID instead: a no-op for a run with a workflow, the launch for one left without it.
+	enqueue := func(ctx context.Context, tx pgx.Tx, runID string) error {
+		_, err := dbos.Enqueue[AgentRunResult](e.client, runQueue, workflowName, in,
 			dbos.WithEnqueueWorkflowID(runID),
 			dbos.WithEnqueueApplicationVersion(e.version),
 			dbos.WithEnqueueApplicationName(appName),
-		}
-		if tx != nil {
-			opts = append(opts, dbos.WithEnqueueTransaction(tx))
-		}
-		_, err := dbos.Enqueue[AgentRunResult](e.client, runQueue, workflowName, in, opts...)
+			dbos.WithEnqueueTransaction(tx))
 		return err
 	}
 	runID, err = e.store.CreateRunAndEnqueue(ctx, NewRun{
@@ -378,9 +374,6 @@ func (e *DBOSExecutor) Cancel(ctx context.Context, instanceID, runID string) err
 	if err := dbos.CancelWorkflow(e.client, runID); err != nil {
 		return fmt.Errorf("act: cancel run %q: %w", runID, err)
 	}
-	if e.store == nil {
-		return nil
-	}
 	// The workflow is already cancelled; the store write below only reflects that, so a failure to record it must not
 	// fail Cancel. The transition and the approval withdrawal go together in CloseRun rather than as two independent
 	// writes: withdrawing the approval of a run whose cancelled transition did NOT land leaves it reading
@@ -442,9 +435,6 @@ func (e *DBOSExecutor) runAgentWorkflow(ctx dbos.Context, in AgentRunInput) (Age
 // step. It is separate from emit because it is the only transition that carries a spec hash: it fires right after
 // the snapshot is captured, so the run row records exactly which agent version it executed (§8.3, §12).
 func (e *DBOSExecutor) emitRunning(ctx dbos.Context, in AgentRunInput, runID, specHash string) error {
-	if e.store == nil {
-		return nil
-	}
 	_, err := dbos.RunAsStep(ctx, func(stepCtx context.Context) (bool, error) {
 		return true, e.store.RecordTransition(stepCtx, RunTransition{
 			InstanceID: in.InstanceID,
@@ -460,11 +450,10 @@ func (e *DBOSExecutor) emitRunning(ctx dbos.Context, in AgentRunInput, runID, sp
 	return nil
 }
 
-// persistConversation links the run to the AI session it executed in, as a durable step. It is a no-op when no store
-// is configured (the storeless unit tests) or when no session was opened (SessionID empty), so it never overwrites an
-// existing link with a blank. The store UPDATE is idempotent, so a replay re-writes the same checkpointed session ID.
+// persistConversation links the run to the AI session it executed in, as a durable step. It is a no-op when no session
+// was opened (SessionID empty), so it never overwrites an existing link with a blank. The store UPDATE is idempotent, so a replay re-writes the same checkpointed session ID.
 func (e *DBOSExecutor) persistConversation(ctx dbos.Context, in AgentRunInput, runID, sessionID string) error {
-	if e.store == nil || sessionID == "" {
+	if sessionID == "" {
 		return nil
 	}
 	_, err := dbos.RunAsStep(ctx, func(stepCtx context.Context) (bool, error) {
@@ -476,10 +465,8 @@ func (e *DBOSExecutor) persistConversation(ctx dbos.Context, in AgentRunInput, r
 	return nil
 }
 
-// emit records one lifecycle transition as a durable step. It is a no-op when no store is configured (the executor's
-// own unit tests run storeless), so wiring a store adds state emission without changing the storeless step sequence.
-// The step is idempotent in the store (one event per edge), so a crash between the side effect and the checkpoint
-// replays it harmlessly.
+// emit records one lifecycle transition as a durable step.
+// The step is idempotent in the store (one event per edge), so a crash between the side effect and the checkpoint replays it harmlessly.
 func (e *DBOSExecutor) emit(ctx dbos.Context, in AgentRunInput, runID string, status RunStatus, eventType string) error {
 	return e.emitWithPayload(ctx, in, runID, status, eventType, "", nil)
 }
@@ -489,9 +476,6 @@ func (e *DBOSExecutor) emit(ctx dbos.Context, in AgentRunInput, runID string, st
 // by the run timeline, which is user-visible (§17.2). A nil payload behaves exactly like emit, so the step name and
 // shape are unchanged for the transitions that carry no detail.
 func (e *DBOSExecutor) emitWithPayload(ctx dbos.Context, in AgentRunInput, runID string, status RunStatus, eventType, dedupeKey string, payload map[string]any) error {
-	if e.store == nil {
-		return nil
-	}
 	_, err := dbos.RunAsStep(ctx, func(stepCtx context.Context) (bool, error) {
 		tr := RunTransition{
 			InstanceID: in.InstanceID,
@@ -530,12 +514,9 @@ func deciderPayload(subject string) map[string]any {
 // loadDecider resolves who actually decided an approval, as a durable step. The run initiator (in.Actor.Subject, e.g.
 // Alice) is not necessarily who decided (e.g. Bob, an admin), and the durable resume message carries only the decision,
 // not the decider; the approval row's decided_by was set by the API's claim (ResolveApproval) before the resume was
-// delivered, so it is authoritative here (§11.2, §18.3). Falls back to the initiator when no store is wired (the
-// executor's own unit tests) or when a non-API resume path left decided_by unset — see the Resume TODO above.
+// delivered, so it is authoritative here (§11.2, §18.3). Falls back to the initiator when a non-API resume path left
+// decided_by unset — see the Resume TODO above.
 func (e *DBOSExecutor) loadDecider(ctx dbos.Context, in AgentRunInput, approvalID, stepName string) (string, error) {
-	if e.store == nil {
-		return in.Actor.Subject, nil
-	}
 	loaded, err := dbos.RunAsStep(ctx, func(stepCtx context.Context) (string, error) {
 		ap, gErr := e.store.GetApproval(stepCtx, in.InstanceID, approvalID)
 		if gErr != nil {
@@ -588,9 +569,6 @@ func (e *DBOSExecutor) fail(ctx dbos.Context, in AgentRunInput, runID string, re
 // waiting_approval with every approval cancelled and no decider (kairos-cloud#135), so CloseRun binds them: either
 // the run is terminal AND its approvals are withdrawn, or neither happened and the run stays decidable.
 func (e *DBOSExecutor) closeRun(ctx dbos.Context, in AgentRunInput, runID string, tr RunTransition, what string) {
-	if e.store == nil {
-		return
-	}
 	// The step returns bool, not the cancelled count: DBOS checkpoints a step's output by type, so a run interrupted
 	// mid-deploy replays its recorded output through the new binary. Widening the type here would fail to deserialize
 	// checkpoints written by the old one.
@@ -822,80 +800,78 @@ func (e *DBOSExecutor) governProposedActions(ctx dbos.Context, in AgentRunInput,
 
 	// Phase 2: create all manual approvals at once in one durable step, so the inbox shows every pending decision the
 	// moment the run pauses. Auto-approved and policy-denied actions skip approval creation.
-	if e.store != nil {
-		_, err := dbos.RunAsStep(ctx, func(stepCtx context.Context) (bool, error) {
-			for i := range actions {
-				a := &actions[i]
-				if a.auth.Decision != PolicyApprovalRequired {
-					continue
-				}
-				approvalID := ApprovalIDForToolCall(runID, a.proposal.ToolCallID)
-				dedupeKey := actionDedupeKey(EventTypeWaitingApproval, a.proposal.ToolCallID)
-				if err := e.store.RecordTransition(stepCtx, RunTransition{
-					InstanceID: in.InstanceID, RunID: runID,
-					Status: RunStatusWaitingApproval, EventType: EventTypeWaitingApproval,
-					DedupeKey: dedupeKey,
-				}); err != nil {
-					return false, err
-				}
-				if err := e.store.CreateApproval(stepCtx, NewApproval{
-					ApprovalID: approvalID,
-					RunID:      runID,
-					InstanceID: in.InstanceID,
-					ToolName:   a.proposal.Tool,
-					Connector:  a.proposal.Connector,
-					ToolCallID: a.proposal.ToolCallID,
-					ArgsHash:   a.auth.ArgsHash,
-					// The preimage travels on the Authorization, captured from the same CanonicalizeArgs output the
-					// hash was computed over; recomputing it here from a.proposal.Args could diverge from the hash
-					// (the gateway hashed its own frozen copy) and would break the "you sign what you see" invariant.
-					CanonicalArgs: canonicalArgsForApproval(a),
-					Proposal:      a.proposal.Summary,
-					Policy:        string(a.auth.Decision),
-					RequestedBy:   in.Actor.Subject,
-					Position:      i + 1,
-					Total:         n,
-				}); err != nil {
-					return false, err
-				}
+	_, err := dbos.RunAsStep(ctx, func(stepCtx context.Context) (bool, error) {
+		for i := range actions {
+			a := &actions[i]
+			if a.auth.Decision != PolicyApprovalRequired {
+				continue
 			}
-			return true, nil
-		}, dbos.WithStepName(fmt.Sprintf("setup_approvals_%d", seg)))
-		if err != nil {
-			*res, err = e.fail(ctx, in, runID, *res, "setup approvals", err)
-			return nil, true, err
+			approvalID := ApprovalIDForToolCall(runID, a.proposal.ToolCallID)
+			dedupeKey := actionDedupeKey(EventTypeWaitingApproval, a.proposal.ToolCallID)
+			if err := e.store.RecordTransition(stepCtx, RunTransition{
+				InstanceID: in.InstanceID, RunID: runID,
+				Status: RunStatusWaitingApproval, EventType: EventTypeWaitingApproval,
+				DedupeKey: dedupeKey,
+			}); err != nil {
+				return false, err
+			}
+			if err := e.store.CreateApproval(stepCtx, NewApproval{
+				ApprovalID: approvalID,
+				RunID:      runID,
+				InstanceID: in.InstanceID,
+				ToolName:   a.proposal.Tool,
+				Connector:  a.proposal.Connector,
+				ToolCallID: a.proposal.ToolCallID,
+				ArgsHash:   a.auth.ArgsHash,
+				// The preimage travels on the Authorization, captured from the same CanonicalizeArgs output the
+				// hash was computed over; recomputing it here from a.proposal.Args could diverge from the hash
+				// (the gateway hashed its own frozen copy) and would break the "you sign what you see" invariant.
+				CanonicalArgs: canonicalArgsForApproval(a),
+				Proposal:      a.proposal.Summary,
+				Policy:        string(a.auth.Decision),
+				RequestedBy:   in.Actor.Subject,
+				Position:      i + 1,
+				Total:         n,
+			}); err != nil {
+				return false, err
+			}
 		}
+		return true, nil
+	}, dbos.WithStepName(fmt.Sprintf("setup_approvals_%d", seg)))
+	if err != nil {
+		*res, err = e.fail(ctx, in, runID, *res, "setup approvals", err)
+		return nil, true, err
+	}
 
-		// Tell whoever may decide that the run is waiting on them (kairos-cloud#143), in a durable step of its own.
-		//
-		// This used to sit outside any step, so that a recovery would notify again rather than risk staying silent.
-		// The duplicate was not as harmless as that assumed: the tag collapses the banner but not the buzz, and once
-		// a notification leaves a record (kairos-cloud#148) a replay leaves another row. A run recovered after days
-		// would announce itself again as if it were new.
-		//
-		// A step is where DBOS says this belongs: calling a third-party API from the workflow body is the thing its
-		// determinism rules tell you not to do, and it was being done here. A completed step is never re-executed,
-		// so recovery no longer re-announces every parked run.
-		//
-		// Its own step rather than sharing the one above is what keeps the other half: if the process dies between
-		// the two, the notification step never completed and recovery does send it.
-		//
-		// This is at-least-once, not exactly-once, and DBOS is explicit about it: a crash after the push leaves the
-		// notifier but before the checkpoint lands will notify again on recovery. That window is narrow and its
-		// duplicate is the harmless direction. What it replaces was not narrow at all — every restart re-announced
-		// every parked run, so a runtime with ten waiting sent ten notifications to every device.
-		_, err = dbos.RunAsStep(ctx, func(stepCtx context.Context) (bool, error) {
-			e.notifyPendingApprovals(stepCtx, in, runID, actions)
-			// The notifier's contract is that it never fails, and a notification is not worth a run: reporting an
-			// error here would only make DBOS retry a step whose work is already done.
-			return true, nil
-		}, dbos.WithStepName(fmt.Sprintf("notify_approvals_%d", seg)))
-		if err != nil {
-			// DBOS failed to record the step, not the notifier. The approvals are committed and the run must reach
-			// its wait, so this is logged and swallowed like the notification itself.
-			if e.logger != nil {
-				e.logger.Error("act: recording the approval notification step failed", "run", runID, "err", err)
-			}
+	// Tell whoever may decide that the run is waiting on them (kairos-cloud#143), in a durable step of its own.
+	//
+	// This used to sit outside any step, so that a recovery would notify again rather than risk staying silent.
+	// The duplicate was not as harmless as that assumed: the tag collapses the banner but not the buzz, and once
+	// a notification leaves a record (kairos-cloud#148) a replay leaves another row. A run recovered after days
+	// would announce itself again as if it were new.
+	//
+	// A step is where DBOS says this belongs: calling a third-party API from the workflow body is the thing its
+	// determinism rules tell you not to do, and it was being done here. A completed step is never re-executed,
+	// so recovery no longer re-announces every parked run.
+	//
+	// Its own step rather than sharing the one above is what keeps the other half: if the process dies between
+	// the two, the notification step never completed and recovery does send it.
+	//
+	// This is at-least-once, not exactly-once, and DBOS is explicit about it: a crash after the push leaves the
+	// notifier but before the checkpoint lands will notify again on recovery. That window is narrow and its
+	// duplicate is the harmless direction. What it replaces was not narrow at all — every restart re-announced
+	// every parked run, so a runtime with ten waiting sent ten notifications to every device.
+	_, err = dbos.RunAsStep(ctx, func(stepCtx context.Context) (bool, error) {
+		e.notifyPendingApprovals(stepCtx, in, runID, actions)
+		// The notifier's contract is that it never fails, and a notification is not worth a run: reporting an
+		// error here would only make DBOS retry a step whose work is already done.
+		return true, nil
+	}, dbos.WithStepName(fmt.Sprintf("notify_approvals_%d", seg)))
+	if err != nil {
+		// DBOS failed to record the step, not the notifier. The approvals are committed and the run must reach
+		// its wait, so this is logged and swallowed like the notification itself.
+		if e.logger != nil {
+			e.logger.Error("act: recording the approval notification step failed", "run", runID, "err", err)
 		}
 	}
 
@@ -1143,9 +1119,6 @@ func leaseHeldRetries(lease time.Duration) []dbos.StepOption {
 // ends the run without a workflow error, so DBOS does not retry it. It closes the run rather than only recording the
 // transition, so the approvals of a batch whose later actions will never be reached are withdrawn with it.
 func (e *DBOSExecutor) emitFailedReason(ctx dbos.Context, in AgentRunInput, runID, reason string) error {
-	if e.store == nil {
-		return nil
-	}
 	_, err := dbos.RunAsStep(ctx, func(stepCtx context.Context) (bool, error) {
 		_, closeErr := e.store.CloseRun(stepCtx, RunTransition{
 			InstanceID: in.InstanceID,

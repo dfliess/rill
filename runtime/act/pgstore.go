@@ -475,9 +475,10 @@ func (s *PostgresRunStore) CreateRun(ctx context.Context, run NewRun) error {
 
 // CreateRunAndEnqueue is CreateRun with the launch of the run's workflow inside the same transaction: enqueue runs
 // after the insert and before the commit, so the run exists if and only if its workflow does (ADR-0032). When the
-// (instance, agent, idempotency key) already has a run, it returns that run's ID and neither inserts nor enqueues: the
-// existing run already has its workflow. A nil enqueue only creates.
-func (s *PostgresRunStore) CreateRunAndEnqueue(ctx context.Context, run NewRun, enqueue func(ctx context.Context, tx pgx.Tx) error) (string, error) {
+// (instance, agent, idempotency key) already has a run, nothing is inserted and enqueue runs with that run's ID:
+// enqueuing an existing workflow is a no-op in DBOS, and it launches the workflow of a run recorded before ADR-0032
+// by a process that died before launching it. A nil enqueue only creates.
+func (s *PostgresRunStore) CreateRunAndEnqueue(ctx context.Context, run NewRun, enqueue func(ctx context.Context, tx pgx.Tx, runID string) error) (string, error) {
 	if run.RunID == "" || run.InstanceID == "" || run.AgentName == "" {
 		return "", errors.New("act: CreateRun requires RunID, InstanceID and AgentName")
 	}
@@ -497,19 +498,22 @@ func (s *PostgresRunStore) CreateRunAndEnqueue(ctx context.Context, run NewRun, 
 			return fmt.Errorf("insert run: %w", err)
 		}
 		if ct.RowsAffected() == 0 {
-			// The key already has its run: return it. Matching on the key first is what attaches a retry to a run whose
-			// ID has the pre-ADR-0034 format.
-			return tx.QueryRow(ctx, fmt.Sprintf(`
+			// The key already has its run. Matching on the key first is what attaches a retry to a run whose ID has the
+			// pre-ADR-0034 format.
+			err = tx.QueryRow(ctx, fmt.Sprintf(`
 				SELECT run_id FROM %s
 				WHERE (instance_id=$2 AND agent_name=$3 AND idempotency_key=$4 AND $4 <> '') OR run_id=$1
 				ORDER BY (run_id=$1) LIMIT 1`, s.t("agent_runs")),
 				run.RunID, run.InstanceID, run.AgentName, run.IdempotencyKey).Scan(&runID)
-		}
-		if _, err := s.appendEventTx(ctx, tx, run.RunID, run.InstanceID, EventTypeQueued, "", RunStatusQueued, nil); err != nil {
+			if err != nil {
+				return fmt.Errorf("find existing run: %w", err)
+			}
+		} else if _, err := s.appendEventTx(ctx, tx, run.RunID, run.InstanceID, EventTypeQueued, "", RunStatusQueued, nil); err != nil {
+			// A run that already existed has its queued event from the first create.
 			return err
 		}
 		if enqueue != nil {
-			return enqueue(ctx, tx)
+			return enqueue(ctx, tx, runID)
 		}
 		return nil
 	})

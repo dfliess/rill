@@ -166,7 +166,7 @@ func newInstanceWithAgent(t *testing.T, instructions string) (*runtime.Runtime, 
 // scriptedSessionFactory returns a SessionFactory that builds a session bound to the given scripted model, using the
 // initiator's claims that the run carries. It does not force SkipChecks: the session runs with exactly the claims
 // passed, so a restricted actor's run resolves tool access against the restricted claims (§17.3). A run started
-// without an initiator identity (nil claims: the executor's own storeless unit tests) falls back to a local-dev
+// without an initiator identity (nil claims: tests that start runs without an actor) falls back to a local-dev
 // SkipChecks session, mirroring Rill Developer where auth is disabled.
 func scriptedSessionFactory(rt *runtime.Runtime, llm drivers.AIService) act.SessionFactory {
 	return func(ctx context.Context, instanceID, sessionID, _ string, claims *runtime.SecurityClaims) (*ai.Session, func(), error) {

@@ -2,6 +2,7 @@ package act_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/rilldata/rill/runtime/act"
@@ -58,6 +59,28 @@ func TestStartAttachesToTheRunOfItsKey(t *testing.T) {
 	runs, err := store.ListRuns(ctx, act.ListRunsFilter{InstanceID: inst})
 	require.NoError(t, err)
 	require.Len(t, runs, 2, "each key must have exactly one run")
+}
+
+// TestStartRepairsARunWithoutWorkflow: before ADR-0032 a crash between recording a run and launching its workflow
+// left a queued run with no workflow behind it. A retry with the same key must launch that run's workflow, not just
+// return its ID, or the dispatcher would mark the event dispatched and the run would stay queued forever.
+func TestStartRepairsARunWithoutWorkflow(t *testing.T) {
+	store := newRunStore(t)
+	e := newStoreExecutor(t, gatewayFlowRunner{}, store)
+	ctx := t.Context()
+	const inst = "inst-orphan"
+	key := "orphan-" + uuid.NewString()
+	orphan := newRunID()
+	require.NoError(t, store.CreateRun(ctx, act.NewRun{RunID: orphan, InstanceID: inst, AgentName: "triage", IdempotencyKey: key}))
+
+	runID, err := e.Start(ctx, act.AgentRunInput{InstanceID: inst, AgentName: "triage", Prompt: "alerta", IdempotencyKey: key})
+	require.NoError(t, err)
+	require.Equal(t, orphan, runID)
+
+	require.Eventually(t, func() bool {
+		run, gErr := store.GetRun(ctx, inst, orphan)
+		return gErr == nil && run.Status != act.RunStatusQueued
+	}, 20*time.Second, 50*time.Millisecond, "the retry must launch the orphan's workflow")
 }
 
 // TestStartKeepsTenantsAndAgentsApart: the key deduplicates only within one instance and one agent. Two tenants, or
