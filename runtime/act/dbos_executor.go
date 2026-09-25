@@ -627,7 +627,18 @@ func (e *DBOSExecutor) loadDecider(ctx dbos.Context, in AgentRunInput, approvalI
 // best-effort: an error recording the failure must not mask the failure that caused it. "what" is a short label for
 // the failed stage; err.Error() is stored as the sanitized message (the runner is responsible for not leaking
 // secrets into it — §17.2).
+//
+// A cancelled workflow context is not a failure, and fail records nothing for it. It means the process is draining
+// (a deploy) or the run was cancelled, and in both cases DBOS owns the outcome: it discards whatever the workflow
+// returns, leaves a drained run PENDING for the next process, and re-runs the interrupted step, which it never
+// checkpointed. Writing failed here is what killed runs caught by a deploy mid-step: the recovered step then met a
+// terminal run and could not ask for its signature again (kairos-cloud#170). DBOS's guidance is the same: once the
+// context is cancelled, return early, since any work done after it only computes a result DBOS throws away.
+// An operator's Cancel records its own terminal state, so nothing is lost by returning here.
 func (e *DBOSExecutor) fail(ctx dbos.Context, in AgentRunInput, runID string, res AgentRunResult, what string, err error) (AgentRunResult, error) {
+	if ctx.Err() != nil {
+		return res, fmt.Errorf("act: %s: %w", what, err)
+	}
 	res.Status = RunStatusFailed
 	e.closeRun(ctx, in, runID, RunTransition{
 		InstanceID: in.InstanceID,
@@ -642,8 +653,9 @@ func (e *DBOSExecutor) fail(ctx dbos.Context, in AgentRunInput, runID string, re
 // closeRun durably marks a run terminal and withdraws its pending approvals as one atomic store write, then withdraws
 // its ledger actions. It is best-effort: an error closing the run must not mask the failure that caused it.
 //
-// The store write is retried on a context that outlives the workflow's, because a shutdown cancels that one and the
-// run would otherwise be left mid-flight. Doing the two writes separately is what stranded runs reading
+// The store write is retried on a context that outlives the workflow's, because a shutdown arriving during this write
+// cancels that one, and a run that genuinely failed must be recorded as failed whether or not the process stays up. A
+// shutdown that arrived before the failure never gets here: fail leaves that run to DBOS. Doing the two writes separately is what stranded runs reading
 // waiting_approval with every approval cancelled and no decider (kairos-cloud#135), so CloseRun binds them: either
 // the run is terminal AND its approvals are withdrawn, or neither happened and the run stays decidable.
 func (e *DBOSExecutor) closeRun(ctx dbos.Context, in AgentRunInput, runID string, tr RunTransition, what string) {
@@ -1027,7 +1039,9 @@ func (e *DBOSExecutor) governProposedActions(ctx dbos.Context, in AgentRunInput,
 		// is closed out from here.
 		result, terminal, err := e.processOneAction(ctx, in, runID, res, actions[i], seg, i, hasMoreManual)
 		if err != nil {
-			if !errors.Is(err, errInterruptedAwaitingApproval) {
+			// A cancelled workflow context leaves the run to DBOS (see fail), so its actions stay as they are for the
+			// recovered run to pick up.
+			if !errors.Is(err, errInterruptedAwaitingApproval) && ctx.Err() == nil {
 				e.withdrawPendingActions(in.InstanceID, runID)
 			}
 			return nil, true, err
@@ -1175,7 +1189,7 @@ func (e *DBOSExecutor) processOneAction(ctx dbos.Context, in AgentRunInput, runI
 			InstanceID: in.InstanceID, RunID: runID, AgentName: in.AgentName, Proposal: proposal, TraceID: runID,
 			AutoApprove: a.autoApprove,
 		})
-	}, dbos.WithStepName(fmt.Sprintf("gateway_execute_%d_%d", seg, idx)))
+	}, append(leaseHeldRetries(e.gateway.leaseDuration()), dbos.WithStepName(fmt.Sprintf("gateway_execute_%d_%d", seg, idx)))...)
 	if err != nil {
 		*res, err = e.fail(ctx, in, runID, *res, "apply action", err)
 		return nil, true, err
@@ -1217,6 +1231,26 @@ func (e *DBOSExecutor) processOneAction(ctx dbos.Context, in AgentRunInput, runI
 			ToolCallID: proposal.ToolCallID, Tool: proposal.Tool, IsError: true,
 			Message: "The action failed: " + report.Message,
 		}, false, nil
+	}
+}
+
+// leaseHeldRetries makes the execute step wait out a write another attempt still holds, and retry nothing else.
+//
+// A recovered run can reach its write while the lease of the attempt that died mid-write is still live: the gateway
+// then answers ErrLeaseHeld, meaning "not yet", not "failed". DBOS steps do not retry unless told to (the default is
+// zero), so without this the run failed on the first answer and the action stayed executing with nothing left to
+// revisit it (kairos-cloud#170). The budget outlasts the lease, so the last retry finds the owner's recorded outcome or
+// an expired lease that the gateway reclaims to indeterminate.
+//
+// Retries run inside the same step and take no step slot of their own, so this does not change the workflow's shape
+// and needs no dbos.Patch (dbos executeStepWithRetry, v1.2.0).
+func leaseHeldRetries(lease time.Duration) []dbos.StepOption {
+	const interval = 5 * time.Second
+	return []dbos.StepOption{
+		dbos.WithStepRetryPredicate(func(err error) bool { return errors.Is(err, ErrLeaseHeld) }),
+		dbos.WithStepBaseInterval(time.Second),
+		dbos.WithStepMaxInterval(interval),
+		dbos.WithStepMaxRetries(int(lease/interval) + 3),
 	}
 }
 

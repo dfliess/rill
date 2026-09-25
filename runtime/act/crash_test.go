@@ -68,8 +68,11 @@ func (r *fileRunner) RunSegment(_ context.Context, in act.RunSegmentInput) (act.
 
 func (r *fileRunner) ApplyAction(_ context.Context, req act.ActionRequest) (act.ActionResult, error) {
 	if r.crashAt == "apply_action" {
-		// Hard crash: unrecoverable in-process, so DBOS re-runs this uncheckpointed step on the next worker.
+		// Hard crash: unrecoverable in-process, so DBOS re-runs this uncheckpointed step on the next worker. SIGKILL is
+		// asynchronous, so block until it lands: returning would let mark record a step the crash was meant to prevent,
+		// which under load it did (kairos-cloud#170).
 		_ = syscall.Kill(os.Getpid(), syscall.SIGKILL)
+		time.Sleep(time.Hour)
 	}
 	r.mark("apply_action", req.RunID)
 	return act.ActionResult{Ref: "ticket-" + req.RunID}, nil
