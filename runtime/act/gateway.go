@@ -378,7 +378,8 @@ type ProposeActionInput struct {
 	AgentName  string
 	Actor      Actor
 	Proposal   ToolProposal
-	// AutoApprove is the agent's approval.automatic set. In v1 all writes require approval, so this is typically empty.
+	// AutoApprove is the set of tools the connector's approval posture lets run without a human (connectorAutoApproves:
+	// approval "auto" minus require_approval, or the auto_approve globs).
 	AutoApprove map[string]bool
 }
 
@@ -574,10 +575,9 @@ type ExecuteActionInput struct {
 	AgentName  string
 	Proposal   ToolProposal
 	TraceID    string
-	// AutoApprove is the agent's approval.automatic set, the SAME input Propose authorized under. Reauthorization
-	// re-evaluates the proposal against the current policy with these inputs (§17.2), so an action auto-approved at
-	// propose is not spuriously re-flagged as newly approval-required and rejected during the pre-write recheck. Empty
-	// in v1 (all writes require approval); wired for the auto-approve path.
+	// AutoApprove is the SAME set Propose authorized under. Reauthorization re-evaluates the proposal against the
+	// current policy with these inputs (§17.2), so an action auto-approved at propose is not spuriously re-flagged as
+	// newly approval-required and rejected during the pre-write recheck.
 	AutoApprove map[string]bool
 }
 

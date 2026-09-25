@@ -23,10 +23,6 @@ func (patchProbeRunner) RunSegment(context.Context, RunSegmentInput) (RunSegment
 	return RunSegmentResult{Response: "ok", SessionID: "sess-probe"}, nil
 }
 
-func (patchProbeRunner) ApplyAction(context.Context, ActionRequest) (ActionResult, error) {
-	return ActionResult{}, nil
-}
-
 // TestNewDBOSExecutorArmsPatching pins that the executor's DBOS context has the patching system armed. With the
 // pinned ApplicationVersion (see defaultApplicationVersion) a deploy replays checkpoints recorded by older code, and
 // a named dbos.Patch is the only supported way to change the workflow's step sequence over runs already in flight —
@@ -46,6 +42,8 @@ func TestNewDBOSExecutorArmsPatching(t *testing.T) {
 		DatabaseSchema:     "act_dbos",
 		ApplicationVersion: "act-test-" + uuid.NewString(),
 		Runner:             patchProbeRunner{},
+		Gateway:            &Gateway{},
+		Proposer:           NewCapturedProposer(),
 	})
 	require.NoError(t, err)
 	t.Cleanup(func() { e.Close(5 * time.Second) })

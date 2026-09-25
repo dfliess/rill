@@ -13,69 +13,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestExecutorStartApproveRunsActionOnce is the happy path: a run investigates, waits for approval, and on
-// "approved" performs its (simulated) write exactly once, ending in the succeeded state.
-func TestExecutorStartApproveRunsActionOnce(t *testing.T) {
-	rt, instanceID := newInstanceWithAgent(t, "Investiga la alerta y propon un ticket de remediacion.")
-	llm := &scriptedAI{response: "Propongo crear un ticket P2 por el pico de coste."}
-	sink := &recordingSink{}
-	e := newExecutor(t, rt, llm, sink)
-
-	key := "run-a-" + uuid.NewString()
-	runID, err := e.Start(t.Context(), act.AgentRunInput{
-		InstanceID:     instanceID,
-		AgentName:      "triage",
-		Prompt:         "El coste diario subio +40% en el proyecto X.",
-		IdempotencyKey: key,
-	})
-	require.NoError(t, err)
-	require.Equal(t, act.ComposeRunID(instanceID, "triage", key), runID)
-
-	require.NoError(t, e.Resume(t.Context(), runID, act.ApprovalApproved, ""))
-
-	res, err := e.Result(runID)
-	require.NoError(t, err)
-	require.Equal(t, act.RunStatusSucceeded, res.Status)
-	require.True(t, res.ActionTaken)
-	require.NotEmpty(t, res.ActionRef)
-	require.Equal(t, "Propongo crear un ticket P2 por el pico de coste.", res.Response)
-
-	// The write ran exactly once, and the agent loop was driven exactly once.
-	require.Len(t, sink.snapshot(), 1)
-	require.Equal(t, 1, llm.callCount())
-}
-
-// TestExecutorRejectionSkipsAction verifies the executor never touches the outside world without approval.
-func TestExecutorRejectionSkipsAction(t *testing.T) {
-	rt, instanceID := newInstanceWithAgent(t, "Investiga la alerta y propon un ticket.")
-	llm := &scriptedAI{response: "Propongo reiniciar el pipeline."}
-	sink := &recordingSink{}
-	e := newExecutor(t, rt, llm, sink)
-
-	runID, err := e.Start(t.Context(), act.AgentRunInput{
-		InstanceID:     instanceID,
-		AgentName:      "triage",
-		Prompt:         "Fallo en el pipeline nocturno.",
-		IdempotencyKey: "run-reject-" + uuid.NewString(),
-	})
-	require.NoError(t, err)
-
-	require.NoError(t, e.Resume(t.Context(), runID, act.ApprovalRejected, ""))
-
-	res, err := e.Result(runID)
-	require.NoError(t, err)
-	require.Equal(t, act.RunStatusRejected, res.Status)
-	require.False(t, res.ActionTaken)
-	require.Empty(t, sink.snapshot())
-}
-
 // TestExecutorDedupsByIdempotencyKey verifies OAOO: two Starts with the same IdempotencyKey are one run. The
-// second Start attaches to the first run rather than starting a new one, so the agent and the action each run once.
+// second Start attaches to the first run rather than starting a new one, so the agent runs once.
 func TestExecutorDedupsByIdempotencyKey(t *testing.T) {
 	rt, instanceID := newInstanceWithAgent(t, "Investiga y propon.")
-	llm := &scriptedAI{response: "propuesta unica"}
-	sink := &recordingSink{}
-	e := newExecutor(t, rt, llm, sink)
+	llm := &scriptedAI{response: "respuesta unica"}
+	e := newExecutor(t, rt, llm)
 
 	in := act.AgentRunInput{
 		InstanceID:     instanceID,
@@ -90,29 +33,10 @@ func TestExecutorDedupsByIdempotencyKey(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, id1, id2)
 
-	require.NoError(t, e.Resume(t.Context(), id1, act.ApprovalApproved, ""))
-
 	res, err := e.Result(id1)
 	require.NoError(t, err)
 	require.Equal(t, act.RunStatusSucceeded, res.Status)
-
-	// Despite two Starts, exactly one execution: one agent run, one action.
-	require.Equal(t, 1, llm.callCount())
-	require.Len(t, sink.snapshot(), 1)
-}
-
-// gatedRunner wraps a Runner and closes ranAgent the first time RunSegment is called. By then LoadSnapshot has
-// already returned the snapshot to the workflow, so a test can safely mutate the agent definition afterwards and
-// know the run is already bound to the original snapshot.
-type gatedRunner struct {
-	act.Runner
-	ranAgent chan struct{}
-	once     sync.Once
-}
-
-func (g *gatedRunner) RunSegment(ctx context.Context, in act.RunSegmentInput) (act.RunSegmentResult, error) {
-	g.once.Do(func() { close(g.ranAgent) })
-	return g.Runner.RunSegment(ctx, in)
+	require.Equal(t, 1, llm.callCount(), "despite two Starts, the agent ran once")
 }
 
 // recordingRunner wraps a Runner and captures the session ID its RunSegment returned, so a test can assert the run's
@@ -142,7 +66,8 @@ func (r *recordingRunner) capturedSessionID() string {
 // TestExecutorLinksRunToConversation verifies §13.1: a finished run is linked to the AI session it executed in. The
 // store's conversation_id ends up equal to the session ID the runner opened (and non-empty), so the API and UI can
 // render the run as its conversation. CreateRun seeds conversation_id empty here (no ConversationID on the input), so
-// this proves the persist step wrote the real session, not a leftover input value.
+// this proves the persist step wrote the real session, not a leftover input value. The scripted model answers in
+// text, so the run investigates and finishes without a write.
 func TestExecutorLinksRunToConversation(t *testing.T) {
 	rt, instanceID := newInstanceWithAgent(t, "Investiga la alerta y propon un ticket.")
 	store := newRunStore(t)
@@ -150,7 +75,6 @@ func TestExecutorLinksRunToConversation(t *testing.T) {
 	base := &act.SessionRunner{
 		Provider: act.NewCatalogAgentProvider(rt),
 		Sessions: scriptedSessionFactory(rt, llm),
-		Actions:  &recordingSink{},
 	}
 	runner := &recordingRunner{Runner: base}
 	e := newStoreExecutor(t, runner, store)
@@ -164,7 +88,6 @@ func TestExecutorLinksRunToConversation(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	require.NoError(t, e.Resume(ctx, runID, act.ApprovalApproved, ""))
 	res, err := e.Result(runID)
 	require.NoError(t, err)
 	require.Equal(t, act.RunStatusSucceeded, res.Status)
@@ -178,23 +101,56 @@ func TestExecutorLinksRunToConversation(t *testing.T) {
 	require.Equal(t, sessionID, run.ConversationID, "the run is linked to the exact session it executed in")
 }
 
-// TestExecutorUsesSnapshotFromRunStart verifies §8.3: a run is bound to the agent snapshot captured when it
-// starts. Editing the agent mid-run changes what the provider returns, but not what the in-flight run does.
+// snapshotProbeRunner resolves the agent from the real catalog but runs a scripted loop: the first segment blocks
+// until the test has edited the agent, then proposes one write; the resumed segment closes. Every segment records the
+// instructions it ran with, so a test can see which definition each one used.
+type snapshotProbeRunner struct {
+	provider act.Runner
+	started  chan struct{}
+	release  chan struct{}
+
+	mu   sync.Mutex
+	seen []string
+}
+
+func (r *snapshotProbeRunner) LoadSnapshot(ctx context.Context, instanceID, agentName string) (*ai.AgentSnapshot, error) {
+	return r.provider.LoadSnapshot(ctx, instanceID, agentName)
+}
+
+func (r *snapshotProbeRunner) RunSegment(_ context.Context, in act.RunSegmentInput) (act.RunSegmentResult, error) {
+	r.mu.Lock()
+	r.seen = append(r.seen, in.Snapshot.Instructions)
+	r.mu.Unlock()
+	if len(in.Resume) > 0 {
+		return act.RunSegmentResult{Response: "hecho", SessionID: in.SessionID}, nil
+	}
+	close(r.started)
+	<-r.release
+	return act.RunSegmentResult{Response: "propongo un ticket", SessionID: "sess-snap", Proposed: []*ai.ProposedAction{{
+		ToolCallID: "call-1", Tool: "jira.create_issue", Connector: "jira_ops", Args: map[string]any{"summary": "P2"},
+	}}}, nil
+}
+
+func (r *snapshotProbeRunner) instructionsSeen() []string {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	return append([]string(nil), r.seen...)
+}
+
+// TestExecutorUsesSnapshotFromRunStart verifies §8.3: a run is bound to the agent snapshot captured when it starts.
+// The agent is edited while the run is inside its first segment; the segment resumed after the approval, long after
+// the edit, still runs the original definition.
 func TestExecutorUsesSnapshotFromRunStart(t *testing.T) {
 	const original = "ORIGINAL: propon un ticket P2."
 	const edited = "EDITED: reinicia el cluster de inmediato."
 
 	rt, instanceID := newInstanceWithAgent(t, original)
-	llm := &scriptedAI{response: "propuesta"}
-	sink := &recordingSink{}
-
-	base := &act.SessionRunner{
-		Provider: act.NewCatalogAgentProvider(rt),
-		Sessions: scriptedSessionFactory(rt, llm),
-		Actions:  sink,
+	runner := &snapshotProbeRunner{
+		provider: &act.SessionRunner{Provider: act.NewCatalogAgentProvider(rt)},
+		started:  make(chan struct{}),
+		release:  make(chan struct{}),
 	}
-	gate := &gatedRunner{Runner: base, ranAgent: make(chan struct{})}
-	e := newExecutorWithRunner(t, gate)
+	e := newExecutorWithRunner(t, runner)
 
 	runID, err := e.Start(t.Context(), act.AgentRunInput{
 		InstanceID:     instanceID,
@@ -204,26 +160,26 @@ func TestExecutorUsesSnapshotFromRunStart(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	// Wait until the snapshot has been captured, then edit the agent and re-reconcile.
-	<-gate.ranAgent
+	// The snapshot is captured before the first segment starts. Edit the agent and re-reconcile while it runs.
+	<-runner.started
 	testruntime.PutFiles(t, rt, instanceID, map[string]string{"triage.yaml": agentYAML(edited)})
 	testruntime.ReconcileParserAndWait(t, rt, instanceID)
-
-	// The provider now serves the edited definition: proof the edit really took effect.
 	snapNow, err := act.NewCatalogAgentProvider(rt).GetAgent(t.Context(), instanceID, "triage")
 	require.NoError(t, err)
-	require.Contains(t, snapNow.Instructions, "EDITED")
+	require.Contains(t, snapNow.Instructions, "EDITED", "the edit really took effect")
+	close(runner.release)
 
-	require.NoError(t, e.Resume(t.Context(), runID, act.ApprovalApproved, ""))
+	require.NoError(t, e.Resume(t.Context(), runID, act.ApprovalApproved, "call-1"))
 	res, err := e.Result(runID)
 	require.NoError(t, err)
 	require.Equal(t, act.RunStatusSucceeded, res.Status)
 
-	// The action carried the ORIGINAL snapshot, not the edited one: the run used the definition from its start.
-	applied := sink.snapshot()
-	require.Len(t, applied, 1)
-	require.Contains(t, applied[0].SnapshotMark, "ORIGINAL")
-	require.NotContains(t, applied[0].SnapshotMark, "EDITED")
+	seen := runner.instructionsSeen()
+	require.Len(t, seen, 2, "a first segment and one resumed after the approval")
+	for _, instructions := range seen {
+		require.Contains(t, instructions, "ORIGINAL")
+		require.NotContains(t, instructions, "EDITED")
+	}
 }
 
 // TestComposeRunIDIsInjective guards the run-ID encoding against delimiter ambiguity: two logically distinct
@@ -238,15 +194,13 @@ func TestComposeRunIDIsInjective(t *testing.T) {
 	require.Equal(t, act.ComposeRunID("inst", "triage", "k"), act.ComposeRunID("inst", "triage", "k"))
 }
 
-// TestExecutorBindsActorToRun verifies the run is durably bound to the identity that authorized it: the actor
-// passed to Start is checkpointed with the run and reaches the action, where the audit ledger will record it.
+// TestExecutorBindsActorToRun verifies the run is durably bound to the identity that authorized it: the actor passed
+// to Start is checkpointed with the run and recorded on the action it proposed, which is what the audit reads.
 func TestExecutorBindsActorToRun(t *testing.T) {
-	rt, instanceID := newInstanceWithAgent(t, "Investiga y propon un ticket.")
-	llm := &scriptedAI{response: "propuesta con actor"}
-	sink := &recordingSink{}
-	e := newExecutor(t, rt, llm, sink)
+	exec := &fakeExecutor{result: act.ExecuteResult{Outcome: act.OutcomeSucceeded, ExternalReference: "PROJ-3"}}
+	e, store, instanceID := newGatewayExecutor(t, exec, createIssueDescriptor(act.ClassIdempotentNative), nil, fixedProposer{proposal: flowProposal(), ok: true})
 
-	actor := act.Actor{Subject: "user:alice", ServicePrincipal: false}
+	actor := act.Actor{Subject: "user:alice"}
 	runID, err := e.Start(t.Context(), act.AgentRunInput{
 		InstanceID:     instanceID,
 		AgentName:      "triage",
@@ -256,15 +210,17 @@ func TestExecutorBindsActorToRun(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	require.NoError(t, e.Resume(t.Context(), runID, act.ApprovalApproved, ""))
+	require.NoError(t, e.Resume(t.Context(), runID, act.ApprovalApproved, "call-1"))
 	res, err := e.Result(runID)
 	require.NoError(t, err)
 	require.Equal(t, act.RunStatusSucceeded, res.Status)
 
-	// The authorizing identity survived the durable round-trip (Start input, checkpoint, action step).
-	applied := sink.snapshot()
-	require.Len(t, applied, 1)
-	require.Equal(t, actor, applied[0].Actor)
+	run, err := store.GetRun(t.Context(), instanceID, runID)
+	require.NoError(t, err)
+	require.Equal(t, actor.Subject, run.Actor.Subject)
+	action, err := store.GetAction(t.Context(), instanceID, runID, "call-1")
+	require.NoError(t, err)
+	require.Equal(t, actor.Subject, action.RequestedBy, "the write is recorded on behalf of the run's initiator")
 }
 
 // TestExecutorTagsRunsAsActTraffic pins where an agent's spend gets charged. The tokens and tool calls are recorded
@@ -273,8 +229,7 @@ func TestExecutorBindsActorToRun(t *testing.T) {
 func TestExecutorTagsRunsAsActTraffic(t *testing.T) {
 	rt, instanceID := newInstanceWithAgent(t, "Investiga y propon un ticket.")
 	llm := &scriptedAI{response: "propuesta"}
-	sink := &recordingSink{}
-	e := newExecutor(t, rt, llm, sink)
+	e := newExecutor(t, rt, llm)
 
 	runID, err := e.Start(t.Context(), act.AgentRunInput{
 		InstanceID:     instanceID,
@@ -284,7 +239,6 @@ func TestExecutorTagsRunsAsActTraffic(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	require.NoError(t, e.Resume(t.Context(), runID, act.ApprovalApproved, ""))
 	res, err := e.Result(runID)
 	require.NoError(t, err)
 	require.Equal(t, act.RunStatusSucceeded, res.Status)
@@ -313,7 +267,6 @@ func TestRunAgentUsesInitiatorClaimsForToolAccess(t *testing.T) {
 		return &act.SessionRunner{
 			Provider: provider,
 			Sessions: scriptedSessionFactory(rt, &toolForcingAI{toolName: ai.ListMetricsViewsName}),
-			Actions:  &recordingSink{},
 		}
 	}
 

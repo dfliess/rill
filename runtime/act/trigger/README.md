@@ -1,8 +1,7 @@
-# runtime/act/trigger — Kairos Act trigger path (Fase 1, shadow mode)
+# runtime/act/trigger — Kairos Act trigger path
 
-Experimental. This package turns persisted alert/report executions into durable events and dispatches them to
-agent runs (issue kairosagentica/kairos-cloud#123), in **shadow mode**: it creates the run but the run is the
-supervised v1 executor. Design: `docs/propuesta-diseno-act-rill-agents-go-dbos-2026-07-14.md`, §9 and §15.1 (the
+This package turns persisted alert/report executions, and schedule ticks, into durable events and dispatches them to
+agent runs (issue kairosagentica/kairos-cloud#123). Design: `docs/propuesta-diseno-act-rill-agents-go-dbos-2026-07-14.md`, §9 and §15.1 (the
 decisions banner prevails).
 
 ## The seam
@@ -46,13 +45,11 @@ d := trigger.NewDispatcher(store, trigger.NewRuntimeTriggerCatalog(rt), executor
 
 `Observer` is non-blocking: `OnExecution` derives events in the reconciler's goroutine but hands them to a bounded
 in-memory buffer that a background goroutine drains to Postgres, so a slow or unavailable Postgres never slows or
-fails alert/report reconciliation. A full buffer drops the event with a log (shadow mode; §9.6's source re-publish
-is the backstop). `Close` stops the publisher and drains what is still buffered.
+fails alert/report reconciliation. A full buffer drops the event with a log (§9.6's source re-publish is the backstop). `Close` stops the publisher and drains what is still buffered.
 
-**Not yet wired (known limit #5).** Nothing drives `Dispatch` in a deployed runtime yet: the observer registration,
-dispatcher construction and the polling loop are exercised only by tests. Connecting them to a long-running process
-(the `rill-agent-worker`) is a later deployment-increment task, so no automatic trigger currently fires in
-production.
+**Wiring.** `runtime/server/act_bootstrap.go` does the above in-process when an Act Postgres is configured: it
+registers the observer, builds the dispatcher, and polls every instance on an interval, enqueuing due schedule
+ticks (`EnqueueDueSchedules`) before each `Dispatch`.
 
 ## Tests
 

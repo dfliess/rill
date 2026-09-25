@@ -308,7 +308,7 @@ func TestAgentServiceApproveResumesRun(t *testing.T) {
 	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{InstanceID: instanceID, RunID: runID, Status: act.RunStatusRunning, EventType: act.EventTypeRunning}))
 	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{InstanceID: instanceID, RunID: runID, Status: act.RunStatusWaitingApproval, EventType: act.EventTypeWaitingApproval}))
 	proposal := "crear ticket P2"
-	approvalID := act.ApprovalIDForRun(runID)
+	approvalID := act.ApprovalIDForToolCall(runID, "call-1")
 	require.NoError(t, store.CreateApproval(ctx, act.NewApproval{
 		ApprovalID: approvalID, RunID: runID, InstanceID: instanceID,
 		ToolName: "act.propose_action", ArgsHash: act.HashArgs(proposal), CanonicalArgs: proposal, Proposal: proposal, RequestedBy: "user:alice",
@@ -408,7 +408,7 @@ func TestAgentServiceRefusesToSignAnAbandonedRun(t *testing.T) {
 	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{InstanceID: instanceID, RunID: runID, Status: act.RunStatusRunning, EventType: act.EventTypeRunning}))
 	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{InstanceID: instanceID, RunID: runID, Status: act.RunStatusWaitingApproval, EventType: act.EventTypeWaitingApproval}))
 	proposal := "crear ticket P2"
-	approvalID := act.ApprovalIDForRun(runID)
+	approvalID := act.ApprovalIDForToolCall(runID, "call-1")
 	require.NoError(t, store.CreateApproval(ctx, act.NewApproval{
 		ApprovalID: approvalID, RunID: runID, InstanceID: instanceID,
 		ToolName: "act.propose_action", ArgsHash: act.HashArgs(proposal), CanonicalArgs: proposal, Proposal: proposal, RequestedBy: "user:alice",
@@ -465,7 +465,7 @@ func TestAgentServiceDenyEndsRun(t *testing.T) {
 	start, err := srv.StartAgentRun(ctx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "triage", IdempotencyKey: "k", Prompt: "Investiga la alerta."})
 	require.NoError(t, err)
 	runID := start.RunId
-	approvalID := act.ApprovalIDForRun(runID)
+	approvalID := act.ApprovalIDForToolCall(runID, "call-1")
 	require.NoError(t, store.CreateApproval(ctx, act.NewApproval{
 		ApprovalID: approvalID, RunID: runID, InstanceID: instanceID, ArgsHash: act.HashArgs("x"), CanonicalArgs: "x", RequestedBy: "user:alice",
 	}))

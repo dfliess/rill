@@ -44,8 +44,7 @@ func (f *failingAI) callCount() int {
 func TestExecutorInheritsFailedRun(t *testing.T) {
 	rt, instanceID := newInstanceWithAgent(t, "Investiga y propon.")
 	llm := &failingAI{}
-	sink := &recordingSink{}
-	e := newExecutor(t, rt, llm, sink)
+	e := newExecutor(t, rt, llm)
 
 	in := act.AgentRunInput{
 		InstanceID:     instanceID,

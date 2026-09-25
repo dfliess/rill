@@ -134,28 +134,6 @@ func (s *toolForcingAI) Complete(_ context.Context, _ *drivers.CompleteOptions) 
 	return &drivers.CompleteResult{Message: msg, Provider: "scripted", InputTokens: 1, OutputTokens: 1}, nil
 }
 
-// recordingSink is an in-memory act.ActionSink that records each applied action so a test can assert the action
-// ran exactly once and inspect what it was given (e.g. the snapshot marker).
-type recordingSink struct {
-	mu      sync.Mutex
-	applied []act.ActionRequest
-}
-
-var _ act.ActionSink = (*recordingSink)(nil)
-
-func (s *recordingSink) Apply(_ context.Context, req act.ActionRequest) (act.ActionResult, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	s.applied = append(s.applied, req)
-	return act.ActionResult{Ref: fmt.Sprintf("ticket-%d", len(s.applied))}, nil
-}
-
-func (s *recordingSink) snapshot() []act.ActionRequest {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	return append([]act.ActionRequest(nil), s.applied...)
-}
-
 // agentYAML renders a minimal, valid Agent resource with the given single-line instructions.
 func agentYAML(instructions string) string {
 	return fmt.Sprintf(`
@@ -210,25 +188,41 @@ func scriptedSessionFactory(rt *runtime.Runtime, llm drivers.AIService) act.Sess
 	}
 }
 
-// newExecutor builds an in-process executor running a real SessionRunner (CatalogAgentProvider + scripted model +
-// the given sink). Each executor gets a unique application version so it never recovers another test's runs.
-func newExecutor(t *testing.T, rt *runtime.Runtime, llm drivers.AIService, sink act.ActionSink) *act.DBOSExecutor {
+// newExecutor builds an in-process executor running a real SessionRunner (CatalogAgentProvider + scripted model) on
+// the production path: the segmented loop through a Gateway and the production proposer. A scripted model answers in
+// text, so these runs investigate and finish without proposing a write. Each executor gets a unique application
+// version so it never recovers another test's runs.
+func newExecutor(t *testing.T, rt *runtime.Runtime, llm drivers.AIService) *act.DBOSExecutor {
 	runner := &act.SessionRunner{
 		Provider: act.NewCatalogAgentProvider(rt),
 		Sessions: scriptedSessionFactory(rt, llm),
-		Actions:  sink,
 	}
 	return newExecutorWithRunner(t, runner)
 }
 
 func newExecutorWithRunner(t *testing.T, runner act.Runner) *act.DBOSExecutor {
+	return newStoreExecutor(t, runner, newRunStore(t))
+}
+
+// newStoreExecutor builds an in-process executor on the production path with the given runner and run store, which
+// also serves as the gateway's action ledger, as in production. The DBOS system tables and the product store live in
+// separate schemas of the same Postgres (§15.2).
+func newStoreExecutor(t *testing.T, runner act.Runner, store *act.PostgresRunStore) *act.DBOSExecutor {
+	t.Helper()
 	dsn, schema := requirePostgres(t)
 	e, err := act.NewDBOSExecutor(t.Context(), act.Config{
 		DatabaseURL:        dsn,
 		DatabaseSchema:     schema,
 		ApplicationVersion: "act-test-" + uuid.NewString(),
 		Runner:             runner,
-		Logger:             slog.New(slog.NewTextHandler(io.Discard, nil)),
+		Store:              store,
+		Gateway: &act.Gateway{
+			Registry: act.NewMapToolRegistry(createIssueDescriptor(act.ClassIdempotentNative)),
+			Ledger:   store,
+			Executor: &fakeExecutor{result: act.ExecuteResult{Outcome: act.OutcomeSucceeded, ExternalReference: "PROJ-1"}},
+		},
+		Proposer: act.NewCapturedProposer(),
+		Logger:   slog.New(slog.NewTextHandler(io.Discard, nil)),
 	})
 	require.NoError(t, err)
 	t.Cleanup(func() { e.Close(5 * time.Second) })

@@ -89,10 +89,6 @@ func (r *notifyRunner) RunSegment(_ context.Context, in act.RunSegmentInput) (ac
 	return act.RunSegmentResult{Response: "Propongo acciones.", SessionID: sessionID, Proposed: proposals}, nil
 }
 
-func (r *notifyRunner) ApplyAction(context.Context, act.ActionRequest) (act.ActionResult, error) {
-	return act.ActionResult{}, nil
-}
-
 // newNotifyExecutor wires an executor over a fresh run store with the given runner and notifier. Its registry serves
 // the namespaced MCP tool (mcpCreateIssueDescriptor), so the proposals carry the name the ledger stores and the
 // notification has to reduce it to the raw one.

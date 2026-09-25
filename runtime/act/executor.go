@@ -1,10 +1,10 @@
-// Package act is the Kairos Act spike: a durable executor for declarative agents (issue kairosagentica/kairos-cloud#123).
+// Package act is Kairos Act: a durable executor for declarative agents (issue kairosagentica/kairos-cloud#123).
 //
 // The Agent resource (proto AgentSpec, parser, validating reconciler) describes an agent declaratively; runtime/ai
 // executes a snapshot of it fail-closed. This package is the missing third piece: it drives that execution as a
 // durable workflow so a run survives process crashes, deploys and long human-approval waits.
 //
-// The seam is AgentExecutor. Everything durable lives behind it (DBOS Transact for the spike), so the rest of the
+// The seam is AgentExecutor. Everything durable lives behind it (DBOS Transact), so the rest of the
 // runtime, the Agent API and the UI never depend on the workflow engine and the choice stays reversible (§19.2 of
 // docs/propuesta-diseno-act-rill-agents-go-dbos-2026-07-14.md).
 package act
@@ -21,15 +21,16 @@ import (
 //
 // IdempotencyKey is the caller's stable identity for this run: an alert firing once, a form submitted once. It is
 // combined with InstanceID and AgentName to form the durable workflow ID, which is what makes Start idempotent
-// (OAOO): a second Start with the same key attaches to the same run rather than starting a new one. The design
-// derives the key from (instance, resource, execution_time); the spike takes it verbatim from the caller.
+// (OAOO): a second Start with the same key attaches to the same run rather than starting a new one. The trigger
+// dispatcher derives it from the trigger and the event (see trigger.ComposeIdempotencyKey); the manual API takes the
+// caller's key scoped to the user, or a fresh one.
 type AgentRunInput struct {
 	InstanceID     string
 	AgentName      string
 	Prompt         string
 	IdempotencyKey string
-	// Trigger records what started the run: "manual", "alert", etc. (§9.5). Empty defaults to "manual", the only
-	// trigger the spike starts. It is carried into the run record for audit and filtering.
+	// Trigger records what started the run: "manual", "alert", etc. (§9.5). Empty defaults to "manual". It is carried
+	// into the run record for audit and filtering.
 	Trigger string
 	// TriggerRef names the source resource that fired an automatic trigger (e.g. the alert's resource name), so the
 	// run's provenance links back to it. Empty for manual and schedule triggers.
@@ -50,8 +51,8 @@ type AgentRunInput struct {
 // run carries the initiating user's claims.
 //
 // An automatic trigger runs under a governed identity declared the alert way: the trigger names a user
-// (AgentTriggerActor.user_id/user_email, resolved to attributes via the admin service) or gives explicit
-// attributes, and the dispatcher builds Claims from those (§17.3). A trigger that declares no identity yields nil
+// (AgentTriggerActor.user_id, resolved to attributes via the admin service by the trigger's reconciler; user_email is
+// refused by the parser) or gives explicit attributes, and the dispatcher builds Claims from those (§17.3). A trigger that declares no identity yields nil
 // Claims, and the worker fails closed (no privileged fallback), so an automatic run is safe-but-inert until an
 // identity is declared.
 type Actor struct {
@@ -64,7 +65,7 @@ type Actor struct {
 	// opened with. It is JSON-serializable (runtime.SecurityClaims has custom (Un)MarshalJSON), so it is
 	// checkpointed with the run and reconstructed on recovery, and the tool intersection is resolved against it: a
 	// restricted user cannot read metrics or take an action through a run that the same user could not perform
-	// directly. Nil only for a run started without an initiator identity (e.g. a not-yet-wired automatic trigger).
+	// directly. Nil only for a run started without an initiator identity (an automatic trigger that declares no identity).
 	Claims *runtime.SecurityClaims
 }
 
@@ -111,7 +112,9 @@ const (
 	RunStatusSucceeded RunStatus = "succeeded"
 	// RunStatusFailed is a run that ended with an error.
 	RunStatusFailed RunStatus = "failed"
-	// RunStatusRejected is a run a human denied at the approval gate; no external effect ran.
+	// RunStatusRejected is a run a human denied at the approval gate. Only the retired simulated path produced it: on
+	// the governed path a denied action is handed back to the model and the run goes on. It stays for runs recorded
+	// before, which still read with it.
 	RunStatusRejected RunStatus = "rejected"
 	// RunStatusCancelled is a run stopped by an operator.
 	RunStatusCancelled RunStatus = "cancelled"
@@ -135,10 +138,8 @@ type AgentExecutor interface {
 	// Start launches a run for in.IdempotencyKey and returns its run ID. Calling it again with the same
 	// IdempotencyKey is a no-op that returns the same run ID (idempotent by construction).
 	Start(ctx context.Context, in AgentRunInput) (runID string, err error)
-	// Resume delivers a human approval decision to a run that is waiting for one. toolCallID identifies the specific
-	// action being decided: when non-empty, the decision is routed to the per-action DBOS topic so the executor
-	// matches it to the right governed call; when empty, it falls back to the legacy single-topic path (Fase 1 runs
-	// and old segment-based approvals).
+	// Resume delivers a human approval decision to a run that is waiting for one. toolCallID identifies the governed
+	// action being decided: each action waits on its own DBOS topic, so decisions may arrive in any order.
 	Resume(ctx context.Context, runID string, decision ApprovalDecision, toolCallID string) error
 	// ResumeInTx is Resume inside the caller's transaction: the decision is delivered only if tx commits. The API
 	// uses it to record a decision and deliver it as one fact (kairos-cloud#194). tx must be on the database that
@@ -161,7 +162,7 @@ type AgentExecutor interface {
 // ApprovalNotifier is told when a run pauses on human approvals, so the people who may decide can be reached out of
 // band (web push, kairos-cloud#143) instead of having to be watching the inbox.
 //
-// It is a seam for the same reason as ActionSink: the executor knows a run paused, but not who should hear about it.
+// It is a seam because the executor knows a run paused, but not who should hear about it.
 // That answer needs the project's membership and the agent's approve policy, neither of which this package can
 // reach. Implementations are best-effort by contract: they report no error, and a failure to notify may never
 // affect the run.
@@ -199,28 +200,8 @@ type AgentRunResult struct {
 	AgentName   string    `json:"agent_name"`
 	Status      RunStatus `json:"status"`
 	Response    string    `json:"response"`     // the agent's final model response
-	ActionTaken bool      `json:"action_taken"` // whether the (simulated) external write ran
+	ActionTaken bool      `json:"action_taken"` // whether a governed external write ran
 	ActionRef   string    `json:"action_ref"`   // observable reference produced by the action, empty if none
-}
-
-// ActionRequest is what the workflow hands to the action step after approval. In the spike the action is simulated;
-// in production this is the input to the tool gateway (§16).
-type ActionRequest struct {
-	RunID     string
-	AgentName string
-	// Actor is the identity that authorized the run, carried through so the action ledger can record who the
-	// external write was performed on behalf of (§18.3). It is the same value checkpointed on AgentRunInput.
-	Actor Actor
-	// SnapshotMark is a value derived from the immutable snapshot captured at run start. It exists so a test can
-	// prove the action used the original snapshot even if the agent definition changed mid-run.
-	SnapshotMark string
-	// Response is the agent's proposal that motivated the action.
-	Response string
-}
-
-// ActionResult is the outcome of the (simulated) external write.
-type ActionResult struct {
-	Ref string // e.g. an external ticket reference
 }
 
 // RunSegmentInput is the immutable request for one segment of a run's model/tool loop (b2). A run advances one
@@ -278,7 +259,4 @@ type Runner interface {
 	// executed), or nil when the segment produced a final answer: the executor governs a non-nil proposal through the
 	// tool gateway and injects the result into the next segment, while a nil one ends the run with just its response.
 	RunSegment(ctx context.Context, in RunSegmentInput) (RunSegmentResult, error)
-	// ApplyAction performs the (simulated) external write. It must be safe under at-least-once delivery: a DBOS
-	// step whose process dies after the side effect but before the checkpoint is re-run on recovery (§12).
-	ApplyAction(ctx context.Context, req ActionRequest) (ActionResult, error)
 }

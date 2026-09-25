@@ -341,7 +341,7 @@ func TestAgentSecurityApprovalByGroup(t *testing.T) {
 	srv, store, exec, instanceID := newActSecurityServer(t)
 	seedApproval := func(runID, proposal string) string {
 		t.Helper()
-		approvalID := act.ApprovalIDForRun(runID)
+		approvalID := act.ApprovalIDForToolCall(runID, "call-1")
 		require.NoError(t, store.CreateApproval(context.Background(), act.NewApproval{
 			ApprovalID: approvalID, RunID: runID, InstanceID: instanceID,
 			ToolName: "create_crm_task", Connector: "crm", ArgsHash: act.HashArgs(proposal), CanonicalArgs: proposal, Proposal: proposal,
@@ -427,7 +427,7 @@ func TestAgentApprovalDeniedToInheritedAdminAttribute(t *testing.T) {
 	opsCtx := userCtx("usr_marta", []any{"operaciones"}, false)
 	start, err := srv.StartAgentRun(opsCtx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "abierta", IdempotencyKey: "k1", Prompt: "Arranca."})
 	require.NoError(t, err)
-	approvalID := act.ApprovalIDForRun(start.RunId)
+	approvalID := act.ApprovalIDForToolCall(start.RunId, "call-1")
 	require.NoError(t, store.CreateApproval(context.Background(), act.NewApproval{
 		ApprovalID: approvalID, RunID: start.RunId, InstanceID: instanceID,
 		ToolName: "mcp.crm.create_crm_task", Connector: "crm",
@@ -473,7 +473,7 @@ func TestAgentApprovalRefusedWithoutAVerifiedPreimage(t *testing.T) {
 		t.Helper()
 		start, err := srv.StartAgentRun(ctx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "abierta", IdempotencyKey: key, Prompt: "Arranca."})
 		require.NoError(t, err)
-		approvalID := act.ApprovalIDForRun(start.RunId)
+		approvalID := act.ApprovalIDForToolCall(start.RunId, "call-1")
 		require.NoError(t, store.CreateApproval(context.Background(), act.NewApproval{
 			ApprovalID: approvalID, RunID: start.RunId, InstanceID: instanceID,
 			ToolName: "mcp.crm.create_crm_task", Connector: "crm",
@@ -526,7 +526,7 @@ func TestAgentApprovalCanDecidePerAction(t *testing.T) {
 
 	seedApproval := func(runID, tool, proposal string) string {
 		t.Helper()
-		approvalID := act.ApprovalIDForRun(runID)
+		approvalID := act.ApprovalIDForToolCall(runID, "call-1")
 		require.NoError(t, store.CreateApproval(context.Background(), act.NewApproval{
 			ApprovalID: approvalID, RunID: runID, InstanceID: instanceID,
 			ToolName: tool, Connector: "erp", ArgsHash: act.HashArgs(proposal), CanonicalArgs: proposal, Proposal: proposal,

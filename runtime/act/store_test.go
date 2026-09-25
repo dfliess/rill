@@ -370,13 +370,13 @@ func TestRunStoreCancelPendingApprovals(t *testing.T) {
 	require.NoError(t, store.CreateRun(ctx, act.NewRun{RunID: pendingRun, InstanceID: instanceID, AgentName: "triage"}))
 	require.NoError(t, store.CreateRun(ctx, act.NewRun{RunID: decidedRun, InstanceID: instanceID, AgentName: "triage"}))
 
-	pendingApproval := act.ApprovalIDForRun(pendingRun)
+	pendingApproval := act.ApprovalIDForToolCall(pendingRun, "call-1")
 	require.NoError(t, store.CreateApproval(ctx, act.NewApproval{
 		ApprovalID: pendingApproval, RunID: pendingRun, InstanceID: instanceID,
 		ArgsHash: act.HashArgs("x"), CanonicalArgs: "x", Proposal: "x", RequestedBy: "user:alice",
 	}))
 	// A second run whose approval was already approved: cancelling the first run must not touch it.
-	decidedApproval := act.ApprovalIDForRun(decidedRun)
+	decidedApproval := act.ApprovalIDForToolCall(decidedRun, "call-1")
 	require.NoError(t, store.CreateApproval(ctx, act.NewApproval{
 		ApprovalID: decidedApproval, RunID: decidedRun, InstanceID: instanceID,
 		ArgsHash: act.HashArgs("y"), CanonicalArgs: "y", Proposal: "y", RequestedBy: "user:alice",
@@ -514,10 +514,10 @@ func TestRunStoreAccessFilterInWhere(t *testing.T) {
 
 	// Approvals resolve the allow-list through their run.
 	require.NoError(t, store.CreateApproval(ctx, act.NewApproval{
-		ApprovalID: act.ApprovalIDForRun(cob1), RunID: cob1, InstanceID: instanceID, ArgsHash: act.HashArgs("x"), CanonicalArgs: "x",
+		ApprovalID: act.ApprovalIDForToolCall(cob1, "call-1"), RunID: cob1, InstanceID: instanceID, ArgsHash: act.HashArgs("x"), CanonicalArgs: "x",
 	}))
 	require.NoError(t, store.CreateApproval(ctx, act.NewApproval{
-		ApprovalID: act.ApprovalIDForRun(act.ComposeRunID(instanceID, "triage", "3")), RunID: act.ComposeRunID(instanceID, "triage", "3"), InstanceID: instanceID, ArgsHash: act.HashArgs("y"), CanonicalArgs: "y",
+		ApprovalID: act.ApprovalIDForToolCall(act.ComposeRunID(instanceID, "triage", "3"), "call-1"), RunID: act.ComposeRunID(instanceID, "triage", "3"), InstanceID: instanceID, ArgsHash: act.HashArgs("y"), CanonicalArgs: "y",
 	}))
 	approvals, err := store.ListApprovals(ctx, act.ListApprovalsFilter{InstanceID: instanceID, AccessibleAgents: []string{"cobranza"}})
 	require.NoError(t, err)
@@ -538,7 +538,7 @@ func TestRunStoreApprovalLifecycle(t *testing.T) {
 	runID := act.ComposeRunID(instanceID, "triage", "k")
 	require.NoError(t, store.CreateRun(ctx, act.NewRun{RunID: runID, InstanceID: instanceID, AgentName: "triage"}))
 
-	approvalID := act.ApprovalIDForRun(runID)
+	approvalID := act.ApprovalIDForToolCall(runID, "call-1")
 	require.NoError(t, store.CreateApproval(ctx, act.NewApproval{
 		ApprovalID:    approvalID,
 		RunID:         runID,
@@ -653,7 +653,7 @@ func TestCreateApprovalRequiresThePreimage(t *testing.T) {
 
 	// Deliberately without CanonicalArgs: each case below sets (or omits) it to make its own point.
 	base := act.NewApproval{
-		ApprovalID:  act.ApprovalIDForRun(runID),
+		ApprovalID:  act.ApprovalIDForToolCall(runID, "call-1"),
 		RunID:       runID,
 		InstanceID:  instanceID,
 		ToolName:    "act.propose_action",

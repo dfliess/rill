@@ -13,8 +13,8 @@ import (
 
 // ErrNoInitiatorClaims is returned by the production SessionFactory when a run reaches the model/tool loop without
 // the initiating actor's SecurityClaims. It is the fail-closed half of the Actor contract (executor.go): a run must
-// execute with exactly the authority of whoever (or whatever) started it, so a nil-claims run — e.g. an automatic
-// trigger whose service principal's claims are not yet resolved (§17.3) — must never fall back to a privileged
+// execute with exactly the authority of whoever (or whatever) started it, so a nil-claims run (an automatic trigger
+// that declares no identity, or whose user resolved to no attributes, §17.3) must never fall back to a privileged
 // session. The run fails instead of escalating.
 var ErrNoInitiatorClaims = errors.New("act: run has no initiator claims; refusing to open a privileged session (fail closed)")
 
@@ -30,7 +30,7 @@ func NewSessionFactory(rt *runtime.Runtime, ac *activity.Client) SessionFactory 
 	// state, so sharing it avoids re-registering tools on every run open.
 	runner := ai.NewRunner(rt, ac)
 	return func(ctx context.Context, instanceID, sessionID, modelConnector string, claims *runtime.SecurityClaims) (*ai.Session, func(), error) {
-		// Fail closed: a run with no initiator identity (a not-yet-wired automatic trigger, §17.3) must not run under
+		// Fail closed: a run with no initiator identity (an automatic trigger that declares no identity, §17.3) must not run under
 		// a privileged session. Refuse rather than escalate to the worker's own authority.
 		if claims == nil {
 			return nil, nil, ErrNoInitiatorClaims
@@ -73,19 +73,3 @@ func NewSessionFactory(rt *runtime.Runtime, ac *activity.Client) SessionFactory 
 		return s, func() {}, nil
 	}
 }
-
-// denyActionSink is a fail-closed ActionSink for deployments that run agents (read/investigate) but have not wired a
-// real action gateway. Reaching it means a run was approved for an external write with no execution path configured;
-// it refuses rather than silently dropping the write or performing an unmediated one.
-type denyActionSink struct{}
-
-var _ ActionSink = denyActionSink{}
-
-func (denyActionSink) Apply(context.Context, ActionRequest) (ActionResult, error) {
-	return ActionResult{}, errors.New("act: no action sink configured; refusing to perform an external write (fail closed)")
-}
-
-// NewDenyActionSink returns a fail-closed ActionSink: it errors on any Apply. It is the safe default for a runtime
-// that mediates agent runs but has no action gateway wired, keeping a nil sink (which would panic in the run step)
-// out of the executor while guaranteeing no unmediated external write happens.
-func NewDenyActionSink() ActionSink { return denyActionSink{} }

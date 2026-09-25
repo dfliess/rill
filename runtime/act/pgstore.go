@@ -764,7 +764,7 @@ func (s *PostgresRunStore) CreateApproval(ctx context.Context, a NewApproval) er
 	//
 	// An empty preimage is rejected even when its hash matches. It would be a legitimate value in the abstract —
 	// the SHA-256 of no bytes is a real hash — but nothing describes an action with it: the gateway path always
-	// canonicalizes to at least "{}", and a simulated proposal with no text describes nothing to approve. Allowing
+	// canonicalizes to at least "{}". Allowing
 	// it would only create a state that survives to the wire as an empty string and there becomes indistinguishable
 	// from "no preimage recorded", which is exactly the ambiguity the nullable column exists to remove.
 	if a.CanonicalArgs == "" {

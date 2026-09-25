@@ -95,13 +95,10 @@ func (s *Server) BootstrapAct(ctx context.Context, cfg ActConfig) (io.Closer, er
 	}
 
 	// The production runner: the catalog resolves agent snapshots, and the session factory binds each run to its
-	// initiator's claims (failing closed on nil). Its ActionSink (the lean notify write) is retained only as the
-	// fallback for a deployment without a gateway; with the gateway wired below it is never reached (the run's action
-	// phase goes through the gateway).
+	// initiator's claims (failing closed on nil). Writes do not go through it: the gateway below governs them.
 	runner := &act.SessionRunner{
 		Provider: act.NewCatalogAgentProvider(s.runtime),
 		Sessions: act.NewSessionFactory(s.runtime, s.activity),
-		Actions:  act.NewNotifyActionSink(s.runtime.Email),
 	}
 
 	// The action gateway routes a run's proposed write through policy, the action ledger, server-side secret

@@ -1,6 +1,6 @@
 # runtime/act/mcpconn — Kairos Act outbound MCP client (Fase 2A)
 
-Experimental. This package gives Act the **client** role for the Model Context Protocol: it connects a
+This package gives Act the **client** role for the Model Context Protocol: it connects a
 Kairos agent to a remote MCP server, discovers its tools, and calls them under egress and schema-pinning
 guards (issue kairosagentica/kairos-cloud#123). Design:
 `docs/propuesta-diseno-act-rill-agents-go-dbos-2026-07-14.md`, §16.3 (the decisions banner prevails:

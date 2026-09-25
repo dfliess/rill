@@ -71,7 +71,7 @@ type NewRun struct {
 	AgentName      string
 	// SpecHash binds the run to the exact agent definition it started from (§8.3). Empty until the snapshot step.
 	SpecHash string
-	// Trigger records what started the run: "manual", "alert", etc. (§9.5). The spike only starts manual runs.
+	// Trigger records what started the run: "manual", "alert", etc. (§9.5).
 	Trigger string
 	// TriggerRef names the source resource that fired an automatic trigger (e.g. the alert's resource name). Empty for
 	// manual and schedule triggers; carried so the run's provenance links back to the resource that started it.
@@ -151,8 +151,7 @@ type NewApproval struct {
 	ApprovalID string
 	RunID      string
 	InstanceID string
-	// ToolName/Connector/ToolCallID identify the proposed effect. The spike proposes a single simulated action, so
-	// these are synthetic; in production they come from the tool gateway's concrete proposal.
+	// ToolName/Connector/ToolCallID identify the proposed effect, as the tool gateway authorized it.
 	ToolName   string
 	Connector  string
 	ToolCallID string
@@ -160,8 +159,8 @@ type NewApproval struct {
 	// after approval invalidates the decision and forces a fresh request (§11.2).
 	ArgsHash string
 	// CanonicalArgs is the exact byte preimage of ArgsHash, carried as a string so it round-trips byte-for-byte.
-	// It is what the approver reviews before signing: for a gateway action it is the canonical JSON of the tool
-	// arguments (CanonicalizeArgs), for the simulated Fase 1 path it is the proposal text HashArgs hashed. The
+	// It is what the approver reviews before signing: the canonical JSON of the tool arguments (CanonicalizeArgs);
+	// approvals recorded by the retired simulated path carry the proposal text HashArgs hashed instead. The
 	// caller MUST take it from the same place the hash was computed, never re-serialize: if these bytes and
 	// ArgsHash can diverge, the approver signs something they never saw. Empty on rows created before the column
 	// existed, and consumers must degrade gracefully then.

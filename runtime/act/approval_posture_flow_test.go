@@ -69,10 +69,6 @@ func (r *postureRunner) RunSegment(_ context.Context, in act.RunSegmentInput) (a
 	}, nil
 }
 
-func (r *postureRunner) ApplyAction(context.Context, act.ActionRequest) (act.ActionResult, error) {
-	return act.ActionResult{}, nil
-}
-
 // mcpCreateIssueDescriptor is the registry entry for the effective-named MCP tool the postureRunner proposes. It is
 // ClassUnknown on purpose: the runtime registry stamps every generic MCP tool unclassified, so an auto-approve that
 // only worked for a classified tool would silently no-op in production.

@@ -19,8 +19,8 @@ import (
 )
 
 // The crash tests below kill a real worker process on the path production runs: the segmented loop through the Tool
-// Gateway, with the production proposer and a Postgres ledger. The older crash tests in crash_test.go exercised the
-// simulated Fase 1 path, which production never takes, and that is how kairos-cloud#170 hid behind a green suite.
+// Gateway, with the production proposer and a Postgres ledger. The crash tests used to exercise a simulated path that
+// production never took, and that is how kairos-cloud#170 hid behind a green suite.
 
 const gatewayCrashInstance, gatewayCrashAgent = "inst", "crash-agent"
 
@@ -60,10 +60,6 @@ func (r *crashSegmentRunner) RunSegment(_ context.Context, in act.RunSegmentInpu
 	return act.RunSegmentResult{Response: "Propongo tickets.", SessionID: "sess-crash", Proposed: proposed}, nil
 }
 
-func (r *crashSegmentRunner) ApplyAction(context.Context, act.ActionRequest) (act.ActionResult, error) {
-	return act.ActionResult{}, nil
-}
-
 // crashActionExecutor stands in for the MCP server: it marks every write in the step log, and ACT_CRASH_AT=execute
 // kills the process inside the write, after the gateway claimed it and before it could record the outcome.
 type crashActionExecutor struct {
@@ -98,9 +94,7 @@ func runGatewayCrashWorker() {
 	key := os.Getenv("ACT_RUN_ID")
 	runID := act.ComposeRunID(gatewayCrashInstance, gatewayCrashAgent, key)
 	logPath := os.Getenv("ACT_ACTION_LOG")
-	mark := func(step, detail string) {
-		(&fileRunner{logPath: logPath}).mark(step, detail)
-	}
+	mark := func(step, detail string) { markStep(logPath, step, detail) }
 	fail := func(what string, err error) {
 		fmt.Fprintln(os.Stderr, what+":", err)
 		os.Exit(3)
@@ -121,7 +115,11 @@ func runGatewayCrashWorker() {
 	timeout, _ := time.ParseDuration(os.Getenv("ACT_GATEWAY_TIMEOUT"))
 	crashAt := os.Getenv("ACT_CRASH_AT")
 
-	e, err := act.NewDBOSExecutor(ctx, act.Config{
+	// Build the executor on a CANCELLABLE context, as the runtime does (graceful.WithCancelOnTerminate), so the
+	// park-sigterm mode can reproduce production's shutdown order.
+	hostCtx, stopHost := context.WithCancel(context.Background())
+	defer stopHost()
+	e, err := act.NewDBOSExecutor(hostCtx, act.Config{
 		DatabaseURL:        os.Getenv("ACT_DSN"),
 		DatabaseSchema:     os.Getenv("ACT_SCHEMA"),
 		ApplicationVersion: os.Getenv("ACT_APP_VERSION"),
@@ -169,6 +167,29 @@ func runGatewayCrashWorker() {
 		switch os.Getenv("ACT_THEN") {
 		case "approve-first":
 			approve("tc-1")
+		case "park-kill", "park-graceful", "park-sigterm":
+			// Wait until the run is genuinely parked on its approval, then go down the way the mode says.
+			deadline := time.Now().Add(20 * time.Second)
+			for {
+				run, err := store.GetRun(ctx, gatewayCrashInstance, runID)
+				if err == nil && run.Status == act.RunStatusWaitingApproval {
+					break
+				}
+				if time.Now().After(deadline) {
+					fail("await waiting_approval", fmt.Errorf("not parked in time (last error: %w)", err))
+				}
+				time.Sleep(50 * time.Millisecond)
+			}
+			switch os.Getenv("ACT_THEN") {
+			case "park-kill":
+				killSelf()
+			case "park-sigterm":
+				// The signal cancels the host first; the runtime only closes Act after it stops serving.
+				stopHost()
+				time.Sleep(2 * time.Second)
+			}
+			e.Close(5 * time.Second)
+			os.Exit(0)
 		case "approve-first-then-crash":
 			// Decide one action of the batch, wait until its write is recorded, then die with the rest undecided.
 			approve("tc-1")
@@ -201,9 +222,10 @@ func runGatewayCrashWorker() {
 	fail("mode", fmt.Errorf("unknown ACT_MODE %q", os.Getenv("ACT_MODE")))
 }
 
-// gatewayCrash runs one start worker that must die, then one recover worker, and returns the recover worker's output
-// and the step log.
-func gatewayCrash(t *testing.T, startEnv, recoverEnv map[string]string) (string, stepLog, string) {
+// gatewayCrash runs one start worker, then one recover worker, and returns the recover worker's output and the step
+// log. killed says whether the start worker is meant to die (a crash) or exit cleanly (a shutdown); between, when set,
+// runs after the start worker ends and before recovery, with the run's workflow ID.
+func gatewayCrash(t *testing.T, killed bool, startEnv, recoverEnv map[string]string, between func(runID string)) (string, stepLog) {
 	t.Helper()
 	dsn, schema := requirePostgres(t)
 	storeSchema := "act_crash_gw_" + strings.ReplaceAll(uuid.NewString()[:8], "-", "")
@@ -225,18 +247,25 @@ func gatewayCrash(t *testing.T, startEnv, recoverEnv map[string]string) (string,
 	}
 
 	out, err := workerCmd(with(startEnv)).CombinedOutput()
-	require.Error(t, err, "the start worker should have been killed; output:\n%s", out)
+	if killed {
+		require.Error(t, err, "the start worker should have been killed; output:\n%s", out)
+	} else {
+		require.NoError(t, err, "the start worker should have shut down cleanly; output:\n%s", out)
+	}
+	if between != nil {
+		between(act.ComposeRunID(gatewayCrashInstance, gatewayCrashAgent, key))
+	}
 	out2, err := workerCmd(with(recoverEnv)).CombinedOutput()
 	require.NoError(t, err, "the recover worker should finish cleanly; output:\n%s", out2)
-	return string(out2), readSteps(t, logPath), act.ComposeRunID(gatewayCrashInstance, gatewayCrashAgent, key)
+	return string(out2), readSteps(t, logPath)
 }
 
 // TestGatewayRunRecoversFromCrashMidSegment: a worker killed inside the model loop, before the segment checkpointed,
 // is recovered by a fresh process that re-runs only that segment and carries the run to its end.
 func TestGatewayRunRecoversFromCrashMidSegment(t *testing.T) {
-	out, steps, _ := gatewayCrash(t,
+	out, steps := gatewayCrash(t, true,
 		map[string]string{"ACT_MODE": "start", "ACT_CRASH_AT": "segment"},
-		map[string]string{"ACT_MODE": "recover", "ACT_APPROVE": "tc-1"})
+		map[string]string{"ACT_MODE": "recover", "ACT_APPROVE": "tc-1"}, nil)
 
 	require.Contains(t, out, "RECOVERED status=succeeded")
 	require.Equal(t, 1, steps.count("load_snapshot"), "the checkpointed snapshot step must replay, not re-run")
@@ -250,9 +279,9 @@ func TestGatewayRunRecoversFromCrashMidSegment(t *testing.T) {
 // takes about a minute and runs in parallel with the rest.
 func TestGatewayRunCrashMidWriteNeverReissuesIt(t *testing.T) {
 	t.Parallel()
-	out, steps, _ := gatewayCrash(t,
+	out, steps := gatewayCrash(t, true,
 		map[string]string{"ACT_MODE": "start", "ACT_CRASH_AT": "execute", "ACT_THEN": "approve-first", "ACT_GATEWAY_TIMEOUT": "1s"},
-		map[string]string{"ACT_MODE": "recover", "ACT_GATEWAY_TIMEOUT": "1s"})
+		map[string]string{"ACT_MODE": "recover", "ACT_GATEWAY_TIMEOUT": "1s"}, nil)
 
 	require.Contains(t, out, "RECOVERED status=failed", "an unconfirmed write ends the run for a human to resolve")
 	require.Equal(t, 1, steps.count("execute"), "the interrupted write must never be issued again")
@@ -261,9 +290,9 @@ func TestGatewayRunCrashMidWriteNeverReissuesIt(t *testing.T) {
 // TestGatewayBatchRecoversWithOneActionDecided: a batch of two actions where the first was approved and written before
 // the crash. The recovered run must not write the first again, and must still ask for and perform the second.
 func TestGatewayBatchRecoversWithOneActionDecided(t *testing.T) {
-	out, steps, _ := gatewayCrash(t,
+	out, steps := gatewayCrash(t, true,
 		map[string]string{"ACT_MODE": "start", "ACT_ACTIONS": "2", "ACT_THEN": "approve-first-then-crash"},
-		map[string]string{"ACT_MODE": "recover", "ACT_ACTIONS": "2", "ACT_APPROVE": "tc-2"})
+		map[string]string{"ACT_MODE": "recover", "ACT_ACTIONS": "2", "ACT_APPROVE": "tc-2"}, nil)
 
 	require.Contains(t, out, "RECOVERED status=succeeded")
 	var tc1, tc2 int

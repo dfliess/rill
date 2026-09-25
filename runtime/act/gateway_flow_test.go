@@ -37,7 +37,7 @@ type gatewayFlowRunner struct{}
 var _ act.Runner = gatewayFlowRunner{}
 
 func (gatewayFlowRunner) LoadSnapshot(_ context.Context, _, agentName string) (*ai.AgentSnapshot, error) {
-	return &ai.AgentSnapshot{Name: agentName, Instructions: "gateway flow spike"}, nil
+	return &ai.AgentSnapshot{Name: agentName, SpecHash: "flow-spec-1", Instructions: "gateway flow spike"}, nil
 }
 
 func (gatewayFlowRunner) RunSegment(_ context.Context, in act.RunSegmentInput) (act.RunSegmentResult, error) {
@@ -53,10 +53,6 @@ func (gatewayFlowRunner) RunSegment(_ context.Context, in act.RunSegmentInput) (
 		SessionID: sessionID,
 		Proposed:  []*ai.ProposedAction{{Tool: "jira.create_issue", Connector: "jira_ops"}},
 	}, nil
-}
-
-func (gatewayFlowRunner) ApplyAction(context.Context, act.ActionRequest) (act.ActionResult, error) {
-	return act.ActionResult{}, nil
 }
 
 // newGatewayExecutor builds an in-process executor whose action phase runs through a real Gateway (fake executor +
@@ -304,10 +300,6 @@ func (autoApproveRunner) RunSegment(_ context.Context, in act.RunSegmentInput) (
 	}, nil
 }
 
-func (autoApproveRunner) ApplyAction(context.Context, act.ActionRequest) (act.ActionResult, error) {
-	return act.ActionResult{}, nil
-}
-
 // recordingSegmentRunner proposes a governed write on its first `actions` segments and closes afterward, recording every
 // injected result it receives on resume. It lets a test assert the executor fed the gateway's result back into the loop
 // (b2) and drive several sequential actions in one run. The concrete tool proposal the gateway governs comes from the
@@ -352,10 +344,6 @@ func (r *recordingSegmentRunner) RunSegment(_ context.Context, in act.RunSegment
 		SessionID: sessionID,
 		Proposed:  []*ai.ProposedAction{{Tool: "jira.create_issue", Connector: "jira_ops", Args: map[string]any{"summary": "coste alto"}}},
 	}, nil
-}
-
-func (r *recordingSegmentRunner) ApplyAction(context.Context, act.ActionRequest) (act.ActionResult, error) {
-	return act.ActionResult{}, nil
 }
 
 func (r *recordingSegmentRunner) injectedResults() []ai.InjectedResult {
@@ -722,10 +710,6 @@ func (r *batchSegmentRunner) RunSegment(_ context.Context, in act.RunSegmentInpu
 		SessionID: sessionID,
 		Proposed:  proposals,
 	}, nil
-}
-
-func (r *batchSegmentRunner) ApplyAction(context.Context, act.ActionRequest) (act.ActionResult, error) {
-	return act.ActionResult{}, nil
 }
 
 func (r *batchSegmentRunner) injectedResults() []ai.InjectedResult {

@@ -17,20 +17,12 @@ import (
 // the instance's configured connector. Production wires it to that connector's model; tests wire it to a scripted model.
 type SessionFactory func(ctx context.Context, instanceID, sessionID, modelConnector string, claims *runtime.SecurityClaims) (*ai.Session, func(), error)
 
-// ActionSink performs the run's external write. In the spike it records an observable effect; in production it is
-// the tool gateway that talks to MCP/action systems (§16). It must be idempotent per run: DBOS steps are
-// at-least-once, so ApplyAction may be invoked more than once for the same run after a mid-step crash.
-type ActionSink interface {
-	Apply(ctx context.Context, req ActionRequest) (ActionResult, error)
-}
-
 // SessionRunner is the production-shaped Runner: it resolves snapshots from an AgentDefinitionProvider, runs the
-// existing runtime/ai dynamic-agent loop over a Session, and delegates the write to an ActionSink. It holds no
+// existing runtime/ai dynamic-agent loop over a Session. Writes are governed by the executor's Gateway, not here. It holds no
 // durable state of its own; all durability comes from the DBOS steps the executor wraps these calls in.
 type SessionRunner struct {
 	Provider ai.AgentDefinitionProvider
 	Sessions SessionFactory
-	Actions  ActionSink
 }
 
 var _ Runner = (*SessionRunner)(nil)
@@ -80,16 +72,6 @@ func (r *SessionRunner) RunSegment(ctx context.Context, in RunSegmentInput) (Run
 		return RunSegmentResult{SessionID: sessionID}, runErr
 	}
 	return RunSegmentResult{SessionID: sessionID, Response: res.Response, Proposed: res.Proposed}, nil
-}
-
-// ApplyAction performs the external write through the configured sink. A runner with no sink falls back to the
-// fail-closed one rather than dereferencing nil: reaching here means an action already passed policy and approval,
-// so the failure mode of a misconfigured runner must be a refusal that says so, not a panic in the run step.
-func (r *SessionRunner) ApplyAction(ctx context.Context, req ActionRequest) (ActionResult, error) {
-	if r.Actions == nil {
-		return NewDenyActionSink().Apply(ctx, req)
-	}
-	return r.Actions.Apply(ctx, req)
 }
 
 // ProposeInput is what the executor hands a Proposer to derive the action a finished run proposes.

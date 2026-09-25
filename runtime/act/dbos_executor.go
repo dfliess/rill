@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"strconv"
 	"time"
 
 	"github.com/dbos-inc/dbos-transact-golang/dbos"
@@ -24,7 +23,6 @@ const (
 	stepLoadSnapshot        = "load_snapshot"
 	stepRunAgent            = "run_agent"
 	stepPersistConversation = "persist_conversation"
-	stepApplyAction         = "apply_action"
 	stepLoadApprover        = "load_approver"
 	stepLoadDenier          = "load_denier"
 
@@ -96,14 +94,11 @@ type Config struct {
 	Runner Runner
 	// Store, when set, is the queryable run store the executor writes lifecycle state and events to (§15). It is the
 	// product's state plane, separate from the DBOS system tables: the API reads runs from it without touching the
-	// workflow engine. Optional — a nil Store keeps the executor's original spike behavior (no state emission), which
-	// is what the executor's own unit tests rely on.
+	// workflow engine. Optional: a nil Store emits no state, which only tests that do not read it use.
 	Store RunStore
-	// Gateway and Proposer, when both set, switch the run's action phase from the Fase 1 simulated write (Runner.
-	// ApplyAction / ActionSink) to the real Fase 2 flow: the Proposer surfaces the proposed tool call, and the Gateway
-	// enforces policy, records the action ledger, resolves secrets, executes via ActionExecutor and verifies (§16.2,
-	// §12). When either is nil the executor keeps the simulated path, so the merged Fase 1 tests run unchanged. The
-	// Gateway's Ledger should share the same Postgres as Store (its agent_actions table lives in the product schema).
+	// Gateway governs every write a run proposes: policy, the action ledger, secrets, the idempotent external call and
+	// its verification (§16.2, §12). Proposer surfaces the write the model loop captured. Both are required. The
+	// Gateway's Ledger should share the Postgres of Store (its agent_actions table lives in the product schema).
 	Gateway  *Gateway
 	Proposer Proposer
 	// Approvals, when set, is notified every time a run pauses on human approvals, so whoever may decide is told out
@@ -140,6 +135,9 @@ func NewDBOSExecutor(ctx context.Context, cfg Config) (*DBOSExecutor, error) {
 	}
 	if cfg.DatabaseURL == "" {
 		return nil, errors.New("act: Config.DatabaseURL is required")
+	}
+	if cfg.Gateway == nil || cfg.Proposer == nil {
+		return nil, errors.New("act: Config.Gateway and Config.Proposer are required")
 	}
 
 	version := cfg.ApplicationVersion
@@ -256,8 +254,8 @@ func (e *DBOSExecutor) Start(ctx context.Context, in AgentRunInput) (string, err
 		return "", errors.New("act: AgentRunInput.IdempotencyKey is required")
 	}
 	// Namespace the workflow ID by instance and agent: two instances (tenants) or two agents that reuse the same
-	// idempotency key must not collide onto one run, or an approval could land on the wrong run. Detecting a
-	// different payload under the same key is a Phase 1 loose end: it requires reading back the stored input.
+	// idempotency key must not collide onto one run, or an approval could land on the wrong run. A different payload
+	// under the same key is not detected: the second Start attaches to the first run whatever it carries.
 	runID := ComposeRunID(in.InstanceID, in.AgentName, in.IdempotencyKey)
 
 	// Normalize and validate the trigger provenance against the known sources (§9.5). Validating here, not just at
@@ -316,11 +314,12 @@ func (e *DBOSExecutor) ResumeInTx(_ context.Context, tx pgx.Tx, runID string, de
 }
 
 func (e *DBOSExecutor) send(runID string, decision ApprovalDecision, toolCallID string, opts ...dbos.SendOption) error {
-	topic := approvalTopic
-	if toolCallID != "" {
-		topic = approvalTopic + ":" + toolCallID
+	// Every governed action waits on its own topic. An approval without a tool call comes from the retired simulated
+	// path, whose run no longer exists to read it: refuse rather than file a message nobody will consume.
+	if toolCallID == "" {
+		return fmt.Errorf("act: resume run %q: the approval names no tool call", runID)
 	}
-	if err := dbos.Send(e.client, runID, string(decision), topic, opts...); err != nil {
+	if err := dbos.Send(e.client, runID, string(decision), approvalTopic+":"+toolCallID, opts...); err != nil {
 		return fmt.Errorf("act: resume run %q: %w", runID, err)
 	}
 	return nil
@@ -355,8 +354,8 @@ func (e *DBOSExecutor) Resumable(_ context.Context, runID string) (bool, error) 
 // since the cancelled workflow will not run more steps) so the API reflects the terminal state. The store write is
 // best-effort: a cancelled workflow is already stopped, so a failed state write must not turn Cancel into an error.
 //
-// The transition is scoped by instance, so a caller can only cancel a run in the instance it addresses. Overwriting
-// an already-terminal run's status is a Phase 1 loose end (RecordTransition does not yet guard terminal states).
+// The transition is scoped by instance, so a caller can only cancel a run in the instance it addresses. Cancelling a
+// run that already finished leaves its status alone: the store never moves a run out of a terminal state.
 func (e *DBOSExecutor) Cancel(ctx context.Context, instanceID, runID string) error {
 	if err := dbos.CancelWorkflow(e.client, runID); err != nil {
 		return fmt.Errorf("act: cancel run %q: %w", runID, err)
@@ -380,8 +379,8 @@ func (e *DBOSExecutor) Cancel(ctx context.Context, instanceID, runID string) err
 	return nil
 }
 
-// Result waits for a run to finish and returns its checkpointed outcome. It is a spike-only observability hook; the
-// product surfaces run state through the Agent API (§14), not through the executor.
+// Result waits for a run to finish and returns its checkpointed outcome. Only tests use it; the product surfaces run
+// state through the Agent API (§14), not through the executor.
 func (e *DBOSExecutor) Result(runID string) (AgentRunResult, error) {
 	h, err := dbos.RetrieveWorkflow[AgentRunResult](e.ctx, runID)
 	if err != nil {
@@ -393,12 +392,7 @@ func (e *DBOSExecutor) Result(runID string) (AgentRunResult, error) {
 // runAgentWorkflow is the single generic durable workflow that runs any agent. Its body is deterministic: every
 // non-deterministic or side-effecting operation is a checkpointed step, and the body only branches on values that
 // are already checkpointed. On recovery, completed steps replay from their checkpoints instead of re-executing.
-//
-// Step granularity trade-off (spike): the whole model/tool loop runs as ONE step (run_agent). That is the pragmatic
-// choice for the spike — it keeps the durable surface small and reuses runtime/ai unchanged — but it means a crash
-// inside the loop replays the entire loop, not just the last model turn, and re-drives the LLM. Phase 1 must split
-// this into one durable step per model turn and per tool call (§10.3), pairing each write step with an action
-// ledger (§12), so the loop resumes at the last completed turn and external writes are not re-driven.
+// After binding the run to its snapshot it hands over to the segmented loop (runSegmentedLoop).
 func (e *DBOSExecutor) runAgentWorkflow(ctx dbos.Context, in AgentRunInput) (AgentRunResult, error) {
 	runID, err := dbos.GetWorkflowID(ctx)
 	if err != nil {
@@ -423,94 +417,7 @@ func (e *DBOSExecutor) runAgentWorkflow(ctx dbos.Context, in AgentRunInput) (Age
 		return res, err
 	}
 
-	// Fase 2 action phase: when a gateway and proposer are wired, drive the run as a segmented durable loop — each
-	// segment runs the model/tool loop until it pauses on a governed write, the write is governed and executed, and its
-	// result is injected so the next segment's model sees the outcome and continues (or closes). Otherwise fall back to
-	// the Fase 1 single-segment path below (simulated write), so the merged executor tests run unchanged.
-	if e.gateway != nil && e.proposer != nil {
-		return e.runSegmentedLoop(ctx, in, runID, snapshot, res)
-	}
-
-	// Step 2 (Fase 1): run the agent's model/tool loop from the fixed snapshot as ONE durable step (see the granularity
-	// trade-off above), under the initiating actor's checkpointed claims so the tool intersection reflects the
-	// initiator's authority, not the worker's. The step returns a named struct so DBOS checkpoints the response and the
-	// session ID together: on replay the session ID is the same deterministic value, not a fresh session opened by
-	// re-execution.
-	out, err := dbos.RunAsStep(ctx, func(stepCtx context.Context) (runSegmentStepResult, error) {
-		r, runErr := e.runner.RunSegment(stepCtx, RunSegmentInput{
-			InstanceID: in.InstanceID, Claims: in.Actor.Claims, Snapshot: snapshot, Prompt: in.Prompt,
-		})
-		return runSegmentStepResult{Response: r.Response, SessionID: r.SessionID, Proposals: r.Proposed}, runErr
-	}, dbos.WithStepName(stepRunAgent))
-	if err != nil {
-		return e.fail(ctx, in, runID, res, "run agent", err)
-	}
-	res.Response = out.Response
-
-	// Persist the AI session the run executed in as the run's conversation, so the API and UI can render the run as a
-	// chat (§13.1). This overwrites the conversation_id CreateRun seeded (normally empty) with the real session. It is
-	// a durable, idempotent step, so a replay re-persists the same checkpointed session ID.
-	if err := e.persistConversation(ctx, in, runID, out.SessionID); err != nil {
-		return e.fail(ctx, in, runID, res, "persist conversation", err)
-	}
-
-	// Suspend for a durable human approval. Before waiting, record the run as waiting_approval and persist the exact
-	// proposal as an approval request (§11.2), so the approval inbox and the API can see and act on it while the
-	// workflow is parked. The setup is a durable, idempotent step, so recovery does not duplicate the approval.
-	if err := e.setupApproval(ctx, in, runID, out.Response); err != nil {
-		return e.fail(ctx, in, runID, res, "await approval setup", err)
-	}
-
-	// Wait durably for a decision. The wait is indefinite: Cancel is the human's way to abort a run nobody will decide.
-	decision, err := dbos.Recv[string](ctx, approvalTopic, approvalWaitForever)
-	if err != nil {
-		if errors.Is(err, context.Canceled) {
-			return res, interruptedAwaitingApproval(err)
-		}
-		return e.fail(ctx, in, runID, res, "await approval", err)
-	}
-	if ApprovalDecision(decision) != ApprovalApproved {
-		res.Status = RunStatusRejected
-		denier, err := e.loadDecider(ctx, in, ApprovalIDForRun(runID), stepLoadDenier)
-		if err != nil {
-			return e.fail(ctx, in, runID, res, "load denier", err)
-		}
-		if err := e.emitWithPayload(ctx, in, runID, RunStatusRejected, EventTypeRejected, segmentDedupeKey(EventTypeRejected, 0), deciderPayload(denier)); err != nil {
-			return res, err
-		}
-		return res, nil
-	}
-
-	// Approved: the run resumes and proceeds to the (approved) external write. The resumed event carries the real
-	// approver so the timeline attributes the decision without a ledger read.
-	approver, err := e.loadDecider(ctx, in, ApprovalIDForRun(runID), stepLoadApprover)
-	if err != nil {
-		return e.fail(ctx, in, runID, res, "load approver", err)
-	}
-	if err := e.emitWithPayload(ctx, in, runID, RunStatusRunning, EventTypeResumed, segmentDedupeKey(EventTypeResumed, 0), deciderPayload(approver)); err != nil {
-		return res, err
-	}
-
-	// Step 3: the external write, executed exactly once on the happy path and only after approval.
-	action, err := dbos.RunAsStep(ctx, func(stepCtx context.Context) (ActionResult, error) {
-		return e.runner.ApplyAction(stepCtx, ActionRequest{
-			RunID:        runID,
-			AgentName:    in.AgentName,
-			Actor:        in.Actor,
-			SnapshotMark: snapshot.Instructions,
-			Response:     out.Response,
-		})
-	}, dbos.WithStepName(stepApplyAction))
-	if err != nil {
-		return e.fail(ctx, in, runID, res, "apply action", err)
-	}
-	res.Status = RunStatusSucceeded
-	res.ActionTaken = true
-	res.ActionRef = action.Ref
-	if err := e.emit(ctx, in, runID, RunStatusSucceeded, EventTypeSucceeded); err != nil {
-		return res, err
-	}
-	return res, nil
+	return e.runSegmentedLoop(ctx, in, runID, snapshot, res)
 }
 
 // emitRunning records the queued->running transition and binds the run to the snapshot's spec hash in one durable
@@ -591,13 +498,6 @@ func (e *DBOSExecutor) emitWithPayload(ctx dbos.Context, in AgentRunInput, runID
 	}
 	return nil
 }
-
-// segmentDedupeKey scopes an approval-cycle event (waiting_approval, resumed, rejected) to the segment whose
-// governed action produced it. The segmented loop pauses once per action, so these edges legitimately repeat within a
-// run; keying them per segment lets the store record each occurrence — moving the status with it — while a replay of
-// the SAME segment's edge still deduplicates. The once-per-run edges keep the strict key (their bare event type), so
-// a stale replay can never regress the run's status. Fixes kairos-cloud#129.
-func segmentDedupeKey(eventType string, seg int) string { return eventType + ":" + strconv.Itoa(seg) }
 
 // deciderPayload is the event detail that attributes an approval decision on the run timeline. It is the only way a
 // reader learns who unblocked (or stopped) a run from the events alone: the ledger records the same subject on the
@@ -724,16 +624,9 @@ func (e *DBOSExecutor) closeLedgerAction(ctx context.Context, instanceID, runID,
 	}
 }
 
-// ledger returns the action ledger for this executor: the gateway's ledger when wired, or the store itself when it
-// implements ActionLedger (production: PostgresRunStore serves both). Returns nil when neither is available.
+// ledger returns the gateway's action ledger (in production the run store, which serves both).
 func (e *DBOSExecutor) ledger() ActionLedger {
-	if e.gateway != nil {
-		return e.gateway.Ledger
-	}
-	if l, ok := e.store.(ActionLedger); ok {
-		return l
-	}
-	return nil
+	return e.gateway.Ledger
 }
 
 // errInterruptedAwaitingApproval marks an approval wait cut short by a cancelled context, so callers unwinding the
@@ -755,43 +648,6 @@ var errInterruptedAwaitingApproval = errors.New("act: approval wait interrupted"
 // notifications table before waiting: a decision taken while the platform was down is consumed at once.
 func interruptedAwaitingApproval(err error) error {
 	return fmt.Errorf("%w (context cancelled): %w", errInterruptedAwaitingApproval, err)
-}
-
-// setupApproval records the waiting_approval transition and persists the approval request atomically, in one durable
-// step. The approval identity and the args hash are derived deterministically from the run and proposal, so a replay
-// creates the same approval (idempotent) rather than a second one.
-func (e *DBOSExecutor) setupApproval(ctx dbos.Context, in AgentRunInput, runID, proposal string) error {
-	if e.store == nil {
-		return nil
-	}
-	_, err := dbos.RunAsStep(ctx, func(stepCtx context.Context) (bool, error) {
-		if err := e.store.RecordTransition(stepCtx, RunTransition{
-			InstanceID: in.InstanceID,
-			RunID:      runID,
-			Status:     RunStatusWaitingApproval,
-			EventType:  EventTypeWaitingApproval,
-			DedupeKey:  segmentDedupeKey(EventTypeWaitingApproval, 0), // the Fase 1 path has exactly one action: segment 0
-		}); err != nil {
-			return false, err
-		}
-		return true, e.store.CreateApproval(stepCtx, NewApproval{
-			ApprovalID: ApprovalIDForRun(runID),
-			RunID:      runID,
-			InstanceID: in.InstanceID,
-			ToolName:   proposedActionTool,
-			ArgsHash:   HashArgs(proposal),
-			// This simulated path hashes the proposal text itself, so the proposal IS the preimage: persisting it
-			// as the canonical args keeps the invariant (stored bytes hash to ArgsHash) uniform across both paths.
-			CanonicalArgs: proposal,
-			Proposal:      proposal,
-			Policy:        "approval_required",
-			RequestedBy:   in.Actor.Subject,
-		})
-	}, dbos.WithStepName("setup_approval"))
-	if err != nil {
-		return fmt.Errorf("act: setup approval: %w", err)
-	}
-	return nil
 }
 
 // actionProposalStep is the checkpointed result of the propose step: the proposed tool call and whether the run
@@ -820,8 +676,8 @@ type runSegmentStepResult struct {
 // segment, so the model sees the outcome of the action it proposed and either proposes another or composes a final
 // answer. The body branches only on checkpointed values, so a crash resumes at the last completed step, and — because
 // the gateway's Execute is idempotent on the ledger — an approved write is never driven twice under at-least-once
-// delivery (§12). A crash mid-segment re-drives that segment's model turns (the accepted spike granularity: replaying
-// a segment re-flushes its trace but never re-executes a committed external write).
+// delivery (§12). A crash mid-segment re-drives that segment's model turns (the accepted granularity: replaying a
+// segment re-flushes its trace but never re-executes a committed external write).
 func (e *DBOSExecutor) runSegmentedLoop(ctx dbos.Context, in AgentRunInput, runID string, snapshot *ai.AgentSnapshot, res AgentRunResult) (AgentRunResult, error) {
 	var sessionID string
 	var resume []*ai.InjectedResult
@@ -1289,36 +1145,19 @@ func (e *DBOSExecutor) emitFailedReason(ctx dbos.Context, in AgentRunInput, runI
 	return nil
 }
 
-// proposedActionTool is the synthetic tool name the spike's single simulated action is proposed under. Production
-// replaces it with the concrete tool the gateway proposes.
-const proposedActionTool = "act.propose_action"
-
-// ApprovalIDForRun derives the deterministic approval ID for a run's FIRST action. It is kept for the Fase 1 path and
-// the single-action callers/tests; the gateway loop keys per segment via ApprovalIDForSegment.
-func ApprovalIDForRun(runID string) string { return ApprovalIDForSegment(runID, 0) }
-
-// ApprovalIDForSegment derives the deterministic approval ID for the action a given segment proposed, so a run that
-// proposes several sequential actions gets a distinct approval (and inbox row) per action. Segment 0 keeps the
-// historical ":1" suffix, so existing single-action runs, approvals and tests are unaffected. Retained for the
-// Fase 1 (simulated) path and backward compatibility; the gateway path uses ApprovalIDForToolCall.
-func ApprovalIDForSegment(runID string, seg int) string { return runID + ":" + strconv.Itoa(seg+1) }
-
-// ApprovalIDForToolCall derives the deterministic approval ID for a specific tool call within a run. It uses a ":tc:"
-// infix so old segment-based IDs (":1", ":2") and new tool-call-based IDs (":tc:call-1") never collide, and an
-// existing pending approval with a segment-based ID remains addressable after the upgrade.
+// ApprovalIDForToolCall derives the deterministic approval ID for a specific tool call within a run. The ":tc:" infix
+// keeps it apart from the segment-based IDs (":1", ":2") that approvals recorded by the retired simulated path carry.
 func ApprovalIDForToolCall(runID, toolCallID string) string { return runID + ":tc:" + toolCallID }
 
 // actionDedupeKey scopes an approval-cycle event (waiting_approval, resumed, rejected) to the tool call that produced
 // it, so a segment that governs N actions records N instances of each edge while a replay of the SAME edge still
-// deduplicates. This is the per-tool-call generalization of segmentDedupeKey (#129), keyed by tool_call_id instead of
-// segment index.
+// deduplicates (kairos-cloud#129).
 func actionDedupeKey(eventType, toolCallID string) string { return eventType + ":" + toolCallID }
 
 // HashArgs returns the canonical hash an approval is bound to: the decision is valid only for these exact arguments
-// (§6.4, §11.2). The spike's simulated path hashes the proposal text; the gateway path hashes the canonicalized tool
-// arguments (HashCanonicalArgs). Both yield the same "sha256:"-prefixed form so a consumer cannot tell them apart,
-// which is also what lets Approval.VerifiedCanonicalArgs verify a stored preimage from either path with this one
-// function.
+// (§6.4, §11.2): the "sha256:"-prefixed hash of the canonicalized tool arguments. Approval.VerifiedCanonicalArgs
+// verifies a stored preimage with it, including the proposal texts that approvals from the retired simulated path
+// hashed.
 func HashArgs(args string) string {
 	sum := sha256.Sum256([]byte(args))
 	return "sha256:" + hex.EncodeToString(sum[:])
