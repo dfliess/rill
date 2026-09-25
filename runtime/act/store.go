@@ -269,6 +269,9 @@ type RunStore interface {
 	// CreateRun inserts a run in the queued state and appends its queued event, atomically. It is idempotent on
 	// RunID: a second create for the same run is a no-op (not an error), so a replayed Start does not duplicate.
 	CreateRun(ctx context.Context, run NewRun) error
+	// CreateRunAndEnqueue creates the run like CreateRun and runs enqueue inside the same transaction, so the run
+	// exists if and only if its workflow was launched (ADR-0032).
+	CreateRunAndEnqueue(ctx context.Context, run NewRun, enqueue func(ctx context.Context, tx pgx.Tx) error) error
 	// RecordTransition applies a status change and appends its event in one transaction. It is idempotent per edge:
 	// re-applying an already-recorded transition leaves the row unchanged and appends no duplicate event.
 	RecordTransition(ctx context.Context, t RunTransition) error

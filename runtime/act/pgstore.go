@@ -461,6 +461,13 @@ func (s *PostgresRunStore) Migrate(ctx context.Context) error {
 }
 
 func (s *PostgresRunStore) CreateRun(ctx context.Context, run NewRun) error {
+	return s.CreateRunAndEnqueue(ctx, run, nil)
+}
+
+// CreateRunAndEnqueue is CreateRun with the launch of the run's workflow inside the same transaction: enqueue runs
+// after the insert and before the commit, so the run exists if and only if its workflow does (ADR-0032). It runs even
+// when the run already existed, since enqueuing an existing workflow ID is a no-op in DBOS. A nil enqueue only creates.
+func (s *PostgresRunStore) CreateRunAndEnqueue(ctx context.Context, run NewRun, enqueue func(ctx context.Context, tx pgx.Tx) error) error {
 	if run.RunID == "" || run.InstanceID == "" || run.AgentName == "" {
 		return errors.New("act: CreateRun requires RunID, InstanceID and AgentName")
 	}
@@ -478,13 +485,16 @@ func (s *PostgresRunStore) CreateRun(ctx context.Context, run NewRun) error {
 		if err != nil {
 			return fmt.Errorf("insert run: %w", err)
 		}
-		if ct.RowsAffected() == 0 {
-			// The run already existed: nothing more to do (its queued event was appended on the first create).
-			return nil
+		// A run that already existed has its queued event from the first create.
+		if ct.RowsAffected() > 0 {
+			if _, err := s.appendEventTx(ctx, tx, run.RunID, run.InstanceID, EventTypeQueued, "", RunStatusQueued, nil); err != nil {
+				return err
+			}
 		}
-		// The run was just inserted, so its queued event is always new; the inserted flag cannot be false here.
-		_, err = s.appendEventTx(ctx, tx, run.RunID, run.InstanceID, EventTypeQueued, "", RunStatusQueued, nil)
-		return err
+		if enqueue != nil {
+			return enqueue(ctx, tx)
+		}
+		return nil
 	})
 }
 

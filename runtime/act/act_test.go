@@ -207,7 +207,10 @@ func newExecutorWithRunner(t *testing.T, runner act.Runner) *act.DBOSExecutor {
 // newStoreExecutor builds an in-process executor on the production path with the given runner and run store, which
 // also serves as the gateway's action ledger, as in production. The DBOS system tables and the product store live in
 // separate schemas of the same Postgres (§15.2).
-func newStoreExecutor(t *testing.T, runner act.Runner, store *act.PostgresRunStore) *act.DBOSExecutor {
+func newStoreExecutor(t *testing.T, runner act.Runner, store interface {
+	act.RunStore
+	act.ActionLedger
+}) *act.DBOSExecutor {
 	t.Helper()
 	dsn, schema := requirePostgres(t)
 	e, err := act.NewDBOSExecutor(t.Context(), act.Config{

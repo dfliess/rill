@@ -16,8 +16,12 @@ import (
 )
 
 const (
-	appName       = "kairos-act"
-	workflowName  = "RunAgentWorkflow" // stable name: required for cross-process enqueue and recovery
+	appName      = "kairos-act"
+	workflowName = "RunAgentWorkflow" // stable name: required for cross-process enqueue and recovery
+	// runQueue is the queue every run is enqueued on, so that creating the run and launching its workflow commit in one
+	// transaction (ADR-0032). It has no concurrency limit, and must never get one: a run parked on a human approval
+	// counts as PENDING, so a limit of N would stop dispatching once N runs were waiting (ADR-0022, decision 3).
+	runQueue      = "act-runs"
 	approvalTopic = "approval"
 
 	stepLoadSnapshot        = "load_snapshot"
@@ -197,6 +201,13 @@ func NewDBOSExecutor(ctx context.Context, cfg Config) (*DBOSExecutor, error) {
 		dbos.WithMaxRecoveryAttempts(maxRecoveryAttempts),
 	)
 
+	// The queue's configuration is persisted and reloaded by DBOS. Always overwrite it, so a limit set on it by hand
+	// is undone on the next start rather than silently blocking parked runs.
+	if _, err := dbos.RegisterQueue(dctx, runQueue, dbos.WithQueueOnConflict(dbos.QueueConflictAlwaysUpdate)); err != nil {
+		_ = dbos.Shutdown(dctx, 5*time.Second) // best effort: we are already failing to start
+		return nil, fmt.Errorf("act: register queue %q: %w", runQueue, err)
+	}
+
 	if err := dbos.Launch(dctx); err != nil {
 		_ = dbos.Shutdown(dctx, 5*time.Second) // best effort: we are already failing to start
 		return nil, fmt.Errorf("act: launch DBOS: %w", err)
@@ -269,11 +280,24 @@ func (e *DBOSExecutor) Start(ctx context.Context, in AgentRunInput) (string, err
 		return "", fmt.Errorf("act: unknown trigger %q", trigger)
 	}
 
-	// Record the run as queued BEFORE enqueuing the workflow, so it is queryable the instant Start returns 202
-	// (§14.2). CreateRun is idempotent on the run ID, so a repeated Start (same idempotency key) does not duplicate
-	// it, matching the workflow's own OAOO enqueue below.
+	// Record the run and enqueue its workflow in ONE transaction, so the run is queryable the instant Start returns
+	// (§14.2) and exists if and only if its workflow does (ADR-0032). Enqueuing a workflow ID that already exists is a
+	// no-op, so a repeated Start (same idempotency key) attaches to the same run, like the store's own insert.
+	enqueue := func(ctx context.Context, tx pgx.Tx) error {
+		opts := []dbos.EnqueueOption{
+			dbos.WithEnqueueWorkflowID(runID),
+			dbos.WithEnqueueApplicationVersion(e.version),
+			dbos.WithEnqueueApplicationName(appName),
+		}
+		if tx != nil {
+			opts = append(opts, dbos.WithEnqueueTransaction(tx))
+		}
+		_, err := dbos.Enqueue[AgentRunResult](e.client, runQueue, workflowName, in, opts...)
+		return err
+	}
+	var err error
 	if e.store != nil {
-		if err := e.store.CreateRun(ctx, NewRun{
+		err = e.store.CreateRunAndEnqueue(ctx, NewRun{
 			RunID:          runID,
 			InstanceID:     in.InstanceID,
 			AgentName:      in.AgentName,
@@ -282,12 +306,10 @@ func (e *DBOSExecutor) Start(ctx context.Context, in AgentRunInput) (string, err
 			IdempotencyKey: in.IdempotencyKey,
 			ConversationID: in.ConversationID,
 			Actor:          in.Actor,
-		}); err != nil {
-			return "", fmt.Errorf("act: record run %q: %w", runID, err)
-		}
+		}, enqueue)
+	} else {
+		err = enqueue(ctx, nil)
 	}
-
-	_, err := dbos.RunWorkflow(e.ctx, e.runAgentWorkflow, in, dbos.WithWorkflowID(runID))
 	if err != nil {
 		return "", fmt.Errorf("act: start run %q: %w", runID, err)
 	}

@@ -69,6 +69,9 @@ Pieces (`policy.go`, `args.go`, `redact.go`, `ledger.go`/`pgledger.go`, `gateway
   recovered step that meets another attempt's live lease waits it out (`ErrLeaseHeld`, retried by the step).
 - **Kill switch** (`killswitch.go`) — the `KILL_ACT` project variable, checked at propose time and again right before
   the write.
+- **Start** — `Start` records the run and enqueues its workflow in one transaction, on the `act-runs` queue
+  (`CreateRunAndEnqueue`, DBOS `WithEnqueueTransaction`, ADR-0032). The queue must never get a concurrency limit: a run
+  parked on an approval counts as PENDING, so a limit would stop dispatching (ADR-0022; `TestParkedRunsDoNotBlockTheNextOne`).
 - **Decisions** — the API records a decision and delivers it to the run in one transaction
   (`ResolveApprovalAndDeliver` + `ResumeInTx`, DBOS `WithSendTransaction`, kairos-cloud#194).
 
