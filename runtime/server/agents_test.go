@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	runtimev1 "github.com/rilldata/rill/proto/gen/rill/runtime/v1"
 	"github.com/rilldata/rill/runtime/act"
 	"github.com/rilldata/rill/runtime/pkg/activity"
@@ -135,6 +136,12 @@ func (f *fakeAgentExecutor) Resume(_ context.Context, runID string, decision act
 	}
 	f.resumes = append(f.resumes, resumeCall{runID: runID, decision: decision})
 	return nil
+}
+
+// ResumeInTx records the call like Resume and fails the same way, which is how a test makes the delivery fail
+// inside the decision's transaction.
+func (f *fakeAgentExecutor) ResumeInTx(ctx context.Context, _ pgx.Tx, runID string, decision act.ApprovalDecision, toolCallID string) error {
+	return f.Resume(ctx, runID, decision, toolCallID)
 }
 
 // Resumable answers yes unless a test sets notResumable (the run's execution was given up on) or resumableErr (the
@@ -329,7 +336,8 @@ func TestAgentServiceApproveResumesRun(t *testing.T) {
 	require.Equal(t, act.ApprovalApproved, calls[0].decision)
 
 	// Re-approving with the same decision is idempotent, not an error: it re-delivers the resume (the run consumes
-	// it exactly once), which is what makes a crash between the claim and the resume recoverable by retry.
+	// it exactly once). A decision recorded now was delivered in the same transaction, but one recorded before that
+	// may not have been, and this is how it still reaches its run.
 	reapprove, err := srv.ApproveAgentApproval(ctx, &runtimev1.ApproveAgentApprovalRequest{InstanceId: instanceID, ApprovalId: approvalID, ArgsHash: act.HashArgs(proposal)})
 	require.NoError(t, err)
 	require.Equal(t, act.ApprovalStatusApproved, reapprove.Approval.Status)
@@ -338,6 +346,47 @@ func TestAgentServiceApproveResumesRun(t *testing.T) {
 	// A conflicting later decision is rejected: the first recorded decision stands.
 	_, err = srv.DenyAgentApproval(ctx, &runtimev1.DenyAgentApprovalRequest{InstanceId: instanceID, ApprovalId: approvalID})
 	require.Equal(t, codes.FailedPrecondition, status.Code(err))
+}
+
+// TestAgentServiceUndeliveredDecisionStaysPending: a decision that could not be delivered to its run must not be
+// recorded either. The claim and the delivery used to be two writes, so a delivery that failed after the claim left
+// the approval decided and out of the inbox while the run kept waiting for a message nothing would ever send
+// (kairos-cloud#194). With both in one transaction the failure rolls the claim back: the approval is still pending
+// and deciding it again just works.
+func TestAgentServiceUndeliveredDecisionStaysPending(t *testing.T) {
+	srv, store, exec, instanceID := newActServer(t)
+	ctx := testCtx()
+
+	start, err := srv.StartAgentRun(ctx, &runtimev1.StartAgentRunRequest{InstanceId: instanceID, Name: "triage", IdempotencyKey: "k", Prompt: "Investiga la alerta."})
+	require.NoError(t, err)
+	runID := start.RunId
+	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{InstanceID: instanceID, RunID: runID, Status: act.RunStatusRunning, EventType: act.EventTypeRunning}))
+	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{InstanceID: instanceID, RunID: runID, Status: act.RunStatusWaitingApproval, EventType: act.EventTypeWaitingApproval}))
+	proposal := "crear ticket P2"
+	approvalID := act.ApprovalIDForToolCall(runID, "call-1")
+	require.NoError(t, store.CreateApproval(ctx, act.NewApproval{
+		ApprovalID: approvalID, RunID: runID, InstanceID: instanceID, ToolCallID: "call-1",
+		ToolName: "act.propose_action", ArgsHash: act.HashArgs(proposal), CanonicalArgs: proposal, Proposal: proposal, RequestedBy: "user:alice",
+	}))
+
+	exec.mu.Lock()
+	exec.resumeErr = errors.New("act: resume run: system database unreachable")
+	exec.mu.Unlock()
+	_, err = srv.ApproveAgentApproval(ctx, &runtimev1.ApproveAgentApprovalRequest{InstanceId: instanceID, ApprovalId: approvalID, ArgsHash: act.HashArgs(proposal)})
+	require.Error(t, err)
+
+	a, err := store.GetApproval(ctx, instanceID, approvalID)
+	require.NoError(t, err)
+	require.Equal(t, act.ApprovalStatusPending, a.Status, "an undelivered decision must not be recorded")
+	require.Empty(t, a.DecidedBy)
+
+	exec.mu.Lock()
+	exec.resumeErr = nil
+	exec.mu.Unlock()
+	approve, err := srv.ApproveAgentApproval(ctx, &runtimev1.ApproveAgentApprovalRequest{InstanceId: instanceID, ApprovalId: approvalID, ArgsHash: act.HashArgs(proposal)})
+	require.NoError(t, err)
+	require.Equal(t, act.ApprovalStatusApproved, approve.Approval.Status)
+	require.Len(t, exec.resumeCalls(), 1)
 }
 
 // TestAgentServiceRefusesToSignAnAbandonedRun covers the failure that has no error of its own: delivering a decision

@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"time"
+
+	"github.com/jackc/pgx/v5"
 )
 
 // ErrRunNotFound is returned when a run (or an event/approval addressed through one) does not exist for the
@@ -305,6 +307,9 @@ type RunStore interface {
 	// recording the decider. It transitions only from pending, so two concurrent decisions on one approval yield a
 	// single winner: the loser gets ErrApprovalNotResolvable. This is the guard behind double-submit safety.
 	ResolveApproval(ctx context.Context, instanceID, approvalID, status, decidedBy string) (*Approval, error)
+	// ResolveApprovalAndDeliver claims the approval like ResolveApproval and runs deliver inside the same transaction,
+	// so the decision is recorded if and only if it was delivered to the run (kairos-cloud#194).
+	ResolveApprovalAndDeliver(ctx context.Context, instanceID, approvalID, status, decidedBy string, deliver func(ctx context.Context, tx pgx.Tx) error) (*Approval, error)
 	// CancelPendingApprovals moves every still-pending approval of a run to cancelled, in one statement. Cancelling a
 	// run withdraws its outstanding approval: unlike ResolveApproval it is not a human decision, so it records no
 	// decider and is not guarded against double-submit (it is a bulk, idempotent sweep). It returns the number of

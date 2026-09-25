@@ -1157,8 +1157,8 @@ github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSs
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/dbos-inc/dbos-transact-golang v1.2.0 h1:o1CaHn+E7FQSBXJ/rUP7vV+yTYZB7vhzd98dnyxLlMA=
-github.com/dbos-inc/dbos-transact-golang v1.2.0/go.mod h1:HEjtVW5wgpkpTIAp+FAIVldSr+oiiolyFZ+2RJda8gI=
+github.com/dbos-inc/dbos-transact-golang v1.3.0 h1:f0C107qLuUsRrvsYApb6Qi/WGGeCGzL/am26jxjMrOw=
+github.com/dbos-inc/dbos-transact-golang v1.3.0/go.mod h1:HEjtVW5wgpkpTIAp+FAIVldSr+oiiolyFZ+2RJda8gI=
 github.com/denverdino/aliyungo v0.0.0-20190125010748-a747050bb1ba/go.mod h1:dV8lFg6daOBZbT6/BDGIz6Y3WFGn8juu6G+CQ6LHtl0=
 github.com/dgraph-io/ristretto v0.1.1 h1:6CWw5tJNgpegArSHpNHJKldNeq03FQCwYvfMVWajOK8=
 github.com/dgraph-io/ristretto v0.1.1/go.mod h1:S1GPSBCYCIhmVNfcth17y2zZtQT6wzkzgwUve0VDWWA=

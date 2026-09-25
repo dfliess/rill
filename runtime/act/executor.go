@@ -12,6 +12,7 @@ package act
 import (
 	"context"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/rilldata/rill/runtime"
 	"github.com/rilldata/rill/runtime/ai"
 )
@@ -139,6 +140,10 @@ type AgentExecutor interface {
 	// matches it to the right governed call; when empty, it falls back to the legacy single-topic path (Fase 1 runs
 	// and old segment-based approvals).
 	Resume(ctx context.Context, runID string, decision ApprovalDecision, toolCallID string) error
+	// ResumeInTx is Resume inside the caller's transaction: the decision is delivered only if tx commits. The API
+	// uses it to record a decision and deliver it as one fact (kairos-cloud#194). tx must be on the database that
+	// holds the executor's system tables.
+	ResumeInTx(ctx context.Context, tx pgx.Tx, runID string, decision ApprovalDecision, toolCallID string) error
 	// Resumable reports whether a run's durable execution is still able to act on a decision, as opposed to having
 	// been given up on. It exists because delivering a decision cannot fail loudly: the durable message is simply
 	// filed for a run that will never read it, so an approval recorded against an abandoned run tells its approver

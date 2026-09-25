@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	runtimev1 "github.com/rilldata/rill/proto/gen/rill/runtime/v1"
 	"github.com/rilldata/rill/runtime"
 	"github.com/rilldata/rill/runtime/act"
@@ -826,26 +827,18 @@ func (s *Server) ApproveAgentApproval(ctx context.Context, req *runtimev1.Approv
 	return &runtimev1.ApproveAgentApprovalResponse{Approval: s.approvalToPB(resolved, true)}, nil
 }
 
-// claimAndResume delivers an approval decision to its run durably, in an order that is both double-submit safe and
-// crash-recoverable.
+// claimAndResume records an approval decision and delivers it to its run, as one transaction.
 //
-// The claim (ResolveApproval, a CAS on the pending row) is the single-winner gate: of two concurrent decisions only
-// one moves the approval out of pending, so only one is ever delivered — two conflicting decisions can never both
-// resume the run. The DBOS Send (Resume) is the durable source of truth for the run continuing: the workflow
-// consumes exactly one approval message (a single Recv), so any Send after the first is ignored.
+// The claim (a CAS on the pending row) is the single-winner gate: of two concurrent decisions only one moves the
+// approval out of pending, so only one is ever delivered. The delivery is a DBOS Send issued inside that same
+// transaction (ResumeInTx), so the decision is recorded if and only if it was delivered: a crash or error between the
+// two rolls the claim back, the approval stays pending, and deciding it again just works (kairos-cloud#194). Before,
+// they were two writes, and a crash between them left a decided approval and a run waiting for a message nothing
+// would ever send.
 //
-// Ordering: claim, then Send. Recording the decision before the Send is what keeps two different concurrent
-// decisions from both being delivered — the loser's claim fails, so it never Sends. The one hazard that ordering
-// creates is a crash after the claim but before the Send: the approval is no longer pending, so a naive retry
-// could never deliver the resume and the run would hang forever. We close that gap by making a retry that finds
-// the approval already resolved to the SAME decision re-deliver the Send (idempotent, thanks to the single Recv)
-// instead of failing. A retry carrying a DIFFERENT decision is rejected: the first recorded decision stands.
-// TODO(act, phase 1): recovery from a crash-between-claim-and-Send relies on an EXTERNAL retry; no reconciler
-// completes a claimed-but-unsent decision on its own. There is no deadline pressing on that retry — approval
-// timeouts were removed and the workflow's Recv waits indefinitely — so the run parks rather than failing, but it
-// parks with the decision already recorded and nothing scheduled to deliver it. A durable resume outbox (claim and
-// enqueue the Send in one transaction, drained by a background worker) would make it self-healing. Same class as
-// known limit #2 (the trigger outbox).
+// An approval already resolved to the SAME decision re-delivers the Send instead of failing. Decisions recorded by
+// this code can no longer be in that state undelivered, but ones recorded before it can, and re-delivering is
+// harmless: the run consumes exactly one message per action. A DIFFERENT decision is rejected: the first one stands.
 func (s *Server) claimAndResume(ctx context.Context, approval *act.Approval, decision act.ApprovalDecision, storeStatus, decidedBy string) (*act.Approval, error) {
 	// Refuse before recording anything if the run can no longer act on the decision. This is ordered first on purpose:
 	// the claim is what makes the decision real (it stamps decided_by and takes the approval out of the inbox), so
@@ -863,20 +856,22 @@ func (s *Server) claimAndResume(ctx context.Context, approval *act.Approval, dec
 	var resolved *act.Approval
 	switch approval.Status {
 	case act.ApprovalStatusPending:
-		r, err := s.agentRuns.ResolveApproval(ctx, approval.InstanceID, approval.ApprovalID, storeStatus, decidedBy)
+		r, err := s.agentRuns.ResolveApprovalAndDeliver(ctx, approval.InstanceID, approval.ApprovalID, storeStatus, decidedBy,
+			func(ctx context.Context, tx pgx.Tx) error {
+				return s.agentExecutor.ResumeInTx(ctx, tx, approval.RunID, decision, approval.ToolCallID)
+			})
 		if err != nil {
 			return nil, mapActError(err)
 		}
 		resolved = r
 	case storeStatus:
-		// Recovery: a prior attempt already claimed this approval for the same decision but may have crashed before
-		// delivering the resume. Fall through to re-deliver; the run's single Recv makes the repeat harmless.
+		// A decision recorded before the claim and the delivery shared a transaction may never have been delivered.
+		if err := s.agentExecutor.Resume(ctx, approval.RunID, decision, approval.ToolCallID); err != nil {
+			return nil, err
+		}
 		resolved = approval
 	default:
 		return nil, status.Errorf(codes.FailedPrecondition, "approval %q is already resolved and cannot be set to %s", approval.ApprovalID, storeStatus)
-	}
-	if err := s.agentExecutor.Resume(ctx, approval.RunID, decision, approval.ToolCallID); err != nil {
-		return nil, err
 	}
 	return resolved, nil
 }

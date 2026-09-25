@@ -851,6 +851,13 @@ func (s *PostgresRunStore) ListApprovals(ctx context.Context, f ListApprovalsFil
 }
 
 func (s *PostgresRunStore) ResolveApproval(ctx context.Context, instanceID, approvalID, status, decidedBy string) (*Approval, error) {
+	return s.ResolveApprovalAndDeliver(ctx, instanceID, approvalID, status, decidedBy, nil)
+}
+
+// ResolveApprovalAndDeliver is ResolveApproval with the delivery of the decision inside the same transaction: deliver
+// runs after the claim and before the commit, so if it fails, or anything fails before the commit, the claim rolls
+// back with it. A nil deliver claims only.
+func (s *PostgresRunStore) ResolveApprovalAndDeliver(ctx context.Context, instanceID, approvalID, status, decidedBy string, deliver func(ctx context.Context, tx pgx.Tx) error) (*Approval, error) {
 	if status != ApprovalStatusApproved && status != ApprovalStatusDenied {
 		return nil, fmt.Errorf("act: invalid approval resolution %q", status)
 	}
@@ -878,6 +885,9 @@ func (s *PostgresRunStore) ResolveApproval(ctx context.Context, instanceID, appr
 		a, err = scanApproval(tx.QueryRow(ctx, s.selectApprovalSQL()+` WHERE a.approval_id=$1 AND a.instance_id=$2`, approvalID, instanceID))
 		if err != nil {
 			return fmt.Errorf("reload approval: %w", err)
+		}
+		if deliver != nil {
+			return deliver(ctx, tx)
 		}
 		return nil
 	})

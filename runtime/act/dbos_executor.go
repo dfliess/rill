@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/dbos-inc/dbos-transact-golang/dbos"
+	"github.com/jackc/pgx/v5"
 	"github.com/rilldata/rill/runtime"
 	"github.com/rilldata/rill/runtime/ai"
 )
@@ -305,11 +306,21 @@ func (e *DBOSExecutor) Start(ctx context.Context, in AgentRunInput) (string, err
 // run initiator as the approver — an audit gap, not an authorization one (the write is still gated on approval). Any
 // non-API resume path added later must set the approval's decided_by first, or thread the approver through this call.
 func (e *DBOSExecutor) Resume(_ context.Context, runID string, decision ApprovalDecision, toolCallID string) error {
+	return e.send(runID, decision, toolCallID)
+}
+
+// ResumeInTx delivers the decision inside tx, so it reaches the run only if tx commits (dbos.WithSendTransaction,
+// which needs tx on the same database as the DBOS system tables: BootstrapAct gives both one DSN).
+func (e *DBOSExecutor) ResumeInTx(_ context.Context, tx pgx.Tx, runID string, decision ApprovalDecision, toolCallID string) error {
+	return e.send(runID, decision, toolCallID, dbos.WithSendTransaction(tx))
+}
+
+func (e *DBOSExecutor) send(runID string, decision ApprovalDecision, toolCallID string, opts ...dbos.SendOption) error {
 	topic := approvalTopic
 	if toolCallID != "" {
 		topic = approvalTopic + ":" + toolCallID
 	}
-	if err := dbos.Send(e.client, runID, string(decision), topic); err != nil {
+	if err := dbos.Send(e.client, runID, string(decision), topic, opts...); err != nil {
 		return fmt.Errorf("act: resume run %q: %w", runID, err)
 	}
 	return nil

@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rilldata/rill/runtime"
 	"github.com/rilldata/rill/runtime/act"
@@ -88,8 +89,11 @@ func (f *fakeExecutor) Start(_ context.Context, in act.AgentRunInput) (string, e
 func (f *fakeExecutor) Resume(context.Context, string, act.ApprovalDecision, string) error {
 	return nil
 }
-func (f *fakeExecutor) Resumable(context.Context, string) (bool, error)            { return true, nil }
-func (f *fakeExecutor) Cancel(context.Context, string, string) error               { return nil }
+func (f *fakeExecutor) ResumeInTx(context.Context, pgx.Tx, string, act.ApprovalDecision, string) error {
+	return nil
+}
+func (f *fakeExecutor) Resumable(context.Context, string) (bool, error) { return true, nil }
+func (f *fakeExecutor) Cancel(context.Context, string, string) error    { return nil }
 
 func (f *fakeExecutor) startCount() int {
 	f.mu.Lock()

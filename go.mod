@@ -40,7 +40,7 @@ require (
 	github.com/confluentinc/confluent-kafka-go/v2 v2.2.0
 	github.com/coreos/go-oidc/v3 v3.17.0
 	github.com/databricks/databricks-sql-go v1.15.1
-	github.com/dbos-inc/dbos-transact-golang v1.2.0
+	github.com/dbos-inc/dbos-transact-golang v1.3.0
 	github.com/dgraph-io/ristretto v0.1.1
 	github.com/docker/go-connections v0.7.0
 	github.com/duckdb/duckdb-go/v2 v2.10505.0
