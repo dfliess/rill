@@ -18,10 +18,12 @@ import (
 // the commit: the moment a crash between the two writes used to leave a queued run with no workflow behind it.
 type failAfterEnqueue struct {
 	*act.PostgresRunStore
-	err error
+	err   error
+	runID string // the ID Start tried to create the run under
 }
 
-func (s *failAfterEnqueue) CreateRunAndEnqueue(ctx context.Context, run act.NewRun, enqueue func(context.Context, pgx.Tx) error) error {
+func (s *failAfterEnqueue) CreateRunAndEnqueue(ctx context.Context, run act.NewRun, enqueue func(context.Context, pgx.Tx) error) (string, error) {
+	s.runID = run.RunID
 	return s.PostgresRunStore.CreateRunAndEnqueue(ctx, run, func(ctx context.Context, tx pgx.Tx) error {
 		if err := enqueue(ctx, tx); err != nil {
 			return err
@@ -36,7 +38,8 @@ func (s *failAfterEnqueue) CreateRunAndEnqueue(ctx context.Context, run act.NewR
 func TestStartCreatesRunAndWorkflowTogether(t *testing.T) {
 	store := newRunStore(t)
 	errCrash := errors.New("process died between the run and its workflow")
-	e := newStoreExecutor(t, gatewayFlowRunner{}, &failAfterEnqueue{PostgresRunStore: store, err: errCrash})
+	failing := &failAfterEnqueue{PostgresRunStore: store, err: errCrash}
+	e := newStoreExecutor(t, gatewayFlowRunner{}, failing)
 	ctx := t.Context()
 
 	const inst = "inst-start-atomic"
@@ -44,7 +47,8 @@ func TestStartCreatesRunAndWorkflowTogether(t *testing.T) {
 	_, err := e.Start(ctx, act.AgentRunInput{InstanceID: inst, AgentName: "triage", Prompt: "alerta", IdempotencyKey: key})
 	require.ErrorIs(t, err, errCrash)
 
-	runID := act.ComposeRunID(inst, "triage", key)
+	runID := failing.runID
+	require.NotEmpty(t, runID)
 	_, err = store.GetRun(ctx, inst, runID)
 	require.ErrorIs(t, err, act.ErrRunNotFound, "a run whose workflow was never launched must not exist")
 

@@ -65,11 +65,11 @@ func quietLogger() *slog.Logger {
 }
 
 // fakeExecutor is an act.AgentExecutor that records every Start and, like the real DBOS executor, treats a repeated
-// composed run ID as the same run (OAOO). A test asserts on the number of distinct runs it actually created.
+// (instance, agent, key) as the same run (OAOO). A test asserts on the number of distinct runs it actually created.
 type fakeExecutor struct {
 	mu     sync.Mutex
 	starts []act.AgentRunInput
-	runs   map[string]bool
+	runs   map[string]string // (instance, agent, key) -> run ID
 }
 
 var _ act.AgentExecutor = (*fakeExecutor)(nil)
@@ -77,12 +77,17 @@ var _ act.AgentExecutor = (*fakeExecutor)(nil)
 func (f *fakeExecutor) Start(_ context.Context, in act.AgentRunInput) (string, error) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
-	runID := act.ComposeRunID(in.InstanceID, in.AgentName, in.IdempotencyKey)
+	// Like the real executor: one run per (instance, agent, key), under an opaque ID.
 	f.starts = append(f.starts, in)
 	if f.runs == nil {
-		f.runs = map[string]bool{}
+		f.runs = map[string]string{}
 	}
-	f.runs[runID] = true
+	tuple := in.InstanceID + "\x00" + in.AgentName + "\x00" + in.IdempotencyKey
+	if runID, ok := f.runs[tuple]; ok {
+		return runID, nil
+	}
+	runID := uuid.NewString()
+	f.runs[tuple] = runID
 	return runID, nil
 }
 

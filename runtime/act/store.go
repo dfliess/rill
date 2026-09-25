@@ -59,8 +59,9 @@ const (
 // Everything here is fixed for the life of the run; mutable lifecycle state (status, timestamps, error) is written
 // separately by RecordTransition so the create path and the transition path never contend on the same columns.
 type NewRun struct {
-	// RunID is the durable workflow ID (ComposeRunID output). It is the primary key: creating the same run twice
-	// (a replayed Start) is a no-op, which is what keeps Start idempotent end-to-end, not just inside DBOS.
+	// RunID is the durable workflow ID: an opaque UUID (ADR-0034). Runs recorded before that keep the ID they had, so
+	// nothing may read meaning into it. What makes Start idempotent is IdempotencyKey, not the ID: see
+	// CreateRunAndEnqueue.
 	RunID      string
 	InstanceID string
 	// OrganizationID and ProjectID are the outer tenancy scope (§15.2). They are nullable in Phase 1A because the
@@ -269,9 +270,11 @@ type RunStore interface {
 	// CreateRun inserts a run in the queued state and appends its queued event, atomically. It is idempotent on
 	// RunID: a second create for the same run is a no-op (not an error), so a replayed Start does not duplicate.
 	CreateRun(ctx context.Context, run NewRun) error
-	// CreateRunAndEnqueue creates the run like CreateRun and runs enqueue inside the same transaction, so the run
-	// exists if and only if its workflow was launched (ADR-0032).
-	CreateRunAndEnqueue(ctx context.Context, run NewRun, enqueue func(ctx context.Context, tx pgx.Tx) error) error
+	// CreateRunAndEnqueue creates the run and runs enqueue inside the same transaction, so the run exists if and only
+	// if its workflow was launched (ADR-0032). A run already recorded under the same (instance, agent, idempotency key)
+	// wins: nothing is created or enqueued and its ID is returned, whatever format that ID has (ADR-0034). Otherwise it
+	// returns run.RunID.
+	CreateRunAndEnqueue(ctx context.Context, run NewRun, enqueue func(ctx context.Context, tx pgx.Tx) error) (string, error)
 	// RecordTransition applies a status change and appends its event in one transaction. It is idempotent per edge:
 	// re-applying an already-recorded transition leaves the row unchanged and appends no duplicate event.
 	RecordTransition(ctx context.Context, t RunTransition) error

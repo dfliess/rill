@@ -416,8 +416,7 @@ func (s *Server) resolveKeyFamily(ctx context.Context, instanceID, agentName, ke
 // An empty user id, an anonymous reader of a public project, namespaces to nothing, and those readers go on sharing
 // one run. That is the same trade-off runtime/ai makes when it skips the owner check on a session nobody owns.
 //
-// Length-prefixed like ComposeRunID, and for the same reason: without the prefix ("a","b/c") and ("a/b","c") would
-// render alike and collide onto one run.
+// Length-prefixed: without the prefix, ("a","b/c") and ("a/b","c") would render alike and collide onto one run.
 func scopeKeyToActor(userID, idempotencyKey string) string {
 	return fmt.Sprintf("%d:%s/%s", len(userID), userID, idempotencyKey)
 }

@@ -313,8 +313,8 @@ func (d *Dispatcher) dispatchOne(ctx context.Context, e OutboxEvent, tr TriggerD
 		}
 	}
 
-	// Start (or, on a retry, attach to) the run using the FROZEN agent, not tr.Agent, so the composed run id is
-	// identical across retries. The executor is idempotent on that id, so a replay attaches to the same run.
+	// Start (or, on a retry, attach to) the run using the FROZEN agent, not tr.Agent, so a retry names the same
+	// (instance, agent, key). The executor is idempotent on that triple, so a replay attaches to the same run.
 	key := ComposeIdempotencyKey(tr.Name, e.EventID)
 	runID, err := d.executor.Start(ctx, act.AgentRunInput{
 		InstanceID:     e.InstanceID,

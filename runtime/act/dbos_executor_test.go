@@ -182,18 +182,6 @@ func TestExecutorUsesSnapshotFromRunStart(t *testing.T) {
 	}
 }
 
-// TestComposeRunIDIsInjective guards the run-ID encoding against delimiter ambiguity: two logically distinct
-// (instance, agent, key) tuples that would collide under naive "/" joining must produce different run IDs, or a
-// Start could attach to the wrong run and cross approvals between tenants or agents.
-func TestComposeRunIDIsInjective(t *testing.T) {
-	a := act.ComposeRunID("inst", "a/b", "c")
-	b := act.ComposeRunID("inst", "a", "b/c")
-	require.NotEqual(t, a, b)
-
-	// Same tuple is stable (idempotency depends on it).
-	require.Equal(t, act.ComposeRunID("inst", "triage", "k"), act.ComposeRunID("inst", "triage", "k"))
-}
-
 // TestExecutorBindsActorToRun verifies the run is durably bound to the identity that authorized it: the actor passed
 // to Start is checkpointed with the run and recorded on the action it proposed, which is what the audit reads.
 func TestExecutorBindsActorToRun(t *testing.T) {

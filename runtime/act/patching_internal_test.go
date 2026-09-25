@@ -42,6 +42,7 @@ func TestNewDBOSExecutorArmsPatching(t *testing.T) {
 		DatabaseSchema:     "act_dbos",
 		ApplicationVersion: "act-test-" + uuid.NewString(),
 		Runner:             patchProbeRunner{},
+		Store:              &PostgresRunStore{},
 		Gateway:            &Gateway{},
 		Proposer:           NewCapturedProposer(),
 	})

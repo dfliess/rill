@@ -92,7 +92,7 @@ func killSelf() {
 //	recover        let DBOS recover the run, approve every tool call in ACT_APPROVE as it comes up, print the result.
 func runGatewayCrashWorker() {
 	key := os.Getenv("ACT_RUN_ID")
-	runID := act.ComposeRunID(gatewayCrashInstance, gatewayCrashAgent, key)
+	var runID string // set by Start, or found by its key when recovering
 	logPath := os.Getenv("ACT_ACTION_LOG")
 	mark := func(step, detail string) { markStep(logPath, step, detail) }
 	fail := func(what string, err error) {
@@ -158,10 +158,11 @@ func runGatewayCrashWorker() {
 
 	switch os.Getenv("ACT_MODE") {
 	case "start":
-		if _, err := e.Start(ctx, act.AgentRunInput{
+		runID, err = e.Start(ctx, act.AgentRunInput{
 			InstanceID: gatewayCrashInstance, AgentName: gatewayCrashAgent, Prompt: "alerta", IdempotencyKey: key,
 			Actor: act.Actor{Subject: "user:alice"},
-		}); err != nil {
+		})
+		if err != nil {
 			fail("start", err)
 		}
 		switch os.Getenv("ACT_THEN") {
@@ -209,6 +210,9 @@ func runGatewayCrashWorker() {
 		time.Sleep(time.Minute)
 		fail("start", fmt.Errorf("the crash hook never fired"))
 	case "recover":
+		if runID, err = gatewayCrashRunID(ctx, store, key); err != nil {
+			fail("find run", err)
+		}
 		for _, tc := range strings.Fields(os.Getenv("ACT_APPROVE")) {
 			approve(tc)
 		}
@@ -222,9 +226,19 @@ func runGatewayCrashWorker() {
 	fail("mode", fmt.Errorf("unknown ACT_MODE %q", os.Getenv("ACT_MODE")))
 }
 
+// gatewayCrashRunID finds the run the start worker created under key: the run ID is an opaque UUID, so a process that
+// did not start the run finds it by its key (ADR-0034).
+func gatewayCrashRunID(ctx context.Context, store *act.PostgresRunStore, key string) (string, error) {
+	run, err := store.LatestRunInKeyFamily(ctx, gatewayCrashInstance, gatewayCrashAgent, key)
+	if err != nil {
+		return "", err
+	}
+	return run.RunID, nil
+}
+
 // gatewayCrash runs one start worker, then one recover worker, and returns the recover worker's output and the step
 // log. killed says whether the start worker is meant to die (a crash) or exit cleanly (a shutdown); between, when set,
-// runs after the start worker ends and before recovery, with the run's workflow ID.
+// runs after the start worker ends and before recovery, with the run's ID.
 func gatewayCrash(t *testing.T, killed bool, startEnv, recoverEnv map[string]string, between func(runID string)) (string, stepLog) {
 	t.Helper()
 	dsn, schema := requirePostgres(t)
@@ -253,7 +267,12 @@ func gatewayCrash(t *testing.T, killed bool, startEnv, recoverEnv map[string]str
 		require.NoError(t, err, "the start worker should have shut down cleanly; output:\n%s", out)
 	}
 	if between != nil {
-		between(act.ComposeRunID(gatewayCrashInstance, gatewayCrashAgent, key))
+		store, err := act.NewPostgresRunStore(t.Context(), act.StoreConfig{DatabaseURL: dsn, Schema: storeSchema})
+		require.NoError(t, err)
+		runID, err := gatewayCrashRunID(t.Context(), store, key)
+		store.Close()
+		require.NoError(t, err)
+		between(runID)
 	}
 	out2, err := workerCmd(with(recoverEnv)).CombinedOutput()
 	require.NoError(t, err, "the recover worker should finish cleanly; output:\n%s", out2)

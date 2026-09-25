@@ -109,23 +109,20 @@ func (f *fakeAgentExecutor) Start(ctx context.Context, in act.AgentRunInput) (st
 	if f.startErr != nil {
 		return "", f.startErr
 	}
-	runID := act.ComposeRunID(in.InstanceID, in.AgentName, in.IdempotencyKey)
 	trigger := in.Trigger
 	if trigger == "" {
 		trigger = "manual"
 	}
-	if err := f.store.CreateRun(ctx, act.NewRun{
-		RunID:          runID,
+	// Like the real executor: an opaque ID, and the store returns the run the key already has (ADR-0034).
+	return f.store.CreateRunAndEnqueue(ctx, act.NewRun{
+		RunID:          uuid.Must(uuid.NewV7()).String(),
 		InstanceID:     in.InstanceID,
 		AgentName:      in.AgentName,
 		Trigger:        trigger,
 		IdempotencyKey: in.IdempotencyKey,
 		ConversationID: in.ConversationID,
 		Actor:          in.Actor,
-	}); err != nil {
-		return "", err
-	}
-	return runID, nil
+	}, nil)
 }
 
 func (f *fakeAgentExecutor) Resume(_ context.Context, runID string, decision act.ApprovalDecision, _ string) error {
@@ -275,7 +272,7 @@ func TestAgentServiceListRunsScoping(t *testing.T) {
 
 	// One run in a different instance, seeded directly in the store.
 	const otherInstance = "inst-other"
-	otherRun := act.ComposeRunID(otherInstance, "triage", "k")
+	otherRun := uuid.NewString()
 	require.NoError(t, store.CreateRun(ctx, act.NewRun{RunID: otherRun, InstanceID: otherInstance, AgentName: "triage"}))
 
 	list, err := srv.ListAgentRuns(ctx, &runtimev1.ListAgentRunsRequest{InstanceId: instanceID})

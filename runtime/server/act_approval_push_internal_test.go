@@ -92,7 +92,7 @@ func (s *actPushRunStore) ListApprovals(_ context.Context, f act.ListApprovalsFi
 func actStoredApproval(instanceID, agentName, runKey, tool, connector string) *act.Approval {
 	return &act.Approval{
 		ApprovalID:      runKey + ":" + tool,
-		RunID:           act.ComposeRunID(instanceID, agentName, runKey),
+		RunID:           "run-" + runKey, // the run of this key
 		InstanceID:      instanceID,
 		AgentName:       agentName,
 		RunActorSubject: "usr_marta",
@@ -122,12 +122,11 @@ func newActPushNotifier(t *testing.T, members []drivers.ProjectMember) (*actAppr
 
 func actPendingApprovals(instanceID string, agentName string, actions ...act.PendingAction) act.PendingApprovals {
 	return act.PendingApprovals{
-		InstanceID:     instanceID,
-		RunID:          act.ComposeRunID(instanceID, agentName, "alerta/2024"),
-		AgentName:      agentName,
-		IdempotencyKey: "alerta/2024",
-		RunActor:       "usr_marta",
-		Actions:        actions,
+		InstanceID: instanceID,
+		RunID:      "0199a3c2-7e4b-7c1a-9f3e-2b8d5a6c4e10",
+		AgentName:  agentName,
+		RunActor:   "usr_marta",
+		Actions:    actions,
 	}
 }
 
@@ -147,8 +146,8 @@ func TestActApprovalPushNotifiesPolicyApprovers(t *testing.T) {
 	require.Equal(t, []string{"ana@example.com"}, pushes[0].Recipients)
 	require.Equal(t, "Aprobación pendiente: Cobranza", pushes[0].Title)
 	require.Equal(t, `La acción "create_issue" espera tu aprobación.`, pushes[0].Body)
-	// The run segment is the idempotency key, escaped: the key of a trigger-fired run may contain slashes.
-	require.Equal(t, "/acme/demo/-/agents/cobranza/runs/alerta%2F2024", pushes[0].LinkPath)
+	// The link opens the run by its ID (ADR-0034).
+	require.Equal(t, "/acme/demo/-/agents/runs/"+pending.RunID, pushes[0].LinkPath)
 	require.Equal(t, "act:acme/demo/"+pending.RunID, pushes[0].Tag)
 }
 
@@ -270,11 +269,11 @@ func TestActApprovalPushWithoutActions(t *testing.T) {
 	require.Empty(t, testruntime.PushNotifications(instanceID))
 }
 
-// TestAgentRunPathMirrorsFrontend pins the deep link against the frontend's runDetailPath: the run segment is the
-// idempotency key (not the composite run ID), and every segment is escaped.
+// TestAgentRunPathMirrorsFrontend pins the deep link against the frontend's runDetailPath: the run is addressed by its
+// ID (ADR-0034), and every segment is escaped, since a run recorded before that has slashes in its ID.
 func TestAgentRunPathMirrorsFrontend(t *testing.T) {
-	require.Equal(t, "/acme/demo/-/agents/cobranza/runs/run-1", agentRunPath("acme", "demo", "cobranza", "run-1"))
-	require.Equal(t, "/acme/demo/-/agents/mi%20agente/runs/alert%2Fa1%2F2024", agentRunPath("acme", "demo", "mi agente", "alert/a1/2024"))
+	require.Equal(t, "/acme/demo/-/agents/runs/0199a3c2-7e4b-7c1a-9f3e-2b8d5a6c4e10", agentRunPath("acme", "demo", "0199a3c2-7e4b-7c1a-9f3e-2b8d5a6c4e10"))
+	require.Equal(t, "/mi%20org/demo/-/agents/runs/legacy%2Frun", agentRunPath("mi org", "demo", "legacy/run"))
 }
 
 // TestActApprovalPushResolvesAgentByName is a guard on the resource lookup: the notifier must read the agent the

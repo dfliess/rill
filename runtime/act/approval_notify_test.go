@@ -146,7 +146,6 @@ func TestApprovalNotifierBatchIsOneNotification(t *testing.T) {
 	require.Equal(t, inst, notices[0].InstanceID)
 	require.Equal(t, runID, notices[0].RunID)
 	require.Equal(t, "triage", notices[0].AgentName)
-	require.Equal(t, key, notices[0].IdempotencyKey, "the run's URL is keyed by the idempotency key, not the composite run ID")
 	require.Equal(t, "usr_marta", notices[0].RunActor, "an approve policy may discriminate on who the run acts for")
 	// The RAW tool name: the approve expression matches the name the connector's own configuration uses, not the
 	// namespaced form the ledger stores.

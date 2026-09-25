@@ -19,7 +19,7 @@ func closeRunAs(t *testing.T, store *act.PostgresRunStore, instanceID, runID str
 // createRunWithKey seeds a run of `agent` under `key`, addressed the way the executor addresses it.
 func createRunWithKey(t *testing.T, store *act.PostgresRunStore, instanceID, agent, key string) string {
 	t.Helper()
-	runID := act.ComposeRunID(instanceID, agent, key)
+	runID := newRunID()
 	require.NoError(t, store.CreateRun(t.Context(), act.NewRun{
 		RunID: runID, InstanceID: instanceID, AgentName: agent, IdempotencyKey: key,
 	}))

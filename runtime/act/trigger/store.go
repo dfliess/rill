@@ -212,7 +212,7 @@ func (s *Store) RecordDispatch(ctx context.Context, instanceID, triggerID, event
 
 // Reservation is the frozen dispatch identity for one (instance, trigger, event). AgentName is the agent captured at
 // reservation time, which the dispatcher must use to start the run rather than the trigger's current agent: it is
-// what keeps the composed run id stable across retries even if the trigger is re-pointed to a different agent.
+// what keeps a retry on the same run even if the trigger is re-pointed to a different agent.
 type Reservation struct {
 	AgentName string // the agent frozen at reservation; use this, not the trigger's live agent
 	RunID     string // the started run, empty until MarkDispatched records it

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/dbos-inc/dbos-transact-golang/dbos"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/rilldata/rill/runtime"
 	"github.com/rilldata/rill/runtime/ai"
@@ -147,6 +148,10 @@ func NewDBOSExecutor(ctx context.Context, cfg Config) (*DBOSExecutor, error) {
 	if cfg.Gateway == nil || cfg.Proposer == nil {
 		return nil, errors.New("act: Config.Gateway and Config.Proposer are required")
 	}
+	// The store is what makes Start idempotent: it holds the one run of each idempotency key (ADR-0034).
+	if cfg.Store == nil {
+		return nil, errors.New("act: Config.Store is required")
+	}
 
 	version := cfg.ApplicationVersion
 	if version == "" {
@@ -246,21 +251,9 @@ func (e *DBOSExecutor) Close(timeout time.Duration) {
 	}
 }
 
-// ComposeRunID builds the durable workflow ID from (instance, agent, idempotency key). It length-prefixes the two
-// namespacing components so the encoding is injective: without the prefixes, ("a/b","c") and ("a","b/c") would
-// both render as "a/b/c" and collide onto one run. The idempotency key is last and unconstrained, so it needs no
-// prefix. The result stays readable in logs while remaining unambiguous whatever characters the fields contain.
-//
-// It is exported so a caller that needs to address a run it did not start (the trigger dispatcher deduplicating an
-// event, for example) can compute the same ID from its parts.
-func ComposeRunID(instanceID, agentName, idempotencyKey string) string {
-	return fmt.Sprintf("%d:%s/%d:%s/%s", len(instanceID), instanceID, len(agentName), agentName, idempotencyKey)
-}
-
-// Start launches a run. The workflow ID is the idempotency key namespaced by instance and agent, so a repeated
-// Start with the same (instance, agent, key) attaches to the existing run (OAOO) instead of starting a second one;
-// after the run finishes it returns the cached result. It returns that composed run ID, which Resume/Cancel/Result
-// address the run by.
+// Start launches a run and returns its ID, which Resume/Cancel/Result address the run by. A repeated Start with the
+// same (instance, agent, key) attaches to the run that key already has (OAOO) instead of starting a second one, and
+// returns that run's ID.
 func (e *DBOSExecutor) Start(ctx context.Context, in AgentRunInput) (string, error) {
 	if in.InstanceID == "" || in.AgentName == "" {
 		return "", errors.New("act: AgentRunInput.InstanceID and AgentName are required")
@@ -268,10 +261,14 @@ func (e *DBOSExecutor) Start(ctx context.Context, in AgentRunInput) (string, err
 	if in.IdempotencyKey == "" {
 		return "", errors.New("act: AgentRunInput.IdempotencyKey is required")
 	}
-	// Namespace the workflow ID by instance and agent: two instances (tenants) or two agents that reuse the same
-	// idempotency key must not collide onto one run, or an approval could land on the wrong run. A different payload
-	// under the same key is not detected: the second Start attaches to the first run whatever it carries.
-	runID := ComposeRunID(in.InstanceID, in.AgentName, in.IdempotencyKey)
+	// An opaque ID (ADR-0034): the store, not the ID, deduplicates by (instance, agent, key), so two instances
+	// (tenants) or two agents that reuse a key still get separate runs. A different payload under the same key is not
+	// detected: the second Start attaches to the first run whatever it carries.
+	id, err := uuid.NewV7()
+	if err != nil {
+		return "", fmt.Errorf("act: new run ID: %w", err)
+	}
+	runID := id.String()
 
 	// Normalize and validate the trigger provenance against the known sources (§9.5). Validating here, not just at
 	// the API boundary, keeps a run's recorded provenance trustworthy even for internal Go callers: an unknown
@@ -285,8 +282,8 @@ func (e *DBOSExecutor) Start(ctx context.Context, in AgentRunInput) (string, err
 	}
 
 	// Record the run and enqueue its workflow in ONE transaction, so the run is queryable the instant Start returns
-	// (§14.2) and exists if and only if its workflow does (ADR-0032). Enqueuing a workflow ID that already exists is a
-	// no-op, so a repeated Start (same idempotency key) attaches to the same run, like the store's own insert.
+	// (§14.2) and exists if and only if its workflow does (ADR-0032). If the key already has a run, the store returns
+	// it and enqueues nothing.
 	enqueue := func(ctx context.Context, tx pgx.Tx) error {
 		opts := []dbos.EnqueueOption{
 			dbos.WithEnqueueWorkflowID(runID),
@@ -299,21 +296,16 @@ func (e *DBOSExecutor) Start(ctx context.Context, in AgentRunInput) (string, err
 		_, err := dbos.Enqueue[AgentRunResult](e.client, runQueue, workflowName, in, opts...)
 		return err
 	}
-	var err error
-	if e.store != nil {
-		err = e.store.CreateRunAndEnqueue(ctx, NewRun{
-			RunID:          runID,
-			InstanceID:     in.InstanceID,
-			AgentName:      in.AgentName,
-			Trigger:        trigger,
-			TriggerRef:     in.TriggerRef,
-			IdempotencyKey: in.IdempotencyKey,
-			ConversationID: in.ConversationID,
-			Actor:          in.Actor,
-		}, enqueue)
-	} else {
-		err = enqueue(ctx, nil)
-	}
+	runID, err = e.store.CreateRunAndEnqueue(ctx, NewRun{
+		RunID:          runID,
+		InstanceID:     in.InstanceID,
+		AgentName:      in.AgentName,
+		Trigger:        trigger,
+		TriggerRef:     in.TriggerRef,
+		IdempotencyKey: in.IdempotencyKey,
+		ConversationID: in.ConversationID,
+		Actor:          in.Actor,
+	}, enqueue)
 	if err != nil {
 		return "", fmt.Errorf("act: start run %q: %w", runID, err)
 	}
@@ -980,12 +972,11 @@ func (e *DBOSExecutor) notifyPendingApprovals(ctx context.Context, in AgentRunIn
 	}
 
 	e.approvals.NotifyPendingApprovals(ctx, PendingApprovals{
-		InstanceID:     in.InstanceID,
-		RunID:          runID,
-		AgentName:      in.AgentName,
-		IdempotencyKey: in.IdempotencyKey,
-		RunActor:       in.Actor.Subject,
-		Actions:        pending,
+		InstanceID: in.InstanceID,
+		RunID:      runID,
+		AgentName:  in.AgentName,
+		RunActor:   in.Actor.Subject,
+		Actions:    pending,
 	})
 }
 
@@ -1171,9 +1162,16 @@ func (e *DBOSExecutor) emitFailedReason(ctx dbos.Context, in AgentRunInput, runI
 	return nil
 }
 
-// ApprovalIDForToolCall derives the deterministic approval ID for a specific tool call within a run. The ":tc:" infix
-// keeps it apart from the segment-based IDs (":1", ":2") that approvals recorded by the retired simulated path carry.
-func ApprovalIDForToolCall(runID, toolCallID string) string { return runID + ":tc:" + toolCallID }
+// approvalIDSpace is the UUID v5 namespace of approval IDs. Changing it changes every approval ID a run derives.
+var approvalIDSpace = uuid.MustParse("5f0c7a52-3d1e-4b8a-9c6f-2e4d8b1a7f30")
+
+// ApprovalIDForToolCall derives the approval ID of a tool call within a run: a UUID v5 of the pair (ADR-0034). It is
+// deterministic because the workflow derives it again after the decision to learn who signed, and opaque so it is safe
+// in a URL whatever the model provider puts in the tool call ID. The run ID is length-prefixed so no two pairs render
+// alike. Approvals recorded before ADR-0034 keep the ID they were stored with.
+func ApprovalIDForToolCall(runID, toolCallID string) string {
+	return uuid.NewSHA1(approvalIDSpace, fmt.Appendf(nil, "%d:%s/%s", len(runID), runID, toolCallID)).String()
+}
 
 // actionDedupeKey scopes an approval-cycle event (waiting_approval, resumed, rejected) to the tool call that produced
 // it, so a segment that governs N actions records N instances of each edge while a replay of the SAME edge still

@@ -19,9 +19,9 @@ import (
 
 // AgentRunInput is the immutable request to start an agent run.
 //
-// IdempotencyKey is the caller's stable identity for this run: an alert firing once, a form submitted once. It is
-// combined with InstanceID and AgentName to form the durable workflow ID, which is what makes Start idempotent
-// (OAOO): a second Start with the same key attaches to the same run rather than starting a new one. The trigger
+// IdempotencyKey is the caller's stable identity for this run: an alert firing once, a form submitted once. Within one
+// InstanceID and AgentName it has exactly one run, which is what makes Start idempotent (OAOO): a second Start with the
+// same key attaches to the same run rather than starting a new one (ADR-0034). The trigger
 // dispatcher derives it from the trigger and the event (see trigger.ComposeIdempotencyKey); the manual API takes the
 // caller's key scoped to the user, or a fresh one.
 type AgentRunInput struct {
@@ -177,8 +177,6 @@ type PendingApprovals struct {
 	InstanceID string
 	RunID      string
 	AgentName  string
-	// IdempotencyKey is the run's caller-facing identity, which is what a run's URL carries (not the composite RunID).
-	IdempotencyKey string
 	// RunActor is the subject the run acts for; an approve expression may discriminate on it (`.run.actor`).
 	RunActor string
 	// Actions are the batch's actions awaiting a decision, in proposal order.

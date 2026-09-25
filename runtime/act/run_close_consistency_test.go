@@ -104,7 +104,7 @@ func TestCloseRunBindsTerminalStatusAndApprovalWithdrawal(t *testing.T) {
 	ctx := t.Context()
 
 	const inst = "inst-close-run"
-	runID := act.ComposeRunID(inst, "triage", "close-run")
+	runID := newRunID()
 	seedRun(t, store, inst, runID)
 	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{
 		InstanceID: inst, RunID: runID, Status: act.RunStatusRunning, EventType: act.EventTypeRunning,
@@ -161,7 +161,7 @@ func TestMigrateRepairsStrandedRuns(t *testing.T) {
 	const inst = "inst-stranded"
 
 	// The damaged shape: waiting_approval, approvals all withdrawn with no decider, untouched for hours.
-	stranded := act.ComposeRunID(inst, "triage", "stranded")
+	stranded := newRunID()
 	seedRun(t, store, inst, stranded)
 	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{
 		InstanceID: inst, RunID: stranded, Status: act.RunStatusWaitingApproval, EventType: act.EventTypeWaitingApproval,
@@ -177,7 +177,7 @@ func TestMigrateRepairsStrandedRuns(t *testing.T) {
 	require.NoError(t, store.BackdateApprovalDecisionsForTest(ctx, inst, stranded, 3*time.Hour))
 
 	// A run parked legitimately: old enough to pass the age check, but with a decision still outstanding.
-	live := act.ComposeRunID(inst, "triage", "live")
+	live := newRunID()
 	seedRun(t, store, inst, live)
 	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{
 		InstanceID: inst, RunID: live, Status: act.RunStatusWaitingApproval, EventType: act.EventTypeWaitingApproval,
@@ -191,7 +191,7 @@ func TestMigrateRepairsStrandedRuns(t *testing.T) {
 
 	// A run that reached waiting_approval before any approval row was written: a create that raced a crash, not a
 	// stranded run. It must be left alone, since the approval may still be on its way.
-	bare := act.ComposeRunID(inst, "triage", "bare")
+	bare := newRunID()
 	seedRun(t, store, inst, bare)
 	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{
 		InstanceID: inst, RunID: bare, Status: act.RunStatusWaitingApproval, EventType: act.EventTypeWaitingApproval,
@@ -237,7 +237,7 @@ func TestMigrateLeavesRecentlyActiveRunsAlone(t *testing.T) {
 	ctx := t.Context()
 
 	const inst = "inst-recent"
-	runID := act.ComposeRunID(inst, "triage", "recent")
+	runID := newRunID()
 	seedRun(t, store, inst, runID)
 	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{
 		InstanceID: inst, RunID: runID, Status: act.RunStatusWaitingApproval, EventType: act.EventTypeWaitingApproval,
@@ -270,7 +270,7 @@ func TestMigrateLeavesLongParkedRunApprovedJustNowAlone(t *testing.T) {
 	ctx := t.Context()
 
 	const inst = "inst-long-parked"
-	runID := act.ComposeRunID(inst, "triage", "long-parked")
+	runID := newRunID()
 	seedRun(t, store, inst, runID)
 	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{
 		InstanceID: inst, RunID: runID, Status: act.RunStatusWaitingApproval, EventType: act.EventTypeWaitingApproval,
@@ -314,7 +314,7 @@ func TestMigrateLeavesFullyDecidedBatchesAlone(t *testing.T) {
 	ctx := t.Context()
 
 	const inst = "inst-decided"
-	runID := act.ComposeRunID(inst, "triage", "decided")
+	runID := newRunID()
 	seedRun(t, store, inst, runID)
 	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{
 		InstanceID: inst, RunID: runID, Status: act.RunStatusWaitingApproval, EventType: act.EventTypeWaitingApproval,
@@ -349,7 +349,7 @@ func TestMigrateWithdrawsApprovalsLeftOnTerminalRuns(t *testing.T) {
 	ctx := t.Context()
 
 	const inst = "inst-terminal-pending"
-	runID := act.ComposeRunID(inst, "triage", "terminal-pending")
+	runID := newRunID()
 	seedRun(t, store, inst, runID)
 	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{
 		InstanceID: inst, RunID: runID, Status: act.RunStatusWaitingApproval, EventType: act.EventTypeWaitingApproval,
@@ -380,7 +380,7 @@ func TestRecordTransitionRefusesTerminalStatus(t *testing.T) {
 	ctx := t.Context()
 
 	const inst = "inst-refuse-terminal"
-	runID := act.ComposeRunID(inst, "triage", "refuse-terminal")
+	runID := newRunID()
 	seedRun(t, store, inst, runID)
 
 	for _, status := range []act.RunStatus{act.RunStatusSucceeded, act.RunStatusFailed, act.RunStatusRejected, act.RunStatusCancelled} {
@@ -399,7 +399,7 @@ func TestCreateApprovalRefusesTerminalRun(t *testing.T) {
 	ctx := t.Context()
 
 	const inst = "inst-approval-after-close"
-	runID := act.ComposeRunID(inst, "triage", "approval-after-close")
+	runID := newRunID()
 	seedRun(t, store, inst, runID)
 	_, err := store.CloseRun(ctx, act.RunTransition{
 		InstanceID: inst, RunID: runID, Status: act.RunStatusCancelled, EventType: act.EventTypeCancelled,

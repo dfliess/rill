@@ -72,6 +72,9 @@ Pieces (`policy.go`, `args.go`, `redact.go`, `ledger.go`/`pgledger.go`, `gateway
 - **Start** — `Start` records the run and enqueues its workflow in one transaction, on the `act-runs` queue
   (`CreateRunAndEnqueue`, DBOS `WithEnqueueTransaction`, ADR-0032). The queue must never get a concurrency limit: a run
   parked on an approval counts as PENDING, so a limit would stop dispatching (ADR-0022; `TestParkedRunsDoNotBlockTheNextOne`).
+- **IDs** — a run's ID is an opaque UUID v7, and what makes `Start` idempotent is the store's one run per
+  (instance, agent, idempotency key), not the ID. An approval's ID is a UUID v5 of (run, tool call), since the workflow
+  derives it again after the decision. Runs recorded before this keep their old IDs, so nothing may parse one (ADR-0034).
 - **Decisions** — the API records a decision and delivers it to the run in one transaction
   (`ResolveApprovalAndDeliver` + `ResumeInTx`, DBOS `WithSendTransaction`, kairos-cloud#194).
 

@@ -172,6 +172,10 @@ func (s *PostgresRunStore) Migrate(ctx context.Context) error {
 		// Backs the idempotency-key family lookup: "what came of this key so far?" resolved in one query rather
 		// than by probing attempt keys through Start, which would create the runs it means to inspect.
 		fmt.Sprintf(`CREATE INDEX IF NOT EXISTS agent_runs_instance_agent_idem_idx ON %s (instance_id, agent_name, idempotency_key)`, s.t("agent_runs")),
+		// One run per (instance, agent, idempotency key): this is what makes Start idempotent, now that the run ID is an
+		// opaque UUID and no longer encodes the key (ADR-0034). Partial because a run created without a key (only tests
+		// do that; Start requires one) identifies nothing to deduplicate against.
+		fmt.Sprintf(`CREATE UNIQUE INDEX IF NOT EXISTS agent_runs_instance_agent_idem_uidx ON %s (instance_id, agent_name, idempotency_key) WHERE idempotency_key <> ''`, s.t("agent_runs")),
 
 		// Backfill trigger_ref onto an agent_runs table created by an earlier build: CREATE TABLE IF NOT EXISTS never
 		// alters an existing table, so a database migrated before this column existed would lack it and every run
@@ -236,6 +240,10 @@ func (s *PostgresRunStore) Migrate(ctx context.Context) error {
 
 		fmt.Sprintf(`CREATE INDEX IF NOT EXISTS agent_approvals_instance_status_idx ON %s (instance_id, status, created_on DESC)`, s.t("agent_approvals")),
 		fmt.Sprintf(`CREATE INDEX IF NOT EXISTS agent_approvals_instance_run_idx ON %s (instance_id, run_id)`, s.t("agent_approvals")),
+		// One approval per tool call of a run. The approval ID is derived from the pair, so this held by construction;
+		// the index states it in the schema (ADR-0034). Partial because approvals of the retired simulated path carry no
+		// tool call and a run could hold several of them.
+		fmt.Sprintf(`CREATE UNIQUE INDEX IF NOT EXISTS agent_approvals_run_tool_call_uidx ON %s (run_id, tool_call_id) WHERE tool_call_id <> ''`, s.t("agent_approvals")),
 
 		// The action ledger (§15.1): one row per proposed external write, keyed by (instance, run, tool call) so a
 		// replayed proposal conflicts onto the same row. Secret values never land here — only redacted args/results and
@@ -461,41 +469,54 @@ func (s *PostgresRunStore) Migrate(ctx context.Context) error {
 }
 
 func (s *PostgresRunStore) CreateRun(ctx context.Context, run NewRun) error {
-	return s.CreateRunAndEnqueue(ctx, run, nil)
+	_, err := s.CreateRunAndEnqueue(ctx, run, nil)
+	return err
 }
 
 // CreateRunAndEnqueue is CreateRun with the launch of the run's workflow inside the same transaction: enqueue runs
-// after the insert and before the commit, so the run exists if and only if its workflow does (ADR-0032). It runs even
-// when the run already existed, since enqueuing an existing workflow ID is a no-op in DBOS. A nil enqueue only creates.
-func (s *PostgresRunStore) CreateRunAndEnqueue(ctx context.Context, run NewRun, enqueue func(ctx context.Context, tx pgx.Tx) error) error {
+// after the insert and before the commit, so the run exists if and only if its workflow does (ADR-0032). When the
+// (instance, agent, idempotency key) already has a run, it returns that run's ID and neither inserts nor enqueues: the
+// existing run already has its workflow. A nil enqueue only creates.
+func (s *PostgresRunStore) CreateRunAndEnqueue(ctx context.Context, run NewRun, enqueue func(ctx context.Context, tx pgx.Tx) error) (string, error) {
 	if run.RunID == "" || run.InstanceID == "" || run.AgentName == "" {
-		return errors.New("act: CreateRun requires RunID, InstanceID and AgentName")
+		return "", errors.New("act: CreateRun requires RunID, InstanceID and AgentName")
 	}
-	return s.inTx(ctx, func(tx pgx.Tx) error {
-		// Insert the run in the queued state. ON CONFLICT DO NOTHING makes a replayed Start a no-op rather than a
-		// duplicate-key error: idempotency is enforced here, not only inside the workflow engine.
+	runID := run.RunID
+	err := s.inTx(ctx, func(tx pgx.Tx) error {
+		// Insert the run in the queued state. ON CONFLICT DO NOTHING, on any unique key, makes a replayed Start a no-op
+		// rather than a duplicate-key error: the same key (agent_runs_instance_agent_idem_uidx) or the same run ID.
 		ct, err := tx.Exec(ctx, fmt.Sprintf(`
 			INSERT INTO %s (run_id, instance_id, organization_id, project_id, agent_name, spec_hash, trigger,
 				trigger_ref, idempotency_key, conversation_id, actor_subject, actor_service_principal, status)
 			VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
-			ON CONFLICT (run_id) DO NOTHING`, s.t("agent_runs")),
+			ON CONFLICT DO NOTHING`, s.t("agent_runs")),
 			run.RunID, run.InstanceID, nullIfEmpty(run.OrganizationID), nullIfEmpty(run.ProjectID), run.AgentName,
 			run.SpecHash, run.Trigger, run.TriggerRef, run.IdempotencyKey, run.ConversationID, run.Actor.Subject,
 			run.Actor.ServicePrincipal, string(RunStatusQueued))
 		if err != nil {
 			return fmt.Errorf("insert run: %w", err)
 		}
-		// A run that already existed has its queued event from the first create.
-		if ct.RowsAffected() > 0 {
-			if _, err := s.appendEventTx(ctx, tx, run.RunID, run.InstanceID, EventTypeQueued, "", RunStatusQueued, nil); err != nil {
-				return err
-			}
+		if ct.RowsAffected() == 0 {
+			// The key already has its run: return it. Matching on the key first is what attaches a retry to a run whose
+			// ID has the pre-ADR-0034 format.
+			return tx.QueryRow(ctx, fmt.Sprintf(`
+				SELECT run_id FROM %s
+				WHERE (instance_id=$2 AND agent_name=$3 AND idempotency_key=$4 AND $4 <> '') OR run_id=$1
+				ORDER BY (run_id=$1) LIMIT 1`, s.t("agent_runs")),
+				run.RunID, run.InstanceID, run.AgentName, run.IdempotencyKey).Scan(&runID)
+		}
+		if _, err := s.appendEventTx(ctx, tx, run.RunID, run.InstanceID, EventTypeQueued, "", RunStatusQueued, nil); err != nil {
+			return err
 		}
 		if enqueue != nil {
 			return enqueue(ctx, tx)
 		}
 		return nil
 	})
+	if err != nil {
+		return "", err
+	}
+	return runID, nil
 }
 
 func (s *PostgresRunStore) RecordTransition(ctx context.Context, tr RunTransition) error {

@@ -111,7 +111,7 @@ func (n *actApprovalPushNotifier) NotifyPendingApprovals(ctx context.Context, pe
 		Recipients:         recipients,
 		Title:              fmt.Sprintf("Aprobación pendiente: %s", displayName),
 		Body:               body,
-		LinkPath:           agentRunPath(org, project, pending.AgentName, pending.IdempotencyKey),
+		LinkPath:           agentRunPath(org, project, pending.RunID),
 		Tag:                fmt.Sprintf("act:%s/%s/%s", org, project, pending.RunID),
 		PendingByRecipient: pendingByRecipient,
 	})
@@ -318,10 +318,8 @@ func (n *actApprovalPushNotifier) warn(ctx context.Context, msg string, pending 
 	)
 }
 
-// agentRunPath returns the frontend path of a run's detail page. It mirrors runDetailPath in
-// web-admin/src/features/agents/run-id.ts: the URL carries the agent name and the run's idempotency key, NOT the
-// composite run ID, which the frontend recomposes from the path.
-func agentRunPath(org, project, agentName, idempotencyKey string) string {
-	return fmt.Sprintf("/%s/%s/-/agents/%s/runs/%s",
-		url.PathEscape(org), url.PathEscape(project), url.PathEscape(agentName), url.PathEscape(idempotencyKey))
+// agentRunPath returns the frontend path of a run's detail page, which addresses the run by its ID (ADR-0034). It
+// mirrors runDetailPath in web-admin/src/features/agents/run-id.ts.
+func agentRunPath(org, project, runID string) string {
+	return fmt.Sprintf("/%s/%s/-/agents/runs/%s", url.PathEscape(org), url.PathEscape(project), url.PathEscape(runID))
 }

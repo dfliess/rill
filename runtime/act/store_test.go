@@ -19,6 +19,9 @@ func seedRun(t *testing.T, store *act.PostgresRunStore, instanceID, runID string
 	}))
 }
 
+// newRunID returns a run ID of the kind Start assigns: an opaque UUID v7 (ADR-0034).
+func newRunID() string { return uuid.Must(uuid.NewV7()).String() }
+
 // newRunStore returns a migrated PostgresRunStore on a schema unique to this test, so tests never see each other's
 // rows and a rerun starts clean. It reuses the same Postgres as the DBOS spike (requirePostgres skips if it is down).
 func newRunStore(t *testing.T) *act.PostgresRunStore {
@@ -40,7 +43,7 @@ func TestRunStoreRoundTrip(t *testing.T) {
 	ctx := t.Context()
 
 	const instanceID = "inst-round-trip"
-	runID := act.ComposeRunID(instanceID, "triage", "key-1")
+	runID := newRunID()
 
 	require.NoError(t, store.CreateRun(ctx, act.NewRun{
 		RunID:          runID,
@@ -96,7 +99,7 @@ func TestRunStoreTriggerRefRoundTrip(t *testing.T) {
 	ctx := t.Context()
 
 	const instanceID = "inst-trigger-ref"
-	runID := act.ComposeRunID(instanceID, "triage", "alert-1")
+	runID := newRunID()
 
 	require.NoError(t, store.CreateRun(ctx, act.NewRun{
 		RunID:      runID,
@@ -123,7 +126,7 @@ func TestRunStoreCreateRunIdempotent(t *testing.T) {
 	ctx := t.Context()
 
 	const instanceID = "inst-idem"
-	runID := act.ComposeRunID(instanceID, "triage", "key-1")
+	runID := newRunID()
 	newRun := act.NewRun{RunID: runID, InstanceID: instanceID, AgentName: "triage", IdempotencyKey: "key-1"}
 
 	require.NoError(t, store.CreateRun(ctx, newRun))
@@ -140,7 +143,7 @@ func TestRunStoreTransitionIdempotent(t *testing.T) {
 	ctx := t.Context()
 
 	const instanceID = "inst-idem-tr"
-	runID := act.ComposeRunID(instanceID, "triage", "key-1")
+	runID := newRunID()
 	require.NoError(t, store.CreateRun(ctx, act.NewRun{RunID: runID, InstanceID: instanceID, AgentName: "triage"}))
 
 	tr := act.RunTransition{InstanceID: instanceID, RunID: runID, Status: act.RunStatusRunning, EventType: act.EventTypeRunning}
@@ -160,7 +163,7 @@ func TestRunStoreTransitionGuardsTerminal(t *testing.T) {
 	ctx := t.Context()
 
 	const instanceID = "inst-terminal"
-	runID := act.ComposeRunID(instanceID, "triage", "k")
+	runID := newRunID()
 	require.NoError(t, store.CreateRun(ctx, act.NewRun{RunID: runID, InstanceID: instanceID, AgentName: "triage"}))
 	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{InstanceID: instanceID, RunID: runID, Status: act.RunStatusRunning, EventType: act.EventTypeRunning}))
 	_, err := store.CloseRun(ctx, act.RunTransition{InstanceID: instanceID, RunID: runID, Status: act.RunStatusSucceeded, EventType: act.EventTypeSucceeded})
@@ -193,7 +196,7 @@ func TestRunStoreTransitionSegmentScopedEdgesRepeat(t *testing.T) {
 	ctx := t.Context()
 
 	const instanceID = "inst-seg-edges"
-	runID := act.ComposeRunID(instanceID, "triage", "k")
+	runID := newRunID()
 	require.NoError(t, store.CreateRun(ctx, act.NewRun{RunID: runID, InstanceID: instanceID, AgentName: "triage"}))
 	require.NoError(t, store.RecordTransition(ctx, act.RunTransition{InstanceID: instanceID, RunID: runID, Status: act.RunStatusRunning, EventType: act.EventTypeRunning}))
 
@@ -301,7 +304,7 @@ func TestRunStoreMigrateMovesEventUniquenessToDedupeKey(t *testing.T) {
 	require.NoError(t, err)
 
 	const instanceID = "inst-migrate"
-	runID := act.ComposeRunID(instanceID, "triage", "k")
+	runID := newRunID()
 	_, err = pool.Exec(ctx, `INSERT INTO `+runs+` (run_id, instance_id, agent_name, status) VALUES ($1, $2, 'triage', $3)`,
 		runID, instanceID, string(act.RunStatusWaitingApproval))
 	require.NoError(t, err)
@@ -365,8 +368,8 @@ func TestRunStoreCancelPendingApprovals(t *testing.T) {
 	ctx := t.Context()
 
 	const instanceID = "inst-appr-cancel"
-	pendingRun := act.ComposeRunID(instanceID, "triage", "pending")
-	decidedRun := act.ComposeRunID(instanceID, "triage", "decided")
+	pendingRun := newRunID()
+	decidedRun := newRunID()
 	require.NoError(t, store.CreateRun(ctx, act.NewRun{RunID: pendingRun, InstanceID: instanceID, AgentName: "triage"}))
 	require.NoError(t, store.CreateRun(ctx, act.NewRun{RunID: decidedRun, InstanceID: instanceID, AgentName: "triage"}))
 
@@ -411,8 +414,8 @@ func TestRunStoreScopingIsolatesTenants(t *testing.T) {
 	ctx := t.Context()
 
 	const instA, instB = "inst-a", "inst-b"
-	runA := act.ComposeRunID(instA, "triage", "k")
-	runB := act.ComposeRunID(instB, "triage", "k")
+	runA := newRunID()
+	runB := newRunID()
 	require.NoError(t, store.CreateRun(ctx, act.NewRun{RunID: runA, InstanceID: instA, AgentName: "triage"}))
 	require.NoError(t, store.CreateRun(ctx, act.NewRun{RunID: runB, InstanceID: instB, AgentName: "triage"}))
 
@@ -449,7 +452,7 @@ func TestRunStoreListFilters(t *testing.T) {
 
 	const instanceID = "inst-filters"
 	mk := func(agent, key string, status act.RunStatus) string {
-		runID := act.ComposeRunID(instanceID, agent, key)
+		runID := newRunID()
 		require.NoError(t, store.CreateRun(ctx, act.NewRun{RunID: runID, InstanceID: instanceID, AgentName: agent}))
 		if status != act.RunStatusQueued {
 			tr := act.RunTransition{InstanceID: instanceID, RunID: runID, Status: status, EventType: string(status)}
@@ -485,8 +488,8 @@ func TestRunStoreAccessFilterInWhere(t *testing.T) {
 
 	const instanceID = "inst-access-filter"
 	mk := func(agent, key string) string {
-		runID := act.ComposeRunID(instanceID, agent, key)
-		require.NoError(t, store.CreateRun(ctx, act.NewRun{RunID: runID, InstanceID: instanceID, AgentName: agent}))
+		runID := newRunID()
+		require.NoError(t, store.CreateRun(ctx, act.NewRun{RunID: runID, InstanceID: instanceID, AgentName: agent, IdempotencyKey: key}))
 		return runID
 	}
 	// The accessible agent's runs are the OLDEST: a newest-first page of 2 with no WHERE restriction would
@@ -494,7 +497,7 @@ func TestRunStoreAccessFilterInWhere(t *testing.T) {
 	cob1 := mk("cobranza", "1")
 	cob2 := mk("cobranza", "2")
 	time.Sleep(20 * time.Millisecond) // separate created_on so the newest-first order is deterministic
-	mk("triage", "3")
+	tri3 := mk("triage", "3")
 	mk("triage", "4")
 	mk("triage", "5")
 
@@ -517,7 +520,7 @@ func TestRunStoreAccessFilterInWhere(t *testing.T) {
 		ApprovalID: act.ApprovalIDForToolCall(cob1, "call-1"), RunID: cob1, InstanceID: instanceID, ArgsHash: act.HashArgs("x"), CanonicalArgs: "x",
 	}))
 	require.NoError(t, store.CreateApproval(ctx, act.NewApproval{
-		ApprovalID: act.ApprovalIDForToolCall(act.ComposeRunID(instanceID, "triage", "3"), "call-1"), RunID: act.ComposeRunID(instanceID, "triage", "3"), InstanceID: instanceID, ArgsHash: act.HashArgs("y"), CanonicalArgs: "y",
+		ApprovalID: act.ApprovalIDForToolCall(tri3, "call-1"), RunID: tri3, InstanceID: instanceID, ArgsHash: act.HashArgs("y"), CanonicalArgs: "y",
 	}))
 	approvals, err := store.ListApprovals(ctx, act.ListApprovalsFilter{InstanceID: instanceID, AccessibleAgents: []string{"cobranza"}})
 	require.NoError(t, err)
@@ -535,7 +538,7 @@ func TestRunStoreApprovalLifecycle(t *testing.T) {
 	ctx := t.Context()
 
 	const instanceID = "inst-appr"
-	runID := act.ComposeRunID(instanceID, "triage", "k")
+	runID := newRunID()
 	require.NoError(t, store.CreateRun(ctx, act.NewRun{RunID: runID, InstanceID: instanceID, AgentName: "triage"}))
 
 	approvalID := act.ApprovalIDForToolCall(runID, "call-1")
@@ -589,7 +592,7 @@ func TestApprovalCanonicalArgsAreThePreimage(t *testing.T) {
 	ctx := t.Context()
 
 	const instanceID = "inst-appr-preimage"
-	runID := act.ComposeRunID(instanceID, "triage", "k")
+	runID := newRunID()
 	require.NoError(t, store.CreateRun(ctx, act.NewRun{RunID: runID, InstanceID: instanceID, AgentName: "triage"}))
 
 	// Arguments with unordered keys, nesting and multi-byte text: everything canonicalization has to pin down.
@@ -648,7 +651,7 @@ func TestCreateApprovalRequiresThePreimage(t *testing.T) {
 	ctx := t.Context()
 
 	const instanceID = "inst-appr-preimage-required"
-	runID := act.ComposeRunID(instanceID, "triage", "k")
+	runID := newRunID()
 	require.NoError(t, store.CreateRun(ctx, act.NewRun{RunID: runID, InstanceID: instanceID, AgentName: "triage"}))
 
 	// Deliberately without CanonicalArgs: each case below sets (or omits) it to make its own point.
@@ -780,7 +783,7 @@ func TestRunStoreMigrateAddsCanonicalArgs(t *testing.T) {
 	require.NoError(t, err)
 
 	const instanceID = "inst-migrate-args"
-	runID := act.ComposeRunID(instanceID, "triage", "k")
+	runID := newRunID()
 	_, err = pool.Exec(ctx, `INSERT INTO `+runs+` (run_id, instance_id, agent_name, status) VALUES ($1, $2, 'triage', $3)`,
 		runID, instanceID, string(act.RunStatusWaitingApproval))
 	require.NoError(t, err)

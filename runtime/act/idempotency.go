@@ -6,8 +6,8 @@ import (
 )
 
 // retryAttemptSeparator marks a retry attempt of a caller's idempotency key. A run that FAILED is not an answer,
-// so a caller that resupplies its key must not inherit it (issue #154); the next attempt gets a derived key, since
-// DBOS cannot re-execute a workflow ID that already reached a terminal state.
+// so a caller that resupplies its key must not inherit it (issue #154); the next attempt gets a derived key, since a
+// key has exactly one run and Start with it returns that run (ADR-0034).
 //
 // The separator is deliberately unlikely to appear in a caller's own key: keys sharing a family must be attempts
 // of one another, and a caller that literally supplies "…#retry-3" would have its key read as an attempt of
