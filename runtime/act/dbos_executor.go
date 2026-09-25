@@ -56,6 +56,10 @@ const (
 	// Recv records nothing in its own slot (only its timeout sleep, one slot later), so a Patch placed just
 	// before the wait reads that empty slot as "new workflow" and steers the parked run into the new branch,
 	// reproducing the same incident. TestPatchGuardsShapeChangeAgainstParkedRuns pins both halves of this rule.
+	//
+	// Retiring a patch follows Kairos ADR-0033, which is DBOS's own procedure: dbos.DeprecatePatch once no unfinished
+	// workflow predates the deploy that added the patch, then removal once none predates the deprecation. Both are
+	// checked in the database, never by calendar: a parked run can wait for months.
 	defaultApplicationVersion = "act-spike-v1"
 
 	// approvalWaitForever is the duration a run waits for a human decision. dbos.Recv has no "wait forever" argument and
