@@ -104,8 +104,14 @@
     @apply w-full;
   }
 
+  /* El embed de Rill ocupa todo el iframe y scrollea por dentro, y su mensaje
+     `resized` informa la altura del propio iframe, no la del canvas: no hay
+     altura de contenido que seguir. Así que el iframe mide lo que el canvas
+     `consumo_tenant` (Kairos-metrics) más la barra de fechas del embed, para
+     que solo scrollee la página. Si el canvas crece, hay que subir esto; el
+     canvas lo recuerda en su cabecera (kairos-cloud#211). */
   .embed-frame {
-    @apply relative w-full h-[1440px];
+    @apply relative w-full h-[2400px];
   }
 
   .embed-placeholder {
