@@ -232,7 +232,7 @@ func pointRecordingClientAt(m *mockMCPServer, rec *mcpCallRecorder) func() {
 
 // newMCPScriptedSession builds a session backed by the scripted model, with the given project variables available
 // for secret resolution. It keeps the project minimal: the MCP wiring under test needs no metrics view.
-func newMCPScriptedSession(t *testing.T, script *scriptedAIService, vars map[string]string) *ai.Session {
+func newMCPScriptedSession(t *testing.T, script *scriptedToolAIService, vars map[string]string) *ai.Session {
 	t.Helper()
 	rt, instanceID := testruntime.NewInstanceWithOptions(t, testruntime.InstanceOptions{
 		Files:     map[string]string{"rill.yaml": ""},
@@ -255,11 +255,11 @@ func TestDynamicAgentCallsMCPTool(t *testing.T) {
 	rec := &mcpCallRecorder{}
 	defer pointRecordingClientAt(m, rec)()
 
-	script := &scriptedAIService{
-		turns: []turnFunc{
+	script := &scriptedToolAIService{
+		turns: []toolTurnFunc{
 			// The model calls the sanitized, model-facing name (mcp_demo_echo), never the dotted effective name.
 			toolCallTurn("mcp_demo_echo", map[string]any{"message": "hola"}),
-			textTurn("Done: the tool echoed the message."),
+			textToolTurn("Done: the tool echoed the message."),
 		},
 	}
 	// The connector's declared secret name is upper case; ResolveVariables canonicalizes to lower case, so the
@@ -314,10 +314,10 @@ func TestDynamicAgentReadOnlyToolScrubsCredential(t *testing.T) {
 	rec := &mcpCallRecorder{}
 	defer pointRecordingClientAt(m, rec)()
 
-	script := &scriptedAIService{
-		turns: []turnFunc{
+	script := &scriptedToolAIService{
+		turns: []toolTurnFunc{
 			toolCallTurn("mcp_demo_whoami", map[string]any{"message": "who am i"}),
-			textTurn("Done."),
+			textToolTurn("Done."),
 		},
 	}
 	// The connector's resolved secret is the exact value the server echoes back, so a correct scrub must remove it.
@@ -359,8 +359,8 @@ func TestDynamicAgentRejectsUndiscoveredMCPTool(t *testing.T) {
 	m := newMockMCPServer(t, echoBuild)
 	defer pointClientAt(m)()
 
-	script := &scriptedAIService{
-		turns: []turnFunc{
+	script := &scriptedToolAIService{
+		turns: []toolTurnFunc{
 			// The server offers only echo; the model forces a call to a tool that was never discovered.
 			toolCallTurn("mcp.demo.delete_everything", map[string]any{}),
 		},
@@ -399,15 +399,15 @@ func TestDynamicAgentMCPSchemaPinEnforced(t *testing.T) {
 	m := newMockMCPServer(t, echoBuild)
 	defer pointClientAt(m)()
 
-	script := &scriptedAIService{
-		turns: []turnFunc{
+	script := &scriptedToolAIService{
+		turns: []toolTurnFunc{
 			// As a side effect of this turn, drift the server's echo schema after discovery pinned it but before
 			// the call executes. The pinned hash the run captured no longer matches the live schema.
 			func(opts *drivers.CompleteOptions) *aiv1.CompletionMessage {
 				m.setBuild(changedEchoBuild)
 				return toolCallTurn("mcp_demo_echo", map[string]any{"message": "hola"})(opts)
 			},
-			textTurn("The tool call did not succeed."),
+			textToolTurn("The tool call did not succeed."),
 		},
 	}
 	s := newMCPScriptedSession(t, script, map[string]string{"MCP_TOKEN": "s3cr3t"})
@@ -442,10 +442,10 @@ func TestDynamicAgentUnregistersMCPToolsAfterRun(t *testing.T) {
 	m := newMockMCPServer(t, echoBuild)
 	defer pointClientAt(m)()
 
-	script := &scriptedAIService{
-		turns: []turnFunc{
+	script := &scriptedToolAIService{
+		turns: []toolTurnFunc{
 			toolCallTurn("mcp_demo_echo", map[string]any{"message": "hola"}),
-			textTurn("Done."),
+			textToolTurn("Done."),
 		},
 	}
 	s := newMCPScriptedSession(t, script, map[string]string{"MCP_TOKEN": "s3cr3t"})
@@ -483,7 +483,7 @@ func TestDynamicAgentCleansUpMCPToolsOnPartialFailure(t *testing.T) {
 	m := newMockMCPServer(t, echoBuild)
 	defer pointClientAt(m)()
 
-	script := &scriptedAIService{}
+	script := &scriptedToolAIService{}
 	s := newMCPScriptedSession(t, script, map[string]string{"MCP_TOKEN": "s3cr3t"})
 
 	provider := ai.NewStaticAgentProvider(&ai.AgentSnapshot{
@@ -520,8 +520,8 @@ func TestDynamicAgentProposesWriteTool(t *testing.T) {
 	rec := &mcpCallRecorder{}
 	defer pointRecordingClientAt(m, rec)()
 
-	script := &scriptedAIService{
-		turns: []turnFunc{
+	script := &scriptedToolAIService{
+		turns: []toolTurnFunc{
 			// One turn: the model calls the governed write and the loop pauses on it. No second turn runs, because the
 			// segment does not continue past the proposal (nothing is said before approval).
 			toolCallTurn("mcp_demo_create_issue", map[string]any{"project": "OPS", "summary": "Disk full"}),
@@ -568,8 +568,8 @@ func TestDynamicAgentUntrustedReadOnlyHintProposes(t *testing.T) {
 	rec := &mcpCallRecorder{}
 	defer pointRecordingClientAt(m, rec)()
 
-	script := &scriptedAIService{
-		turns: []turnFunc{
+	script := &scriptedToolAIService{
+		turns: []toolTurnFunc{
 			// One turn: the model calls the hinted-but-untrusted tool and the loop pauses on the proposal.
 			toolCallTurn("mcp_demo_echo", map[string]any{"message": "hola"}),
 		},
@@ -612,12 +612,12 @@ func TestDynamicAgentResumesAfterAction(t *testing.T) {
 	rec := &mcpCallRecorder{}
 	defer pointRecordingClientAt(m, rec)()
 
-	script := &scriptedAIService{
-		turns: []turnFunc{
+	script := &scriptedToolAIService{
+		turns: []toolTurnFunc{
 			// Segment 1: propose the write; the loop pauses on it without a further turn (nothing is said before approval).
 			toolCallTurn("mcp_demo_create_issue", map[string]any{"project": "OPS", "summary": "Disk full"}),
 			// Segment 2 (resume): having seen the executed result injected, close.
-			textTurn("Done! I created the issue: PROJ-42."),
+			textToolTurn("Done! I created the issue: PROJ-42."),
 		},
 	}
 	s := newMCPScriptedSession(t, script, map[string]string{"MCP_TOKEN": "s3cr3t"})

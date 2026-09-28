@@ -13,15 +13,15 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
-// turnFunc produces the assistant message the simulated model returns for one completion call.
-type turnFunc func(opts *drivers.CompleteOptions) *aiv1.CompletionMessage
+// toolTurnFunc produces the assistant message the simulated model returns for one completion call.
+type toolTurnFunc func(opts *drivers.CompleteOptions) *aiv1.CompletionMessage
 
-// scriptedAIService is a deterministic drivers.AIService for tests. Each Complete call consumes the next scripted
+// scriptedToolAIService is a deterministic drivers.AIService for tests. Each Complete call consumes the next scripted
 // turn (falling back to defaultTurn once turns are exhausted) and records the messages and tools it was given, so
 // tests can assert what the model saw and how many times it was invoked.
-type scriptedAIService struct {
-	turns       []turnFunc
-	defaultTurn turnFunc
+type scriptedToolAIService struct {
+	turns       []toolTurnFunc
+	defaultTurn toolTurnFunc
 
 	mu       sync.Mutex
 	calls    int
@@ -29,9 +29,9 @@ type scriptedAIService struct {
 	toolSets [][]*aiv1.Tool
 }
 
-var _ drivers.AIService = (*scriptedAIService)(nil)
+var _ drivers.AIService = (*scriptedToolAIService)(nil)
 
-func (s *scriptedAIService) Complete(_ context.Context, opts *drivers.CompleteOptions) (*drivers.CompleteResult, error) {
+func (s *scriptedToolAIService) Complete(_ context.Context, opts *drivers.CompleteOptions) (*drivers.CompleteResult, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -44,7 +44,7 @@ func (s *scriptedAIService) Complete(_ context.Context, opts *drivers.CompleteOp
 	}
 	s.calls++
 	if turn == nil {
-		turn = textTurn("done")
+		turn = textToolTurn("done")
 	}
 
 	return &drivers.CompleteResult{
@@ -55,8 +55,8 @@ func (s *scriptedAIService) Complete(_ context.Context, opts *drivers.CompleteOp
 	}, nil
 }
 
-// textTurn makes the model reply with a plain text message (ending the tool loop).
-func textTurn(text string) turnFunc {
+// textToolTurn makes the model reply with a plain text message (ending the tool loop).
+func textToolTurn(text string) toolTurnFunc {
 	return func(_ *drivers.CompleteOptions) *aiv1.CompletionMessage {
 		return &aiv1.CompletionMessage{
 			Role:    "assistant",
@@ -66,7 +66,7 @@ func textTurn(text string) turnFunc {
 }
 
 // toolCallTurn makes the model request a tool call.
-func toolCallTurn(name string, input map[string]any) turnFunc {
+func toolCallTurn(name string, input map[string]any) toolTurnFunc {
 	return func(_ *drivers.CompleteOptions) *aiv1.CompletionMessage {
 		in, err := structpb.NewStruct(input)
 		if err != nil {
@@ -84,7 +84,7 @@ func toolCallTurn(name string, input map[string]any) turnFunc {
 }
 
 // newScriptedSession creates a session backed by the given simulated model.
-func newScriptedSession(t *testing.T, script *scriptedAIService) *ai.Session {
+func newScriptedSession(t *testing.T, script *scriptedToolAIService) *ai.Session {
 	rt, instanceID := testruntime.NewInstanceWithOptions(t, testruntime.InstanceOptions{
 		Files: map[string]string{
 			"rill.yaml": `ai_instructions: "Project rule: mention data residency when relevant."`,
@@ -118,7 +118,7 @@ measures:
 }
 
 // firstSystemPrompt returns the text of the first system message from the first recorded completion.
-func firstSystemPrompt(t *testing.T, script *scriptedAIService) string {
+func firstSystemPrompt(t *testing.T, script *scriptedToolAIService) string {
 	t.Helper()
 	require.NotEmpty(t, script.inputs, "model was never called")
 	for _, m := range script.inputs[0] {
@@ -131,7 +131,7 @@ func firstSystemPrompt(t *testing.T, script *scriptedAIService) string {
 }
 
 // advertisedToolNames returns the names of the tools shown to the model on the first completion.
-func advertisedToolNames(script *scriptedAIService) []string {
+func advertisedToolNames(script *scriptedToolAIService) []string {
 	var names []string
 	if len(script.toolSets) > 0 {
 		for _, tool := range script.toolSets[0] {
@@ -146,9 +146,9 @@ func advertisedToolNames(script *scriptedAIService) []string {
 // rendered as a chat starts with the instruction. The agent's final response is persisted too, as a trailing assistant
 // text turn, so a resumed segment (and the UI) sees what the model said and not just its tool calls.
 func TestDynamicAgentPersistsUserPromptTurn(t *testing.T) {
-	script := &scriptedAIService{
-		turns: []turnFunc{
-			textTurn("Here is my analysis."),
+	script := &scriptedToolAIService{
+		turns: []toolTurnFunc{
+			textToolTurn("Here is my analysis."),
 		},
 	}
 	s := newScriptedSession(t, script)
@@ -181,10 +181,10 @@ func TestDynamicAgentPersistsUserPromptTurn(t *testing.T) {
 // instructions and the project instructions to the model, can call a metrics-view tool in its allowed set, and
 // returns the model's final response.
 func TestDynamicAgentRespondsWithInstructions(t *testing.T) {
-	script := &scriptedAIService{
-		turns: []turnFunc{
+	script := &scriptedToolAIService{
+		turns: []toolTurnFunc{
 			toolCallTurn(ai.ListMetricsViewsName, map[string]any{}),
-			textTurn("Available metrics view: orders"),
+			textToolTurn("Available metrics view: orders"),
 		},
 	}
 	s := newScriptedSession(t, script)
@@ -216,8 +216,8 @@ func TestDynamicAgentRespondsWithInstructions(t *testing.T) {
 // TestDynamicAgentRejectsUnlistedTool verifies fail-closed enforcement: a tool that is otherwise accessible but is
 // not in the snapshot is neither advertised to the model nor executed when the model forcibly proposes it.
 func TestDynamicAgentRejectsUnlistedTool(t *testing.T) {
-	script := &scriptedAIService{
-		turns: []turnFunc{
+	script := &scriptedToolAIService{
+		turns: []toolTurnFunc{
 			// The model forces a call to `navigate`, which the caller can access but the snapshot does not list.
 			toolCallTurn(ai.NavigateName, map[string]any{"kind": "metrics_view", "name": "orders"}),
 		},
@@ -249,7 +249,7 @@ func TestDynamicAgentRejectsUnlistedTool(t *testing.T) {
 // snapshot that declares a write/development tool (here write_file) is rejected before the model is ever invoked,
 // even though that path does not pass through the reconciler that normally rejects such tools.
 func TestDynamicAgentRejectsNonDeclarableTool(t *testing.T) {
-	script := &scriptedAIService{}
+	script := &scriptedToolAIService{}
 	s := newScriptedSession(t, script)
 
 	provider := ai.NewStaticAgentProvider(&ai.AgentSnapshot{
@@ -276,7 +276,7 @@ func TestDynamicAgentRejectsNonDeclarableTool(t *testing.T) {
 // is invoked exactly MaxSteps times and then the run is failed rather than looping unbounded.
 func TestDynamicAgentMaxStepsCutsLoop(t *testing.T) {
 	const maxSteps = 3
-	script := &scriptedAIService{
+	script := &scriptedToolAIService{
 		// No scripted turns: every completion falls back to this, so the model always asks to call the tool again.
 		defaultTurn: toolCallTurn(ai.ListMetricsViewsName, map[string]any{}),
 	}
