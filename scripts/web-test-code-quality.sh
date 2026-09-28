@@ -95,6 +95,12 @@ echo "== i18n guard: catalog integrity + migrated areas =="
 # enforced: --strict makes any new finding fatal.
 node ./scripts/i18n-guard.js --strict || exit_code=$?
 
+echo ""
+echo "== brand guard: no Rill brand on Tenant-visible surfaces =="
+# Kairos: upstream features reach the Tenant with the Rill name hardcoded
+# (often behind `i18n-ignore`). See the header of scripts/brand-guard.js.
+node ./scripts/brand-guard.js || exit_code=$?
+
 if [[ "$LOCAL" == "true" ]]; then
   echo ""
   echo "== lint and type checks for web local =="

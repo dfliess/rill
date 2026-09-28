@@ -1,0 +1,28 @@
+{
+  "catalog": {
+    "auth_authorize_rill_cli": "operador: Rill CLI (ADR-0015)",
+    "auth_cli_success_message": "operador: Rill CLI (ADR-0015)",
+    "auth_cli_success_title": "operador: Rill CLI (ADR-0015)",
+    "auth_confirm_code_displayed": "operador: Rill CLI (ADR-0015)",
+    "github_close_and_continue_cli": "operador: deploy con GitHub desde el Rill CLI (ADR-0015)",
+    "footer_rill_developer": "operador: pie de Navigation, solo en web-local y el workspace de edición (ADR-0015)",
+    "github_star_message": "operador: GithubStarButton, solo en el pie de Navigation",
+    "github_star_title": "operador: GithubStarButton, solo en el pie de Navigation",
+    "status_models_created_in_developer": "operador: estado del proyecto (ADR-0015)",
+    "parquet_preview_page_title": "operador: Rill Developer, superficie de autoría (ADR-0015)"
+  },
+  "markup": {
+    "web-admin/src/features/organizations/ShareOrganizationCTA.svelte": "operador: comando del Rill CLI; sin uso en web-admin",
+    "web-common/src/features/authentication/LocalAvatarButton.svelte": "operador: solo en ApplicationHeader de web-local",
+    "web-common/src/features/billing/TrialDetailsDialog.svelte": "no se muestra: billing no-op (ADR-0014)",
+    "web-common/src/features/canvas/inspector/DefaultFilterDisplay.svelte": "operador: inspector del editor visual de canvas (ADR-0015)",
+    "web-common/src/features/dashboards/workspace/DeployProjectCTA.svelte": "operador: deploy desde Rill Developer",
+    "web-common/src/features/entity-management/RuntimeTrafficLights.svelte": "operador: pie de Navigation, solo en web-local y el workspace de edición",
+    "web-common/src/features/project/deploy/ProjectRedeployConfirmDialog.svelte": "operador: deploy desde Rill Developer",
+    "web-common/src/features/project/deploy/ProjectSelectorItem.svelte": "operador: deploy desde Rill Developer",
+    "web-common/src/features/project/deploy/PushToGitForDeployDialog.svelte": "operador: deploy desde Rill Developer",
+    "web-common/src/features/project/deploy/RequestProjectAccessDialog.svelte": "operador: deploy desde Rill Developer",
+    "web-common/src/features/project/deploy/UpdateProjectPopup.svelte": "operador: deploy desde Rill Developer",
+    "web-common/src/features/workspaces/WorkspaceDispatcher.svelte": "operador: Rill Developer, superficie de autoría (ADR-0015)"
+  }
+}
