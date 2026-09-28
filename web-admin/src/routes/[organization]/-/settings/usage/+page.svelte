@@ -111,7 +111,7 @@
      que solo scrollee la página. Si el canvas crece, hay que subir esto; el
      canvas lo recuerda en su cabecera (kairos-cloud#211). */
   .embed-frame {
-    @apply relative w-full h-[2400px];
+    @apply relative w-full h-[2260px];
   }
 
   .embed-placeholder {
