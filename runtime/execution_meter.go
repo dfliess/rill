@@ -65,6 +65,11 @@ func executionMetric(self *runtimev1.Resource) (string, []attribute.KeyValue, bo
 		if e.GetErrorMessage() != "" {
 			outcome = "error"
 		}
+		// A report with the AI resolver is priced like an Ask, not like a query (kairos-cloud ADR-0027). Keeping the
+		// "report_execution_" prefix lets the existing metering filters pass it through unchanged.
+		if rep.GetSpec().GetResolver() == "ai" {
+			outcome = "ai_" + outcome
+		}
 		return "report_execution_" + outcome, executionAttrs(RequestSourceReport, self, e.GetAdhoc()), true
 	}
 

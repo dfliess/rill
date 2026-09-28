@@ -30,12 +30,15 @@ func TestExecutionMetric(t *testing.T) {
 			}}},
 		}
 	}
-	report := func(errMsg string, adhoc bool) *runtimev1.Resource {
+	report := func(resolver, errMsg string, adhoc bool) *runtimev1.Resource {
 		return &runtimev1.Resource{
 			Meta: &runtimev1.ResourceMeta{Name: &runtimev1.ResourceName{Kind: ResourceKindReport, Name: "weekly-collections"}},
-			Resource: &runtimev1.Resource_Report{Report: &runtimev1.Report{State: &runtimev1.ReportState{
-				ExecutionHistory: []*runtimev1.ReportExecution{{Adhoc: adhoc, ErrorMessage: errMsg}},
-			}}},
+			Resource: &runtimev1.Resource_Report{Report: &runtimev1.Report{
+				Spec: &runtimev1.ReportSpec{Resolver: resolver},
+				State: &runtimev1.ReportState{
+					ExecutionHistory: []*runtimev1.ReportExecution{{Adhoc: adhoc, ErrorMessage: errMsg}},
+				},
+			}},
 		}
 	}
 
@@ -51,8 +54,11 @@ func TestExecutionMetric(t *testing.T) {
 		{"alert failed, manual", alert(runtimev1.AssertionStatus_ASSERTION_STATUS_FAIL, true), "alert_execution_failed", "alert", "stock-break", true},
 		{"alert error", alert(runtimev1.AssertionStatus_ASSERTION_STATUS_ERROR, false), "alert_execution_error", "alert", "stock-break", false},
 		{"alert without result counts as error", alert(runtimev1.AssertionStatus_ASSERTION_STATUS_UNSPECIFIED, false), "alert_execution_error", "alert", "stock-break", false},
-		{"report sent, manual", report("", true), "report_execution_sent", "report", "weekly-collections", true},
-		{"report error", report("Report run failed: boom", false), "report_execution_error", "report", "weekly-collections", false},
+		{"report sent, manual", report("metrics_sql", "", true), "report_execution_sent", "report", "weekly-collections", true},
+		{"report error", report("metrics_sql", "Report run failed: boom", false), "report_execution_error", "report", "weekly-collections", false},
+		{"legacy query report sent", report("", "", false), "report_execution_sent", "report", "weekly-collections", false},
+		{"ai report sent", report("ai", "", false), "report_execution_ai_sent", "report", "weekly-collections", false},
+		{"ai report error, manual", report("ai", "Report run failed: boom", true), "report_execution_ai_error", "report", "weekly-collections", true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
