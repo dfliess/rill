@@ -11,8 +11,8 @@ describe("runDetailPath", () => {
   });
 
   it("encodes the id, since a run recorded before ADR-0034 has slashes in it", () => {
-    expect(
-      runDetailPath("acme", "sales", { runId: "32:abc/7:triage/k" }),
-    ).toBe("/acme/sales/-/agents/runs/32%3Aabc%2F7%3Atriage%2Fk");
+    expect(runDetailPath("acme", "sales", { runId: "32:abc/7:triage/k" })).toBe(
+      "/acme/sales/-/agents/runs/32%3Aabc%2F7%3Atriage%2Fk",
+    );
   });
 });
