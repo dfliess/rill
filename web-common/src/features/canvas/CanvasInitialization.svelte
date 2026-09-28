@@ -240,7 +240,7 @@
 
 <svelte:head>
   {#if !isolated && urlStateOverride === undefined}
-    <title>{canvasTitle || `${canvasName} - Rill`}</title>
+    <title>{canvasTitle || `${canvasName} - Kairos`}</title>
   {/if}
 </svelte:head>
 

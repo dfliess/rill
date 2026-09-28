@@ -7,6 +7,7 @@
   import ReadonlyExpressionFilters from "@rilldata/web-common/features/dashboards/filters/ReadonlyExpressionFilters.svelte";
   import ThemeProvider from "@rilldata/web-common/features/dashboards/ThemeProvider.svelte";
   import { EmbedStore } from "@rilldata/web-common/features/embeds/embed-store";
+  import { featureFlags } from "@rilldata/web-common/features/feature-flags";
   import { buildExportFilename } from "@rilldata/web-common/features/exports/filename";
   import { downloadNodeAsPng } from "@rilldata/web-common/features/exports/png/export-png";
   import { extractErrorMessage } from "@rilldata/web-common/lib/errors";
@@ -41,6 +42,7 @@
   // Embedded dashboards live inside a customer's product, so the exported
   // image should not carry Rill branding there.
   const isEmbedded = EmbedStore.isEmbedded();
+  const { whiteLabel } = featureFlags;
 
   let {
     theme,
@@ -177,7 +179,7 @@
               <footer
                 class="flex items-center justify-between text-xs text-fg-muted"
               >
-                {#if !isEmbedded}
+                {#if !isEmbedded && !$whiteLabel}
                   <!-- i18n-ignore: standalone product name -->
                   <span>Rill</span>
                 {/if}

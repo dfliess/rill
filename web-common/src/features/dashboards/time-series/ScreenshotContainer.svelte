@@ -20,6 +20,7 @@
   import type { ExpressionFilterManager } from "@rilldata/web-common/features/dashboards/filters/ExpressionFilterManager.svelte.ts";
   import ReadonlyExpressionFilters from "@rilldata/web-common/features/dashboards/filters/ReadonlyExpressionFilters.svelte";
   import { EmbedStore } from "@rilldata/web-common/features/embeds/embed-store";
+  import { featureFlags } from "@rilldata/web-common/features/feature-flags";
 
   export let open = false;
   export let measure: MetricsViewSpecMeasure;
@@ -49,6 +50,7 @@
   // Embedded dashboards live inside a customer's product, so the exported
   // image should not carry Rill branding there.
   const isEmbedded = EmbedStore.isEmbedded();
+  const { whiteLabel } = featureFlags;
 
   let captureNode: HTMLDivElement;
   let downloading = false;
@@ -183,7 +185,7 @@
         </div>
 
         <footer class="flex items-center justify-between text-xs text-fg-muted">
-          {#if !isEmbedded}
+          {#if !isEmbedded && !$whiteLabel}
             <!-- i18n-ignore: standalone product name -->
             <span>Rill</span>
           {/if}
