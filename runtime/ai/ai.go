@@ -1624,6 +1624,13 @@ func (s *Session) NewCompletionMessage(m *Message) (*aiv1.CompletionMessage, err
 	}
 
 	switch m.Type {
+	case MessageTypeText:
+		// A plain turn keeps the role it was written with: a resumed Act segment rebuilds the user's prompt and the
+		// injected action result from the tree, and sending them as assistant ends the request in a model turn.
+		if m.Role != "" {
+			role = m.Role
+		}
+
 	case MessageTypeCall:
 		// Calls made by the assistant are serialized as tool calls.
 		// Any other calls are serialized as user messages.

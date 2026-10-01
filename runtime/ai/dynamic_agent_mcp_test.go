@@ -664,3 +664,56 @@ func TestDynamicAgentResumesAfterAction(t *testing.T) {
 	}
 	require.True(t, sawInjected, "the resume injects the executed action's result as a turn in the session")
 }
+
+// TestDynamicAgentResumeKeepsTextRoles verifies kairos-cloud#217: a resumed segment rebuilds the conversation from the
+// session tree, and the plain text turns in it keep their roles. The user's prompt and the injected action result were
+// sent as assistant turns, so the request ended in a model turn, which Gemini rejects intermittently with "Requests
+// ending with a model turn are not supported". Verified by mutation: without the MessageTypeText case in
+// NewCompletionMessage both turns come out as assistant.
+func TestDynamicAgentResumeKeepsTextRoles(t *testing.T) {
+	m := newMockMCPServer(t, createIssueBuild)
+	rec := &mcpCallRecorder{}
+	defer pointRecordingClientAt(m, rec)()
+
+	script := &scriptedToolAIService{
+		turns: []toolTurnFunc{
+			toolCallTurn("mcp_demo_create_issue", map[string]any{"project": "OPS", "summary": "Disk full"}),
+			textToolTurn("Done."),
+		},
+	}
+	s := newMCPScriptedSession(t, script, map[string]string{"MCP_TOKEN": "s3cr3t"})
+	snap := &ai.AgentSnapshot{
+		Name:          "mcp_agent",
+		Instructions:  "Create an issue when asked.",
+		MCPConnectors: []ai.MCPConnector{{Name: "demo", URL: "https://mcp.example.test/mcp", AuthSecret: "MCP_TOKEN"}},
+		MaxSteps:      5,
+	}
+
+	const prompt = "Open a ticket: disk full on OPS."
+	seg1, err := (&ai.DynamicAgent{Snapshot: snap}).Run(t.Context(), s, prompt, nil)
+	require.NoError(t, err)
+	require.Len(t, seg1.Proposed, 1)
+	_, err = (&ai.DynamicAgent{Snapshot: snap}).Run(t.Context(), s, "", []*ai.InjectedResult{{
+		ToolCallID: seg1.Proposed[0].ToolCallID,
+		Tool:       seg1.Proposed[0].Tool,
+		Message:    "created PROJ-42",
+	}})
+	require.NoError(t, err)
+
+	require.Len(t, script.inputs, 2, "one completion per segment")
+	resumed := script.inputs[1]
+	textOf := func(msg *aiv1.CompletionMessage) string {
+		var b strings.Builder
+		for _, c := range msg.Content {
+			b.WriteString(c.GetText())
+		}
+		return b.String()
+	}
+
+	require.Equal(t, "system", resumed[0].Role)
+	require.Equal(t, "user", resumed[1].Role, "the user's prompt is a user turn")
+	require.Equal(t, prompt, textOf(resumed[1]))
+	last := resumed[len(resumed)-1]
+	require.Equal(t, "user", last.Role, "the request ends in the injected result as a user turn, not a model turn")
+	require.Contains(t, textOf(last), "created PROJ-42")
+}
