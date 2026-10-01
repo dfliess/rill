@@ -215,7 +215,11 @@
 {/snippet}
 
 <Header borderBottom={!onProjectPage}>
-  <HeaderLogo href={rillLogoHref} logoUrl={organizationLogoUrl} />
+  <HeaderLogo
+    href={rillLogoHref}
+    logoUrl={organizationLogoUrl}
+    faviconUrl={$page.data.organization?.faviconUrl}
+  />
   {#if onPublicURLPage}
     <PageTitle title={publicURLDashboardTitle} />
   {:else if organization}

@@ -42,7 +42,11 @@
 </script>
 
 <Header borderBottom={!onOrgPage}>
-  <HeaderLogo href={rillLogoHref} logoUrl={organizationLogoUrl} />
+  <HeaderLogo
+    href={rillLogoHref}
+    logoUrl={organizationLogoUrl}
+    faviconUrl={$page.data.organization?.faviconUrl}
+  />
   {#if organization}
     <Breadcrumbs {pathParts} {currentPath} />
   {/if}

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { page } from "$app/stores";
   import Breadcrumbs from "@rilldata/web-common/components/navigation/breadcrumbs/Breadcrumbs.svelte";
   import Header from "@rilldata/web-common/layout/header/Header.svelte";
   import HeaderLogo from "@rilldata/web-common/layout/header/HeaderLogo.svelte";
@@ -36,7 +37,11 @@
 </script>
 
 <Header borderBottom>
-  <HeaderLogo href={rillLogoHref} logoUrl={organizationLogoUrl} />
+  <HeaderLogo
+    href={rillLogoHref}
+    logoUrl={organizationLogoUrl}
+    faviconUrl={$page.data.organization?.faviconUrl}
+  />
   <Breadcrumbs {pathParts} {currentPath} />
 
   <!-- max-w-full bounds the cluster so its flex-wrap can engage on narrow
