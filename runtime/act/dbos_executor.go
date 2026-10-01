@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"runtime/debug"
 	"time"
 
 	"github.com/dbos-inc/dbos-transact-golang/dbos"
@@ -404,12 +405,17 @@ func (e *DBOSExecutor) Result(runID string) (AgentRunResult, error) {
 // non-deterministic or side-effecting operation is a checkpointed step, and the body only branches on values that
 // are already checkpointed. On recovery, completed steps replay from their checkpoints instead of re-executing.
 // After binding the run to its snapshot it hands over to the segmented loop (runSegmentedLoop).
-func (e *DBOSExecutor) runAgentWorkflow(ctx dbos.Context, in AgentRunInput) (AgentRunResult, error) {
+func (e *DBOSExecutor) runAgentWorkflow(ctx dbos.Context, in AgentRunInput) (res AgentRunResult, err error) {
 	runID, err := dbos.GetWorkflowID(ctx)
 	if err != nil {
 		return AgentRunResult{}, err
 	}
-	res := AgentRunResult{RunID: runID, AgentName: in.AgentName, Status: RunStatusRunning}
+	res = AgentRunResult{RunID: runID, AgentName: in.AgentName, Status: RunStatusRunning}
+	defer func() {
+		if r := recover(); r != nil {
+			res, err = e.closeAfterPanic(ctx, in, runID, res, r)
+		}
+	}()
 
 	// Step 1: capture the immutable snapshot. After this checkpoint the run is bound to this definition; editing
 	// the agent resource afterwards does not change what this run does. It runs while the run is still queued so the
@@ -586,6 +592,62 @@ func (e *DBOSExecutor) closeRun(ctx dbos.Context, in AgentRunInput, runID string
 			"run", runID, "stage", what, "status", tr.Status, "err", err)
 	}
 	e.withdrawPendingActions(in.InstanceID, runID)
+}
+
+// closeAfterPanic closes a run whose workflow body panicked (kairos-cloud#216). DBOS recovers the panic outside the
+// workflow and marks it ERROR, which it never recovers, so without this the run would read running forever and an
+// action caught mid-write would stay executing with nobody to revisit it.
+//
+// It writes directly, not through RunAsStep: the panic unwound through whatever step was running, and an errored
+// workflow is never replayed, so these writes take no slot and change no step sequence (no dbos.Patch needed).
+// An action still executing is moved to indeterminate, since nobody can tell whether its write landed; the panicked
+// attempt is the only owner a run can have, so there is no live attempt to clobber. A cancelled context is left to
+// DBOS, as in fail: the run is draining and the next process recovers it.
+func (e *DBOSExecutor) closeAfterPanic(ctx dbos.Context, in AgentRunInput, runID string, res AgentRunResult, recovered any) (AgentRunResult, error) {
+	err := fmt.Errorf("act: run panicked: %v", recovered)
+	if e.logger != nil {
+		e.logger.Error("act: run panicked; closing it as failed", "run", runID, "panic", recovered, "stack", string(debug.Stack()))
+	}
+	if ctx.Err() != nil {
+		return res, err
+	}
+
+	writeCtx, cancel := context.WithTimeout(context.Background(), terminalWriteTimeout)
+	defer cancel()
+	if ledger := e.ledger(); ledger != nil {
+		actions, listErr := ledger.ListActions(writeCtx, in.InstanceID, runID)
+		if listErr != nil && e.logger != nil {
+			e.logger.Error("act: listing actions after a panic failed", "run", runID, "err", listErr)
+		}
+		for _, a := range actions {
+			if a.Status != ActionExecuting {
+				continue
+			}
+			_, trErr := ledger.TransitionAction(writeCtx, ActionTransition{
+				InstanceID: in.InstanceID,
+				RunID:      runID,
+				ToolCallID: a.ToolCallID,
+				Status:     ActionIndeterminate,
+				Error:      err.Error(),
+			})
+			if trErr != nil && e.logger != nil {
+				e.logger.Error("act: marking an interrupted action indeterminate failed", "run", runID, "tool_call", a.ToolCallID, "err", trErr)
+			}
+		}
+	}
+
+	res.Status = RunStatusFailed
+	if _, closeErr := e.store.CloseRun(writeCtx, RunTransition{
+		InstanceID: in.InstanceID,
+		RunID:      runID,
+		Status:     RunStatusFailed,
+		EventType:  EventTypeFailed,
+		Error:      err.Error(),
+	}); closeErr != nil && e.logger != nil {
+		e.logger.Error("act: closing a panicked run failed", "run", runID, "err", closeErr)
+	}
+	e.withdrawPendingActions(in.InstanceID, runID)
+	return res, err
 }
 
 // withdrawPendingActions closes out the ledger actions of a run that reached a terminal state. It is the ledger
