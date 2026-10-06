@@ -4,10 +4,7 @@ import {
   useCanvas,
   type CanvasResponse,
 } from "@rilldata/web-common/features/canvas/selector";
-import type {
-  CanvasSpecResponse,
-  CanvasSpecResponseStore,
-} from "@rilldata/web-common/features/canvas/types";
+import type { CanvasSpecResponseStore } from "@rilldata/web-common/features/canvas/types";
 import { queryClient } from "@rilldata/web-common/lib/svelte-query/globalQueryClient";
 import {
   V1ExploreComparisonMode,
@@ -24,7 +21,6 @@ import {
 import {
   derived,
   get,
-  readable,
   writable,
   type Readable,
   type Unsubscriber,
@@ -151,13 +147,7 @@ export class CanvasEntity {
     readonly client: RuntimeClient,
     public allowUnvalidatedSpec = false,
   ) {
-    // Created each time it gains its first subscriber: the entity outlives its pages,
-    // and a store kept across them stays on a query that TanStack already garbage collected.
-    this.specStore = readable<CanvasSpecResponse>(undefined, (set) =>
-      useCanvas(client, name, {}, queryClient, allowUnvalidatedSpec).subscribe(
-        set,
-      ),
-    );
+    this.createSpecStores();
 
     // This will be deprecated soon - bgh
     const searchParamsStore: SearchParamsStore = (() => {
@@ -195,12 +185,6 @@ export class CanvasEntity {
         },
       };
     })();
-
-    this.theme = createResolvedThemeStore(
-      this.themeName,
-      this.specStore,
-      this.client,
-    );
 
     this.timeManager = new TimeManager(searchParamsStore, this);
 
@@ -514,6 +498,9 @@ export class CanvasEntity {
   acquire = () => {
     this.subscribers++;
     if (this.unsubscriber) return; // already subscribed
+    // The entity outlives its pages: a query kept since the last release may have been
+    // garbage collected by TanStack, and a store on it would never fetch its replacement.
+    this.createSpecStores();
     this.unsubscriber = this.specStore.subscribe(({ data }) => {
       if (this.firstTimeLoad) {
         this.firstTimeLoad = false;
@@ -524,6 +511,23 @@ export class CanvasEntity {
       }
     });
   };
+
+  // Everything derived from the spec query is created here, so that a fresh query
+  // never leaves a store built on the previous one behind.
+  private createSpecStores() {
+    this.specStore = useCanvas(
+      this.client,
+      this.name,
+      {},
+      queryClient,
+      this.allowUnvalidatedSpec,
+    );
+    this.theme = createResolvedThemeStore(
+      this.themeName,
+      this.specStore,
+      this.client,
+    );
+  }
 
   // Releases a consumer's reference. Tears down only once the last consumer
   // releases; balanced against acquire. Without this, a stale entity left over
