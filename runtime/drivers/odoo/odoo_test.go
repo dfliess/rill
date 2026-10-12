@@ -14,7 +14,7 @@ import (
 )
 
 func openHandle(t *testing.T, cfg map[string]any) drivers.Handle {
-	h, err := drivers.Open("odoo", "odoo", "default", cfg, storage.MustNew(t.TempDir(), nil), activity.NewNoopClient(), zap.NewNop())
+	h, err := drivers.Open(t.Context(), "odoo", "odoo", "default", cfg, storage.MustNew(t.TempDir(), nil), activity.NewNoopClient(), zap.NewNop())
 	require.NoError(t, err)
 	t.Cleanup(func() { _ = h.Close() })
 	return h
@@ -28,7 +28,7 @@ func TestOpenGivesAWarehouseAndNothingElse(t *testing.T) {
 	_, ok = h.AsOLAP("default")
 	require.False(t, ok)
 
-	_, err := drivers.Open("odoo", "odoo", "", map[string]any{}, storage.MustNew(t.TempDir(), nil), activity.NewNoopClient(), zap.NewNop())
+	_, err := drivers.Open(t.Context(), "odoo", "odoo", "", map[string]any{}, storage.MustNew(t.TempDir(), nil), activity.NewNoopClient(), zap.NewNop())
 	require.ErrorContains(t, err, "can't be shared")
 }
 

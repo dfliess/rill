@@ -562,7 +562,7 @@ func testInformationSchema(t *testing.T, olap drivers.OLAPStore) {
 
 func acquireTestMSSQL(t *testing.T) (drivers.Handle, drivers.OLAPStore) {
 	cfg := testruntime.AcquireConnector(t, "mssql")
-	conn, err := drivers.Open("mssql", "", "default", cfg, storage.MustNew(t.TempDir(), nil), activity.NewNoopClient(), zap.NewNop())
+	conn, err := drivers.Open(t.Context(), "mssql", "", "default", cfg, storage.MustNew(t.TempDir(), nil), activity.NewNoopClient(), zap.NewNop())
 	require.NoError(t, err)
 	t.Cleanup(func() { conn.Close() })
 

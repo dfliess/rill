@@ -40,7 +40,7 @@ type driver struct{}
 
 var _ drivers.Driver = driver{}
 
-func (d driver) Open(_, instanceID string, config map[string]any, st *storage.Client, _ *activity.Client, logger *zap.Logger) (drivers.Handle, error) {
+func (d driver) Open(_ context.Context, _, instanceID string, config map[string]any, st *storage.Client, _ *activity.Client, logger *zap.Logger) (drivers.Handle, error) {
 	if instanceID == "" {
 		return nil, errors.New("odoo driver can't be shared")
 	}
