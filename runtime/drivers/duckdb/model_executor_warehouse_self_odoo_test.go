@@ -68,10 +68,10 @@ func TestOdooToDuckDBTransfer(t *testing.T) {
 
 // odooToDuckDB runs one odoo model into a fresh DuckDB table called "sink".
 func odooToDuckDB(t *testing.T, srv *odootest.Server, props map[string]any) drivers.OLAPStore {
-	duckDB, err := drivers.Open("duckdb", "", "default", map[string]any{"data_dir": t.TempDir()}, storage.MustNew(t.TempDir(), nil), activity.NewNoopClient(), zap.NewNop())
+	duckDB, err := drivers.Open(t.Context(), "duckdb", "", "default", map[string]any{"data_dir": t.TempDir()}, storage.MustNew(t.TempDir(), nil), activity.NewNoopClient(), zap.NewNop())
 	require.NoError(t, err)
 	t.Cleanup(func() { _ = duckDB.Close() })
-	input, err := drivers.Open("odoo", "odoo", "default", map[string]any{"url": srv.URL, "api_key": srv.APIKey}, storage.MustNew(t.TempDir(), nil), activity.NewNoopClient(), zap.NewNop())
+	input, err := drivers.Open(t.Context(), "odoo", "odoo", "default", map[string]any{"url": srv.URL, "api_key": srv.APIKey}, storage.MustNew(t.TempDir(), nil), activity.NewNoopClient(), zap.NewNop())
 	require.NoError(t, err)
 	t.Cleanup(func() { _ = input.Close() })
 

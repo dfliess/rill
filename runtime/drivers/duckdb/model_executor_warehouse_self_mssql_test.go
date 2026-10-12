@@ -22,10 +22,10 @@ func TestMSSQLToDuckDBTransfer(t *testing.T) {
 
 	cfg := testruntime.AcquireConnector(t, "mssql")
 
-	duckDB, err := drivers.Open("duckdb", "", "default", map[string]any{"data_dir": t.TempDir()}, storage.MustNew(t.TempDir(), nil), activity.NewNoopClient(), zap.NewNop())
+	duckDB, err := drivers.Open(t.Context(), "duckdb", "", "default", map[string]any{"data_dir": t.TempDir()}, storage.MustNew(t.TempDir(), nil), activity.NewNoopClient(), zap.NewNop())
 	require.NoError(t, err)
 
-	inputHandle, err := drivers.Open("mssql", "", "default", cfg, storage.MustNew(t.TempDir(), nil), activity.NewNoopClient(), zap.NewNop())
+	inputHandle, err := drivers.Open(t.Context(), "mssql", "", "default", cfg, storage.MustNew(t.TempDir(), nil), activity.NewNoopClient(), zap.NewNop())
 	require.NoError(t, err)
 
 	opts := &drivers.ModelExecutorOptions{
