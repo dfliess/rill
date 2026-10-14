@@ -108,11 +108,20 @@
         class="flex min-w-0 grow flex-col"
         title={formatDateTime(run.startedOn ?? run.createdOn)}
       >
-        <span class="truncate text-sm font-medium text-fg-primary">
-          {displayNameByAgent.get(run.agentName ?? "") || run.agentName}
+        <!-- When on the name's line: the arguments below can run long and
+             would push it out of sight. -->
+        <span class="flex min-w-0 items-baseline gap-x-2">
+          <span class="truncate text-sm font-medium text-fg-primary">
+            {displayNameByAgent.get(run.agentName ?? "") || run.agentName}
+          </span>
+          {#if ago}
+            <span class="shrink-0 whitespace-nowrap text-xs text-fg-muted"
+              >{ago}</span
+            >
+          {/if}
         </span>
         <span class="truncate text-xs text-fg-secondary">
-          {[glance, ago].filter(Boolean).join(" · ")}
+          {glance}
           {#if approvals.length > 1}
             · {m.agents_approval_and_n_more({ count: approvals.length - 1 })}
           {/if}
