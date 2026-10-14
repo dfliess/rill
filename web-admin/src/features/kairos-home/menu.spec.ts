@@ -101,14 +101,14 @@ describe("homeMenuItems", () => {
 });
 
 describe("homePersonalMenuItems", () => {
-  it("lists them alphabetically, opening the personal canvas page", () => {
+  it("lists them alphabetically, opening inside the Home", () => {
     const items = homePersonalMenuItems(
       [canvas("zeta", "Zeta"), canvas("mi_vista", "Alfa")],
       "/o/p",
     );
-    expect(items.map((i) => [i.title, i.href])).toEqual([
-      ["Alfa", "/o/p/-/personal/mi_vista"],
-      ["Zeta", "/o/p/-/personal/zeta"],
+    expect(items.map((i) => [i.title, i.href, i.editHref])).toEqual([
+      ["Alfa", "/o/p/-/home/mi_vista", "/o/p/-/personal/mi_vista"],
+      ["Zeta", "/o/p/-/home/zeta", "/o/p/-/personal/zeta"],
     ]);
   });
 });

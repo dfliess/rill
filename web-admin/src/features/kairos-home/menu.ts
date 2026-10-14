@@ -7,6 +7,8 @@ export type HomeMenuItem = {
   href: string;
   // `kairos_icon` from the canvas metadata; see menu-icons.ts.
   icon?: string;
+  // Personal canvases: the page where their owner edits them.
+  editHref?: string;
 };
 
 /**
@@ -56,8 +58,8 @@ export function homeMenuItems(
 }
 
 /**
- * The viewer's personal canvases, alphabetically. They open in the personal
- * canvas page, where their owner can also edit them.
+ * The viewer's personal canvases, alphabetically. They open inside the Home
+ * like the project's canvases; editing stays in the personal canvas page.
  */
 export function homePersonalMenuItems(
   personalCanvases: V1Resource[],
@@ -71,7 +73,8 @@ export function homePersonalMenuItems(
         {
           name,
           title: res.canvas?.spec?.displayName || name,
-          href: `${projectBase}/-/personal/${encodeURIComponent(name)}`,
+          href: `${projectBase}/-/home/${encodeURIComponent(name)}`,
+          editHref: `${projectBase}/-/personal/${encodeURIComponent(name)}`,
         },
       ];
     })

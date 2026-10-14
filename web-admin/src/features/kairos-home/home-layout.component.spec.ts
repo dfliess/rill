@@ -257,15 +257,33 @@ describe("Home layout", () => {
       const group = screen.getByRole("navigation", { name: "My dashboards" });
       expect(
         Array.from(group.querySelectorAll("a")).map((a) => [
-          a.textContent?.trim(),
+          a.textContent?.trim() || a.getAttribute("aria-label"),
           a.getAttribute("href"),
         ]),
-      ).toEqual([["Mi vista", "/org/proj/-/personal/mi_vista"]]);
+      ).toEqual([
+        ["Mi vista", "/org/proj/-/home/mi_vista"],
+        ["Edit Mi vista", "/org/proj/-/personal/mi_vista"],
+      ]);
       expect(screen.getByTestId("create-personal").dataset.project).toBe(
         "proj",
       );
       const main = screen.getByRole("navigation", { name: "Dashboards" });
       expect(main.textContent).not.toContain("Mi vista");
+    });
+
+    it("open inside the Home, marked in the menu", () => {
+      setWideScreen(true);
+      showPersonal();
+      page.set({
+        params: { organization: "org", project: "proj", canvas: "mi_vista" },
+      });
+      renderLayout();
+      expect(screen.getByTestId("canvas").textContent).toBe("mi_vista");
+      expect(screen.queryAllByTestId("home-box")).toHaveLength(0);
+      const group = screen.getByRole("navigation", { name: "My dashboards" });
+      expect(
+        group.querySelector('[aria-current="page"]')?.textContent?.trim(),
+      ).toBe("Mi vista");
     });
 
     it("show in the phone selector too", () => {

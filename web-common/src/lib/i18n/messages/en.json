@@ -1692,6 +1692,7 @@
   "nav_tab_bookmarks": "Bookmarks",
   "nav_tab_dashboards": "Dashboards",
   "nav_tab_home": "Home",
+  "home_menu_edit_personal": "Edit {name}",
   "home_menu_label": "Dashboards",
   "home_chat_context": "Context: {canvas}",
   "home_chat_context_remove": "Ask about the whole project instead",

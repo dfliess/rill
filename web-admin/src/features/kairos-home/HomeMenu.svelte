@@ -4,7 +4,7 @@
   import Lock from "@rilldata/web-common/components/icons/Lock.svelte";
   import Resizer from "@rilldata/web-common/layout/Resizer.svelte";
   import { m } from "@rilldata/web-common/lib/i18n/gen/messages";
-  import { Plus } from "lucide-svelte";
+  import { Pencil, Plus } from "lucide-svelte";
   import { HOME_MENU_WIDTH, homeMenuWidth } from "./chat-state";
   import { homeMenuIcon } from "./menu-icons";
   import type { HomeMenuItem } from "./menu";
@@ -25,7 +25,9 @@
     project: string;
   } = $props();
 
-  let activeHref = $derived(items.find((i) => i.name === active)?.href);
+  let activeHref = $derived(
+    [...items, ...(personalItems ?? [])].find((i) => i.name === active)?.href,
+  );
 </script>
 
 <!-- Phones get a selector instead of a column: three columns do not fit. -->
@@ -112,12 +114,30 @@
           </CreatePersonalCanvasDialog>
         </div>
         {#each personalItems as item (item.name)}
-          <a href={item.href} class="item">
-            <span class="flex h-[1.375em] shrink-0 items-center"
-              ><Lock size="14px" /></span
+          <!-- Opens inside the Home; the pencil, shown on hover, goes to the
+               page where its owner edits it. -->
+          <div class="group relative">
+            <a
+              href={item.href}
+              class="item pr-8"
+              class:active={item.name === active}
+              aria-current={item.name === active ? "page" : undefined}
             >
-            <span class="min-w-0">{item.title}</span>
-          </a>
+              <span class="flex h-[1.375em] shrink-0 items-center"
+                ><Lock size="14px" /></span
+              >
+              <span class="min-w-0">{item.title}</span>
+            </a>
+            {#if item.editHref}
+              <a
+                href={item.editHref}
+                class="absolute right-1.5 top-1.5 rounded p-1 text-fg-muted opacity-0 hover:bg-surface-hover hover:text-fg-primary focus:opacity-100 group-hover:opacity-100"
+                aria-label={m.home_menu_edit_personal({ name: item.title })}
+                title={m.home_menu_edit_personal({ name: item.title })}
+                ><Pencil size="13px" /></a
+              >
+            {/if}
+          </div>
         {/each}
       </nav>
     {/if}

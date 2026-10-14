@@ -79,7 +79,8 @@
     )?.canvas?.state?.validSpec?.maxWidth || DEFAULT_DASHBOARD_WIDTH,
   );
   let selectedTitle = $derived(
-    menuItems.find((i) => i.name === selected)?.title ?? "",
+    [...menuItems, ...(personalItems ?? [])].find((i) => i.name === selected)
+      ?.title ?? "",
   );
 
   // Beside the canvas on wide screens; on narrower ones it waits for the

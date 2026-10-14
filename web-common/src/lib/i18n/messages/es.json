@@ -1701,6 +1701,7 @@
   "nav_tab_bookmarks": "Marcadores",
   "nav_tab_dashboards": "Dashboards",
   "nav_tab_home": "Inicio",
+  "home_menu_edit_personal": "Editar {name}",
   "home_menu_label": "Dashboards",
   "home_chat_context": "Contexto: {canvas}",
   "home_chat_context_remove": "Preguntar sobre todo el proyecto",
