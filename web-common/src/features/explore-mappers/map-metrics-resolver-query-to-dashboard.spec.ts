@@ -14,7 +14,6 @@ import {
 } from "@rilldata/web-common/features/dashboards/stores/test-data/data.ts";
 import { TDDChart } from "@rilldata/web-common/features/dashboards/time-dimension-details/types.ts";
 import {
-  canMapHaving,
   mapMetricsResolverQueryToDashboard,
   mapResolverExpressionToV1Expression,
 } from "@rilldata/web-common/features/explore-mappers/map-metrics-resolver-query-to-dashboard.ts";
@@ -30,7 +29,6 @@ import {
 } from "@rilldata/web-common/proto/gen/rill/ui/v1/dashboard_pb.ts";
 import {
   type V1Expression,
-  V1Operation,
   V1TimeGrain,
 } from "@rilldata/web-common/runtime-client";
 import type {
@@ -471,147 +469,60 @@ describe("mapResolverExpressionToV1Expression", () => {
   }
 });
 
-describe("mapMetricsResolverQueryToDashboard with a HAVING", () => {
-  const map = (query: MetricsResolverQuery, ignoreWhere = false) =>
-    mapMetricsResolverQueryToDashboard(
+describe("mapMetricsResolverQueryToDashboard with ignoreWhere", () => {
+  it("keeps the time range but drops the other WHERE conditions", () => {
+    const state = mapMetricsResolverQueryToDashboard(
       AD_BIDS_METRICS_3_MEASURES_DIMENSIONS_WITH_TIME,
       AD_BIDS_EXPLORE_WITH_3_MEASURES_DIMENSIONS_TIME_DIMENSION,
-      { query, ignoreWhere },
-    );
-  const canMap = (query: MetricsResolverQuery) =>
-    canMapHaving(
-      AD_BIDS_METRICS_3_MEASURES_DIMENSIONS_WITH_TIME,
-      AD_BIDS_EXPLORE_WITH_3_MEASURES_DIMENSIONS_TIME_DIMENSION,
-      query,
-    );
-  const having: Expression = {
-    cond: {
-      op: "gt",
-      exprs: [{ name: AD_BIDS_IMPRESSIONS_MEASURE }, { val: 10 as any }],
-    },
-  };
-  const measureFilter: V1Expression = {
-    cond: {
-      op: V1Operation.OPERATION_IN,
-      exprs: [
-        { ident: AD_BIDS_PUBLISHER_DIMENSION },
-        {
-          subquery: {
-            dimension: AD_BIDS_PUBLISHER_DIMENSION,
-            measures: [AD_BIDS_IMPRESSIONS_MEASURE],
-            having: createAndExpression([
-              {
-                cond: {
-                  op: V1Operation.OPERATION_GT,
-                  exprs: [{ ident: AD_BIDS_IMPRESSIONS_MEASURE }, { val: 10 }],
-                },
-              },
-            ]),
-          },
-        },
-      ],
-    },
-  };
-
-  it("shows it as a measure filter on the one dimension, next to the WHERE", () => {
-    const query: MetricsResolverQuery = {
-      metrics_view: "AdBids",
-      dimensions: [{ name: AD_BIDS_PUBLISHER_DIMENSION }],
-      measures: [{ name: AD_BIDS_IMPRESSIONS_MEASURE }],
-      where: {
-        cond: {
-          op: "eq",
-          exprs: [
-            { name: AD_BIDS_DOMAIN_DIMENSION },
-            { val: "google.com" as any },
-          ],
-        },
-      },
-      having,
-    };
-    expect(canMap(query)).toBe(true);
-    expect(map(query).whereFilter).toEqual(
-      createAndExpression([
-        measureFilter,
-        createInExpression(AD_BIDS_DOMAIN_DIMENSION, ["google.com"]),
-      ]),
-    );
-  });
-
-  it("keeps the HAVING and the time range but drops the WHERE when told to", () => {
-    const state = map(
       {
-        metrics_view: "AdBids",
-        dimensions: [{ name: AD_BIDS_PUBLISHER_DIMENSION }],
-        measures: [{ name: AD_BIDS_IMPRESSIONS_MEASURE }],
-        where: {
-          cond: {
-            op: "and",
-            exprs: [
-              {
-                cond: {
-                  op: "eq",
-                  exprs: [
-                    { name: AD_BIDS_DOMAIN_DIMENSION },
-                    { val: "google.com" as any },
-                  ],
+        query: {
+          metrics_view: "AdBids",
+          dimensions: [{ name: AD_BIDS_PUBLISHER_DIMENSION }],
+          measures: [{ name: AD_BIDS_IMPRESSIONS_MEASURE }],
+          where: {
+            cond: {
+              op: "and",
+              exprs: [
+                {
+                  cond: {
+                    op: "eq",
+                    exprs: [
+                      { name: AD_BIDS_DOMAIN_DIMENSION },
+                      { val: "google.com" as any },
+                    ],
+                  },
                 },
-              },
-              {
-                cond: {
-                  op: "gte",
-                  exprs: [
-                    { name: AD_BIDS_TIMESTAMP_DIMENSION },
-                    { val: "2022-01-01T00:00:00Z" as any },
-                  ],
+                {
+                  cond: {
+                    op: "gte",
+                    exprs: [
+                      { name: AD_BIDS_TIMESTAMP_DIMENSION },
+                      { val: "2022-01-01T00:00:00Z" as any },
+                    ],
+                  },
                 },
-              },
-              {
-                cond: {
-                  op: "lt",
-                  exprs: [
-                    { name: AD_BIDS_TIMESTAMP_DIMENSION },
-                    { val: "2022-02-01T00:00:00Z" as any },
-                  ],
+                {
+                  cond: {
+                    op: "lt",
+                    exprs: [
+                      { name: AD_BIDS_TIMESTAMP_DIMENSION },
+                      { val: "2022-02-01T00:00:00Z" as any },
+                    ],
+                  },
                 },
-              },
-            ],
+              ],
+            },
           },
         },
-        having,
+        ignoreWhere: true,
       },
-      true,
     );
-    expect(state.whereFilter).toEqual(createAndExpression([measureFilter]));
+    expect(state.whereFilter).toEqual(createAndExpression([]));
     expect(state.selectedTimeRange?.start).toEqual(
       new Date("2022-01-01T00:00:00Z"),
     );
     expect(state.selectedTimeRange?.end).toEqual(
       new Date("2022-02-01T00:00:00Z"),
     );
-  });
-
-  it("can't show it when the query groups by more than one dimension", () => {
-    const query: MetricsResolverQuery = {
-      metrics_view: "AdBids",
-      dimensions: [
-        { name: AD_BIDS_PUBLISHER_DIMENSION },
-        { name: AD_BIDS_DOMAIN_DIMENSION },
-      ],
-      measures: [{ name: AD_BIDS_IMPRESSIONS_MEASURE }],
-      having,
-    };
-    expect(canMap(query)).toBe(false);
-    expect(map(query).whereFilter).toBeUndefined();
-  });
-
-  it("can't show it when the query has no dimension", () => {
-    expect(
-      canMap({
-        metrics_view: "AdBids",
-        measures: [{ name: AD_BIDS_IMPRESSIONS_MEASURE }],
-        having,
-      }),
-    ).toBe(false);
   });
 });

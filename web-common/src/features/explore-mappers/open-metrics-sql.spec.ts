@@ -1,4 +1,9 @@
 import {
+  createAndExpression,
+  createInExpression,
+} from "@rilldata/web-common/features/dashboards/stores/filter-utils.ts";
+import {
+  AD_BIDS_DOMAIN_DIMENSION,
   AD_BIDS_EXPLORE_WITH_3_MEASURES_DIMENSIONS_TIME_DIMENSION,
   AD_BIDS_IMPRESSIONS_MEASURE,
   AD_BIDS_METRICS_3_MEASURES_DIMENSIONS_WITH_TIME,
@@ -7,15 +12,18 @@ import {
 import type { RuntimeClient } from "@rilldata/web-common/runtime-client/v2";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { convert, generateExploreLink, listResources } = vi.hoisted(() => ({
-  convert: vi.fn(),
-  generateExploreLink: vi.fn(),
-  listResources: vi.fn(),
-}));
+const { convert, generateExploreLink, listResources, queryResolver } =
+  vi.hoisted(() => ({
+    convert: vi.fn(),
+    generateExploreLink: vi.fn(),
+    listResources: vi.fn(),
+    queryResolver: vi.fn(),
+  }));
 
 vi.mock("@rilldata/web-common/runtime-client", async (importOriginal) => ({
   ...(await importOriginal<object>()),
   runtimeServiceListResources: listResources,
+  runtimeServiceQueryResolver: queryResolver,
 }));
 
 vi.mock("@rilldata/web-common/runtime-client/v2/gen/query-service", () => ({
@@ -53,6 +61,10 @@ const args = {
 beforeEach(() => {
   queryClient.clear();
   listResources.mockReset();
+  queryResolver.mockReset();
+  queryResolver.mockResolvedValue({
+    data: [{ [AD_BIDS_PUBLISHER_DIMENSION]: "Google", impressions: 12 }],
+  });
   convert.mockReset();
   generateExploreLink.mockReset();
   generateExploreLink.mockResolvedValue(
@@ -76,9 +88,19 @@ describe("getExploreUrlForMetricsSQL", () => {
       executionTime: "2022-02-01T07:00:00Z",
     });
     expect(url).toBe("http://localhost/org/proj/explore/AdBids_explore?f=x");
-    // The HAVING reaches the explore as a measure filter.
+    // The HAVING reaches the explore as the values that pass it, found by running the SQL
+    // as the alert did: a measure filter would compute it without the WHERE.
+    expect(queryResolver.mock.calls[0][1]).toEqual({
+      resolver: "metrics_sql",
+      resolverProperties: { sql: args.sql },
+      resolverArgs: { execution_time: "2022-02-01T07:00:00Z" },
+    });
     const exploreState = generateExploreLink.mock.calls[0][1];
-    expect(JSON.stringify(exploreState.whereFilter)).toContain("subquery");
+    expect(exploreState.whereFilter).toEqual(
+      createAndExpression([
+        createInExpression(AD_BIDS_PUBLISHER_DIMENSION, ["Google"]),
+      ]),
+    );
   });
 
   it("opens the shared explore with an emailed link's token", async () => {
@@ -90,7 +112,7 @@ describe("getExploreUrlForMetricsSQL", () => {
         where: {
           cond: {
             op: "eq",
-            exprs: [{ name: AD_BIDS_PUBLISHER_DIMENSION }, { val: "Google" }],
+            exprs: [{ name: AD_BIDS_PUBLISHER_DIMENSION }, { val: "Yahoo" }],
           },
         },
         having,
@@ -102,9 +124,11 @@ describe("getExploreUrlForMetricsSQL", () => {
     );
     // The token already filters by the WHERE; the HAVING it doesn't carry stays.
     const exploreState = generateExploreLink.mock.calls[0][1];
-    const filter = JSON.stringify(exploreState.whereFilter);
-    expect(filter).not.toContain("Google");
-    expect(filter).toContain("subquery");
+    expect(exploreState.whereFilter).toEqual(
+      createAndExpression([
+        createInExpression(AD_BIDS_PUBLISHER_DIMENSION, ["Google"]),
+      ]),
+    );
   });
 
   it("refuses an explore on another metrics view", async () => {
@@ -117,14 +141,26 @@ describe("getExploreUrlForMetricsSQL", () => {
   });
 
   it("refuses a HAVING the explore can't show, rather than drop it", async () => {
-    convert.mockResolvedValue({
-      query: {
-        metrics_view: metricsView,
-        measures: [{ name: AD_BIDS_IMPRESSIONS_MEASURE }],
-        having,
-      },
-    });
-    await expect(getExploreUrlForMetricsSQL(args)).rejects.toThrow("HAVING");
+    // Without a dimension, or over several, values of one dimension aren't the same rows.
+    for (const dimensions of [
+      [],
+      [
+        { name: AD_BIDS_PUBLISHER_DIMENSION },
+        { name: AD_BIDS_DOMAIN_DIMENSION },
+      ],
+      [{ name: "not_in_the_explore" }],
+    ]) {
+      convert.mockResolvedValue({
+        query: {
+          metrics_view: metricsView,
+          dimensions,
+          measures: [{ name: AD_BIDS_IMPRESSIONS_MEASURE }],
+          having,
+        },
+      });
+      await expect(getExploreUrlForMetricsSQL(args)).rejects.toThrow("HAVING");
+    }
+    expect(queryResolver).not.toHaveBeenCalled();
   });
 
   describe("without an explore named", () => {

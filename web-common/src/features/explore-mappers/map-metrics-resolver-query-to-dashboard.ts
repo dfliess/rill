@@ -5,12 +5,9 @@ import {
 } from "@rilldata/web-common/features/dashboards/pivot/types.ts";
 import { SortDirection } from "@rilldata/web-common/features/dashboards/proto-state/derived-types.ts";
 import type { ExploreState } from "@rilldata/web-common/features/dashboards/stores/explore-state.ts";
-import { mergeFilters } from "@rilldata/web-common/features/dashboards/pivot/pivot-merge-filters";
 import {
   createAndExpression,
-  createSubQueryExpression,
   filterIdentifiers,
-  getAllIdentifiers,
   maybeConvertEqualityToInExpressions,
   flattenInExpressionValues,
 } from "@rilldata/web-common/features/dashboards/stores/filter-utils.ts";
@@ -108,11 +105,6 @@ export function mapMetricsResolverQueryToDashboard(
     partialExploreState.whereFilter = createAndExpression([]);
   }
 
-  const havingDim = havingDimension(query, exploreDimensions);
-  if (query.having && havingDim) {
-    mapHaving(partialExploreState, query.having, havingDim);
-  }
-
   // Convert sort
   if (query.sort) {
     mapSort(query.measures ?? [], query.sort, partialExploreState);
@@ -181,65 +173,6 @@ export function mapResolverExpressionToV1Expression(
   }
 
   return {};
-}
-
-/**
- * The dimension a top-level HAVING can be shown on, if any. The explore shows a HAVING as a
- * measure filter, which is a subquery on one dimension: "the values of the dimension whose
- * measures pass the HAVING". That's the same rows only when the query groups by exactly that
- * one dimension, so other queries keep their HAVING unmapped; callers that can't show them
- * faithfully check {@link canMapHaving}.
- */
-function havingDimension(
-  query: MetricsResolverQuery,
-  exploreDimensions: string[],
-): string | undefined {
-  if (exploreDimensions.length !== 1 || query.dimensions?.length !== 1) {
-    return undefined;
-  }
-  return exploreDimensions[0];
-}
-
-function mapHaving(
-  partialExploreState: Partial<ExploreState>,
-  having: Expression,
-  dimension: string,
-) {
-  const havingExpr = mapResolverExpressionToV1Expression(having);
-  if (!havingExpr) return;
-  // The measure filter UI expects its conditions grouped under an AND.
-  const conditions =
-    havingExpr.cond?.op === V1Operation.OPERATION_AND
-      ? havingExpr
-      : createAndExpression([havingExpr]);
-  partialExploreState.whereFilter =
-    mergeFilters(
-      partialExploreState.whereFilter ?? createAndExpression([]),
-      createAndExpression([
-        createSubQueryExpression(
-          dimension,
-          getAllIdentifiers(conditions),
-          conditions,
-        ),
-      ]),
-    ) ?? createAndExpression([]);
-}
-
-/**
- * Whether the query's HAVING, if any, is shown by the explore: see {@link havingDimension}.
- */
-export function canMapHaving(
-  metricsViewSpec: V1MetricsViewSpec,
-  exploreSpec: V1ExploreSpec,
-  query: MetricsResolverQuery,
-) {
-  if (!query.having) return true;
-  const { exploreDimensions } = getValidDimensions(
-    metricsViewSpec,
-    exploreSpec,
-    query.dimensions ?? [],
-  );
-  return !!havingDimension(query, exploreDimensions);
 }
 
 function getValidDimensions(
