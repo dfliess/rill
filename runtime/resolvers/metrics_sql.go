@@ -3,8 +3,8 @@ package resolvers
 import (
 	"context"
 	"errors"
+	"time"
 
-	"github.com/mitchellh/mapstructure"
 	runtimev1 "github.com/rilldata/rill/proto/gen/rill/runtime/v1"
 	"github.com/rilldata/rill/runtime"
 	"github.com/rilldata/rill/runtime/metricsview"
@@ -34,6 +34,8 @@ type metricsSQLProps struct {
 
 type metricsSQLArgs struct {
 	Priority int `mapstructure:"priority"`
+	// ExecutionTime is the time to evaluate now() and rilltime expressions against, such as an alert's execution time.
+	ExecutionTime *time.Time `mapstructure:"execution_time"`
 	// NOTE: Not exhaustive. Any other args are passed to the "args" property of sqlResolverOpts.
 }
 
@@ -59,12 +61,52 @@ func newMetricsSQL(ctx context.Context, opts *runtime.ResolverOptions) (runtime.
 		)
 	}
 
+	query, err := CompileMetricsSQL(ctx, opts, props.SQL)
+	if err != nil {
+		return nil, err
+	}
+
+	// Inject the additional where clause if provided
+	query.Where = applyAdditionalWhere(query.Where, props.AdditionalWhere)
+	if where, ok := props.AdditionalWhereByMetricsView[query.MetricsView]; ok {
+		query.Where = applyAdditionalWhere(query.Where, where)
+	}
+
+	// Inject the additional time range if provided
+	query.TimeRange = applyAdditionalTimeRange(query.TimeRange, props.AdditionalTimeRange)
+
+	// Set the additional timezone if provided
+	if props.TimeZone != "" {
+		query.TimeZone = props.TimeZone
+	}
+
+	// Build the options for the metrics resolver
+	metricProps, err := query.AsMap()
+	if err != nil {
+		return nil, err
+	}
+	resolverOpts := &runtime.ResolverOptions{
+		Runtime:    opts.Runtime,
+		InstanceID: opts.InstanceID,
+		Properties: metricProps,
+		Args:       opts.Args,
+		Claims:     opts.Claims,
+		ForExport:  opts.ForExport,
+	}
+	return newMetrics(ctx, resolverOpts)
+}
+
+// CompileMetricsSQL compiles metrics SQL into the metrics view query that the metrics resolver runs.
+// It resolves templating, and checks the claims can access the queried metrics view.
+// If opts.Args carries an "execution_time", now() and rilltime expressions are evaluated against it instead of the current time,
+// so the query is compiled as an alert or report saw it.
+func CompileMetricsSQL(ctx context.Context, opts *runtime.ResolverOptions, sql string) (*metricsview.Query, error) {
 	instance, err := opts.Runtime.Instance(ctx, opts.InstanceID)
 	if err != nil {
 		return nil, err
 	}
 
-	props.SQL, _, err = resolveTemplate(props.SQL, opts.Args, instance, opts.Claims.UserAttributes, opts.ForExport)
+	sql, _, err = resolveTemplate(sql, opts.Args, instance, opts.Claims.UserAttributes, opts.ForExport)
 	if err != nil {
 		return nil, err
 	}
@@ -75,8 +117,12 @@ func newMetricsSQL(ctx context.Context, opts *runtime.ResolverOptions) (runtime.
 	}
 
 	sqlArgs := &metricsSQLArgs{}
-	if err := mapstructure.Decode(opts.Args, sqlArgs); err != nil {
+	if err := mapstructureutil.WeakDecode(opts.Args, sqlArgs); err != nil {
 		return nil, err
+	}
+	var now time.Time
+	if sqlArgs.ExecutionTime != nil {
+		now = *sqlArgs.ExecutionTime
 	}
 
 	// Create a metrics SQL parser
@@ -110,42 +156,11 @@ func newMetricsSQL(ctx context.Context, opts *runtime.ResolverOptions) (runtime.
 			}
 			return e.Timestamps(ctx, timeDim)
 		},
+		Now: now,
 	})
 
 	// Parse the metrics SQL query
-	query, err := compiler.Parse(ctx, props.SQL)
-	if err != nil {
-		return nil, err
-	}
-
-	// Inject the additional where clause if provided
-	query.Where = applyAdditionalWhere(query.Where, props.AdditionalWhere)
-	if where, ok := props.AdditionalWhereByMetricsView[query.MetricsView]; ok {
-		query.Where = applyAdditionalWhere(query.Where, where)
-	}
-
-	// Inject the additional time range if provided
-	query.TimeRange = applyAdditionalTimeRange(query.TimeRange, props.AdditionalTimeRange)
-
-	// Set the additional timezone if provided
-	if props.TimeZone != "" {
-		query.TimeZone = props.TimeZone
-	}
-
-	// Build the options for the metrics resolver
-	metricProps, err := query.AsMap()
-	if err != nil {
-		return nil, err
-	}
-	resolverOpts := &runtime.ResolverOptions{
-		Runtime:    opts.Runtime,
-		InstanceID: opts.InstanceID,
-		Properties: metricProps,
-		Args:       opts.Args,
-		Claims:     opts.Claims,
-		ForExport:  opts.ForExport,
-	}
-	return newMetrics(ctx, resolverOpts)
+	return compiler.Parse(ctx, sql)
 }
 
 // applyAdditionalWhere combines the existing where clause with the additional where clause
