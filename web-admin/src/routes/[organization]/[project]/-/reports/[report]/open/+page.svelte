@@ -60,7 +60,9 @@
   // the mapper fails and the reader is left on an error where a link promised them their report. Send
   // them to the report instead, which is what the sibling alert page already does.
   $: if (reportSpec && (!queryName || !queryArgsJson)) {
-    void goto(`/${organization}/${project}/-/reports/${reportId}`);
+    void goto(`/${organization}/${project}/-/reports/${reportId}`, {
+      replaceState: true,
+    });
   }
 
   $: if ($dashboardStateForReport?.data) {
@@ -89,7 +91,9 @@
 
     url.search = exploreStateParams.toString();
 
-    return goto(url.toString());
+    // This page only redirects: replacing it keeps the back button from landing on it and
+    // redirecting forward again.
+    return goto(url.toString(), { replaceState: true });
   }
 </script>
 
