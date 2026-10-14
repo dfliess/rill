@@ -85,7 +85,7 @@ class FeatureFlags {
   // Kairos Home v2: dashboards menu, home canvas and AI side panel on one
   // page, as a tab next to the Home while the two are compared
   // (kairos-cloud#231).
-  kairosHomeV2 = new FeatureFlag("user", false);
+  kairosNewHome = new FeatureFlag("user", false);
 
   private flagsUnsub?: () => void;
 

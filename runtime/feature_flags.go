@@ -82,7 +82,8 @@ var defaultFeatureFlags = map[string]string{
 	"bookmarks": "false",
 	// Controls the Home v2 tab: a dashboards menu, the home canvas with the alerts and approvals boxes,
 	// and the AI side panel on one page. Off by default while it is compared with the Home (kairos-cloud#231).
-	"kairos_home_v2": "false",
+	// No digits in the name: rill.yaml snake-cases its keys, which turns "home_v2" into "home_v_2".
+	"kairos_new_home": "false",
 }
 
 // ResolveFeatureFlags resolves feature flags for the given instance and the provided user attributes.

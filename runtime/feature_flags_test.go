@@ -3,6 +3,7 @@ package runtime
 import (
 	"testing"
 
+	"github.com/iancoleman/strcase"
 	"github.com/rilldata/rill/runtime/drivers"
 	"github.com/stretchr/testify/require"
 )
@@ -48,7 +49,7 @@ func Test_ResolveFeatureFlags(t *testing.T) {
 				"personalCanvases":                false,
 				"agents":                          false,
 				"bookmarks":                       false,
-				"kairosHomeV2":                    false,
+				"kairosNewHome":                   false,
 				"disablePersistentDashboardState": false,
 			},
 		},
@@ -79,7 +80,7 @@ func Test_ResolveFeatureFlags(t *testing.T) {
 				"personalCanvases":                false,
 				"agents":                          false,
 				"bookmarks":                       false,
-				"kairosHomeV2":                    false,
+				"kairosNewHome":                   false,
 				"disablePersistentDashboardState": false,
 			},
 		},
@@ -110,7 +111,7 @@ func Test_ResolveFeatureFlags(t *testing.T) {
 				"personalCanvases":                false,
 				"agents":                          false,
 				"bookmarks":                       false,
-				"kairosHomeV2":                    false,
+				"kairosNewHome":                   false,
 				"disablePersistentDashboardState": false,
 			},
 		},
@@ -141,7 +142,7 @@ func Test_ResolveFeatureFlags(t *testing.T) {
 				"personalCanvases":                false,
 				"agents":                          false,
 				"bookmarks":                       false,
-				"kairosHomeV2":                    false,
+				"kairosNewHome":                   false,
 				"disablePersistentDashboardState": false,
 			},
 		},
@@ -217,5 +218,14 @@ func Test_ResolveFeatureFlags_Bookmarks(t *testing.T) {
 			require.NoError(t, err)
 			require.Equal(t, test.expected, featureFlags["bookmarks"])
 		})
+	}
+}
+
+// rill.yaml snake-cases its feature keys before they reach the instance.
+// A default whose name changes on the way ("home_v2" becomes "home_v_2") ends up twice in the merged map,
+// and both copies resolve to the same camelCase key, so which value the UI gets depends on map order.
+func Test_DefaultFeatureFlagsSurviveSnakeCase(t *testing.T) {
+	for k := range defaultFeatureFlags {
+		require.Equal(t, k, strcase.ToSnake(k), "rill.yaml would rename feature flag %q", k)
 	}
 }
