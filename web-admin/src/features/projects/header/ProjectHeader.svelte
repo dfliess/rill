@@ -25,6 +25,10 @@
   import StateManagersProvider from "web-common/src/features/dashboards/state-managers/StateManagersProvider.svelte";
   import { useExplore } from "web-common/src/features/explores/selectors";
   import { featureFlags } from "web-common/src/features/feature-flags";
+  import {
+    homeV2ChatActions,
+    homeV2ChatOpen,
+  } from "@rilldata/web-admin/features/kairos-home-v2/chat-state";
   import Header from "web-common/src/layout/header/Header.svelte";
   import HeaderLogo from "web-common/src/layout/header/HeaderLogo.svelte";
   import { useRuntimeClient } from "web-common/src/runtime-client/v2";
@@ -75,6 +79,7 @@
   const runtimeClient = useRuntimeClient();
   const {
     alerts: alertsFlag,
+    chat,
     cloudEditing,
     developerChat,
     dimensionSearch,
@@ -95,6 +100,10 @@
   $: onPublicURLPage = isPublicURLPage($page);
 
   $: onEditDashboardPreview = isEditDashboardPreviewPage($page);
+  // Kairos Home v2 keeps its AI panel's toggle here, where dashboards keep theirs (#231).
+  $: onHomeV2Page = !!$page.route.id?.startsWith(
+    "/[organization]/[project]/-/home-v2",
+  );
 
   $: activeBranch = extractBranchFromPath($page.url.pathname);
 
@@ -268,6 +277,9 @@
       {/if}
       {#if $cloudEditing && onProjectPage && projectPermissions.manageDev}
         <EditButton {organization} {project} {activeBranch} {primaryBranch} />
+      {/if}
+      {#if $chat && onHomeV2Page}
+        <ChatToggle open={homeV2ChatOpen} actions={homeV2ChatActions} />
       {/if}
       {#if onProjectPage && projectPermissions.manageProjectMembers && !onPersonalFilePage}
         <ShareProjectPopover

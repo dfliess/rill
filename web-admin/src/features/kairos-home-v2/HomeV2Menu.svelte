@@ -1,8 +1,7 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { m } from "@rilldata/web-common/lib/i18n/gen/messages";
-
-  export type HomeV2MenuItem = { name: string; title: string; href: string };
+  import type { HomeV2MenuItem } from "./menu";
 
   let {
     items,

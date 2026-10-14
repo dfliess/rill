@@ -1,12 +1,13 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from "@testing-library/svelte";
-import { createRawSnippet } from "svelte";
+import { render, screen } from "@testing-library/svelte";
+import { createRawSnippet, tick } from "svelte";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Smoke test for the Home v2 tab (#231): the page loads with the dashboards
-// menu, the home canvas with its Alerts and Actions boxes, and the AI panel
-// open on wide screens and one button away on narrow ones. The canvas, the
-// chat and the boxes are stubbed: each has its own tests.
+// menu, the first canvas with the Alerts and Actions boxes under it, and the
+// AI panel open on wide screens and waiting for the header toggle on narrow
+// ones. The canvas, the chat and the boxes are stubbed, and the menu order has
+// its own spec (menu.spec.ts).
 
 // vi.mock factories are hoisted above the imports, so the stores they hand
 // out are created in a hoisted block too.
@@ -82,16 +83,16 @@ vi.mock(
   }),
 );
 
+import { homeV2ChatActions } from "./chat-state";
 import Layout from "../../routes/[organization]/[project]/-/home-v2/+layout.svelte";
 
-const canvas = (name: string, displayName: string, home = false) => ({
-  meta: { name: { name } },
-  canvas: {
-    spec: { displayName },
-    state: {
-      validSpec: home ? { annotations: { kairos_home: "true" } } : {},
-    },
-  },
+const canvas = (
+  name: string,
+  displayName: string,
+  metadata?: Record<string, string>,
+) => ({
+  meta: { name: { name }, metadata },
+  canvas: { spec: { displayName }, state: { validSpec: {} } },
 });
 
 function setWideScreen(wide: boolean) {
@@ -115,7 +116,7 @@ beforeEach(() => {
     data: {
       resources: [
         canvas("resultados", "Resultados"),
-        canvas("home", "Inicio · Facturación", true),
+        canvas("home", "Inicio · Facturación", { kairos_order: "1" }),
         canvas("caja_y_liquidez", "Caja y Liquidez"),
       ],
     },
@@ -123,27 +124,27 @@ beforeEach(() => {
 });
 
 describe("Home v2 layout", () => {
-  it("lists the Home first, then the other canvases by title", () => {
+  it("lists the canvases by display name, the ordered one first", () => {
     setWideScreen(true);
     renderLayout();
     const links = screen
       .getAllByRole("link")
       .map((a) => [a.textContent?.trim(), a.getAttribute("href")]);
     expect(links).toEqual([
-      ["Home", "/org/proj/-/home-v2"],
+      ["Inicio · Facturación", "/org/proj/-/home-v2"],
       ["Caja y Liquidez", "/org/proj/-/home-v2/caja_y_liquidez"],
       ["Resultados", "/org/proj/-/home-v2/resultados"],
     ]);
   });
 
-  it("opens on the home canvas with its Alerts and Actions boxes", () => {
+  it("opens on the first canvas with the Alerts and Actions boxes", () => {
     setWideScreen(true);
     renderLayout();
     expect(screen.getByTestId("canvas").textContent).toBe("home");
     expect(screen.getAllByTestId("home-box")).toHaveLength(2);
   });
 
-  it("shows the canvas named in the URL, without the Home boxes", () => {
+  it("shows the canvas named in the URL, without the boxes", () => {
     setWideScreen(true);
     page.set({
       params: { organization: "org", project: "proj", canvas: "resultados" },
@@ -157,16 +158,17 @@ describe("Home v2 layout", () => {
   it("opens the AI panel on wide screens", async () => {
     setWideScreen(true);
     renderLayout();
-    await Promise.resolve();
+    await tick();
     expect(screen.getByTestId("chat")).toBeTruthy();
-    expect(screen.queryByText("Ask the AI")).toBeNull();
   });
 
-  it("keeps the AI panel one button away on narrow screens", async () => {
+  it("leaves the AI panel to the header toggle on narrow screens", async () => {
     setWideScreen(false);
     renderLayout();
+    await tick();
     expect(screen.queryByTestId("chat")).toBeNull();
-    await fireEvent.click(screen.getByText("Ask the AI"));
+    homeV2ChatActions.openChat();
+    await tick();
     expect(screen.getByTestId("chat")).toBeTruthy();
   });
 });

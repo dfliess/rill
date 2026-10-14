@@ -2,6 +2,7 @@
   import type { Readable } from "svelte/store";
   import Button from "../../../../components/button/Button.svelte";
   import * as Tooltip from "../../../../components/tooltip-v2";
+  import { m } from "../../../../lib/i18n/gen/messages";
   import type { ChatActions } from "./sidebar-store";
 
   export let open: Readable<boolean>;
@@ -29,11 +30,11 @@
         onClick={actions.toggleChat}
         active={$open}
       >
-        AI
+        {m.chat_toggle_label()}
       </Button>
     {/snippet}
   </Tooltip.Trigger>
   <Tooltip.Content side="bottom">
-    Open Conversational AI {isMac ? "⌘" : "Ctrl"} + J
+    {m.chat_toggle_tooltip({ shortcut: `${isMac ? "⌘" : "Ctrl"} + J` })}
   </Tooltip.Content>
 </Tooltip.Root>
