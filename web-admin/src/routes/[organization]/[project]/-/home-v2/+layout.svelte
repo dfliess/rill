@@ -140,6 +140,11 @@
       @apply static z-auto shadow-none;
     }
   }
+  /* Rill's chat panel draws a full box; here the tabs above and the screen
+     edge already close it, so only the edge facing the canvas keeps a line. */
+  .home-v2-chat :global(.chat-sidebar) {
+    border-width: 0 0 0 1px;
+  }
   /* Rill's 500px panel would squeeze the canvas into one column on a laptop;
      here it starts at 380px until the screen has room for both. */
   @media (min-width: 1280px) and (max-width: 1599px) {

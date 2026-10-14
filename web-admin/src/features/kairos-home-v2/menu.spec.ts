@@ -58,4 +58,16 @@ describe("homeV2MenuItems", () => {
       ]),
     ).toEqual(["sin_titulo"]);
   });
+
+  it("carries the canvas's icon from its metadata", () => {
+    const [caja, ventas] = homeV2MenuItems(
+      [
+        canvas("caja", "Caja", { kairos_order: "1", kairos_icon: "wallet" }),
+        canvas("ventas", "Ventas", { kairos_order: "2" }),
+      ],
+      "/o/p/-/home-v2",
+    );
+    expect(caja.icon).toBe("wallet");
+    expect(ventas.icon).toBeUndefined();
+  });
 });

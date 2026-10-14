@@ -3,6 +3,7 @@
   import Resizer from "@rilldata/web-common/layout/Resizer.svelte";
   import { m } from "@rilldata/web-common/lib/i18n/gen/messages";
   import { HOME_V2_MENU_WIDTH, homeV2MenuWidth } from "./chat-state";
+  import { homeV2MenuIcon } from "./menu-icons";
   import type { HomeV2MenuItem } from "./menu";
 
   let {
@@ -49,13 +50,19 @@
     aria-label={m.home_v2_menu_label()}
   >
     {#each items as item (item.name)}
+      {@const Icon = homeV2MenuIcon(item.icon)}
       <a
         href={item.href}
-        class="rounded px-3 py-2 text-sm leading-snug text-fg-secondary hover:bg-surface-hover"
+        class="flex items-start gap-x-2.5 rounded px-3 py-2 text-sm leading-snug text-fg-secondary hover:bg-surface-hover"
         class:active={item.name === active}
         aria-current={item.name === active ? "page" : undefined}
       >
-        {item.title}
+        <!-- Pinned to the first line of a wrapped title. -->
+        <span
+          class="flex h-[1.375em] shrink-0 items-center"
+          data-icon={item.icon}><Icon size="16px" /></span
+        >
+        <span class="min-w-0">{item.title}</span>
       </a>
     {/each}
   </nav>
