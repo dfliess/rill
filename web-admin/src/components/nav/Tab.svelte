@@ -71,8 +71,10 @@
     @apply bg-gray-100;
   }
 
+  /* A two-word label ("Inicio v2") must not wrap into a taller tab on phones,
+     where the row scrolls sideways instead. */
   p {
-    @apply text-center;
+    @apply text-center whitespace-nowrap;
   }
 
   /* Prevent layout shift on font weight change */

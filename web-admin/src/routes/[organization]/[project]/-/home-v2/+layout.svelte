@@ -92,20 +92,26 @@
       </div>
     {/if}
 
-    {#if selected}
-      {#key `${runtimeClient.instanceId}::${selected}`}
-        <CanvasProvider
-          canvasName={selected}
-          instanceId={runtimeClient.instanceId}
-          isolated
-        >
-          <CanvasDashboardEmbed
+    <!-- A plain block around the canvas: the embed is size-full, which
+         against the scrolling column would stretch it to the viewport and push
+         the Home boxes below a screen of blank space. Against this auto-height
+         block it takes its content's height. -->
+    <div>
+      {#if selected}
+        {#key `${runtimeClient.instanceId}::${selected}`}
+          <CanvasProvider
             canvasName={selected}
-            navigationEnabled={false}
-          />
-        </CanvasProvider>
-      {/key}
-    {/if}
+            instanceId={runtimeClient.instanceId}
+            isolated
+          >
+            <CanvasDashboardEmbed
+              canvasName={selected}
+              navigationEnabled={false}
+            />
+          </CanvasProvider>
+        {/key}
+      {/if}
+    </div>
 
     {#if onHome}
       <div class="grid grid-cols-1 gap-8 px-4 pb-8 md:grid-cols-2 md:px-6">
