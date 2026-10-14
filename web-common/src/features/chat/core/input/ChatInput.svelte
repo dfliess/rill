@@ -28,7 +28,7 @@
   export let inline = false;
   // Awaited before a shared conversation is forked (see Conversation.sendMessage).
   export let beforeFork: (() => Promise<void> | void) | undefined = undefined;
-  // Kairos: rendered in the footer after the @ and / buttons, e.g. the context
+  // Kairos: rendered in the footer next to the send button, e.g. the context
   // the host page attaches to the next message (kairos-cloud#231).
   export let footerContext: Snippet | undefined = undefined;
 
@@ -180,10 +180,10 @@
         /
       </button>
     {/if}
+    <div class="grow"></div>
     {#if footerContext}
       <div class="flex min-w-0 items-center">{@render footerContext()}</div>
     {/if}
-    <div class="grow"></div>
     <div>
       {#if canCancel}
         <IconButton

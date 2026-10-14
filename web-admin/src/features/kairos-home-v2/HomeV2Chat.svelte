@@ -31,15 +31,15 @@
   const config = createHomeV2ChatConfig(canvasContext);
 </script>
 
-<!-- The context sits in the input footer, after @ and /, next to what it
-     applies to: the next message. -->
+<!-- The context sits in the input footer, by the send button: it travels
+     with the next message. -->
 {#snippet canvasChip()}
   {#if canvasName}
     <!-- Quiet, like an attachment in Claude or ChatGPT: just the canvas,
-         offset from @ and /, the full wording in the tooltip. -->
+         the full wording in the tooltip. -->
     {#if keepCanvas}
       <span
-        class="ml-2 flex min-w-0 items-center gap-x-1 rounded-md bg-surface-hover px-1.5 py-0.5 text-xs text-fg-muted"
+        class="flex min-w-0 items-center gap-x-1 rounded-md bg-surface-hover px-1.5 py-0.5 text-xs text-fg-muted"
         title={m.home_v2_chat_context({ canvas: canvasTitle })}
       >
         <LayoutDashboard size="12px" class="shrink-0" />
@@ -55,7 +55,7 @@
     {:else}
       <button
         type="button"
-        class="ml-2 flex min-w-0 items-center gap-x-1 rounded-md border border-dashed px-1.5 py-0.5 text-xs text-fg-muted hover:text-fg-primary"
+        class="flex min-w-0 items-center gap-x-1 rounded-md border border-dashed px-1.5 py-0.5 text-xs text-fg-muted hover:text-fg-primary"
         title={m.home_v2_chat_context_add({ canvas: canvasTitle })}
         aria-label={m.home_v2_chat_context_add({ canvas: canvasTitle })}
         onclick={() => (keepCanvas = true)}
