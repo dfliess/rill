@@ -109,6 +109,8 @@
     summary: string;
     firedOn: string;
     timeZone: string;
+    // The check that fired, so the link opens the data as it stood then.
+    executionTime?: string;
   };
 
   // The executive feed: alerts that actually fired, newest first. One entry per
@@ -130,6 +132,7 @@
             res.alert?.spec?.resolverProperties?.sql,
           ),
           firedOn,
+          executionTime: fired.executionTime,
           timeZone: res.alert?.spec?.refreshSchedule?.timeZone ?? "",
         };
       })
@@ -145,6 +148,15 @@
   let loaded = $derived($resourcesQuery.isSuccess);
 
   let base = $derived(`/${organization}/${project}/-/alerts`);
+
+  // Where the alert email's "Open" goes: the explore the alert watches, at
+  // the time of the check that fired. The alert page itself only holds its
+  // definition, and `open` falls back to it when it cannot build the explore.
+  function openHref(alert: TriggeredAlert) {
+    const href = `${base}/${alert.name}/open`;
+    if (!alert.executionTime) return href;
+    return `${href}?${new URLSearchParams({ execution_time: alert.executionTime })}`;
+  }
 </script>
 
 <HomeBox
@@ -160,7 +172,7 @@
          what fired, the offending values, and when. -->
     <li>
       <a
-        href={`${base}/${alert.name}`}
+        href={openHref(alert)}
         class="flex items-center gap-x-3 px-4 py-2.5 hover:bg-surface-hover"
       >
         <span class="shrink-0 text-amber-500"><AlertIcon size="15px" /></span>

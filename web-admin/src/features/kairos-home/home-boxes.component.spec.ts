@@ -149,6 +149,7 @@ describe("HomeRecentAlerts", () => {
               state: {
                 executionHistory: [
                   {
+                    executionTime: "2026-10-13T05:00:00Z",
                     finishedOn: "2026-10-13T07:00:00Z",
                     result: { status: "ASSERTION_STATUS_FAIL" },
                   },
@@ -162,5 +163,38 @@ describe("HomeRecentAlerts", () => {
     render(HomeRecentAlerts, { props });
     expect(screen.getByText("Margen bajo")).toBeTruthy();
     expect(screen.queryByText("No alert has fired yet.")).toBeNull();
+  });
+
+  it("opens the fired alert's data, like the alert email, not its definition", () => {
+    resources.set({
+      isSuccess: true,
+      data: {
+        resources: [
+          {
+            meta: { name: { name: "margen_bajo" } },
+            alert: {
+              spec: { displayName: "Margen bajo" },
+              state: {
+                executionHistory: [
+                  {
+                    executionTime: "2026-10-13T05:00:00Z",
+                    finishedOn: "2026-10-13T07:00:00Z",
+                    result: { status: "ASSERTION_STATUS_FAIL" },
+                  },
+                ],
+              },
+            },
+          },
+        ],
+      },
+    });
+    render(HomeRecentAlerts, { props });
+    const href = screen
+      .getByText("Margen bajo")
+      .closest("a")!
+      .getAttribute("href")!;
+    const url = new URL(href, "http://x");
+    expect(url.pathname).toBe("/org/proj/-/alerts/margen_bajo/open");
+    expect(url.searchParams.get("execution_time")).toBe("2026-10-13T05:00:00Z");
   });
 });
