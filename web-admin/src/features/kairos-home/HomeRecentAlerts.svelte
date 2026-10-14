@@ -140,20 +140,24 @@
       .slice(0, 5),
   );
 
+  // "Nothing fired" is only a fact once the list has answered.
+  let loaded = $derived($resourcesQuery.isSuccess);
+
   let base = $derived(`/${organization}/${project}/-/alerts`);
 </script>
 
-<!-- Hidden entirely when no alert has fired, so Home stays quiet. -->
-{#if triggered.length > 0}
-  <div class="flex flex-col gap-y-4">
-    <h2
-      class="flex items-center justify-between text-xl font-semibold text-fg-secondary"
-    >
-      {m.alerts_home_recent_heading()}
-      <a class="text-sm font-normal text-primary-600" href={base}>
-        {m.alerts_home_view_all()}
-      </a>
-    </h2>
+<!-- Always shown, even when no alert has fired: an empty feed tells the viewer
+     where Monitor will speak up, while a missing box hides the feature. -->
+<div class="flex flex-col gap-y-4">
+  <h2
+    class="flex items-center justify-between text-xl font-semibold text-fg-secondary"
+  >
+    {m.alerts_home_recent_heading()}
+    <a class="text-sm font-normal text-primary-600" href={base}>
+      {m.alerts_home_view_all()}
+    </a>
+  </h2>
+  {#if triggered.length > 0}
     <ul class="flex flex-col rounded-lg border divide-y overflow-hidden">
       {#each triggered as alert (alert.name)}
         <li>
@@ -198,5 +202,9 @@
         </li>
       {/each}
     </ul>
-  </div>
-{/if}
+  {:else if loaded}
+    <p class="rounded-lg border px-4 py-3 text-sm text-fg-secondary">
+      {m.alerts_home_recent_empty()}
+    </p>
+  {/if}
+</div>

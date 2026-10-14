@@ -51,25 +51,34 @@
     ),
   );
 
+  // Both lists must have answered before "nothing pending" is a fact rather
+  // than a loading state.
+  let loaded = $derived($runsQuery.isSuccess && $approvalsQuery.isSuccess);
+
   let base = $derived(`/${organization}/${project}/-/agents`);
 </script>
 
-<!-- Hidden entirely when nothing is waiting, so Home stays quiet until it needs attention. -->
-{#if pendingRuns.length > 0}
-  <div class="flex flex-col gap-y-4">
-    <h2
-      class="flex items-center justify-between text-xl font-semibold text-fg-secondary"
-    >
-      {m.agents_home_pending_heading()}
-      <a class="text-sm font-normal text-primary-600" href={base}>
-        {m.agents_home_view_all()}
-      </a>
-    </h2>
+<!-- Always shown, even when nothing is waiting: an empty inbox tells the viewer
+     where Act decisions will appear, while a missing box hides the feature. -->
+<div class="flex flex-col gap-y-4">
+  <h2
+    class="flex items-center justify-between text-xl font-semibold text-fg-secondary"
+  >
+    {m.agents_home_pending_heading()}
+    <a class="text-sm font-normal text-primary-600" href={base}>
+      {m.agents_home_view_all()}
+    </a>
+  </h2>
+  {#if pendingRuns.length > 0}
     <AgentRunsTable
       data={pendingRuns}
       {approvalsByRun}
       {organization}
       {project}
     />
-  </div>
-{/if}
+  {:else if loaded}
+    <p class="rounded-lg border px-4 py-3 text-sm text-fg-secondary">
+      {m.agents_home_pending_empty()}
+    </p>
+  {/if}
+</div>
