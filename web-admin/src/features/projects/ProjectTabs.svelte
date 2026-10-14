@@ -23,14 +23,17 @@
 
   $: tabs = [
     {
-      route: `/${organization}/${project}${branchPrefix}`,
+      // Kairos: with the new Home on, the Home tab opens it and the previous
+      // one stays reachable as the classic Home (#231).
+      route: $kairosNewHome
+        ? `/${organization}/${project}${branchPrefix}/-/home-v2`
+        : `/${organization}/${project}${branchPrefix}`,
       label: m.nav_tab_home(),
       hasPermission: true,
     },
     {
-      // Kairos Home v2, compared with the Home while the flag is on (#231).
-      route: `/${organization}/${project}${branchPrefix}/-/home-v2`,
-      label: m.nav_tab_home_v2(),
+      route: `/${organization}/${project}${branchPrefix}/-/home-classic`,
+      label: m.nav_tab_home_classic(),
       hasPermission: $kairosNewHome,
     },
     {
