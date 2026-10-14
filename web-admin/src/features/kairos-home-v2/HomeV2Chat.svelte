@@ -16,13 +16,11 @@
     actions: ChatActions;
   } = $props();
 
-  // The open canvas is context by default; the viewer can drop it for a
-  // project-wide question. Opening another canvas brings it back.
-  let keepCanvas = $state(true);
-  $effect(() => {
-    void canvasName;
-    keepCanvas = true;
-  });
+  // No context until the viewer attaches the open canvas: a Home question is
+  // usually about the whole project, and an overview canvas would narrow it.
+  // Once attached it follows the open canvas ("what I am looking at") until
+  // the viewer removes it (kairos-cloud#231).
+  let keepCanvas = $state(false);
 
   const canvasContext = writable<string | undefined>(undefined);
   $effect(() => {
