@@ -33,6 +33,7 @@
     runId,
     onReview,
     denyOnly,
+    small = false,
   }: {
     approvalId: string;
     argsHash: string;
@@ -54,6 +55,11 @@
      * approve it (nothing could have been shown), so only the way out is left.
      */
     denyOnly?: boolean;
+    /**
+     * Compact row variant (Home's inbox): small buttons, decline before
+     * approve so the primary action sits last, where the eye ends.
+     */
+    small?: boolean;
   } = $props();
 
   const runtimeClient = useRuntimeClient();
@@ -155,23 +161,29 @@
   }
 </script>
 
-<div class="flex gap-x-2">
+{#snippet primary()}
   {#if onReview && !denyOnly}
-    <Button type="primary" disabled={pending} onClick={onReview}>
+    <Button type="primary" {small} disabled={pending} onClick={onReview}>
       {m.agents_approval_review()}
     </Button>
   {:else if !denyOnly}
-    <Button type="primary" disabled={pending} onClick={handleApprove}>
+    <Button type="primary" {small} disabled={pending} onClick={handleApprove}>
       {m.agents_approval_approve()}
     </Button>
   {/if}
+{/snippet}
+
+<div class="flex gap-x-2">
+  {#if !small}{@render primary()}{/if}
   <Button
-    type="secondary"
+    type={small ? "ghost" : "secondary"}
+    {small}
     disabled={pending}
     onClick={() => (denyConfirmOpen = true)}
   >
     {m.agents_approval_deny()}
   </Button>
+  {#if small}{@render primary()}{/if}
 </div>
 
 <AlertDialog

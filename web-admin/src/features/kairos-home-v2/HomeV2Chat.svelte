@@ -2,6 +2,7 @@
   import SidebarChat from "@rilldata/web-common/features/chat/layouts/sidebar/SidebarChat.svelte";
   import type { ChatActions } from "@rilldata/web-common/features/chat/layouts/sidebar/sidebar-store";
   import { m } from "@rilldata/web-common/lib/i18n/gen/messages";
+  import { LayoutDashboard, Plus, X } from "lucide-svelte";
   import { writable } from "svelte/store";
   import { createHomeV2ChatConfig } from "./chat-config";
 
@@ -36,27 +37,33 @@
      applies to: the next message. -->
 {#snippet canvasChip()}
   {#if canvasName}
+    <!-- Quiet, like an attachment in Claude or ChatGPT: just the canvas,
+         offset from @ and /, the full wording in the tooltip. -->
     {#if keepCanvas}
       <span
-        class="flex min-w-0 items-center gap-x-1 rounded-full border px-2 py-0.5 text-xs text-fg-secondary"
+        class="ml-2 flex min-w-0 items-center gap-x-1 rounded-md bg-surface-hover px-1.5 py-0.5 text-xs text-fg-muted"
+        title={m.home_v2_chat_context({ canvas: canvasTitle })}
       >
-        <span class="truncate"
-          >{m.home_v2_chat_context({ canvas: canvasTitle })}</span
-        >
+        <LayoutDashboard size="12px" class="shrink-0" />
+        <span class="truncate">{canvasTitle}</span>
         <button
           type="button"
-          class="shrink-0 hover:text-fg-primary"
+          class="shrink-0 rounded hover:text-fg-primary"
           aria-label={m.home_v2_chat_context_remove()}
-          onclick={() => (keepCanvas = false)}>✕</button
+          title={m.home_v2_chat_context_remove()}
+          onclick={() => (keepCanvas = false)}><X size="12px" /></button
         >
       </span>
     {:else}
       <button
         type="button"
-        class="truncate text-xs text-fg-muted hover:text-fg-primary"
+        class="ml-2 flex min-w-0 items-center gap-x-1 rounded-md border border-dashed px-1.5 py-0.5 text-xs text-fg-muted hover:text-fg-primary"
+        title={m.home_v2_chat_context_add({ canvas: canvasTitle })}
+        aria-label={m.home_v2_chat_context_add({ canvas: canvasTitle })}
         onclick={() => (keepCanvas = true)}
       >
-        {m.home_v2_chat_context_add({ canvas: canvasTitle })}
+        <Plus size="12px" class="shrink-0" />
+        <span class="truncate">{canvasTitle}</span>
       </button>
     {/if}
   {/if}

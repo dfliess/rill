@@ -1,6 +1,5 @@
 <script lang="ts">
   import AlertIcon from "@rilldata/web-common/components/icons/AlertIcon.svelte";
-  import { Tag } from "@rilldata/web-common/components/tag";
   import { m } from "@rilldata/web-common/lib/i18n/gen/messages";
   import { createMeasureValueFormatter } from "@rilldata/web-common/lib/number-formatting/format-measure-value";
   import { timeAgo } from "@rilldata/web-common/lib/time/relative-time";
@@ -9,6 +8,7 @@
   import { createRuntimeServiceListResources } from "@rilldata/web-common/runtime-client";
   import { useRuntimeClient } from "@rilldata/web-common/runtime-client/v2";
   import { formatRunDate } from "@rilldata/web-admin/features/scheduled-reports/tableUtils";
+  import HomeBox from "./HomeBox.svelte";
 
   let { organization, project }: { organization: string; project: string } =
     $props();
@@ -113,7 +113,7 @@
 
   // The executive feed: alerts that actually fired, newest first. One entry per
   // alert (its latest triggered check) so a flapping alert doesn't flood the list.
-  let triggered = $derived(
+  let allTriggered = $derived(
     ($resourcesQuery.data?.resources ?? [])
       .map((res): TriggeredAlert | undefined => {
         const fired = (res.alert?.state?.executionHistory ?? []).find(
@@ -136,9 +136,10 @@
       .filter((a): a is TriggeredAlert => !!a)
       .sort(
         (a, b) => new Date(b.firedOn).getTime() - new Date(a.firedOn).getTime(),
-      )
-      .slice(0, 5),
+      ),
   );
+  // A glance, not the list: the header counts them all, "View all" has the rest.
+  let triggered = $derived(allTriggered.slice(0, 4));
 
   // "Nothing fired" is only a fact once the list has answered.
   let loaded = $derived($resourcesQuery.isSuccess);
@@ -146,65 +147,40 @@
   let base = $derived(`/${organization}/${project}/-/alerts`);
 </script>
 
-<!-- Always shown, even when no alert has fired: an empty feed tells the viewer
-     where Monitor will speak up, while a missing box hides the feature. -->
-<div class="flex flex-col gap-y-4">
-  <h2
-    class="flex items-center justify-between text-xl font-semibold text-fg-secondary"
-  >
-    {m.alerts_home_recent_heading()}
-    <a class="text-sm font-normal text-primary-600" href={base}>
-      {m.alerts_home_view_all()}
-    </a>
-  </h2>
-  {#if triggered.length > 0}
-    <ul class="flex flex-col rounded-lg border divide-y overflow-hidden">
-      {#each triggered as alert (alert.name)}
-        <li>
-          <!-- Two lines, matching the pending-approvals inbox and the dashboards
-               listing: title on its own line, status and context below it. A
-               single line made the four fields fight for the width, and on a
-               phone the title was the one that lost. -->
-          <a
-            href={`${base}/${alert.name}`}
-            class="flex items-center gap-x-2.5 px-4 py-3 group hover:bg-surface-hover"
-          >
-            <span class="shrink-0 text-fg-secondary">
-              <AlertIcon size="15px" />
+<HomeBox
+  title={m.alerts_home_recent_heading()}
+  count={allTriggered.length}
+  href={base}
+  viewAllLabel={m.alerts_home_view_all()}
+  emptyText={m.alerts_home_recent_empty()}
+  {loaded}
+>
+  {#each triggered as alert (alert.name)}
+    <!-- Every row here fired, so a status tag would say nothing: the row is
+         what fired, the offending values, and when. -->
+    <li>
+      <a
+        href={`${base}/${alert.name}`}
+        class="flex items-center gap-x-3 px-4 py-2.5 hover:bg-surface-hover"
+      >
+        <span class="shrink-0 text-amber-500"><AlertIcon size="15px" /></span>
+        <div class="flex min-w-0 grow flex-col">
+          <span class="truncate text-sm font-medium text-fg-primary">
+            {alert.title}
+          </span>
+          {#if alert.summary}
+            <span class="truncate text-xs text-fg-secondary">
+              {alert.summary}
             </span>
-            <div class="flex flex-col gap-y-1 min-w-0 grow">
-              <span
-                class="text-fg-primary text-sm font-semibold truncate min-w-0 group-hover:text-accent-primary-action"
-              >
-                {alert.title}
-              </span>
-              <!-- The status line does not wrap: the fail row summary is the
-                   only field that can run long, so it absorbs the squeeze by
-                   truncating and the row stays two lines on a phone. Wrapping
-                   instead left the tag stranded on a line of its own. -->
-              <div
-                class="flex items-center gap-x-2 text-fg-secondary text-xs min-w-0"
-              >
-                <Tag color="blue">{m.alert_status_triggered()}</Tag>
-                {#if alert.summary}
-                  <span class="truncate min-w-0">{alert.summary}</span>
-                  <span class="shrink-0" aria-hidden="true">·</span>
-                {/if}
-                <span
-                  class="shrink-0 whitespace-nowrap"
-                  title={formatRunDate(alert.firedOn, alert.timeZone)}
-                >
-                  {timeAgo(new Date(alert.firedOn))}
-                </span>
-              </div>
-            </div>
-          </a>
-        </li>
-      {/each}
-    </ul>
-  {:else if loaded}
-    <p class="rounded-lg border px-4 py-3 text-sm text-fg-secondary">
-      {m.alerts_home_recent_empty()}
-    </p>
-  {/if}
-</div>
+          {/if}
+        </div>
+        <span
+          class="shrink-0 whitespace-nowrap text-xs text-fg-muted"
+          title={formatRunDate(alert.firedOn, alert.timeZone)}
+        >
+          {timeAgo(new Date(alert.firedOn))}
+        </span>
+      </a>
+    </li>
+  {/each}
+</HomeBox>

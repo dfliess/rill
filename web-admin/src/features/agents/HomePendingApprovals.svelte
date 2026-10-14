@@ -1,9 +1,14 @@
 <script lang="ts">
+  import Brain from "@rilldata/web-common/components/icons/Brain.svelte";
   import { m } from "@rilldata/web-common/lib/i18n/gen/messages";
+  import { timeAgo } from "@rilldata/web-common/lib/time/relative-time";
   import { useRuntimeClient } from "@rilldata/web-common/runtime-client/v2";
-  import AgentRunsTable from "./runs/AgentRunsTable.svelte";
-  import { useAgentApprovals, useAgentRuns } from "./selectors";
-  import type { AgentApprovalData } from "./types";
+  import HomeBox from "@rilldata/web-admin/features/kairos-home/HomeBox.svelte";
+  import ApproveDenyButtons from "./approvals/ApproveDenyButtons.svelte";
+  import { runDetailPath } from "./run-id";
+  import { useAgentApprovals, useAgentRuns, useAgents } from "./selectors";
+  import type { AgentApprovalData, AgentRunData } from "./types";
+  import { approvalGlance, formatDateTime } from "./utils";
 
   let { organization, project }: { organization: string; project: string } =
     $props();
@@ -56,29 +61,73 @@
   let loaded = $derived($runsQuery.isSuccess && $approvalsQuery.isSuccess);
 
   let base = $derived(`/${organization}/${project}/-/agents`);
+
+  // A glance, not the list: the header counts them all, "View all" has the rest.
+  let shown = $derived(pendingRuns.slice(0, 4));
+
+  // Runs carry the agent's slug; the catalog carries its display name.
+  const agentsQuery = useAgents(runtimeClient);
+  let displayNameByAgent = $derived(
+    new Map<string, string>(
+      ($agentsQuery.data?.agents ?? []).map((a) => [
+        a.name ?? "",
+        a.displayName ?? "",
+      ]),
+    ),
+  );
+
+  function startedAgo(run: AgentRunData): string {
+    const raw = run.startedOn ?? run.createdOn;
+    const date = typeof raw === "string" ? new Date(raw) : undefined;
+    return date && !Number.isNaN(date.getTime()) ? timeAgo(date) : "";
+  }
 </script>
 
-<!-- Always shown, even when nothing is waiting: an empty inbox tells the viewer
-     where Act decisions will appear, while a missing box hides the feature. -->
-<div class="flex flex-col gap-y-4">
-  <h2
-    class="flex items-center justify-between text-xl font-semibold text-fg-secondary"
-  >
-    {m.agents_home_pending_heading()}
-    <a class="text-sm font-normal text-primary-600" href={base}>
-      {m.agents_home_view_all()}
-    </a>
-  </h2>
-  {#if pendingRuns.length > 0}
-    <AgentRunsTable
-      data={pendingRuns}
-      {approvalsByRun}
-      {organization}
-      {project}
-    />
-  {:else if loaded}
-    <p class="rounded-lg border px-4 py-3 text-sm text-fg-secondary">
-      {m.agents_home_pending_empty()}
-    </p>
-  {/if}
-</div>
+<HomeBox
+  title={m.agents_home_pending_heading()}
+  count={pendingRuns.length}
+  href={base}
+  viewAllLabel={m.agents_home_view_all()}
+  emptyText={m.agents_home_pending_empty()}
+  {loaded}
+>
+  {#each shown as run (run.runId)}
+    {@const approvals = approvalsByRun.get(run.runId ?? "") ?? []}
+    <!-- can_decide is per approval, so the row names and acts on the first one
+         this viewer may decide (see AgentRunsTable). -->
+    {@const decidable = approvals.find((a) => !!a.canDecide)}
+    {@const glance = decidable ? approvalGlance(decidable) : ""}
+    {@const ago = startedAgo(run)}
+    <li class="flex items-center gap-x-3 px-4 py-2.5 hover:bg-surface-hover">
+      <span class="shrink-0 text-fg-secondary"><Brain size="15px" /></span>
+      <!-- Approve happens in place (#231): the row says what would run (the
+           signed argument values, escaped), the server still binds the decision
+           to the args hash, and the full arguments are one click away. -->
+      <a
+        href={runDetailPath(organization, project, run)}
+        class="flex min-w-0 grow flex-col"
+        title={formatDateTime(run.startedOn ?? run.createdOn)}
+      >
+        <span class="truncate text-sm font-medium text-fg-primary">
+          {displayNameByAgent.get(run.agentName ?? "") || run.agentName}
+        </span>
+        <span class="truncate text-xs text-fg-secondary">
+          {[glance, ago].filter(Boolean).join(" · ")}
+          {#if approvals.length > 1}
+            · {m.agents_approval_and_n_more({ count: approvals.length - 1 })}
+          {/if}
+        </span>
+      </a>
+      {#if decidable}
+        <div class="shrink-0">
+          <ApproveDenyButtons
+            approvalId={decidable.approvalId ?? ""}
+            argsHash={decidable.argsHash ?? ""}
+            runId={run.runId ?? ""}
+            small
+          />
+        </div>
+      {/if}
+    </li>
+  {/each}
+</HomeBox>

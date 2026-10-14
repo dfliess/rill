@@ -650,6 +650,38 @@ function sliceTopLevelObject(raw: string): ApprovalArgEntry[] | null {
 }
 
 /**
+ * One line that says what an approval would do, for Home's inbox row (#231),
+ * where the viewer approves in place: the values of the signed arguments,
+ * shortest first so the identifying ones (a channel, a subject, an amount)
+ * show before a long body runs out of width. Values keep the escaping of
+ * `parseCanonicalArgs`, so a bidi override or an invisible character stays
+ * visible here too; only the quotes and line breaks a single line cannot hold
+ * are dropped. Falls back to the one-line proposal, then the tool name, when
+ * the preimage does not decompose.
+ */
+export function approvalGlance(approval: {
+  canonicalArgs?: string;
+  proposal?: string;
+  toolName?: string;
+}): string {
+  const args = parseCanonicalArgs(approval.canonicalArgs);
+  const values = args.entries
+    .map((e) => (e.readable ?? e.value).replace(/^"(.*)"$/s, "$1"))
+    .map((v) => v.replace(/\s+/g, " ").trim())
+    .filter((v) => v !== "");
+  if (args.structured && values.length > 0) {
+    return values
+      .map((v, i) => ({ v, i }))
+      .sort((a, b) => a.v.length - b.v.length || a.i - b.i)
+      .map(({ v }) => v)
+      .join(" · ");
+  }
+  return escapeInline(
+    (approval.proposal || approval.toolName || "").replace(/\s+/g, " "),
+  );
+}
+
+/**
  * The policy vocabulary is owned by the backend; only `approval_required` ever
  * reaches an approval (allow and deny never create one), so we localize it and
  * fall back to the raw token for anything unexpected.

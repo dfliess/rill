@@ -19,6 +19,10 @@ vi.mock("@rilldata/web-common/runtime-client/v2", () => ({
 vi.mock("@rilldata/web-admin/features/agents/selectors", () => ({
   useAgentRuns: () => runs,
   useAgentApprovals: () => approvals,
+  useAgents: () =>
+    writable({
+      data: { agents: [{ name: "resumen", displayName: "Resumen semanal" }] },
+    }),
 }));
 
 vi.mock("@rilldata/web-common/runtime-client", async (importOriginal) => ({
@@ -26,16 +30,12 @@ vi.mock("@rilldata/web-common/runtime-client", async (importOriginal) => ({
   createRuntimeServiceListResources: () => resources,
 }));
 
-// The runs table pulls in its own queries; this file only cares whether the
-// box shows the table or the empty text.
+// The decision buttons run their own mutations; this file only cares that a
+// pending row offers them in place.
 vi.mock(
-  "@rilldata/web-admin/features/agents/runs/AgentRunsTable.svelte",
+  "@rilldata/web-admin/features/agents/approvals/ApproveDenyButtons.svelte",
   async () => ({
-    default: (
-      await import(
-        "@rilldata/web-common/features/entity-management/__fixtures__/SlotPassthrough.svelte"
-      )
-    ).default,
+    default: (await import("./__fixtures__/ApproveDenyStub.svelte")).default,
   }),
 );
 
@@ -87,6 +87,36 @@ describe("HomePendingApprovals", () => {
     expect(
       screen.queryByText("No actions are waiting for your approval."),
     ).toBeNull();
+  });
+
+  it("names the agent and what it would do, with approve in place", () => {
+    runs.set({
+      isSuccess: true,
+      data: {
+        runs: [
+          { runId: "r1", agentName: "resumen", status: "waiting_approval" },
+        ],
+      },
+    });
+    approvals.set({
+      isSuccess: true,
+      data: {
+        approvals: [
+          {
+            runId: "r1",
+            approvalId: "a1",
+            status: "pending",
+            canDecide: true,
+            canonicalArgs: '{"channel":"#direccion","subject":"Resumen"}',
+          },
+        ],
+      },
+    });
+    render(HomePendingApprovals, { props });
+    expect(screen.getByText("Resumen semanal")).toBeTruthy();
+    expect(screen.getByText(/Resumen · #direccion/)).toBeTruthy();
+    expect(screen.getByTestId("approve-deny").dataset.approval).toBe("a1");
+    expect(screen.getByRole("heading").textContent).toContain("1");
   });
 });
 

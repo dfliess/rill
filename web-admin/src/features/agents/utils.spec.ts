@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  approvalGlance,
   approvalPolicyLabel,
   escapeInline,
   escapeInvisible,
@@ -490,5 +491,29 @@ describe("approvalPolicyLabel", () => {
     expect(approvalPolicyLabel("deny")).toBe("deny");
     expect(approvalPolicyLabel(undefined)).toBe("—");
     expect(approvalPolicyLabel("   ")).toBe("—");
+  });
+});
+
+describe("approvalGlance", () => {
+  it("lists the argument values shortest first, on one line", () => {
+    expect(
+      approvalGlance({
+        canonicalArgs:
+          '{"body":"Ventas +3%\\nMargen estable","channel":"#direccion","subject":"Resumen semanal"}',
+      }),
+    ).toBe("#direccion · Resumen semanal · Ventas +3% Margen estable");
+  });
+
+  it("keeps hidden characters visible", () => {
+    expect(
+      approvalGlance({ canonicalArgs: '{"to":"evil\\u202Egro.com"}' }),
+    ).toContain("\\u202E");
+  });
+
+  it("falls back to the proposal, then the tool name", () => {
+    expect(approvalGlance({ proposal: "send(a=1)", toolName: "send" })).toBe(
+      "send(a=1)",
+    );
+    expect(approvalGlance({ toolName: "mcp.x.send" })).toBe("mcp.x.send");
   });
 });

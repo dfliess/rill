@@ -80,7 +80,12 @@
     </div>
 
     {#if onFirst}
-      <div class="grid grid-cols-1 gap-8 px-4 pb-8 md:grid-cols-2 md:px-6">
+      <!-- Side by side while each card gets ~24rem, stacked below that. It
+           follows the width left for the canvas (menu and AI panel take
+           theirs), not the viewport, so opening the panel can stack them. -->
+      <div
+        class="grid grid-cols-[repeat(auto-fit,minmax(min(100%,24rem),1fr))] gap-4 px-4 pb-8 md:px-6"
+      >
         <HomeRecentAlerts {organization} {project} />
         {#if $agents}
           <HomePendingApprovals {organization} {project} />
