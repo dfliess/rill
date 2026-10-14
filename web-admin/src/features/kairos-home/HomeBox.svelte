@@ -3,7 +3,7 @@
 
   // The frame Home's Monitor and Act summaries share (#231): one card each,
   // same header, same row rhythm, so two of them side by side read as a pair
-  // and stretch to the same height. The rows are the caller's.
+  // and a grid stretches them to the same height. The rows are the caller's.
   let {
     title,
     count = 0,
@@ -26,7 +26,7 @@
 
 <!-- Always shown, even when empty: an empty card tells the viewer where
      Monitor and Act will speak up, while a missing one hides the feature. -->
-<section class="flex h-full min-w-0 flex-col rounded-lg border bg-surface-card">
+<section class="flex min-w-0 flex-col rounded-lg border bg-surface-card">
   <header class="flex items-baseline justify-between gap-x-3 px-4 pb-1 pt-3">
     <h2 class="text-sm font-semibold text-fg-primary">
       {title}
