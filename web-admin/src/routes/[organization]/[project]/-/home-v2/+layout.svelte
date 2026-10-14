@@ -13,6 +13,7 @@
   import { homeV2MenuItems } from "@rilldata/web-admin/features/kairos-home-v2/menu";
   import CanvasDashboardEmbed from "@rilldata/web-common/features/canvas/CanvasDashboardEmbed.svelte";
   import CanvasProvider from "@rilldata/web-common/features/canvas/CanvasProvider.svelte";
+  import { DEFAULT_DASHBOARD_WIDTH } from "@rilldata/web-common/features/canvas/layout-util";
   import { featureFlags } from "@rilldata/web-common/features/feature-flags";
   import { createRuntimeServiceListResources } from "@rilldata/web-common/runtime-client";
   import { useRuntimeClient } from "@rilldata/web-common/runtime-client/v2";
@@ -43,6 +44,11 @@
   // No canvas in the URL: the first one in the menu.
   let selected = $derived($page.params.canvas ?? menuItems[0]?.name);
   let onFirst = $derived(selected === menuItems[0]?.name);
+  let canvasMaxWidth = $derived(
+    $resourcesQuery.data?.resources?.find(
+      (r) => r.canvas && r.meta?.name?.name === selected,
+    )?.canvas?.state?.validSpec?.maxWidth || DEFAULT_DASHBOARD_WIDTH,
+  );
   let selectedTitle = $derived(
     menuItems.find((i) => i.name === selected)?.title ?? "",
   );
@@ -80,16 +86,21 @@
     </div>
 
     {#if onFirst}
-      <!-- Side by side while each card gets ~24rem, stacked below that. It
-           follows the width left for the canvas (menu and AI panel take
-           theirs), not the viewport, so opening the panel can stack them. -->
-      <div
-        class="grid grid-cols-[repeat(auto-fit,minmax(min(100%,24rem),1fr))] gap-4 px-4 pb-8 md:px-6"
-      >
-        <HomeRecentAlerts {organization} {project} />
-        {#if $agents}
-          <HomePendingApprovals {organization} {project} />
-        {/if}
+      <!-- Lined up with the canvas above: its 8px frame, its max width and
+           its 10px around every component, so the cards share its edges and
+           its 20px gutter. Side by side while each card gets ~24rem, stacked
+           below that; that follows the width left for the canvas, not the
+           viewport, so opening the AI panel can stack them. -->
+      <div class="flex justify-center px-2 pb-8">
+        <div
+          class="grid w-full grid-cols-[repeat(auto-fit,minmax(min(100%,24rem),1fr))] gap-5 px-2.5 pt-0.5"
+          style:max-width="{canvasMaxWidth}px"
+        >
+          <HomeRecentAlerts {organization} {project} />
+          {#if $agents}
+            <HomePendingApprovals {organization} {project} />
+          {/if}
+        </div>
       </div>
     {/if}
   </main>

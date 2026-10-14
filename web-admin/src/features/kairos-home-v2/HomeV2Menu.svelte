@@ -1,6 +1,8 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
+  import Resizer from "@rilldata/web-common/layout/Resizer.svelte";
   import { m } from "@rilldata/web-common/lib/i18n/gen/messages";
+  import { HOME_V2_MENU_WIDTH, homeV2MenuWidth } from "./chat-state";
   import type { HomeV2MenuItem } from "./menu";
 
   let {
@@ -26,21 +28,38 @@
   </select>
 </div>
 
-<nav
-  class="hidden md:flex flex-col gap-y-0.5 w-56 shrink-0 overflow-y-auto border-r px-2 py-4"
-  aria-label={m.home_v2_menu_label()}
+<!-- Resizable like the AI panel (drag the edge, double-click to reset), and
+     titles wrap instead of truncating: a dashboard's name is how it is found. -->
+<!-- The resizer sits on a wrapper: the scrolling list would clip its handle. -->
+<div
+  class="relative hidden md:flex shrink-0 border-r"
+  style:width="{$homeV2MenuWidth}px"
 >
-  {#each items as item (item.name)}
-    <a
-      href={item.href}
-      class="truncate rounded px-3 py-2 text-sm text-fg-secondary hover:bg-surface-hover"
-      class:active={item.name === active}
-      aria-current={item.name === active ? "page" : undefined}
-    >
-      {item.title}
-    </a>
-  {/each}
-</nav>
+  <Resizer
+    min={HOME_V2_MENU_WIDTH.MIN}
+    max={HOME_V2_MENU_WIDTH.MAX}
+    basis={HOME_V2_MENU_WIDTH.BASIS}
+    dimension={$homeV2MenuWidth}
+    direction="EW"
+    side="right"
+    onUpdate={(w) => homeV2MenuWidth.set(w)}
+  />
+  <nav
+    class="flex w-full flex-col gap-y-0.5 overflow-y-auto px-2 py-4"
+    aria-label={m.home_v2_menu_label()}
+  >
+    {#each items as item (item.name)}
+      <a
+        href={item.href}
+        class="rounded px-3 py-2 text-sm leading-snug text-fg-secondary hover:bg-surface-hover"
+        class:active={item.name === active}
+        aria-current={item.name === active ? "page" : undefined}
+      >
+        {item.title}
+      </a>
+    {/each}
+  </nav>
+</div>
 
 <style lang="postcss">
   .active {

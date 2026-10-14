@@ -26,7 +26,11 @@
 
 <!-- Always shown, even when empty: an empty card tells the viewer where
      Monitor and Act will speak up, while a missing one hides the feature. -->
-<section class="flex min-w-0 flex-col rounded-lg border bg-surface-card">
+<!-- Framed like a canvas component (outline, shadow, radius) so under a
+     canvas they read as part of it. -->
+<section
+  class="flex min-w-0 flex-col overflow-hidden rounded-sm bg-surface-card shadow-sm outline outline-[1px] outline-border"
+>
   <header class="flex items-baseline justify-between gap-x-3 px-4 pb-1 pt-3">
     <h2 class="text-sm font-semibold text-fg-primary">
       {title}

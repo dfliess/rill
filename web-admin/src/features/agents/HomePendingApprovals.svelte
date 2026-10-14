@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Brain from "@rilldata/web-common/components/icons/Brain.svelte";
   import { m } from "@rilldata/web-common/lib/i18n/gen/messages";
+  import { ShieldCheck } from "lucide-svelte";
   import { timeAgo } from "@rilldata/web-common/lib/time/relative-time";
   import { useRuntimeClient } from "@rilldata/web-common/runtime-client/v2";
   import HomeBox from "@rilldata/web-admin/features/kairos-home/HomeBox.svelte";
@@ -99,7 +99,8 @@
     {@const glance = decidable ? approvalGlance(decidable) : ""}
     {@const ago = startedAgo(run)}
     <li class="flex items-center gap-x-3 px-4 py-2.5 hover:bg-surface-hover">
-      <span class="shrink-0 text-fg-secondary"><Brain size="15px" /></span>
+      <!-- A governed action waiting for a signature, not "the AI". -->
+      <span class="shrink-0 text-primary-500"><ShieldCheck size="15px" /></span>
       <!-- Approve happens in place (#231): the row says what would run (the
            signed argument values, escaped), the server still binds the decision
            to the args hash, and the full arguments are one click away. -->

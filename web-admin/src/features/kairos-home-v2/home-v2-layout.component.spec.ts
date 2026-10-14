@@ -9,6 +9,17 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // ones. The canvas, the chat and the boxes are stubbed, and the menu order has
 // its own spec (menu.spec.ts).
 
+// The canvas layout utils pull in the theme control, which reads
+// matchMedia when its module loads: jsdom has none.
+vi.hoisted(() => {
+  window.matchMedia = ((query: string) => ({
+    matches: false,
+    media: query,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+  })) as unknown as typeof window.matchMedia;
+});
+
 // vi.mock factories are hoisted above the imports, so the stores they hand
 // out are created in a hoisted block too.
 const { page, resources } = await vi.hoisted(async () => {
@@ -90,9 +101,10 @@ const canvas = (
   name: string,
   displayName: string,
   metadata?: Record<string, string>,
+  maxWidth?: number,
 ) => ({
   meta: { name: { name }, metadata },
-  canvas: { spec: { displayName }, state: { validSpec: {} } },
+  canvas: { spec: { displayName }, state: { validSpec: { maxWidth } } },
 });
 
 function setWideScreen(wide: boolean) {
@@ -142,6 +154,21 @@ describe("Home v2 layout", () => {
     renderLayout();
     expect(screen.getByTestId("canvas").textContent).toBe("home");
     expect(screen.getAllByTestId("home-box")).toHaveLength(2);
+  });
+
+  it("lines the boxes up with the canvas's max width", () => {
+    setWideScreen(true);
+    const grid = () => screen.getAllByTestId("home-box")[0].parentElement!;
+    const { unmount } = renderLayout();
+    expect(grid().style.maxWidth).toBe("1200px");
+    unmount();
+    resources.set({
+      data: {
+        resources: [canvas("home", "Inicio", { kairos_order: "1" }, 1400)],
+      },
+    });
+    renderLayout();
+    expect(grid().style.maxWidth).toBe("1400px");
   });
 
   it("shows the canvas named in the URL, without the boxes", () => {
