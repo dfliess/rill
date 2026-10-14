@@ -80,6 +80,9 @@ var defaultFeatureFlags = map[string]string{
 	// Controls the project-wide bookmark manager: the Bookmarks tab and the home page section. Kairos keeps it off
 	// because it crowds the UI; bookmarks stay reachable from each dashboard's dropdown (kairos-cloud#193).
 	"bookmarks": "false",
+	// Controls the Home v2 tab: a dashboards menu, the home canvas with the alerts and approvals boxes,
+	// and the AI side panel on one page. Off by default while it is compared with the Home (kairos-cloud#231).
+	"kairos_home_v2": "false",
 }
 
 // ResolveFeatureFlags resolves feature flags for the given instance and the provided user attributes.

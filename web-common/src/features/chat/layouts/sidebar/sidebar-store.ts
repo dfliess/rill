@@ -52,7 +52,7 @@ export type ChatActions = {
   updateSidebarWidth(width: number): void;
 };
 
-function createChatActions(open: Writable<boolean>): ChatActions {
+export function createChatActions(open: Writable<boolean>): ChatActions {
   return {
     toggleChat() {
       open.update((isOpen) => !isOpen);

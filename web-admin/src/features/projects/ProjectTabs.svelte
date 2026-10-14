@@ -18,13 +18,20 @@
   // Bookmarks belong to users, so anonymous viewers of public projects have none to manage.
   export let hasUser: boolean = false;
 
-  const { chat, reports, alerts, agents, bookmarks } = featureFlags;
+  const { chat, reports, alerts, agents, bookmarks, kairosHomeV2 } =
+    featureFlags;
 
   $: tabs = [
     {
       route: `/${organization}/${project}${branchPrefix}`,
       label: m.nav_tab_home(),
       hasPermission: true,
+    },
+    {
+      // Kairos Home v2, compared with the Home while the flag is on (#231).
+      route: `/${organization}/${project}${branchPrefix}/-/home-v2`,
+      label: m.nav_tab_home_v2(),
+      hasPermission: $kairosHomeV2,
     },
     {
       route: `/${organization}/${project}${branchPrefix}/-/ai`,
