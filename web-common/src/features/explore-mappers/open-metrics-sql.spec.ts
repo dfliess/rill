@@ -7,26 +7,30 @@ import {
 import type { RuntimeClient } from "@rilldata/web-common/runtime-client/v2";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { convert, generateExploreLink } = vi.hoisted(() => ({
+const { convert, generateExploreLink, listResources } = vi.hoisted(() => ({
   convert: vi.fn(),
   generateExploreLink: vi.fn(),
+  listResources: vi.fn(),
+}));
+
+vi.mock("@rilldata/web-common/runtime-client", async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  runtimeServiceListResources: listResources,
 }));
 
 vi.mock("@rilldata/web-common/runtime-client/v2/gen/query-service", () => ({
   queryServiceConvertMetricsSQLToQuery: convert,
 }));
-vi.mock(
-  "@rilldata/web-common/features/explore-mappers/open-query.ts",
-  () => ({
-    getExploreSpecs: () =>
-      Promise.resolve({
-        metricsViewSpec: AD_BIDS_METRICS_3_MEASURES_DIMENSIONS_WITH_TIME,
-        exploreSpec: AD_BIDS_EXPLORE_WITH_3_MEASURES_DIMENSIONS_TIME_DIMENSION,
-      }),
-    generateExploreLink,
-  }),
-);
+vi.mock("@rilldata/web-common/features/explore-mappers/open-query.ts", () => ({
+  getExploreSpecs: () =>
+    Promise.resolve({
+      metricsViewSpec: AD_BIDS_METRICS_3_MEASURES_DIMENSIONS_WITH_TIME,
+      exploreSpec: AD_BIDS_EXPLORE_WITH_3_MEASURES_DIMENSIONS_TIME_DIMENSION,
+    }),
+  generateExploreLink,
+}));
 
+import { queryClient } from "@rilldata/web-common/lib/svelte-query/globalQueryClient";
 import { getExploreUrlForMetricsSQL } from "./open-metrics-sql";
 
 const metricsView =
@@ -47,6 +51,8 @@ const args = {
 };
 
 beforeEach(() => {
+  queryClient.clear();
+  listResources.mockReset();
   convert.mockReset();
   generateExploreLink.mockReset();
   generateExploreLink.mockResolvedValue(
@@ -119,5 +125,38 @@ describe("getExploreUrlForMetricsSQL", () => {
       },
     });
     await expect(getExploreUrlForMetricsSQL(args)).rejects.toThrow("HAVING");
+  });
+
+  describe("without an explore named", () => {
+    const explore = (name: string, mv = metricsView) => ({
+      meta: { name: { name } },
+      explore: { state: { validSpec: { metricsView: mv } } },
+    });
+    beforeEach(() => {
+      convert.mockResolvedValue({
+        query: {
+          metrics_view: metricsView,
+          dimensions: [{ name: AD_BIDS_PUBLISHER_DIMENSION }],
+          measures: [{ name: AD_BIDS_IMPRESSIONS_MEASURE }],
+        },
+      });
+    });
+
+    it("opens the only explore on the metrics view", async () => {
+      listResources.mockResolvedValue({
+        resources: [explore("other_explore", "other"), explore("the_one")],
+      });
+      await getExploreUrlForMetricsSQL({ ...args, exploreName: "" });
+      expect(generateExploreLink.mock.calls[0][4]).toBe("the_one");
+    });
+
+    it("doesn't guess among several", async () => {
+      listResources.mockResolvedValue({
+        resources: [explore("one"), explore("two")],
+      });
+      await expect(
+        getExploreUrlForMetricsSQL({ ...args, exploreName: "" }),
+      ).rejects.toThrow("found 2");
+    });
   });
 });
