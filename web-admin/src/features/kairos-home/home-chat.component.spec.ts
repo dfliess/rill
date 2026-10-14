@@ -19,22 +19,22 @@ vi.mock(
   }),
 );
 vi.mock("./chat-config", () => ({
-  createHomeV2ChatConfig: (context: Readable<string | undefined>) => {
+  createHomeChatConfig: (context: Readable<string | undefined>) => {
     captured.context = context;
     return {};
   },
 }));
 
-import HomeV2Chat from "./HomeV2Chat.svelte";
+import HomeChat from "./HomeChat.svelte";
 
 const actions = {} as never;
 const attach = /como contexto|as context/i;
 const remove = /todo el proyecto|whole project/i;
 const sentContext = () => get(captured.context!);
 
-describe("Home v2 chat context", () => {
+describe("Home chat context", () => {
   it("attaches nothing by default and offers the open canvas", () => {
-    render(HomeV2Chat, {
+    render(HomeChat, {
       props: { canvasName: "home", canvasTitle: "Inicio", actions },
     });
     expect(screen.getByRole("button", { name: attach })).toBeTruthy();
@@ -43,7 +43,7 @@ describe("Home v2 chat context", () => {
   });
 
   it("attaches the canvas on click and follows the open canvas", async () => {
-    const { rerender } = render(HomeV2Chat, {
+    const { rerender } = render(HomeChat, {
       props: { canvasName: "home", canvasTitle: "Inicio", actions },
     });
     await fireEvent.click(screen.getByRole("button", { name: attach }));
@@ -56,7 +56,7 @@ describe("Home v2 chat context", () => {
   });
 
   it("stays project-wide after removing it, across canvases", async () => {
-    const { rerender } = render(HomeV2Chat, {
+    const { rerender } = render(HomeChat, {
       props: { canvasName: "home", canvasTitle: "Inicio", actions },
     });
     await fireEvent.click(screen.getByRole("button", { name: attach }));
@@ -67,7 +67,7 @@ describe("Home v2 chat context", () => {
   });
 
   it("shows nothing when no canvas is open", () => {
-    render(HomeV2Chat, {
+    render(HomeChat, {
       props: { canvasName: undefined, canvasTitle: "", actions },
     });
     expect(screen.getByTestId("input-footer").textContent?.trim()).toBe("");

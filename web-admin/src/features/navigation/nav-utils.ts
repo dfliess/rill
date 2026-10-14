@@ -19,11 +19,23 @@ export function isProjectCreatePage(page: Page): boolean {
   return page.route.id === "/[organization]/-/create-project";
 }
 
+// Kairos: the project Home is a route group, so the project root and the
+// Home's canvases (`-/home/[canvas]`) share its layout (#231).
+const PROJECT_HOME_ROUTE_ID = "/[organization]/[project]/(home)";
+
+export function isProjectHomePage({ route }: Pick<Page, "route">): boolean {
+  const routeId = route?.id;
+  return (
+    routeId === PROJECT_HOME_ROUTE_ID ||
+    !!routeId?.startsWith(`${PROJECT_HOME_ROUTE_ID}/`)
+  );
+}
+
 export function isProjectPage(page: Page): boolean {
   const routeId = page.route?.id;
   if (!routeId) return false;
   return (
-    routeId === "/[organization]/[project]" ||
+    isProjectHomePage(page) ||
     (routeId.startsWith("/[organization]/[project]/-/") &&
       !routeId.startsWith("/[organization]/[project]/-/invite") &&
       !routeId.startsWith("/[organization]/[project]/-/share") &&

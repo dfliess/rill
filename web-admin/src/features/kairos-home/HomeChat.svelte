@@ -4,7 +4,7 @@
   import { m } from "@rilldata/web-common/lib/i18n/gen/messages";
   import { LayoutDashboard, Plus, X } from "lucide-svelte";
   import { writable } from "svelte/store";
-  import { createHomeV2ChatConfig } from "./chat-config";
+  import { createHomeChatConfig } from "./chat-config";
 
   let {
     canvasName,
@@ -28,7 +28,7 @@
   });
 
   // Built once: the panel keeps one conversation across canvas switches.
-  const config = createHomeV2ChatConfig(canvasContext);
+  const config = createHomeChatConfig(canvasContext);
 </script>
 
 <!-- The context sits in the input footer, by the send button: it travels
@@ -40,15 +40,15 @@
     {#if keepCanvas}
       <span
         class="flex min-w-0 items-center gap-x-1 rounded-md bg-surface-hover px-1.5 py-0.5 text-xs text-fg-muted"
-        title={m.home_v2_chat_context({ canvas: canvasTitle })}
+        title={m.home_chat_context({ canvas: canvasTitle })}
       >
         <LayoutDashboard size="12px" class="shrink-0" />
         <span class="truncate">{canvasTitle}</span>
         <button
           type="button"
           class="shrink-0 rounded hover:text-fg-primary"
-          aria-label={m.home_v2_chat_context_remove()}
-          title={m.home_v2_chat_context_remove()}
+          aria-label={m.home_chat_context_remove()}
+          title={m.home_chat_context_remove()}
           onclick={() => (keepCanvas = false)}><X size="12px" /></button
         >
       </span>
@@ -56,8 +56,8 @@
       <button
         type="button"
         class="flex min-w-0 items-center gap-x-1 rounded-md border border-dashed px-1.5 py-0.5 text-xs text-fg-muted hover:text-fg-primary"
-        title={m.home_v2_chat_context_add({ canvas: canvasTitle })}
-        aria-label={m.home_v2_chat_context_add({ canvas: canvasTitle })}
+        title={m.home_chat_context_add({ canvas: canvasTitle })}
+        aria-label={m.home_chat_context_add({ canvas: canvasTitle })}
         onclick={() => (keepCanvas = true)}
       >
         <Plus size="12px" class="shrink-0" />

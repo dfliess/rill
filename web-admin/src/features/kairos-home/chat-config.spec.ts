@@ -1,12 +1,11 @@
 import { get, writable } from "svelte/store";
 import { describe, expect, it } from "vitest";
-import { createHomeV2ChatConfig } from "./chat-config";
+import { createHomeChatConfig } from "./chat-config";
 
-describe("createHomeV2ChatConfig", () => {
+describe("createHomeChatConfig", () => {
   it("sends the open canvas as context while the viewer keeps it", () => {
     const canvas = writable<string | undefined>("caja_y_liquidez");
-    const context =
-      createHomeV2ChatConfig(canvas).additionalContextStoreGetter();
+    const context = createHomeChatConfig(canvas).additionalContextStoreGetter();
     expect(get(context)).toEqual({
       analystAgentContext: { canvas: "caja_y_liquidez" },
     });
@@ -18,8 +17,7 @@ describe("createHomeV2ChatConfig", () => {
 
   it("follows the canvas the viewer switches to", () => {
     const canvas = writable<string | undefined>("home");
-    const context =
-      createHomeV2ChatConfig(canvas).additionalContextStoreGetter();
+    const context = createHomeChatConfig(canvas).additionalContextStoreGetter();
     canvas.set("resultados");
     expect(get(context)).toEqual({
       analystAgentContext: { canvas: "resultados" },

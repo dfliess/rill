@@ -1,20 +1,21 @@
 import type { V1Resource } from "@rilldata/web-common/runtime-client";
 import { describe, expect, it } from "vitest";
-import { homeV2MenuItems } from "./menu";
+import { homeMenuItems, homePersonalMenuItems } from "./menu";
 
 const canvas = (
   name: string,
   displayName: string,
   metadata?: Record<string, string>,
+  annotations?: Record<string, string>,
 ): V1Resource => ({
   meta: { name: { name }, metadata },
-  canvas: { spec: { displayName }, state: { validSpec: {} } },
+  canvas: { spec: { displayName }, state: { validSpec: { annotations } } },
 });
 
 const titles = (resources: V1Resource[]) =>
-  homeV2MenuItems(resources, "/o/p/-/home-v2").map((i) => i.title);
+  homeMenuItems(resources, "/o/p").map((i) => i.title);
 
-describe("homeV2MenuItems", () => {
+describe("homeMenuItems", () => {
   it("puts ordered canvases first, then the rest alphabetically", () => {
     expect(
       titles([
@@ -36,16 +37,16 @@ describe("homeV2MenuItems", () => {
   });
 
   it("serves the first canvas at the bare URL and the rest by name", () => {
-    const items = homeV2MenuItems(
+    const items = homeMenuItems(
       [
         canvas("caja_y_liquidez", "Caja y Liquidez"),
         canvas("home", "Inicio", { kairos_order: "1" }),
       ],
-      "/o/p/-/home-v2",
+      "/o/p",
     );
     expect(items.map((i) => [i.name, i.href])).toEqual([
-      ["home", "/o/p/-/home-v2"],
-      ["caja_y_liquidez", "/o/p/-/home-v2/caja_y_liquidez"],
+      ["home", "/o/p"],
+      ["caja_y_liquidez", "/o/p/-/home/caja_y_liquidez"],
     ]);
   });
 
@@ -60,14 +61,54 @@ describe("homeV2MenuItems", () => {
   });
 
   it("carries the canvas's icon from its metadata", () => {
-    const [caja, ventas] = homeV2MenuItems(
+    const [caja, ventas] = homeMenuItems(
       [
         canvas("caja", "Caja", { kairos_order: "1", kairos_icon: "wallet" }),
         canvas("ventas", "Ventas", { kairos_order: "2" }),
       ],
-      "/o/p/-/home-v2",
+      "/o/p",
     );
     expect(caja.icon).toBe("wallet");
     expect(ventas.icon).toBeUndefined();
+  });
+
+  it("lists a personal canvas only once its owner shares it, like the Dashboards tab", () => {
+    expect(
+      titles([
+        canvas("caja", "Caja"),
+        canvas("mio", "Mío", undefined, { admin_managed: "true" }),
+        canvas("compartido", "Compartido", undefined, {
+          admin_managed: "true",
+          admin_shared: "true",
+        }),
+      ]),
+    ).toEqual(["Caja", "Compartido"]);
+  });
+
+  it("leaves the viewer's own personal canvases to their group", () => {
+    const shared = canvas("compartido", "Compartido", undefined, {
+      admin_managed: "true",
+      admin_shared: "true",
+    });
+    expect(
+      homeMenuItems(
+        [canvas("caja", "Caja"), shared],
+        "/o/p",
+        new Set(["compartido"]),
+      ).map((i) => i.name),
+    ).toEqual(["caja"]);
+  });
+});
+
+describe("homePersonalMenuItems", () => {
+  it("lists them alphabetically, opening the personal canvas page", () => {
+    const items = homePersonalMenuItems(
+      [canvas("zeta", "Zeta"), canvas("mi_vista", "Alfa")],
+      "/o/p",
+    );
+    expect(items.map((i) => [i.title, i.href])).toEqual([
+      ["Alfa", "/o/p/-/personal/mi_vista"],
+      ["Zeta", "/o/p/-/personal/zeta"],
+    ]);
   });
 });

@@ -1,4 +1,5 @@
 const VARIABLE_SEGMENT_RE = /\[.*]/;
+const ROUTE_GROUP_RE = /^\(.*\)$/;
 
 /**
  * Given the current page's route id and a new URL prefix (e.g. a different
@@ -12,7 +13,11 @@ export function getCarryOverSubRoute(
   currentRoute: string,
   newPrefix: string,
 ): string {
-  const subRoute = currentRoute.split("/").slice(newPrefix.split("/").length);
+  // Route groups like `(home)` are part of the route id but not of the URL.
+  const subRoute = currentRoute
+    .split("/")
+    .filter((p) => !ROUTE_GROUP_RE.test(p))
+    .slice(newPrefix.split("/").length);
 
   // No sub-route past the new prefix.
   if (subRoute.length === 0) return "";

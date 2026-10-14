@@ -28,12 +28,12 @@ import {
 } from "lucide-svelte";
 
 /**
- * Icons a canvas can pick for the Home v2 menu with `metadata: kairos_icon:`
+ * Icons a canvas can pick for the Home menu with `metadata: kairos_icon:`
  * (lucide names). A closed set on purpose: one icon library and one size, so
  * the menu stays even, and the bundle does not carry all of lucide. An unset
  * or unknown name falls back to the generic dashboard icon.
  */
-export const HOME_V2_MENU_ICONS = {
+export const HOME_MENU_ICONS = {
   activity: Activity,
   banknote: Banknote,
   "bar-chart": BarChart3,
@@ -61,9 +61,8 @@ export const HOME_V2_MENU_ICONS = {
   wallet: Wallet,
 } as const;
 
-export function homeV2MenuIcon(name: string | undefined) {
+export function homeMenuIcon(name: string | undefined) {
   return (
-    HOME_V2_MENU_ICONS[name as keyof typeof HOME_V2_MENU_ICONS] ??
-    LayoutDashboard
+    HOME_MENU_ICONS[name as keyof typeof HOME_MENU_ICONS] ?? LayoutDashboard
   );
 }

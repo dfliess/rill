@@ -49,7 +49,6 @@ func Test_ResolveFeatureFlags(t *testing.T) {
 				"personalCanvases":                false,
 				"agents":                          false,
 				"bookmarks":                       false,
-				"kairosNewHome":                   true,
 				"disablePersistentDashboardState": false,
 			},
 		},
@@ -80,7 +79,6 @@ func Test_ResolveFeatureFlags(t *testing.T) {
 				"personalCanvases":                false,
 				"agents":                          false,
 				"bookmarks":                       false,
-				"kairosNewHome":                   true,
 				"disablePersistentDashboardState": false,
 			},
 		},
@@ -111,7 +109,6 @@ func Test_ResolveFeatureFlags(t *testing.T) {
 				"personalCanvases":                false,
 				"agents":                          false,
 				"bookmarks":                       false,
-				"kairosNewHome":                   true,
 				"disablePersistentDashboardState": false,
 			},
 		},
@@ -142,7 +139,6 @@ func Test_ResolveFeatureFlags(t *testing.T) {
 				"personalCanvases":                false,
 				"agents":                          false,
 				"bookmarks":                       false,
-				"kairosNewHome":                   true,
 				"disablePersistentDashboardState": false,
 			},
 		},
@@ -221,9 +217,8 @@ func Test_ResolveFeatureFlags_Bookmarks(t *testing.T) {
 	}
 }
 
-// rill.yaml snake-cases its feature keys before they reach the instance.
-// A default whose name changes on the way ("home_v2" becomes "home_v_2") ends up twice in the merged map,
-// and both copies resolve to the same camelCase key, so which value the UI gets depends on map order.
+// rill.yaml snake-cases its feature flag keys, so a default whose name does not survive that
+// (a digit, a capital) would be shadowed by a second key and resolve at random (kairos-cloud#231).
 func Test_DefaultFeatureFlagsSurviveSnakeCase(t *testing.T) {
 	for k := range defaultFeatureFlags {
 		require.Equal(t, k, strcase.ToSnake(k), "rill.yaml would rename feature flag %q", k)

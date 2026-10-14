@@ -15,7 +15,7 @@
 
   const runtimeClient = useRuntimeClient();
 
-  // Unfiltered on purpose: shares the cache entry with KairosHomeCanvas, and the
+  // Unfiltered on purpose: shares the cache entry with the Home menu, and the
   // metrics views ride along for formatting the fail row (no extra request).
   // Polled so a fresh trigger surfaces while Home is open; alerts move at
   // cron/refresh pace, so this stays far gentler than the agents lists (5s).

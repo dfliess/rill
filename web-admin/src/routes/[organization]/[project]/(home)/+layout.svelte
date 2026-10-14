@@ -3,14 +3,20 @@
   import ConnectClientProvider from "@rilldata/web-admin/features/ai/mcp/ConnectClientProvider.svelte";
   import HomePendingApprovals from "@rilldata/web-admin/features/agents/HomePendingApprovals.svelte";
   import HomeRecentAlerts from "@rilldata/web-admin/features/kairos-home/HomeRecentAlerts.svelte";
-  import HomeV2Chat from "@rilldata/web-admin/features/kairos-home-v2/HomeV2Chat.svelte";
-  import HomeV2Menu from "@rilldata/web-admin/features/kairos-home-v2/HomeV2Menu.svelte";
+  import HomeChat from "@rilldata/web-admin/features/kairos-home/HomeChat.svelte";
+  import HomeMenu from "@rilldata/web-admin/features/kairos-home/HomeMenu.svelte";
   import {
-    HOME_V2_SIDE_BY_SIDE_QUERY,
-    homeV2ChatActions,
-    homeV2ChatOpen,
-  } from "@rilldata/web-admin/features/kairos-home-v2/chat-state";
-  import { homeV2MenuItems } from "@rilldata/web-admin/features/kairos-home-v2/menu";
+    HOME_SIDE_BY_SIDE_QUERY,
+    homeChatActions,
+    homeChatOpen,
+  } from "@rilldata/web-admin/features/kairos-home/chat-state";
+  import { createAdminServiceGetCurrentUser } from "@rilldata/web-admin/client";
+  import {
+    homeMenuItems,
+    homePersonalMenuItems,
+  } from "@rilldata/web-admin/features/kairos-home/menu";
+  import { getPersonalFilteredResources } from "@rilldata/web-admin/features/personal-files/selectors";
+  import { ResourceKind } from "@rilldata/web-common/features/entity-management/resource-selectors";
   import CanvasDashboardEmbed from "@rilldata/web-common/features/canvas/CanvasDashboardEmbed.svelte";
   import CanvasProvider from "@rilldata/web-common/features/canvas/CanvasProvider.svelte";
   import { DEFAULT_DASHBOARD_WIDTH } from "@rilldata/web-common/features/canvas/layout-util";
@@ -21,7 +27,7 @@
 
   let { children }: { children: Snippet } = $props();
 
-  const { agents, chat } = featureFlags;
+  const { agents, chat, personalCanvases } = featureFlags;
   const runtimeClient = useRuntimeClient();
 
   let organization = $derived($page.params.organization);
@@ -35,11 +41,34 @@
     { query: { enabled: !!runtimeClient.instanceId } },
   );
 
+  // Personal canvases belong to a user, so anonymous viewers of public
+  // projects have none.
+  const user = createAdminServiceGetCurrentUser();
+  let showPersonal = $derived($personalCanvases && !!$user.data?.user);
+  let personalQuery = $derived(
+    showPersonal
+      ? getPersonalFilteredResources(
+          runtimeClient,
+          organization,
+          project,
+          ResourceKind.Canvas,
+        )
+      : undefined,
+  );
+  let personalCanvasList = $derived($personalQuery?.data ?? []);
+
+  let projectBase = $derived(`/${organization}/${project}`);
   let menuItems = $derived(
-    homeV2MenuItems(
+    homeMenuItems(
       $resourcesQuery.data?.resources ?? [],
-      `/${organization}/${project}/-/home-v2`,
+      projectBase,
+      new Set(personalCanvasList.map((r) => r.meta?.name?.name ?? "")),
     ),
+  );
+  let personalItems = $derived(
+    showPersonal
+      ? homePersonalMenuItems(personalCanvasList, projectBase)
+      : undefined,
   );
   // No canvas in the URL: the first one in the menu.
   let selected = $derived($page.params.canvas ?? menuItems[0]?.name);
@@ -56,12 +85,18 @@
   // Beside the canvas on wide screens; on narrower ones it waits for the
   // header toggle.
   onMount(() => {
-    homeV2ChatOpen.set(window.matchMedia(HOME_V2_SIDE_BY_SIDE_QUERY).matches);
+    homeChatOpen.set(window.matchMedia(HOME_SIDE_BY_SIDE_QUERY).matches);
   });
 </script>
 
-<div class="home-v2">
-  <HomeV2Menu items={menuItems} active={selected} />
+<div class="home">
+  <HomeMenu
+    items={menuItems}
+    active={selected}
+    {personalItems}
+    {organization}
+    {project}
+  />
 
   <main class="min-w-0 flex-1 overflow-y-auto">
     <!-- A plain block around the canvas: the embed is size-full, which
@@ -105,13 +140,13 @@
     {/if}
   </main>
 
-  {#if $chat && $homeV2ChatOpen}
-    <aside class="home-v2-chat">
+  {#if $chat && $homeChatOpen}
+    <aside class="home-chat">
       <ConnectClientProvider>
-        <HomeV2Chat
+        <HomeChat
           canvasName={selected}
           canvasTitle={selectedTitle}
-          actions={homeV2ChatActions}
+          actions={homeChatActions}
         />
       </ConnectClientProvider>
     </aside>
@@ -123,32 +158,32 @@
 </div>
 
 <style lang="postcss">
-  .home-v2 {
+  .home {
     @apply flex flex-col bg-surface-background md:flex-row;
     flex: 1;
     min-height: 0;
     overflow: hidden;
   }
 
-  /* Beside the canvas from 1280px (HOME_V2_SIDE_BY_SIDE_QUERY); over it below,
+  /* Beside the canvas from 1280px (HOME_SIDE_BY_SIDE_QUERY); over it below,
      where three columns leave the canvas too narrow to read. */
-  .home-v2-chat {
+  .home-chat {
     @apply fixed inset-y-0 right-0 z-40 shadow-lg;
   }
   @media (min-width: 1280px) {
-    .home-v2-chat {
+    .home-chat {
       @apply static z-auto shadow-none;
     }
   }
   /* Rill's chat panel draws a full box; here the tabs above and the screen
      edge already close it, so only the edge facing the canvas keeps a line. */
-  .home-v2-chat :global(.chat-sidebar) {
+  .home-chat :global(.chat-sidebar) {
     border-width: 0 0 0 1px;
   }
   /* Rill's 500px panel would squeeze the canvas into one column on a laptop;
      here it starts at 380px until the screen has room for both. */
   @media (min-width: 1280px) and (max-width: 1599px) {
-    .home-v2-chat :global(.chat-sidebar) {
+    .home-chat :global(.chat-sidebar) {
       width: min(var(--sidebar-width), 380px);
     }
   }

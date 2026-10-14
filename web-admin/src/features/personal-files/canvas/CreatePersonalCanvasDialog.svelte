@@ -23,13 +23,17 @@
   import Switch from "@rilldata/web-common/components/forms/Switch.svelte";
   import Label from "@rilldata/web-common/components/forms/Label.svelte";
   import { m } from "@rilldata/web-common/lib/i18n/gen/messages";
+  import type { Snippet } from "svelte";
 
   let {
     org,
     project,
+    trigger,
   }: {
     org: string;
     project: string;
+    // Kairos: the Home menu opens the dialog from a compact button (#231).
+    trigger?: Snippet<[Record<string, unknown>]>;
   } = $props();
 
   let open = $state(false);
@@ -138,9 +142,13 @@
 <Dialog.Root bind:open>
   <Dialog.Trigger>
     {#snippet child({ props })}
-      <Button {...props} type="primary">
-        {m.personal_files_create_trigger()}
-      </Button>
+      {#if trigger}
+        {@render trigger(props as Record<string, unknown>)}
+      {:else}
+        <Button {...props} type="primary">
+          {m.personal_files_create_trigger()}
+        </Button>
+      {/if}
     {/snippet}
   </Dialog.Trigger>
   <Dialog.Content class="top-[30%] translate-y-0">

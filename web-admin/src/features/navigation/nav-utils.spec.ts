@@ -1,4 +1,6 @@
 import {
+  isProjectHomePage,
+  isProjectPage,
   isPublicAIPage,
   isPublicURLPage,
 } from "@rilldata/web-admin/features/navigation/nav-utils";
@@ -46,6 +48,38 @@ describe("isPublicURLPage", () => {
           "/[organization]/[project]/-/ai",
           "https://ui.rilldata.com/org/proj/-/ai?token=abc",
         ),
+      ),
+    ).toBe(false);
+  });
+});
+
+describe("isProjectHomePage", () => {
+  it("covers the project root and the Home's canvases", () => {
+    for (const [routeId, url] of [
+      ["/[organization]/[project]/(home)", "https://x/org/proj"],
+      [
+        "/[organization]/[project]/(home)/-/home/[canvas]",
+        "https://x/org/proj/-/home/ventas",
+      ],
+    ]) {
+      const page = pageFor(routeId, url);
+      expect(isProjectHomePage(page)).toBe(true);
+      expect(isProjectPage(page)).toBe(true);
+    }
+  });
+
+  it("leaves the project's other pages out", () => {
+    expect(
+      isProjectHomePage(
+        pageFor(
+          "/[organization]/[project]/canvas/[dashboard]",
+          "https://x/org/proj/canvas/ventas",
+        ),
+      ),
+    ).toBe(false);
+    expect(
+      isProjectHomePage(
+        pageFor("/[organization]/[project]/-/dashboards", "https://x/org/proj"),
       ),
     ).toBe(false);
   });

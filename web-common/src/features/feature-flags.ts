@@ -82,10 +82,6 @@ class FeatureFlags {
   // Kairos hides upstream's project-wide bookmark manager (tab and home page
   // section) unless a project opts in from rill.yaml (kairos-cloud#193).
   bookmarks = new FeatureFlag("user", false);
-  // Kairos new Home: dashboards menu, home canvas and AI side panel on one
-  // page. On by default; the previous Home stays as the classic Home
-  // (kairos-cloud#231).
-  kairosNewHome = new FeatureFlag("user", true);
 
   private flagsUnsub?: () => void;
 

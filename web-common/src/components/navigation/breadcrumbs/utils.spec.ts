@@ -29,4 +29,16 @@ describe("getCarryOverSubRoute", () => {
       ),
     ).toBe("");
   });
+
+  it("leaves route groups out of the carried-over sub-route", () => {
+    expect(
+      getCarryOverSubRoute("/[organization]/[project]/(home)", "/org/proj"),
+    ).toBe("");
+    expect(
+      getCarryOverSubRoute(
+        "/[organization]/[project]/(home)/-/home/[canvas]",
+        "/org/proj",
+      ),
+    ).toBe("");
+  });
 });

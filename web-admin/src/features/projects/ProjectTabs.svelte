@@ -18,23 +18,13 @@
   // Bookmarks belong to users, so anonymous viewers of public projects have none to manage.
   export let hasUser: boolean = false;
 
-  const { chat, reports, alerts, agents, bookmarks, kairosNewHome } =
-    featureFlags;
+  const { chat, reports, alerts, agents, bookmarks } = featureFlags;
 
   $: tabs = [
     {
-      // Kairos: with the new Home on, the Home tab opens it and the previous
-      // one stays reachable as the classic Home (#231).
-      route: $kairosNewHome
-        ? `/${organization}/${project}${branchPrefix}/-/home-v2`
-        : `/${organization}/${project}${branchPrefix}`,
+      route: `/${organization}/${project}${branchPrefix}`,
       label: m.nav_tab_home(),
       hasPermission: true,
-    },
-    {
-      route: `/${organization}/${project}${branchPrefix}/-/home-classic`,
-      label: m.nav_tab_home_classic(),
-      hasPermission: $kairosNewHome,
     },
     {
       route: `/${organization}/${project}${branchPrefix}/-/ai`,
@@ -114,8 +104,12 @@
     const normalizedPath = removeBranchFromPath(currentPathname);
 
     if (normalizedTab.endsWith(`/${organization}/${project}`)) {
-      // For the Home (root) route, only exact match
-      return normalizedPath === normalizedTab;
+      // For the Home (root) route, only exact match, or one of the Home's
+      // canvases (Kairos, #231)
+      return (
+        normalizedPath === normalizedTab ||
+        normalizedPath.startsWith(`${normalizedTab}/-/home/`)
+      );
     }
 
     const isExactMatch = normalizedPath === normalizedTab;
