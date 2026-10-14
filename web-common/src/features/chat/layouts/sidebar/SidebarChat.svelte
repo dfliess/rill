@@ -1,6 +1,7 @@
 <script lang="ts">
   import { beforeNavigate } from "$app/navigation";
   import { onMount } from "svelte";
+  import type { Snippet } from "svelte";
   import Resizer from "../../../../layout/Resizer.svelte";
   import { useRuntimeClient } from "@rilldata/web-common/runtime-client/v2";
   import { getConversationManager } from "../../core/conversation-manager";
@@ -21,6 +22,8 @@
   export let config: ChatConfig;
   export let actions: ChatActions;
   export let surface: ChatSurface;
+  // Kairos: forwarded to the input footer (kairos-cloud#231).
+  export let inputContext: Snippet | undefined = undefined;
 
   const runtimeClient = useRuntimeClient();
 
@@ -89,6 +92,7 @@
       bind:this={chatInputComponent}
       onSend={onMessageSend}
       {config}
+      footerContext={inputContext}
     />
   </div>
 </div>

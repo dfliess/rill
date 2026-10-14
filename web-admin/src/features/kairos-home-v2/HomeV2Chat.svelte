@@ -32,35 +32,41 @@
   const config = createHomeV2ChatConfig(canvasContext);
 </script>
 
-<div class="flex h-full flex-col">
+<!-- The context sits in the input footer, after @ and /, next to what it
+     applies to: the next message. -->
+{#snippet canvasChip()}
   {#if canvasName}
-    <div
-      class="flex items-center gap-x-2 border-b border-l bg-surface-background px-3 py-2 text-xs text-fg-secondary"
-    >
-      {#if keepCanvas}
-        <span
-          class="flex min-w-0 items-center gap-x-1 rounded-full border px-2 py-0.5"
+    {#if keepCanvas}
+      <span
+        class="flex min-w-0 items-center gap-x-1 rounded-full border px-2 py-0.5 text-xs text-fg-secondary"
+      >
+        <span class="truncate"
+          >{m.home_v2_chat_context({ canvas: canvasTitle })}</span
         >
-          <span class="truncate"
-            >{m.home_v2_chat_context({ canvas: canvasTitle })}</span
-          >
-          <button
-            class="shrink-0 hover:text-fg-primary"
-            aria-label={m.home_v2_chat_context_remove()}
-            onclick={() => (keepCanvas = false)}>✕</button
-          >
-        </span>
-      {:else}
         <button
-          class="truncate hover:text-fg-primary"
-          onclick={() => (keepCanvas = true)}
+          type="button"
+          class="shrink-0 hover:text-fg-primary"
+          aria-label={m.home_v2_chat_context_remove()}
+          onclick={() => (keepCanvas = false)}>✕</button
         >
-          {m.home_v2_chat_context_add({ canvas: canvasTitle })}
-        </button>
-      {/if}
-    </div>
+      </span>
+    {:else}
+      <button
+        type="button"
+        class="truncate text-xs text-fg-muted hover:text-fg-primary"
+        onclick={() => (keepCanvas = true)}
+      >
+        {m.home_v2_chat_context_add({ canvas: canvasTitle })}
+      </button>
+    {/if}
   {/if}
-  <div class="min-h-0 flex-1">
-    <SidebarChat {config} {actions} surface="dashboard" />
-  </div>
+{/snippet}
+
+<div class="h-full">
+  <SidebarChat
+    {config}
+    {actions}
+    surface="dashboard"
+    inputContext={canvasChip}
+  />
 </div>

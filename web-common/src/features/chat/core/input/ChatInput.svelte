@@ -18,6 +18,7 @@
   import { m } from "@rilldata/web-common/lib/i18n/gen/messages";
   import { ArrowUp } from "lucide-svelte";
   import { getAvailableUIActions } from "../ui-actions";
+  import type { Snippet } from "svelte";
 
   export let conversationManager: ConversationManager;
   export let onSend: (() => void) | undefined = undefined;
@@ -27,6 +28,9 @@
   export let inline = false;
   // Awaited before a shared conversation is forked (see Conversation.sendMessage).
   export let beforeFork: (() => Promise<void> | void) | undefined = undefined;
+  // Kairos: rendered in the footer after the @ and / buttons, e.g. the context
+  // the host page attaches to the next message (kairos-cloud#231).
+  export let footerContext: Snippet | undefined = undefined;
 
   let value = "";
 
@@ -175,6 +179,9 @@
       >
         /
       </button>
+    {/if}
+    {#if footerContext}
+      <div class="flex min-w-0 items-center">{@render footerContext()}</div>
     {/if}
     <div class="grow"></div>
     <div>
