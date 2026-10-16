@@ -112,10 +112,9 @@
             instanceId={runtimeClient.instanceId}
             isolated
           >
-            <CanvasDashboardEmbed
-              canvasName={selected}
-              navigationEnabled={false}
-            />
+            <!-- Navigation stays on: every dashboard opens here, and each
+                 component's jump to its explore is how a viewer drills in. -->
+            <CanvasDashboardEmbed canvasName={selected} />
           </CanvasProvider>
         {/key}
       {/if}
