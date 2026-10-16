@@ -157,6 +157,10 @@ func EnableReportDelivery(instanceID string) {
 	noopAdmin.reportDelivery[instanceID] = true
 }
 
+func (n *noopAdminService) SavePersonalCanvas(ctx context.Context, userID, name, displayName, yaml string) (*drivers.PersonalCanvas, error) {
+	return nil, drivers.ErrNotImplemented
+}
+
 // HasAnonymousSourceAccess implements [drivers.Driver].
 func (n *noopAdminService) HasAnonymousSourceAccess(ctx context.Context, srcProps map[string]any, logger *zap.Logger) (bool, error) {
 	return true, nil
