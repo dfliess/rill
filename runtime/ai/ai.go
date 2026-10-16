@@ -1804,3 +1804,22 @@ func maybeTruncateMessages(messages []*aiv1.CompletionMessage) []*aiv1.Completio
 func completionMessageID(id string) string {
 	return strings.ReplaceAll(id, "-", "")[0:16]
 }
+
+// ancestorCall returns the closest call to one of the given tools that the current call is nested in, or nil if there is none.
+func (s *Session) ancestorCall(toolNames ...string) *Message {
+	id := s.ParentID
+	for range 100 { // Fail-safe, not expected to reach the limit
+		if id == "" {
+			return nil
+		}
+		msg, ok := s.Message(FilterByID(id))
+		if !ok {
+			return nil
+		}
+		if msg.Type == MessageTypeCall && slices.Contains(toolNames, msg.Tool) {
+			return msg
+		}
+		id = msg.ParentID
+	}
+	return nil
+}

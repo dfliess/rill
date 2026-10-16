@@ -44077,7 +44077,16 @@ func (m *SavePersonalFileForUserRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for ProjectId
+	if utf8.RuneCountInString(m.GetProjectId()) < 1 {
+		err := SavePersonalFileForUserRequestValidationError{
+			field:  "ProjectId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if utf8.RuneCountInString(m.GetUserId()) < 1 {
 		err := SavePersonalFileForUserRequestValidationError{
@@ -44096,7 +44105,16 @@ func (m *SavePersonalFileForUserRequest) validate(all bool) error {
 
 	// no validation rules for DisplayName
 
-	// no validation rules for Yaml
+	if utf8.RuneCountInString(m.GetYaml()) < 1 {
+		err := SavePersonalFileForUserRequestValidationError{
+			field:  "Yaml",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return SavePersonalFileForUserRequestMultiError(errors)
