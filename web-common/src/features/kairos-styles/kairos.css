@@ -30,6 +30,9 @@
     --fg-tertiary: #5b6065;
     --fg-muted: #5b6065;
     --fg-accent: #2c53b0;
+    /* label-caps ink, ours alone: a project theme re-derives --fg-accent
+       inside the dashboard, which painted canvas titles in its brand color. */
+    --kairos-label: #5b6065;
 
     --icon-default: #3a3e42;
     --icon-muted: #5b6065;
@@ -66,6 +69,7 @@
     --fg-tertiary: #a8acaf;
     --fg-muted: #a8acaf;
     --fg-accent: #9bb6f2;
+    --kairos-label: #9bb6f2;
   }
 
   /* Upstream sets `body { font-family: "Inter" }` unlayered and late, so the
@@ -126,7 +130,13 @@
     font-weight: 600;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--fg-accent);
+    color: var(--kairos-label);
+  }
+
+  /* The time chip's border is Rill's gray-200, which on the dark card has
+     a 1.04 contrast: draw it with the hairline instead. */
+  & .chip.time {
+    border-color: var(--border);
   }
 
   & :is(.component-card, .kairos-home-box) {

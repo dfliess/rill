@@ -9,6 +9,12 @@
     "suggested-prompt": "web-common/src/features/chat/core/suggested-prompts/SuggestedPrompts.svelte",
     "suggested-prompt-label": "web-common/src/features/chat/core/suggested-prompts/SuggestedPrompts.svelte",
     "tabs-container": "web-admin/src/features/projects/ProjectTabs.svelte",
+    "chip": "web-common/src/components/chip/core/Chip.svelte",
+    "time": {
+      "file": "web-common/src/components/chip/core/Chip.svelte",
+      "via": "style",
+      "markup": "class=\"chip \\{type\\}\""
+    },
     "primary": {
       "file": "web-common/src/components/button/Button.svelte",
       "via": "style",
