@@ -6,7 +6,10 @@
 # to pick up upstream font revisions or to add a subset.
 set -euo pipefail
 
-FAMILIES="family=Inter+Tight:wght@500..700&family=Source+Sans+3:wght@400..600"
+# Inter Tight and Source Sans 3 are the brand; the rest belong to optional
+# Styles (Geist: nova, glass; Source Serif 4: editorial; Atkinson: lumen;
+# Spectral, Karla, Poppins: apetic). A face downloads only when a page uses it.
+FAMILIES="family=Inter+Tight:wght@500..700&family=Source+Sans+3:wght@400..600&family=Geist:wght@400..600&family=Geist+Mono:wght@400..600&family=Source+Serif+4:opsz,wght@8..60,500..600&family=Atkinson+Hyperlegible+Next:wght@400..700&family=Spectral:wght@600;700&family=Karla:wght@400..700&family=Poppins:wght@500;600"
 # Spanish needs only latin; latin-ext covers the rest of western Europe. Adding
 # more subsets here is the supported way to widen coverage.
 SUBSETS="latin latin-ext"
@@ -44,7 +47,10 @@ for subset, block in blocks:
         continue
     family = re.search(r"font-family:\s*'([^']+)'", block).group(1)
     url = re.search(r"url\((https://[^)]+)\)", block).group(1)
-    name = f"{family.lower().replace(' ', '-')}-{subset}.woff2"
+    # A static family (no weight range) ships one file per weight.
+    weight = re.search(r"font-weight:\s*([^;]+);", block).group(1).strip()
+    slug = family.lower().replace(" ", "-")
+    name = f"{slug}-{subset}.woff2" if " " in weight else f"{slug}-{weight}-{subset}.woff2"
     subprocess.run(["curl", "-sS", "-o", f"{out_dir}/{name}", url], check=True)
     faces.append(block.replace(url, f"/fonts/kairos/{name}").replace("'", '"'))
 
