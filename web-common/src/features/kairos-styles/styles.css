@@ -16,13 +16,33 @@
 /* Shared by every Style: inputs take the --input token (Rill leaves some on
    the browser's white). :where() keeps the specificity of a base rule. */
 :where(
-    textarea,
-    input[type="text"],
-    input[type="search"],
-    input[type="email"],
-    input[type="password"],
-    input[type="url"],
-    input[type="number"]
-  ) {
+  textarea,
+  input[type="text"],
+  input[type="search"],
+  input[type="email"],
+  input[type="password"],
+  input[type="url"],
+  input[type="number"]
+) {
   background-color: var(--input);
+}
+
+/* PDF export (every Style): it rasterizes each card on its own, so the card's
+   outline and any drop shadow, both drawn outside the card, are cut off and the
+   card loses its edge on the white page (only fragments of rounded corners
+   survive). Draw the hairline inside instead, on top of the card's children:
+   the header and KPIGrid's border overlay paint backgrounds that would hide an
+   inset shadow. It follows each Style's radius. */
+#canvas-pdf-export-view .component-card {
+  outline: none;
+  box-shadow: none;
+}
+#canvas-pdf-export-view .component-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  border: 1px solid var(--border);
+  border-radius: inherit;
+  pointer-events: none;
 }

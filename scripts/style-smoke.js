@@ -26,22 +26,23 @@ const FIXTURE = `
   <button class="primary" id="button">Button</button>
   <span class="text-accent-primary" id="accent">accent</span>
   <div class="rounded" id="rounded">rounded</div>
-</main>`;
+</main>
+<div id="canvas-pdf-export-view"><article class="component-card" id="pdf-card">pdf</article></div>`;
 
 // What each Style promises. Colors as hex, compared after both sides are
 // rendered to RGB; a channel may differ by 2 (color-mix rounding).
 const EXPECTED = {
   "kairos-v1": {
-    light: { page: "#f4f4f1", card: "#fbfbf9", header: "#f4f4f1", accent: "#2c53b0", cardRadius: "0px", rounded: "4px", font: "Inter", title: "none" },
-    dark: { page: "#232629", card: "#2b2e32", header: "#232629", accent: "#4b74d0", cardRadius: "0px", rounded: "4px", font: "Inter", title: "none" },
+    light: { page: "#f4f4f1", card: "#fbfbf9", header: "#f4f4f1", accent: "#2c53b0", cardRadius: "0px", rounded: "4px", font: "Inter", title: "none", pdfEdge: "inset" },
+    dark: { page: "#232629", card: "#2b2e32", header: "#232629", accent: "#4b74d0", cardRadius: "0px", rounded: "4px", font: "Inter", title: "none", pdfEdge: "inset" },
   },
   kairos: {
-    light: { page: "#f4f4f1", card: "#fbfbf9", header: "#232629", accent: "#2c53b0", cardRadius: "6px", rounded: "4px", button: "4px", font: "Source Sans 3", title: "uppercase" },
-    dark: { page: "#232629", card: "#2b2e32", header: "#232629", accent: "#4b74d0", cardRadius: "6px", rounded: "4px", button: "4px", font: "Source Sans 3", title: "uppercase" },
+    light: { page: "#f4f4f1", card: "#fbfbf9", header: "#232629", accent: "#2c53b0", cardRadius: "6px", rounded: "4px", button: "4px", font: "Source Sans 3", title: "uppercase", pdfEdge: "inset" },
+    dark: { page: "#232629", card: "#2b2e32", header: "#232629", accent: "#4b74d0", cardRadius: "6px", rounded: "4px", button: "4px", font: "Source Sans 3", title: "uppercase", pdfEdge: "inset" },
   },
   aurora: {
-    light: { page: "#eef2f5", card: "#ffffff", header: "#ffffff", accent: "#0d9488", cardRadius: "14px", rounded: "8px", button: "9999px", font: "Inter", title: "uppercase" },
-    dark: { page: "#0a1015", card: "#111a21", header: "#0a1015", accent: "#2dd4bf", cardRadius: "14px", rounded: "8px", button: "9999px", font: "Inter", title: "uppercase" },
+    light: { page: "#eef2f5", card: "#ffffff", header: "#ffffff", accent: "#0d9488", cardRadius: "14px", rounded: "8px", button: "9999px", font: "Inter", title: "uppercase", pdfEdge: "inset" },
+    dark: { page: "#0a1015", card: "#111a21", header: "#0a1015", accent: "#2dd4bf", cardRadius: "14px", rounded: "8px", button: "9999px", font: "Inter", title: "uppercase", pdfEdge: "inset" },
   },
 };
 
@@ -92,6 +93,12 @@ for (const [style, modes] of Object.entries(EXPECTED)) {
           button: cs("button").borderTopLeftRadius,
           font: getComputedStyle(document.body).fontFamily.split(",")[0].replace(/["']/g, "").trim(),
           title: cs("title").textTransform,
+          // The PDF rasterizes each card alone: its edge must be drawn inside it.
+          pdfEdge:
+            cs("pdf-card").outlineStyle === "none" &&
+            getComputedStyle(document.getElementById("pdf-card"), "::after").borderTopWidth === "1px"
+              ? "inset"
+              : "outside",
         };
       },
       { style, mode },

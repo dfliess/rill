@@ -8,7 +8,7 @@
 // 1. A Style sets or reads (var()) a token upstream no longer declares on
 //    :root or :root.dark (app.css, colors.css), or sets a --kairos-* token
 //    nothing reads (tailwind.config.ts included: level 1.5).
-// 2. A selector targets a class that is not registered in
+// 2. A selector targets a class or id that is not registered in
 //    scripts/style-guard-hooks.json, or that its registered component no
 //    longer carries; uses a Svelte hash class (svelte-xxxx); or qualifies by
 //    an element other than the allowed ones (article.x dies when the markup
@@ -137,6 +137,10 @@ function hookPresent(cls, hook) {
   } catch {
     return { file, ok: false };
   }
+  if (cls.startsWith("#")) {
+    const id = cls.slice(1).replace(/-/g, "\\-");
+    return { file, ok: new RegExp(`id="${id}"`).test(src) };
+  }
   const word = cls.replace(/-/g, "\\-");
   const patterns =
     via === "style"
@@ -174,16 +178,20 @@ for (const file of cssFiles) {
           errors.push(`${where}: element qualifier "${tag}" in "${selector}" (target a registered class)`);
         }
       }
-      for (const [, cls] of selector.matchAll(/\.([a-zA-Z_][\w-]*)/g)) {
+      const hooks = [
+        ...[...selector.matchAll(/\.([a-zA-Z_][\w-]*)/g)].map((m) => m[1]),
+        ...[...selector.matchAll(/#([a-zA-Z_][\w-]*)/g)].map((m) => `#${m[1]}`),
+      ];
+      for (const cls of hooks) {
         if (cls === "dark" || checkedHooks.has(cls)) continue;
         checkedHooks.add(cls);
         const hook = config.hooks[cls];
         if (!hook) {
-          errors.push(`${where}: class .${cls} is not registered in scripts/style-guard-hooks.json`);
+          errors.push(`${where}: ${cls.startsWith("#") ? cls : `.${cls}`} is not registered in scripts/style-guard-hooks.json`);
           continue;
         }
         const { file: hookFile, ok } = hookPresent(cls, hook);
-        if (!ok) errors.push(`${where}: class .${cls} no longer appears in ${hookFile}`);
+        if (!ok) errors.push(`${where}: ${cls.startsWith("#") ? cls : `.${cls}`} no longer appears in ${hookFile}`);
       }
     }
 
