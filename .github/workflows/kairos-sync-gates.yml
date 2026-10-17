@@ -13,6 +13,7 @@
 #         + G1c, numeracion de campos proto de Kairos (kairos-cloud#158)
 #   G2 <- go-lint.yml                 (golangci-lint v2.9.0, .golangci.yml del repo)
 #   G3 <- web-test-code-quality.yml   (con ADMIN/LOCAL/COMMON forzados a true)
+#         + G3b, valores computados de las apariencias (scripts/style-smoke.js, kairos-cloud#242)
 #   G4 <- prettier.yml
 #
 # Tres diferencias deliberadas respecto de lo que corria el agente:
@@ -220,6 +221,17 @@ jobs:
           # kairos-seo, hay que bajarlo o subir el MemoryMax=4G del servicio.
           NODE_OPTIONS: "--max-old-space-size=6144"
 
+      # Apariencias de Kairos (kairos-cloud#242): el style guard de G3 prueba
+      # que los nombres de upstream siguen existiendo; esto prueba que nuestras
+      # reglas siguen ganando la cascada. Reutiliza el node_modules de G3 y
+      # baja solo Chromium (~1 min). Cuenta dentro de G3 en el veredicto.
+      - name: G3b - Kairos Styles computed values
+        id: g3b
+        continue-on-error: true
+        run: |
+          npx playwright install --with-deps chromium
+          node scripts/style-smoke.js
+
       # Sin npm ci propio: reutiliza el node_modules que dejo G3.
       - name: G4 - prettier
         id: g4
@@ -235,6 +247,8 @@ jobs:
           g3='${{ steps.g3.outcome }}'
           g4='${{ steps.g4.outcome }}'
           if [ "$g1a" = "success" ] && [ "$g1b" = "success" ] && [ "$g1c" = "success" ]; then g1=success; else g1=failure; fi
+          g3b='${{ steps.g3b.outcome }}'
+          if [ "$g3" = "success" ] && [ "$g3b" != "success" ]; then g3=failure; fi
           green=0
           {
             echo "| Gate | Resultado |"
