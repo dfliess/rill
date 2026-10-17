@@ -10,8 +10,11 @@ Design and decisions: kairos-cloud#242 and ADR-0035.
 1. A CSS file here, scoped to `:root[data-kairos-style="<id>"]`, with explicit
    `&:not(.dark)` and `&.dark` blocks (they must beat upstream `:root` and
    `:root.dark` on specificity, not on load order).
-2. Its id in `STYLES` (`styles.ts`), in the proto validation
-   (`proto/rill/admin/v1/api.proto`) and in `web-common/static/kairos-style-boot.js`.
+2. Its id in `STYLES` (`styles.ts`), in `kairosStyles`
+   (`admin/server/kairos_styles.go`, what an Org may pick) and in
+   `web-common/static/kairos-style-boot.js`, plus its label in the two
+   pickers (`StyleMenu.svelte`, `OrgStyleSettings.svelte`) and the i18n
+   messages.
    `scripts/style-guard.js` fails if the three lists drift.
 3. Its expected computed values in `scripts/style-smoke.js`.
 4. Fonts go in `web-common/static/fonts`: the CSP only allows `font-src 'self'`,

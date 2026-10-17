@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"slices"
 
 	"github.com/rilldata/rill/admin/server/auth"
 	adminv1 "github.com/rilldata/rill/proto/gen/rill/admin/v1"
@@ -12,7 +13,11 @@ import (
 )
 
 // Kairos Styles (kairos-cloud#242): the app's look an organization's members get unless they pick their own.
-// The set of Styles is validated by the proto (UpdateOrganizationStyleRequest.style).
+
+// kairosStyles are the Styles an organization can pick, in the order of STYLES in
+// web-common/src/features/kairos-styles/styles.ts (scripts/style-guard.js checks it).
+// Validated here rather than in the proto, so adding a Style doesn't regenerate api.pb.go.
+var kairosStyles = []string{"kairos-v1", "kairos", "aurora"}
 
 // kairosStyleEmbedParam is the embed URL parameter the frontend paints the Style from.
 // It is a Kairos name so it can't collide with a parameter upstream adds.
@@ -46,6 +51,10 @@ func (s *Server) UpdateOrganizationStyle(ctx context.Context, req *adminv1.Updat
 		attribute.String("args.org", req.Org),
 		attribute.String("args.style", req.Style),
 	)
+
+	if req.Style != "" && !slices.Contains(kairosStyles, req.Style) {
+		return nil, status.Errorf(codes.InvalidArgument, "unknown style %q", req.Style)
+	}
 
 	org, err := s.admin.DB.FindOrganizationByName(ctx, req.Org)
 	if err != nil {

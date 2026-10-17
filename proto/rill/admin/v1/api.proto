@@ -4218,8 +4218,9 @@ message GetOrganizationStyleResponse {
 
 message UpdateOrganizationStyleRequest {
   string org = 1 [(validate.rules).string.min_len = 1];
-  // Keep in step with STYLES in web-common/src/features/kairos-styles/styles.ts (scripts/style-guard.js checks it).
-  string style = 2 [(validate.rules).string = {ignore_empty: true, in: ["kairos-v1", "kairos", "aurora"]}];
+  // Empty restores the default. The server checks it against kairosStyles (admin/server/kairos_styles.go),
+  // so adding a Style never changes this file.
+  string style = 2;
 }
 
 message UpdateOrganizationStyleResponse {

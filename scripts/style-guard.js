@@ -23,7 +23,7 @@
 //    into app.css, which breaks the build), a Style file not imported, the
 //    style controller missing from a root layout, or the boot script from an
 //    app.html; the Org and embed wiring (root and embed layouts, GetIFrame);
-//    or the proto accepting a different set of Styles than styles.ts.
+//    or the server accepting a different set of Styles than styles.ts.
 //
 // It warns (exit 0) on tokens a Style sets in one mode only, and on upstream
 // semantic tokens newer than the baseline, which no Style has decided on yet.
@@ -277,9 +277,9 @@ const bootStyles = [...(bootScript.match(/STYLES = \[([^\]]+)\]/)?.[1] ?? "").ma
 if (bootStyles.join() !== declared.join()) {
   errors.push(`web-common/static/kairos-style-boot.js lists ${bootStyles.join(", ") || "no Styles"}, styles.ts ${declared.join(", ")}`);
 }
-const protoStyles = [...(read("proto/rill/admin/v1/api.proto").match(/message UpdateOrganizationStyleRequest \{[\s\S]*?in: \[([^\]]+)\]/)?.[1] ?? "").matchAll(/"([^"]+)"/g)].map((m) => m[1]);
-if (protoStyles.join() !== declared.join()) {
-  errors.push(`UpdateOrganizationStyleRequest in api.proto accepts ${protoStyles.join(", ") || "no Styles"}, styles.ts lists ${declared.join(", ")}`);
+const serverStyles = [...(read("admin/server/kairos_styles.go").match(/var kairosStyles = \[\]string\{([^}]*)\}/)?.[1] ?? "").matchAll(/"([^"]+)"/g)].map((m) => m[1]);
+if (serverStyles.join() !== declared.join()) {
+  errors.push(`kairosStyles in admin/server/kairos_styles.go accepts ${serverStyles.join(", ") || "no Styles"}, styles.ts lists ${declared.join(", ")}`);
 }
 for (const [file, needle, what] of [
   ["web-admin/src/routes/+layout.svelte", "<OrgStyleSync", "no longer feeds the Org's Style"],

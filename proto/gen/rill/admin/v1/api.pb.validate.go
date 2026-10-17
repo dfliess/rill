@@ -55399,20 +55399,7 @@ func (m *UpdateOrganizationStyleRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if m.GetStyle() != "" {
-
-		if _, ok := _UpdateOrganizationStyleRequest_Style_InLookup[m.GetStyle()]; !ok {
-			err := UpdateOrganizationStyleRequestValidationError{
-				field:  "Style",
-				reason: "value must be in list [kairos-v1 kairos aurora]",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
-
-	}
+	// no validation rules for Style
 
 	if len(errors) > 0 {
 		return UpdateOrganizationStyleRequestMultiError(errors)
@@ -55494,12 +55481,6 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = UpdateOrganizationStyleRequestValidationError{}
-
-var _UpdateOrganizationStyleRequest_Style_InLookup = map[string]struct{}{
-	"kairos-v1": {},
-	"kairos":    {},
-	"aurora":    {},
-}
 
 // Validate checks the field values on UpdateOrganizationStyleResponse with the
 // rules defined in the proto definition for this message. If any rules are
