@@ -100,6 +100,17 @@ class ThemeControl {
   };
 
   /**
+   * Kairos: re-notifies subscribers without changing the mode, so whatever
+   * resolved its colors when it rendered (charts, palettes) resolves them
+   * again. Kairos Styles call it when the Style changes.
+   */
+  public refresh() {
+    const mode = get(this.current);
+    this.current.set(mode === "dark" ? "light" : "dark");
+    this.current.set(mode);
+  }
+
+  /**
    * Switches to light mode and returns a function restoring the previous mode,
    * leaving the persisted preference alone. Both the class and `current` have to
    * flip: some components read the class, others subscribe to the store.

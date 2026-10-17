@@ -4,16 +4,10 @@
   import { styleControl } from "./style-control";
   import { STYLES, type StyleId } from "./styles";
 
-  const { preference } = styleControl;
+  // Rill Developer has no Org: the fallback is just the default Style.
+  export let local = false;
 
-  // Charts resolve their colors when they render and nothing re-renders them
-  // on a Style change, so a switch reloads the page instead of leaving stale
-  // series behind.
-  function choose(style: StyleId | null) {
-    if (style === $preference) return;
-    styleControl.setPreference(style);
-    window.location.reload();
-  }
+  const { preference } = styleControl;
 
   const labels: Record<StyleId, () => string> = {
     "kairos-v1": m.kairos_style_kairos_v1,
@@ -28,16 +22,16 @@
     <DropdownMenu.CheckboxItem
       checkRight
       checked={$preference === null}
-      onclick={() => choose(null)}
+      onclick={() => styleControl.setPreference(null)}
     >
-      {m.kairos_style_org_default()}
+      {local ? m.kairos_style_default() : m.kairos_style_org_default()}
     </DropdownMenu.CheckboxItem>
     <DropdownMenu.Separator />
     {#each STYLES as style (style)}
       <DropdownMenu.CheckboxItem
         checkRight
         checked={$preference === style}
-        onclick={() => choose(style)}
+        onclick={() => styleControl.setPreference(style)}
       >
         {labels[style]()}
       </DropdownMenu.CheckboxItem>

@@ -40,3 +40,19 @@ describe("themeControl.forceLight", () => {
     expect(document.documentElement.classList.contains("dark")).toBe(false);
   });
 });
+
+describe("themeControl.refresh", () => {
+  it("re-notifies subscribers and leaves the mode alone", () => {
+    themeControl.set.dark();
+    const seen: string[] = [];
+    const unsubscribe = themeControl.current.subscribe((m) => seen.push(m));
+    seen.length = 0;
+
+    themeControl.refresh();
+
+    expect(seen.at(-1)).toBe("dark");
+    expect(seen.length).toBeGreaterThan(0);
+    expect(document.documentElement.classList.contains("dark")).toBe(true);
+    unsubscribe();
+  });
+});

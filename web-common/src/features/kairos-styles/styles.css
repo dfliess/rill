@@ -1,5 +1,8 @@
 /*
- * Kairos Styles (kairos-cloud#242). Each Style sets the app tokens per mode
+ * Kairos Styles (kairos-cloud#242), loaded by style-control.ts rather than
+ * @imported into app.css: an import there changes how Vite feeds the CSS
+ * files to Tailwind, and vega.css stops resolving `@apply ui-copy-number`.
+ * Each Style sets the app tokens per mode
  * under :root[data-kairos-style=…]:not(.dark) / .dark, which outrank
  * upstream's :root and :root.dark (0,3,0 over 0,2,0) wherever this file
  * lands in the cascade. Component rules use stable class names and var()
@@ -11,15 +14,15 @@
 @import "./aurora.css";
 
 /* Shared by every Style: inputs take the --input token (Rill leaves some on
-   the browser's white). */
-@layer base {
-  textarea,
-  input[type="text"],
-  input[type="search"],
-  input[type="email"],
-  input[type="password"],
-  input[type="url"],
-  input[type="number"] {
-    background-color: var(--input);
-  }
+   the browser's white). :where() keeps the specificity of a base rule. */
+:where(
+    textarea,
+    input[type="text"],
+    input[type="search"],
+    input[type="email"],
+    input[type="password"],
+    input[type="url"],
+    input[type="number"]
+  ) {
+  background-color: var(--input);
 }

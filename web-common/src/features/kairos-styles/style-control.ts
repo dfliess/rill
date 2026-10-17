@@ -1,4 +1,6 @@
 import { derived, get, writable } from "svelte/store";
+import { themeControl } from "../themes/theme-control";
+import "./styles.css";
 import {
   STYLE_ATTRIBUTE,
   isStyleId,
@@ -59,7 +61,15 @@ class StyleControl {
   public subscribe = this.current.subscribe;
 
   constructor() {
-    this.current.subscribe(apply);
+    let applied: StyleId | null = null;
+    this.current.subscribe((style) => {
+      if (style === applied) return;
+      const changed = applied !== null;
+      applied = style;
+      apply(style);
+      // Charts resolve their colors when they render; have them render again.
+      if (changed) themeControl.refresh();
+    });
   }
 
   /** The viewer picks a Style, or null to follow the Org again. */

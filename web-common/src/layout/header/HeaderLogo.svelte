@@ -22,13 +22,17 @@
 
 <a {href} class="grid place-content-center rounded pl-2 pr-2 shrink-0">
   {#if logoUrl && faviconUrl}
-    <img src={faviconUrl} alt="logo" class="h-7 w-7 object-contain sm:hidden" />
-    <img src={logoUrl} alt="logo" class="h-7 hidden sm:block" />
+    <img
+      src={faviconUrl}
+      alt="logo"
+      class="kairos-org-logo h-7 w-7 object-contain sm:hidden"
+    />
+    <img src={logoUrl} alt="logo" class="kairos-org-logo h-7 hidden sm:block" />
   {:else if logoUrl}
     <img
       src={logoUrl}
       alt="logo"
-      class="h-7 max-w-[96px] object-contain sm:max-w-none"
+      class="kairos-org-logo h-7 max-w-[96px] object-contain sm:max-w-none"
     />
   {:else}
     <span class="h-7 grid place-content-center sm:hidden">

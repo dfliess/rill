@@ -94,7 +94,7 @@
          see them. The "+" is the only place to create one (#231). -->
     {#if personalItems}
       <nav
-        class="flex flex-col gap-y-0.5"
+        class="kairos-home-menu flex flex-col gap-y-0.5"
         aria-label={m.personal_files_canvases_title()}
       >
         <div

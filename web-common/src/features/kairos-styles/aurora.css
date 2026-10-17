@@ -6,6 +6,7 @@
  */
 :root[data-kairos-style="aurora"] {
   --radius: 12px;
+  --kairos-radius-default: 8px;
 
   /* Teal palettes in the order Rill reads them: light 50 is the palest,
      dark 50 the deepest. */
@@ -117,7 +118,7 @@
     --kairos-chart-axis: #7f9199;
   }
 
-  & :is(article.component-card, .kairos-home-box) {
+  & :is(.component-card, .kairos-home-box) {
     border-radius: 14px;
     box-shadow: var(--kairos-card-shadow);
   }
@@ -135,9 +136,24 @@
     letter-spacing: -0.02em;
   }
 
-  & :is(button, a):is(.primary, .secondary, .tertiary, .ghost) {
+  /* Pills for every Button variant. Icon buttons (.square, .circle) and
+     .compact keep Button's own padding, so they stay square. */
+  &
+    :is(button, a):is(
+      .primary,
+      .secondary,
+      .secondary-destructive,
+      .tertiary,
+      .ghost,
+      .destructive,
+      .neutral,
+      .toolbar
+    ) {
     border-radius: 9999px;
-    padding-inline: 14px;
+
+    &:not(.square, .circle, .compact) {
+      padding-inline: 14px;
+    }
   }
 
   & .suggested-prompt {

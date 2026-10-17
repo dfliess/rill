@@ -5,18 +5,24 @@
 // any of them without a conflict, and the Style just stops applying. This
 // fails when that happens:
 //
-// 1. A Style sets a token upstream no longer declares (app.css, colors.css),
-//    or a --kairos-* token nothing reads.
+// 1. A Style sets or reads (var()) a token upstream no longer declares on
+//    :root or :root.dark (app.css, colors.css), or sets a --kairos-* token
+//    nothing reads (tailwind.config.ts included: level 1.5).
 // 2. A selector targets a class that is not registered in
 //    scripts/style-guard-hooks.json, or that its registered component no
-//    longer carries; or it uses a Svelte hash class (svelte-xxxx).
-// 3. A component rule writes a colour literal instead of var(): inside
-//    dashboards that would override the project theme. Token declarations
-//    (custom properties) may hold literals, that is what tokens are.
-// 4. A Style lacks its light or its dark block, or styles.ts and the CSS
-//    disagree on which Styles exist.
-// 5. The wiring is gone: the app.css import, a Style file not imported, or
-//    the style controller missing from a root layout.
+//    longer carries; uses a Svelte hash class (svelte-xxxx); or qualifies by
+//    an element other than the allowed ones (article.x dies when the markup
+//    turns into a div).
+// 3. A component rule writes a colour literal, hex, function or named,
+//    instead of var(): inside dashboards that would override the project
+//    theme. Token declarations (custom properties) may hold literals, that is
+//    what tokens are.
+// 4. A Style lacks its light or its dark block, or styles.ts, the CSS and the
+//    boot script disagree on which Styles exist.
+// 5. The wiring is gone: styles.css not loaded by style-control.ts (or moved
+//    into app.css, which breaks the build), a Style file not imported, the
+//    style controller missing from a root layout, or the boot script from an
+//    app.html.
 //
 // It warns (exit 0) on tokens a Style sets in one mode only, and on upstream
 // semantic tokens newer than the baseline, which no Style has decided on yet.
@@ -36,10 +42,17 @@ const warnings = [];
 
 const read = (path) => readFileSync(path, "utf8");
 
-const upstreamCss = read("web-common/src/app.css") + read("web-common/src/colors.css");
-const upstreamTokens = new Set(
-  [...upstreamCss.matchAll(/(--[a-z0-9-]+)\s*:/g)].map((m) => m[1]),
-);
+// Only tokens on :root itself count: one upstream moves into a component rule
+// no longer reaches the rest of the app.
+const upstreamTokens = new Set();
+for (const file of ["web-common/src/app.css", "web-common/src/colors.css"]) {
+  postcss.parse(read(file)).walkRules((rule) => {
+    if (!isRootOnly(rule.selector)) return;
+    rule.each((n) => {
+      if (n.type === "decl" && n.prop.startsWith("--")) upstreamTokens.add(n.prop);
+    });
+  });
+}
 
 const cssFiles = readdirSync(DIR)
   .filter((f) => f.endsWith(".css"))
@@ -49,11 +62,41 @@ const sourceText = globSync([
   "web-common/src/**/*.{ts,svelte}",
   "web-admin/src/**/*.{ts,svelte}",
   "web-local/src/**/*.{ts,svelte}",
+  "web-common/tailwind.config.ts",
 ])
   .map(read)
   .join("\n");
 
-const COLOR_LITERAL = /#[0-9a-f]{3,8}\b|\b(rgba?|hsla?|oklch|oklab|lab|lch)\(/i;
+const COLOR_LITERAL = /#[0-9a-f]{3,8}\b|\b(rgba?|hsla?|oklch|oklab|lab|lch|hwb)\(/i;
+// CSS named colours (transparent, currentColor and inherit are fine).
+const NAMED_COLOR = new RegExp(
+  `(?<![\\w-])(${[
+    "aliceblue antiquewhite aqua aquamarine azure beige bisque black blanchedalmond blue blueviolet brown",
+    "burlywood cadetblue chartreuse chocolate coral cornflowerblue cornsilk crimson cyan darkblue darkcyan",
+    "darkgoldenrod darkgray darkgreen darkgrey darkkhaki darkmagenta darkolivegreen darkorange darkorchid",
+    "darkred darksalmon darkseagreen darkslateblue darkslategray darkslategrey darkturquoise darkviolet",
+    "deeppink deepskyblue dimgray dimgrey dodgerblue firebrick floralwhite forestgreen fuchsia gainsboro",
+    "ghostwhite gold goldenrod gray green greenyellow grey honeydew hotpink indianred indigo ivory khaki",
+    "lavender lavenderblush lawngreen lemonchiffon lightblue lightcoral lightcyan lightgoldenrodyellow",
+    "lightgray lightgreen lightgrey lightpink lightsalmon lightseagreen lightskyblue lightslategray",
+    "lightslategrey lightsteelblue lightyellow lime limegreen linen magenta maroon mediumaquamarine",
+    "mediumblue mediumorchid mediumpurple mediumseagreen mediumslateblue mediumspringgreen",
+    "mediumturquoise mediumvioletred midnightblue mintcream mistyrose moccasin navajowhite navy oldlace",
+    "olive olivedrab orange orangered orchid palegoldenrod palegreen paleturquoise palevioletred",
+    "papayawhip peachpuff peru pink plum powderblue purple rebeccapurple red rosybrown royalblue",
+    "saddlebrown salmon sandybrown seagreen seashell sienna silver skyblue slateblue slategray slategrey",
+    "snow springgreen steelblue tan teal thistle tomato turquoise violet wheat white whitesmoke yellow",
+    "yellowgreen",
+  ]
+    .join(" ")
+    .split(" ")
+    .join("|")})(?![\\w-])`,
+  "i",
+);
+// The colour part of a value: var() arguments and quoted strings (font
+// names) are not colours.
+const colourText = (value) => value.replace(/var\([^)]*\)/g, "").replace(/"[^"]*"|'[^']*'/g, "");
+const allowedTags = new Set(config.allowedTags);
 
 // Top-level parts of a selector list, ignoring commas inside :is()/:not().
 function splitTopLevel(selector, separator) {
@@ -73,10 +116,11 @@ function splitTopLevel(selector, separator) {
 }
 
 // A rule on :root itself (a token block), not on a descendant.
-const isRootOnly = (selector) =>
-  splitTopLevel(selector, /,/).every(
+function isRootOnly(selector) {
+  return splitTopLevel(selector, /,/).every(
     (part) => part.startsWith(":root") && splitTopLevel(part, /[\s>+~]/).length === 1,
   );
+}
 
 const modeOf = (selector) =>
   /:not\(\.dark\)/.test(selector) ? "light" : /\.dark(?![\w-])/.test(selector) ? "dark" : "any";
@@ -85,7 +129,7 @@ const modeOf = (selector) =>
 // from a prop (Button's variant) are registered `via: "style"` and must head a
 // rule of the component's own <style>.
 function hookPresent(cls, hook) {
-  const { file, via } = typeof hook === "string" ? { file: hook, via: "markup" } : hook;
+  const { file, via, markup } = typeof hook === "string" ? { file: hook, via: "markup" } : hook;
   let src;
   try {
     src = read(file);
@@ -100,9 +144,13 @@ function hookPresent(cls, hook) {
           new RegExp(`class="[^"]*(?<![\\w-])${word}(?![\\w-])[^"]*"`),
           new RegExp(`class:${word}(?![\\w-])`),
         ];
-  return { file, ok: patterns.some((re) => re.test(src)) };
+  const markupOk = !markup || new RegExp(markup).test(src);
+  return { file, ok: markupOk && patterns.some((re) => re.test(src)) };
 }
 
+const ourTokens = new Set(
+  [...cssText.matchAll(/(--[a-z0-9-]+)\s*:/g)].map((m) => m[1]),
+);
 const styles = new Map(); // id -> { light: Set, dark: Set }
 const checkedHooks = new Set();
 
@@ -119,6 +167,12 @@ for (const file of cssFiles) {
     const ids = [...selector.matchAll(/data-kairos-style="([^"]+)"/g)].map((m) => m[1]);
 
     if (!rootOnly) {
+      const bare = selector.replace(/"[^"]*"/g, "");
+      for (const [, tag] of bare.matchAll(/(?:^|[\s>+~(,])([a-z][a-z0-9]*)(?=[.:#[\s,)>+~]|$)/g)) {
+        if (!allowedTags.has(tag)) {
+          errors.push(`${where}: element qualifier "${tag}" in "${selector}" (target a registered class)`);
+        }
+      }
       for (const [, cls] of selector.matchAll(/\.([a-zA-Z_][\w-]*)/g)) {
         if (cls === "dark" || checkedHooks.has(cls)) continue;
         checkedHooks.add(cls);
@@ -133,6 +187,11 @@ for (const file of cssFiles) {
     }
 
     for (const decl of rule.nodes.filter((n) => n.type === "decl")) {
+      for (const [, used] of decl.value.matchAll(/var\((--[a-z0-9-]+)/g)) {
+        if (!upstreamTokens.has(used) && !ourTokens.has(used)) {
+          errors.push(`${where}: ${decl.prop} reads ${used}, which neither upstream nor a Style declares`);
+        }
+      }
       if (decl.prop.startsWith("--")) {
         if (decl.prop.startsWith("--kairos-")) {
           const reader = new RegExp(`var\\(${decl.prop}\\s*[,)]`);
@@ -150,7 +209,7 @@ for (const file of cssFiles) {
             styles.set(id, entry);
           }
         }
-      } else if (COLOR_LITERAL.test(decl.value)) {
+      } else if (COLOR_LITERAL.test(colourText(decl.value)) || NAMED_COLOR.test(colourText(decl.value))) {
         errors.push(`${where}: colour literal in ${decl.prop}: ${decl.value} (use a token)`);
       }
     }
@@ -183,8 +242,13 @@ for (const token of upstreamTokens) {
   }
 }
 
-if (!read("web-common/src/app.css").includes('@import "./features/kairos-styles/styles.css"')) {
-  errors.push("web-common/src/app.css no longer imports the Styles");
+if (!read(`${DIR}/style-control.ts`).includes('import "./styles.css"')) {
+  errors.push(`${DIR}/style-control.ts no longer loads styles.css`);
+}
+// Importing the Styles into app.css breaks `@apply` in other stylesheets
+// (vega.css) at build time; see the header of styles.css.
+if (read("web-common/src/app.css").includes("kairos-styles")) {
+  errors.push("web-common/src/app.css imports the Styles; load them from style-control.ts");
 }
 const index = read(`${DIR}/styles.css`);
 for (const file of cssFiles) {
@@ -196,6 +260,17 @@ for (const file of cssFiles) {
 for (const layout of ["web-admin/src/routes/+layout.svelte", "web-local/src/routes/+layout.svelte"]) {
   if (!read(layout).includes("features/kairos-styles/style-control")) {
     errors.push(`${layout} no longer loads the style controller`);
+  }
+}
+
+const bootScript = read("web-common/static/kairos-style-boot.js");
+const bootStyles = [...(bootScript.match(/STYLES = \[([^\]]+)\]/)?.[1] ?? "").matchAll(/"([^"]+)"/g)].map((m) => m[1]);
+if (bootStyles.join() !== declared.join()) {
+  errors.push(`web-common/static/kairos-style-boot.js lists ${bootStyles.join(", ") || "no Styles"}, styles.ts ${declared.join(", ")}`);
+}
+for (const html of config.bootScripts) {
+  if (!read(html).includes("/kairos-style-boot.js")) {
+    errors.push(`${html} no longer loads kairos-style-boot.js (the Style would flash on reload)`);
   }
 }
 

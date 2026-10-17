@@ -81,8 +81,11 @@
   }
 
   /* Antracita header band in light mode: the header becomes a dark island
-     by redefining the tokens its content reads. */
-  &:not(.dark) :is(.kairos-app-header, .tabs-container) {
+     by redefining the tokens its content reads, the gray palette included
+     (tab and breadcrumb hovers use bg-gray-100). Not under an Org logo: it
+     was drawn for the light header its Org sees elsewhere. */
+  &:not(.dark):not(:has(.kairos-org-logo))
+    :is(.kairos-app-header, .tabs-container) {
     --surface-base: #232629;
     --surface-background: #232629;
     --surface-hover: #33373c;
@@ -96,6 +99,9 @@
     --icon-muted: #a8acaf;
     --border: #3b3e43;
     --accent-primary-action: #9bb6f2;
+    --color-gray-50: #2b2e32;
+    --color-gray-100: #33373c;
+    --color-gray-200: #3b3e43;
 
     background-color: var(--surface-base);
     border-color: var(--surface-base);
@@ -123,7 +129,7 @@
     color: var(--fg-accent);
   }
 
-  & :is(article.component-card, .kairos-home-box) {
+  & :is(.component-card, .kairos-home-box) {
     border-radius: 6px;
     box-shadow: none;
   }
@@ -134,7 +140,19 @@
     letter-spacing: -0.018em;
   }
 
-  & :is(button, a):is(.primary, .secondary, .tertiary, .ghost) {
+  /* Every Button variant, so a dialog's buttons match; .circle and .rounded
+     keep their own full rounding. */
+  &
+    :is(button, a):is(
+      .primary,
+      .secondary,
+      .secondary-destructive,
+      .tertiary,
+      .ghost,
+      .destructive,
+      .neutral,
+      .toolbar
+    ):not(.circle, .rounded) {
     border-radius: var(--radius);
     font-family: "Inter Tight", sans-serif;
     font-weight: 600;

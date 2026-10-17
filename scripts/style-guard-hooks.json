@@ -1,5 +1,5 @@
 {
-  "_comment": "Kairos Styles (kairos-cloud#242): every class a Style's CSS targets, and the component file that must keep it. Upstream renaming or dropping one fails scripts/style-guard.js on the sync, instead of a Style silently losing a rule. kairos-* classes are hooks Kairos added; the rest are upstream's own stable names. A hook is checked in the markup (class=\"…\" or class:name); `\"via\": \"style\"` checks a rule of the component's own <style> instead, for classes set from a prop (Button's variant).",
+  "_comment": "Kairos Styles (kairos-cloud#242): every class a Style's CSS targets, and the component file that must keep it. Upstream renaming or dropping one fails scripts/style-guard.js on the sync, instead of a Style silently losing a rule. kairos-* classes are hooks Kairos added; the rest are upstream's own stable names. A hook is checked in the markup (class=\"…\" or class:name); `\"via\": \"style\"` checks a rule of the component's own <style> instead, for classes set from a prop (Button's variant), plus the `markup` pattern that sets them.",
   "hooks": {
     "component-card": "web-common/src/features/canvas/CanvasComponent.svelte",
     "component-header-container": "web-common/src/features/canvas/ComponentHeader.svelte",
@@ -9,10 +9,26 @@
     "suggested-prompt": "web-common/src/features/chat/core/suggested-prompts/SuggestedPrompts.svelte",
     "suggested-prompt-label": "web-common/src/features/chat/core/suggested-prompts/SuggestedPrompts.svelte",
     "tabs-container": "web-admin/src/features/projects/ProjectTabs.svelte",
-    "primary": { "file": "web-common/src/components/button/Button.svelte", "via": "style" },
-    "secondary": { "file": "web-common/src/components/button/Button.svelte", "via": "style" },
-    "tertiary": { "file": "web-common/src/components/button/Button.svelte", "via": "style" },
-    "ghost": { "file": "web-common/src/components/button/Button.svelte", "via": "style" },
+    "primary": {
+      "file": "web-common/src/components/button/Button.svelte",
+      "via": "style",
+      "markup": "class=\"\\{className\\} \\{type\\}\""
+    },
+    "secondary": {
+      "file": "web-common/src/components/button/Button.svelte",
+      "via": "style",
+      "markup": "class=\"\\{className\\} \\{type\\}\""
+    },
+    "tertiary": {
+      "file": "web-common/src/components/button/Button.svelte",
+      "via": "style",
+      "markup": "class=\"\\{className\\} \\{type\\}\""
+    },
+    "ghost": {
+      "file": "web-common/src/components/button/Button.svelte",
+      "via": "style",
+      "markup": "class=\"\\{className\\} \\{type\\}\""
+    },
     "kairos-app-header": "web-common/src/layout/header/Header.svelte",
     "kairos-logo-on-light": "web-common/src/layout/header/HeaderLogo.svelte",
     "kairos-logo-on-dark": "web-common/src/layout/header/HeaderLogo.svelte",
@@ -21,19 +37,114 @@
     "item": "web-admin/src/features/kairos-home/HomeMenu.svelte",
     "active": "web-admin/src/features/kairos-home/HomeMenu.svelte",
     "kairos-home-box": "web-admin/src/features/kairos-home/HomeBox.svelte",
-    "kairos-home-box-title": "web-admin/src/features/kairos-home/HomeBox.svelte"
+    "kairos-home-box-title": "web-admin/src/features/kairos-home/HomeBox.svelte",
+    "secondary-destructive": {
+      "file": "web-common/src/components/button/Button.svelte",
+      "via": "style",
+      "markup": "class=\"\\{className\\} \\{type\\}\""
+    },
+    "destructive": {
+      "file": "web-common/src/components/button/Button.svelte",
+      "via": "style",
+      "markup": "class=\"\\{className\\} \\{type\\}\""
+    },
+    "neutral": {
+      "file": "web-common/src/components/button/Button.svelte",
+      "via": "style",
+      "markup": "class=\"\\{className\\} \\{type\\}\""
+    },
+    "toolbar": {
+      "file": "web-common/src/components/button/Button.svelte",
+      "via": "style",
+      "markup": "class=\"\\{className\\} \\{type\\}\""
+    },
+    "square": {
+      "file": "web-common/src/components/button/Button.svelte",
+      "via": "style",
+      "markup": "class:square\\b"
+    },
+    "circle": {
+      "file": "web-common/src/components/button/Button.svelte",
+      "via": "style",
+      "markup": "class:circle\\b"
+    },
+    "compact": {
+      "file": "web-common/src/components/button/Button.svelte",
+      "via": "style",
+      "markup": "class:compact\\b"
+    },
+    "rounded": {
+      "file": "web-common/src/components/button/Button.svelte",
+      "via": "style",
+      "markup": "class:rounded\\b"
+    },
+    "kairos-org-logo": "web-common/src/layout/header/HeaderLogo.svelte"
   },
-  "upstreamTokenPrefixes": ["--surface-", "--fg-", "--icon-", "--accent-", "--popover", "--kpi-", "--ring-", "--destructive", "--tooltip", "--border", "--input"],
+  "upstreamTokenPrefixes": [
+    "--surface-",
+    "--fg-",
+    "--icon-",
+    "--accent-",
+    "--popover",
+    "--kpi-",
+    "--ring-",
+    "--destructive",
+    "--tooltip",
+    "--border",
+    "--input"
+  ],
   "upstreamTokenBaseline": [
-    "--accent-primary", "--accent-primary-action", "--accent-secondary", "--accent-secondary-action",
-    "--border", "--destructive", "--destructive-foreground",
-    "--fg-accent", "--fg-disabled", "--fg-inverse", "--fg-muted", "--fg-primary", "--fg-secondary", "--fg-tertiary",
-    "--icon-accent", "--icon-default", "--icon-disabled", "--icon-muted",
-    "--input", "--kpi-negative", "--kpi-positive",
-    "--popover", "--popover-accent", "--popover-footer", "--popover-foreground",
-    "--ring-focus", "--ring-offset",
-    "--surface-active", "--surface-background", "--surface-base", "--surface-card", "--surface-hover",
-    "--surface-muted", "--surface-overlay", "--surface-subtle",
+    "--accent-primary",
+    "--accent-primary-action",
+    "--accent-secondary",
+    "--accent-secondary-action",
+    "--border",
+    "--destructive",
+    "--destructive-foreground",
+    "--fg-accent",
+    "--fg-disabled",
+    "--fg-inverse",
+    "--fg-muted",
+    "--fg-primary",
+    "--fg-secondary",
+    "--fg-tertiary",
+    "--icon-accent",
+    "--icon-default",
+    "--icon-disabled",
+    "--icon-muted",
+    "--input",
+    "--kpi-negative",
+    "--kpi-positive",
+    "--popover",
+    "--popover-accent",
+    "--popover-footer",
+    "--popover-foreground",
+    "--ring-focus",
+    "--ring-offset",
+    "--surface-active",
+    "--surface-background",
+    "--surface-base",
+    "--surface-card",
+    "--surface-hover",
+    "--surface-muted",
+    "--surface-overlay",
+    "--surface-subtle",
     "--tooltip"
+  ],
+  "allowedTags": [
+    "body",
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "li",
+    "button",
+    "a",
+    "textarea",
+    "input"
+  ],
+  "bootScripts": [
+    "web-admin/src/app.html",
+    "web-local/src/app.html"
   ]
 }

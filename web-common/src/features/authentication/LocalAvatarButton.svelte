@@ -72,7 +72,7 @@
     </DropdownMenu.Trigger>
     <DropdownMenu.Content class="p-1">
       <ThemeToggle />
-      <StyleMenu />
+      <StyleMenu local />
       <DropdownMenu.Separator />
 
       <DropdownMenu.Item

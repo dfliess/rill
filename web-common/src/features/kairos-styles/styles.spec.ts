@@ -1,5 +1,6 @@
 import { get } from "svelte/store";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { themeControl } from "../themes/theme-control";
 import { styleControl } from "./style-control";
 import { DEFAULT_STYLE, STYLE_ATTRIBUTE, resolveStyle } from "./styles";
 
@@ -70,5 +71,15 @@ describe("styleControl", () => {
 
     styleControl.setOrg("acme");
     expect(get(styleControl)).toBe("aurora");
+  });
+
+  it("asks charts to re-render when the Style changes, not when it stays", () => {
+    const refresh = vi.spyOn(themeControl, "refresh");
+    styleControl.setPreference("aurora");
+    expect(refresh).toHaveBeenCalledTimes(1);
+
+    styleControl.setPreference("aurora");
+    expect(refresh).toHaveBeenCalledTimes(1);
+    refresh.mockRestore();
   });
 });
