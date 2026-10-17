@@ -52,6 +52,7 @@ func TestPostgres(t *testing.T) {
 	t.Run("TestPushSubscriptions", func(t *testing.T) { testPushSubscriptions(t, db) })
 	t.Run("TestNotificationDeliveries", func(t *testing.T) { testNotificationDeliveries(t, db) })
 	t.Run("TestNotificationPreferences", func(t *testing.T) { testNotificationPreferences(t, db) })
+	t.Run("TestOrganizationStyles", func(t *testing.T) { testOrganizationStyles(t, db) })
 
 	t.Run("TestOrgNameValidation", func(t *testing.T) {
 		cases := []struct {

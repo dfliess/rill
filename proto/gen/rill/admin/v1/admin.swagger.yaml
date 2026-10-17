@@ -777,6 +777,52 @@ paths:
           required: false
           type: string
       x-visibility: public
+  /v1/orgs/{org}/kairos-style:
+    get:
+      summary: |-
+        GetOrganizationStyle returns the Kairos Style an organization paints its app with (kairos-cloud#242).
+        An empty style means the default.
+      operationId: AdminService_GetOrganizationStyle
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1GetOrganizationStyleResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: org
+          in: path
+          required: true
+          type: string
+    put:
+      summary: UpdateOrganizationStyle sets an organization's Kairos Style; an empty style restores the default.
+      operationId: AdminService_UpdateOrganizationStyle
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1UpdateOrganizationStyleResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: org
+          in: path
+          required: true
+          type: string
+        - name: body
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              style:
+                type: string
+                description: Keep in step with STYLES in web-common/src/features/kairos-styles/styles.ts (scripts/style-guard.js checks it).
   /v1/orgs/{org}/members:
     get:
       summary: ListOrganizationMemberUsers lists all the org members
@@ -5978,6 +6024,11 @@ definitions:
         $ref: '#/definitions/v1Organization'
       permissions:
         $ref: '#/definitions/v1OrganizationPermissions'
+  v1GetOrganizationStyleResponse:
+    type: object
+    properties:
+      style:
+        type: string
   v1GetPaymentsPortalURLResponse:
     type: object
     properties:
@@ -7748,6 +7799,11 @@ definitions:
     properties:
       organization:
         $ref: '#/definitions/v1Organization'
+  v1UpdateOrganizationStyleResponse:
+    type: object
+    properties:
+      style:
+        type: string
   v1UpdateProjectResponse:
     type: object
     properties:

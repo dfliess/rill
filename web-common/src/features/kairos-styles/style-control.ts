@@ -42,19 +42,23 @@ function isEmbedRoute(): boolean {
 class StyleControl {
   private user = writable<string | null>(read(USER_KEY));
   private org = writable<{ name: string; style: string | null } | null>(null);
-  private embedParam = writable<string | null>(null);
+  // Embeds load as their own page, but the embed layout confirms it with
+  // setEmbed() so a client-side navigation can't carry the viewer's choice in.
+  private embed = writable<{ param: string | null } | null>(
+    isEmbedRoute() ? { param: null } : null,
+  );
 
   // What the avatar menu shows as selected: a Style, or null for "Org default".
   public preference = derived(this.user, (u) => (isStyleId(u) ? u : null));
 
   public current = derived(
-    [this.user, this.org, this.embedParam],
-    ([user, org, embedParam]) =>
+    [this.user, this.org, this.embed],
+    ([user, org, embed]) =>
       resolveStyle({
         user,
         org: org?.style,
-        embedParam,
-        isEmbed: isEmbedRoute(),
+        embedParam: embed?.param,
+        isEmbed: embed !== null,
       }),
   );
 
@@ -95,8 +99,9 @@ class StyleControl {
     this.org.set({ name, style });
   }
 
-  public setEmbedParam(style: string | null) {
-    this.embedParam.set(style);
+  /** An embed and its `kairos_style` URL parameter (GetIFrame sets the Org's). */
+  public setEmbed(param: string | null) {
+    this.embed.set({ param });
   }
 
   public get value(): StyleId {

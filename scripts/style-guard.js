@@ -22,7 +22,8 @@
 // 5. The wiring is gone: styles.css not loaded by style-control.ts (or moved
 //    into app.css, which breaks the build), a Style file not imported, the
 //    style controller missing from a root layout, or the boot script from an
-//    app.html.
+//    app.html; the Org and embed wiring (root and embed layouts, GetIFrame);
+//    or the proto accepting a different set of Styles than styles.ts.
 //
 // It warns (exit 0) on tokens a Style sets in one mode only, and on upstream
 // semantic tokens newer than the baseline, which no Style has decided on yet.
@@ -267,6 +268,17 @@ const bootScript = read("web-common/static/kairos-style-boot.js");
 const bootStyles = [...(bootScript.match(/STYLES = \[([^\]]+)\]/)?.[1] ?? "").matchAll(/"([^"]+)"/g)].map((m) => m[1]);
 if (bootStyles.join() !== declared.join()) {
   errors.push(`web-common/static/kairos-style-boot.js lists ${bootStyles.join(", ") || "no Styles"}, styles.ts ${declared.join(", ")}`);
+}
+const protoStyles = [...(read("proto/rill/admin/v1/api.proto").match(/message UpdateOrganizationStyleRequest \{[\s\S]*?in: \[([^\]]+)\]/)?.[1] ?? "").matchAll(/"([^"]+)"/g)].map((m) => m[1]);
+if (protoStyles.join() !== declared.join()) {
+  errors.push(`UpdateOrganizationStyleRequest in api.proto accepts ${protoStyles.join(", ") || "no Styles"}, styles.ts lists ${declared.join(", ")}`);
+}
+for (const [file, needle, what] of [
+  ["web-admin/src/routes/+layout.svelte", "<OrgStyleSync", "no longer feeds the Org's Style"],
+  ["web-admin/src/routes/-/embed/+layout.svelte", "styleControl.setEmbed(", "no longer gives embeds their Style"],
+  ["admin/server/deployment.go", "s.addOrganizationStyle(", "GetIFrame no longer puts the Org's Style in embed URLs"],
+]) {
+  if (!read(file).includes(needle)) errors.push(`${file}: ${what}`);
 }
 for (const html of config.bootScripts) {
   if (!read(html).includes("/kairos-style-boot.js")) {

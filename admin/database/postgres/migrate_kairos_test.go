@@ -176,9 +176,9 @@ func requireKairosMigrated(t *testing.T, c *connection, upstreamVersion int) {
 
 	var kairosVersion int
 	require.NoError(t, c.db.QueryRowContext(ctx, fmt.Sprintf("select version from %s", kairosMigrationVersionTable)).Scan(&kairosVersion))
-	require.Equal(t, 3, kairosVersion)
+	require.Equal(t, 4, kairosVersion)
 
-	for _, table := range []string{"push_subscriptions", "notification_preferences", "notification_deliveries"} {
+	for _, table := range []string{"push_subscriptions", "notification_preferences", "notification_deliveries", "org_styles"} {
 		requireTableExists(t, c, table, true)
 	}
 }

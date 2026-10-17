@@ -21031,3 +21031,161 @@ export class BillingIssueMetadataMessage extends Message<BillingIssueMetadataMes
   }
 }
 
+/**
+ * Kairos Styles (kairos-cloud#242). At the end of the file so the generated message indexes upstream owns don't shift.
+ *
+ * @generated from message rill.admin.v1.GetOrganizationStyleRequest
+ */
+export class GetOrganizationStyleRequest extends Message<GetOrganizationStyleRequest> {
+  /**
+   * @generated from field: string org = 1;
+   */
+  org = "";
+
+  constructor(data?: PartialMessage<GetOrganizationStyleRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rill.admin.v1.GetOrganizationStyleRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "org", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetOrganizationStyleRequest {
+    return new GetOrganizationStyleRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetOrganizationStyleRequest {
+    return new GetOrganizationStyleRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetOrganizationStyleRequest {
+    return new GetOrganizationStyleRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetOrganizationStyleRequest | PlainMessage<GetOrganizationStyleRequest> | undefined, b: GetOrganizationStyleRequest | PlainMessage<GetOrganizationStyleRequest> | undefined): boolean {
+    return proto3.util.equals(GetOrganizationStyleRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message rill.admin.v1.GetOrganizationStyleResponse
+ */
+export class GetOrganizationStyleResponse extends Message<GetOrganizationStyleResponse> {
+  /**
+   * @generated from field: string style = 1;
+   */
+  style = "";
+
+  constructor(data?: PartialMessage<GetOrganizationStyleResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rill.admin.v1.GetOrganizationStyleResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "style", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetOrganizationStyleResponse {
+    return new GetOrganizationStyleResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetOrganizationStyleResponse {
+    return new GetOrganizationStyleResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetOrganizationStyleResponse {
+    return new GetOrganizationStyleResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetOrganizationStyleResponse | PlainMessage<GetOrganizationStyleResponse> | undefined, b: GetOrganizationStyleResponse | PlainMessage<GetOrganizationStyleResponse> | undefined): boolean {
+    return proto3.util.equals(GetOrganizationStyleResponse, a, b);
+  }
+}
+
+/**
+ * @generated from message rill.admin.v1.UpdateOrganizationStyleRequest
+ */
+export class UpdateOrganizationStyleRequest extends Message<UpdateOrganizationStyleRequest> {
+  /**
+   * @generated from field: string org = 1;
+   */
+  org = "";
+
+  /**
+   * Keep in step with STYLES in web-common/src/features/kairos-styles/styles.ts (scripts/style-guard.js checks it).
+   *
+   * @generated from field: string style = 2;
+   */
+  style = "";
+
+  constructor(data?: PartialMessage<UpdateOrganizationStyleRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rill.admin.v1.UpdateOrganizationStyleRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "org", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "style", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UpdateOrganizationStyleRequest {
+    return new UpdateOrganizationStyleRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): UpdateOrganizationStyleRequest {
+    return new UpdateOrganizationStyleRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): UpdateOrganizationStyleRequest {
+    return new UpdateOrganizationStyleRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: UpdateOrganizationStyleRequest | PlainMessage<UpdateOrganizationStyleRequest> | undefined, b: UpdateOrganizationStyleRequest | PlainMessage<UpdateOrganizationStyleRequest> | undefined): boolean {
+    return proto3.util.equals(UpdateOrganizationStyleRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message rill.admin.v1.UpdateOrganizationStyleResponse
+ */
+export class UpdateOrganizationStyleResponse extends Message<UpdateOrganizationStyleResponse> {
+  /**
+   * @generated from field: string style = 1;
+   */
+  style = "";
+
+  constructor(data?: PartialMessage<UpdateOrganizationStyleResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rill.admin.v1.UpdateOrganizationStyleResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "style", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UpdateOrganizationStyleResponse {
+    return new UpdateOrganizationStyleResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): UpdateOrganizationStyleResponse {
+    return new UpdateOrganizationStyleResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): UpdateOrganizationStyleResponse {
+    return new UpdateOrganizationStyleResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: UpdateOrganizationStyleResponse | PlainMessage<UpdateOrganizationStyleResponse> | undefined, b: UpdateOrganizationStyleResponse | PlainMessage<UpdateOrganizationStyleResponse> | undefined): boolean {
+    return proto3.util.equals(UpdateOrganizationStyleResponse, a, b);
+  }
+}
+

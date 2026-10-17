@@ -1179,6 +1179,20 @@ service AdminService {
     };
   }
 
+  // GetOrganizationStyle returns the Kairos Style an organization paints its app with (kairos-cloud#242).
+  // An empty style means the default.
+  rpc GetOrganizationStyle(GetOrganizationStyleRequest) returns (GetOrganizationStyleResponse) {
+    option (google.api.http) = {get: "/v1/orgs/{org}/kairos-style"};
+  }
+
+  // UpdateOrganizationStyle sets an organization's Kairos Style; an empty style restores the default.
+  rpc UpdateOrganizationStyle(UpdateOrganizationStyleRequest) returns (UpdateOrganizationStyleResponse) {
+    option (google.api.http) = {
+      put: "/v1/orgs/{org}/kairos-style",
+      body: "*"
+    };
+  }
+
   // ListBookmarks lists all the bookmarks for the user and global ones for dashboard
   rpc ListBookmarks(ListBookmarksRequest) returns (ListBookmarksResponse) {
     option (google.api.http) = {get: "/v1/users/bookmarks"};
@@ -4191,4 +4205,23 @@ message BillingIssueMetadataTrialCreditsDepleted {
 
 message BillingIssueMetadataMessage {
   string message = 1;
+}
+
+// Kairos Styles (kairos-cloud#242). At the end of the file so the generated message indexes upstream owns don't shift.
+message GetOrganizationStyleRequest {
+  string org = 1 [(validate.rules).string.min_len = 1];
+}
+
+message GetOrganizationStyleResponse {
+  string style = 1;
+}
+
+message UpdateOrganizationStyleRequest {
+  string org = 1 [(validate.rules).string.min_len = 1];
+  // Keep in step with STYLES in web-common/src/features/kairos-styles/styles.ts (scripts/style-guard.js checks it).
+  string style = 2 [(validate.rules).string = {ignore_empty: true, in: ["kairos-v1", "kairos", "aurora"]}];
+}
+
+message UpdateOrganizationStyleResponse {
+  string style = 1;
 }

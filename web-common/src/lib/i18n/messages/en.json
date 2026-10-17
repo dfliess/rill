@@ -2358,6 +2358,8 @@
   "kairos_style_kairos": "Kairos",
   "kairos_style_kairos_v1": "Kairos v1",
   "kairos_style_label": "Appearance",
+  "kairos_style_org_description": "The look your members get. Each member can still pick their own from their avatar menu.",
+  "kairos_style_org_title": "Appearance",
   "kairos_style_org_default": "Organization default",
   "time_ago": "{duration} ago",
   "time_all_time": "All time",

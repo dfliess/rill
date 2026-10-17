@@ -724,6 +724,11 @@ func (s *Server) GetIFrame(ctx context.Context, req *adminv1.GetIFrameRequest) (
 		return nil, err
 	}
 
+	// Kairos: embeds look like their organization's app (kairos-cloud#242).
+	if err := s.addOrganizationStyle(ctx, org.ID, iframeQuery); err != nil {
+		return nil, err
+	}
+
 	iFrameURL, err := s.admin.URLs.WithCustomDomain(org.CustomDomain).Embed(iframeQuery)
 	if err != nil {
 		return nil, err

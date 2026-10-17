@@ -155,6 +155,8 @@ const (
 	AdminService_ListNotificationPreferences_FullMethodName              = "/rill.admin.v1.AdminService/ListNotificationPreferences"
 	AdminService_GetNotificationPreferences_FullMethodName               = "/rill.admin.v1.AdminService/GetNotificationPreferences"
 	AdminService_UpdateNotificationPreferences_FullMethodName            = "/rill.admin.v1.AdminService/UpdateNotificationPreferences"
+	AdminService_GetOrganizationStyle_FullMethodName                     = "/rill.admin.v1.AdminService/GetOrganizationStyle"
+	AdminService_UpdateOrganizationStyle_FullMethodName                  = "/rill.admin.v1.AdminService/UpdateOrganizationStyle"
 	AdminService_ListBookmarks_FullMethodName                            = "/rill.admin.v1.AdminService/ListBookmarks"
 	AdminService_GetBookmark_FullMethodName                              = "/rill.admin.v1.AdminService/GetBookmark"
 	AdminService_CreateBookmark_FullMethodName                           = "/rill.admin.v1.AdminService/CreateBookmark"
@@ -501,6 +503,11 @@ type AdminServiceClient interface {
 	GetNotificationPreferences(ctx context.Context, in *GetNotificationPreferencesRequest, opts ...grpc.CallOption) (*GetNotificationPreferencesResponse, error)
 	// UpdateNotificationPreferences updates the current user's per-category notification preferences in an organization.
 	UpdateNotificationPreferences(ctx context.Context, in *UpdateNotificationPreferencesRequest, opts ...grpc.CallOption) (*UpdateNotificationPreferencesResponse, error)
+	// GetOrganizationStyle returns the Kairos Style an organization paints its app with (kairos-cloud#242).
+	// An empty style means the default.
+	GetOrganizationStyle(ctx context.Context, in *GetOrganizationStyleRequest, opts ...grpc.CallOption) (*GetOrganizationStyleResponse, error)
+	// UpdateOrganizationStyle sets an organization's Kairos Style; an empty style restores the default.
+	UpdateOrganizationStyle(ctx context.Context, in *UpdateOrganizationStyleRequest, opts ...grpc.CallOption) (*UpdateOrganizationStyleResponse, error)
 	// ListBookmarks lists all the bookmarks for the user and global ones for dashboard
 	ListBookmarks(ctx context.Context, in *ListBookmarksRequest, opts ...grpc.CallOption) (*ListBookmarksResponse, error)
 	// GetBookmark returns the bookmark for the given user for the given project
@@ -1955,6 +1962,26 @@ func (c *adminServiceClient) UpdateNotificationPreferences(ctx context.Context, 
 	return out, nil
 }
 
+func (c *adminServiceClient) GetOrganizationStyle(ctx context.Context, in *GetOrganizationStyleRequest, opts ...grpc.CallOption) (*GetOrganizationStyleResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetOrganizationStyleResponse)
+	err := c.cc.Invoke(ctx, AdminService_GetOrganizationStyle_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) UpdateOrganizationStyle(ctx context.Context, in *UpdateOrganizationStyleRequest, opts ...grpc.CallOption) (*UpdateOrganizationStyleResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateOrganizationStyleResponse)
+	err := c.cc.Invoke(ctx, AdminService_UpdateOrganizationStyle_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *adminServiceClient) ListBookmarks(ctx context.Context, in *ListBookmarksRequest, opts ...grpc.CallOption) (*ListBookmarksResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ListBookmarksResponse)
@@ -2686,6 +2713,11 @@ type AdminServiceServer interface {
 	GetNotificationPreferences(context.Context, *GetNotificationPreferencesRequest) (*GetNotificationPreferencesResponse, error)
 	// UpdateNotificationPreferences updates the current user's per-category notification preferences in an organization.
 	UpdateNotificationPreferences(context.Context, *UpdateNotificationPreferencesRequest) (*UpdateNotificationPreferencesResponse, error)
+	// GetOrganizationStyle returns the Kairos Style an organization paints its app with (kairos-cloud#242).
+	// An empty style means the default.
+	GetOrganizationStyle(context.Context, *GetOrganizationStyleRequest) (*GetOrganizationStyleResponse, error)
+	// UpdateOrganizationStyle sets an organization's Kairos Style; an empty style restores the default.
+	UpdateOrganizationStyle(context.Context, *UpdateOrganizationStyleRequest) (*UpdateOrganizationStyleResponse, error)
 	// ListBookmarks lists all the bookmarks for the user and global ones for dashboard
 	ListBookmarks(context.Context, *ListBookmarksRequest) (*ListBookmarksResponse, error)
 	// GetBookmark returns the bookmark for the given user for the given project
@@ -3187,6 +3219,12 @@ func (UnimplementedAdminServiceServer) GetNotificationPreferences(context.Contex
 }
 func (UnimplementedAdminServiceServer) UpdateNotificationPreferences(context.Context, *UpdateNotificationPreferencesRequest) (*UpdateNotificationPreferencesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateNotificationPreferences not implemented")
+}
+func (UnimplementedAdminServiceServer) GetOrganizationStyle(context.Context, *GetOrganizationStyleRequest) (*GetOrganizationStyleResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetOrganizationStyle not implemented")
+}
+func (UnimplementedAdminServiceServer) UpdateOrganizationStyle(context.Context, *UpdateOrganizationStyleRequest) (*UpdateOrganizationStyleResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateOrganizationStyle not implemented")
 }
 func (UnimplementedAdminServiceServer) ListBookmarks(context.Context, *ListBookmarksRequest) (*ListBookmarksResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListBookmarks not implemented")
@@ -5786,6 +5824,42 @@ func _AdminService_UpdateNotificationPreferences_Handler(srv interface{}, ctx co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AdminService_GetOrganizationStyle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetOrganizationStyleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).GetOrganizationStyle(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_GetOrganizationStyle_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).GetOrganizationStyle(ctx, req.(*GetOrganizationStyleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_UpdateOrganizationStyle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateOrganizationStyleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).UpdateOrganizationStyle(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_UpdateOrganizationStyle_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).UpdateOrganizationStyle(ctx, req.(*UpdateOrganizationStyleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _AdminService_ListBookmarks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListBookmarksRequest)
 	if err := dec(in); err != nil {
@@ -7110,6 +7184,14 @@ var AdminService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateNotificationPreferences",
 			Handler:    _AdminService_UpdateNotificationPreferences_Handler,
+		},
+		{
+			MethodName: "GetOrganizationStyle",
+			Handler:    _AdminService_GetOrganizationStyle_Handler,
+		},
+		{
+			MethodName: "UpdateOrganizationStyle",
+			Handler:    _AdminService_UpdateOrganizationStyle_Handler,
 		},
 		{
 			MethodName: "ListBookmarks",

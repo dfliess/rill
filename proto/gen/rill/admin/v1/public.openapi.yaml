@@ -923,6 +923,11 @@ components:
                 permissions:
                     $ref: '#/components/schemas/v1OrganizationPermissions'
             type: object
+        v1GetOrganizationStyleResponse:
+            properties:
+                style:
+                    type: string
+            type: object
         v1GetPaymentsPortalURLResponse:
             properties:
                 url:
@@ -2644,6 +2649,11 @@ components:
                 organization:
                     $ref: '#/components/schemas/v1Organization'
             type: object
+        v1UpdateOrganizationStyleResponse:
+            properties:
+                style:
+                    type: string
+            type: object
         v1UpdateProjectResponse:
             properties:
                 project:
@@ -3017,6 +3027,7 @@ paths:
                     description: An unexpected error response.
             summary: ListOrganizationInvites lists all the org invites
             x-visibility: public
+    /v1/orgs/{org}/kairos-style: {}
     /v1/orgs/{org}/members:
         get:
             operationId: AdminService_ListOrganizationMemberUsers

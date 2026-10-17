@@ -82,4 +82,13 @@ describe("styleControl", () => {
     expect(refresh).toHaveBeenCalledTimes(1);
     refresh.mockRestore();
   });
+
+  it("an embed paints its URL parameter, never the viewer's choice", () => {
+    styleControl.setPreference("aurora");
+    styleControl.setEmbed("kairos-v1");
+    expect(get(styleControl)).toBe("kairos-v1");
+
+    styleControl.setEmbed(null);
+    expect(get(styleControl)).toBe(DEFAULT_STYLE);
+  });
 });

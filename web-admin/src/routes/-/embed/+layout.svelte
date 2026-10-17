@@ -11,6 +11,7 @@
   import { VegaLiteTooltipHandler } from "@rilldata/web-common/components/vega/vega-tooltip.ts";
   import { ResourceKind } from "@rilldata/web-common/features/entity-management/resource-selectors.ts";
   import { featureFlags } from "@rilldata/web-common/features/feature-flags";
+  import { styleControl } from "@rilldata/web-common/features/kairos-styles/style-control";
   import DashboardChat from "@rilldata/web-common/features/chat/DashboardChat.svelte";
   import ThemeProvider from "@rilldata/web-common/features/dashboards/ThemeProvider.svelte";
   import { activeDashboardTheme } from "@rilldata/web-common/features/themes/active-dashboard-theme";
@@ -36,6 +37,9 @@
   } = data;
 
   const { dashboardChat } = featureFlags;
+
+  // Kairos: the Style comes from the URL, where GetIFrame puts the Org's (kairos-cloud#242).
+  styleControl.setEmbed($page.url.searchParams.get("kairos_style"));
 
   // Embedded dashboards communicate directly with the project runtime and do not communicate with the admin server.
   // One by-product of this is that they have no access to control plane features like alerts, bookmarks, and scheduled reports.

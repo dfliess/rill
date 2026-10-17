@@ -55147,6 +55147,465 @@ var _ interface {
 	ErrorName() string
 } = BillingIssueMetadataMessageValidationError{}
 
+// Validate checks the field values on GetOrganizationStyleRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetOrganizationStyleRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetOrganizationStyleRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetOrganizationStyleRequestMultiError, or nil if none found.
+func (m *GetOrganizationStyleRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetOrganizationStyleRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetOrg()) < 1 {
+		err := GetOrganizationStyleRequestValidationError{
+			field:  "Org",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return GetOrganizationStyleRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetOrganizationStyleRequestMultiError is an error wrapping multiple
+// validation errors returned by GetOrganizationStyleRequest.ValidateAll() if
+// the designated constraints aren't met.
+type GetOrganizationStyleRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetOrganizationStyleRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetOrganizationStyleRequestMultiError) AllErrors() []error { return m }
+
+// GetOrganizationStyleRequestValidationError is the validation error returned
+// by GetOrganizationStyleRequest.Validate if the designated constraints
+// aren't met.
+type GetOrganizationStyleRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetOrganizationStyleRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetOrganizationStyleRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetOrganizationStyleRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetOrganizationStyleRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetOrganizationStyleRequestValidationError) ErrorName() string {
+	return "GetOrganizationStyleRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetOrganizationStyleRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetOrganizationStyleRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetOrganizationStyleRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetOrganizationStyleRequestValidationError{}
+
+// Validate checks the field values on GetOrganizationStyleResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetOrganizationStyleResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetOrganizationStyleResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetOrganizationStyleResponseMultiError, or nil if none found.
+func (m *GetOrganizationStyleResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetOrganizationStyleResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Style
+
+	if len(errors) > 0 {
+		return GetOrganizationStyleResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetOrganizationStyleResponseMultiError is an error wrapping multiple
+// validation errors returned by GetOrganizationStyleResponse.ValidateAll() if
+// the designated constraints aren't met.
+type GetOrganizationStyleResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetOrganizationStyleResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetOrganizationStyleResponseMultiError) AllErrors() []error { return m }
+
+// GetOrganizationStyleResponseValidationError is the validation error returned
+// by GetOrganizationStyleResponse.Validate if the designated constraints
+// aren't met.
+type GetOrganizationStyleResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetOrganizationStyleResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetOrganizationStyleResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetOrganizationStyleResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetOrganizationStyleResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetOrganizationStyleResponseValidationError) ErrorName() string {
+	return "GetOrganizationStyleResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetOrganizationStyleResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetOrganizationStyleResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetOrganizationStyleResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetOrganizationStyleResponseValidationError{}
+
+// Validate checks the field values on UpdateOrganizationStyleRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *UpdateOrganizationStyleRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on UpdateOrganizationStyleRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// UpdateOrganizationStyleRequestMultiError, or nil if none found.
+func (m *UpdateOrganizationStyleRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *UpdateOrganizationStyleRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetOrg()) < 1 {
+		err := UpdateOrganizationStyleRequestValidationError{
+			field:  "Org",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if m.GetStyle() != "" {
+
+		if _, ok := _UpdateOrganizationStyleRequest_Style_InLookup[m.GetStyle()]; !ok {
+			err := UpdateOrganizationStyleRequestValidationError{
+				field:  "Style",
+				reason: "value must be in list [kairos-v1 kairos aurora]",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return UpdateOrganizationStyleRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// UpdateOrganizationStyleRequestMultiError is an error wrapping multiple
+// validation errors returned by UpdateOrganizationStyleRequest.ValidateAll()
+// if the designated constraints aren't met.
+type UpdateOrganizationStyleRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m UpdateOrganizationStyleRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m UpdateOrganizationStyleRequestMultiError) AllErrors() []error { return m }
+
+// UpdateOrganizationStyleRequestValidationError is the validation error
+// returned by UpdateOrganizationStyleRequest.Validate if the designated
+// constraints aren't met.
+type UpdateOrganizationStyleRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e UpdateOrganizationStyleRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e UpdateOrganizationStyleRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e UpdateOrganizationStyleRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e UpdateOrganizationStyleRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e UpdateOrganizationStyleRequestValidationError) ErrorName() string {
+	return "UpdateOrganizationStyleRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e UpdateOrganizationStyleRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sUpdateOrganizationStyleRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = UpdateOrganizationStyleRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = UpdateOrganizationStyleRequestValidationError{}
+
+var _UpdateOrganizationStyleRequest_Style_InLookup = map[string]struct{}{
+	"kairos-v1": {},
+	"kairos":    {},
+	"aurora":    {},
+}
+
+// Validate checks the field values on UpdateOrganizationStyleResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *UpdateOrganizationStyleResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on UpdateOrganizationStyleResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// UpdateOrganizationStyleResponseMultiError, or nil if none found.
+func (m *UpdateOrganizationStyleResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *UpdateOrganizationStyleResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Style
+
+	if len(errors) > 0 {
+		return UpdateOrganizationStyleResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// UpdateOrganizationStyleResponseMultiError is an error wrapping multiple
+// validation errors returned by UpdateOrganizationStyleResponse.ValidateAll()
+// if the designated constraints aren't met.
+type UpdateOrganizationStyleResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m UpdateOrganizationStyleResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m UpdateOrganizationStyleResponseMultiError) AllErrors() []error { return m }
+
+// UpdateOrganizationStyleResponseValidationError is the validation error
+// returned by UpdateOrganizationStyleResponse.Validate if the designated
+// constraints aren't met.
+type UpdateOrganizationStyleResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e UpdateOrganizationStyleResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e UpdateOrganizationStyleResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e UpdateOrganizationStyleResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e UpdateOrganizationStyleResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e UpdateOrganizationStyleResponseValidationError) ErrorName() string {
+	return "UpdateOrganizationStyleResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e UpdateOrganizationStyleResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sUpdateOrganizationStyleResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = UpdateOrganizationStyleResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = UpdateOrganizationStyleResponseValidationError{}
+
 // Validate checks the field values on ListGithubUserReposResponse_Repo with
 // the rules defined in the proto definition for this message. If any rules
 // are violated, the first error encountered is returned, or nil if there are

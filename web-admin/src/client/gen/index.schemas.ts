@@ -731,6 +731,10 @@ export interface V1GetOrganizationResponse {
   permissions?: V1OrganizationPermissions;
 }
 
+export interface V1GetOrganizationStyleResponse {
+  style?: string;
+}
+
 export interface V1GetPaymentsPortalURLResponse {
   url?: string;
 }
@@ -1895,6 +1899,10 @@ export interface V1UpdateOrganizationResponse {
   organization?: V1Organization;
 }
 
+export interface V1UpdateOrganizationStyleResponse {
+  style?: string;
+}
+
 export interface V1UpdateProjectResponse {
   project?: V1Project;
 }
@@ -2134,6 +2142,11 @@ export type AdminServiceCreateAssetBody = {
 export type AdminServiceListOrganizationInvitesParams = {
   pageSize?: number;
   pageToken?: string;
+};
+
+export type AdminServiceUpdateOrganizationStyleBody = {
+  /** Keep in step with STYLES in web-common/src/features/kairos-styles/styles.ts (scripts/style-guard.js checks it). */
+  style?: string;
 };
 
 export type AdminServiceListOrganizationMemberUsersParams = {

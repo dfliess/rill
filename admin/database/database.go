@@ -244,6 +244,11 @@ type DB interface {
 	FindNotificationPreferencesForUser(ctx context.Context, userID string) ([]*OrganizationNotificationPreferences, error)
 	UpsertNotificationPreferences(ctx context.Context, userID, orgID string, opts *UpsertNotificationPreferencesOptions) (*NotificationPreferences, error)
 
+	// FindOrganizationStyle returns an organization's Kairos Style, or "" when it uses the default (kairos-cloud#242).
+	FindOrganizationStyle(ctx context.Context, orgID string) (string, error)
+	// UpdateOrganizationStyle sets an organization's Kairos Style; "" restores the default.
+	UpdateOrganizationStyle(ctx context.Context, orgID, style string) error
+
 	FindDeviceAuthCodeByDeviceCode(ctx context.Context, deviceCode string) (*DeviceAuthCode, error)
 	FindPendingDeviceAuthCodeByUserCode(ctx context.Context, userCode string) (*DeviceAuthCode, error)
 	InsertDeviceAuthCode(ctx context.Context, deviceCode, userCode, clientID string, expiresOn time.Time) (*DeviceAuthCode, error)

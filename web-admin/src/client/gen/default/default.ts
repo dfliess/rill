@@ -103,6 +103,7 @@ import type {
   AdminServiceUpdateNotificationPreferencesBody,
   AdminServiceUpdateOrganizationBody,
   AdminServiceUpdateOrganizationMemberUserAttributesBody,
+  AdminServiceUpdateOrganizationStyleBody,
   AdminServiceUpdateProjectBody,
   AdminServiceUpdateProjectVariablesBody,
   AdminServiceUpdateServiceBody,
@@ -174,6 +175,7 @@ import type {
   V1GetOrganizationMemberUserResponse,
   V1GetOrganizationNameForDomainResponse,
   V1GetOrganizationResponse,
+  V1GetOrganizationStyleResponse,
   V1GetPaymentsPortalURLResponse,
   V1GetPersonalFileResponse,
   V1GetProjectAccessRequestResponse,
@@ -305,6 +307,7 @@ import type {
   V1UpdateNotificationPreferencesResponse,
   V1UpdateOrganizationMemberUserAttributesResponse,
   V1UpdateOrganizationResponse,
+  V1UpdateOrganizationStyleResponse,
   V1UpdateProjectResponse,
   V1UpdateProjectVariablesResponse,
   V1UpdateServiceResponse,
@@ -3355,6 +3358,190 @@ export function createAdminServiceListOrganizationInvites<
   return query;
 }
 
+/**
+ * @summary GetOrganizationStyle returns the Kairos Style an organization paints its app with (kairos-cloud#242).
+An empty style means the default.
+ */
+export const adminServiceGetOrganizationStyle = (
+  org: string,
+  signal?: AbortSignal,
+) => {
+  return httpClient<V1GetOrganizationStyleResponse>({
+    url: `/v1/orgs/${org}/kairos-style`,
+    method: "GET",
+    signal,
+  });
+};
+
+export const getAdminServiceGetOrganizationStyleQueryKey = (org?: string) => {
+  return [`/v1/orgs/${org}/kairos-style`] as const;
+};
+
+export const getAdminServiceGetOrganizationStyleQueryOptions = <
+  TData = Awaited<ReturnType<typeof adminServiceGetOrganizationStyle>>,
+  TError = RpcStatus,
+>(
+  org: string,
+  options?: {
+    query?: Partial<
+      CreateQueryOptions<
+        Awaited<ReturnType<typeof adminServiceGetOrganizationStyle>>,
+        TError,
+        TData
+      >
+    >;
+  },
+) => {
+  const { query: queryOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getAdminServiceGetOrganizationStyleQueryKey(org);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof adminServiceGetOrganizationStyle>>
+  > = ({ signal }) => adminServiceGetOrganizationStyle(org, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!org,
+    ...queryOptions,
+  } as CreateQueryOptions<
+    Awaited<ReturnType<typeof adminServiceGetOrganizationStyle>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AdminServiceGetOrganizationStyleQueryResult = NonNullable<
+  Awaited<ReturnType<typeof adminServiceGetOrganizationStyle>>
+>;
+export type AdminServiceGetOrganizationStyleQueryError = RpcStatus;
+
+/**
+ * @summary GetOrganizationStyle returns the Kairos Style an organization paints its app with (kairos-cloud#242).
+An empty style means the default.
+ */
+
+export function createAdminServiceGetOrganizationStyle<
+  TData = Awaited<ReturnType<typeof adminServiceGetOrganizationStyle>>,
+  TError = RpcStatus,
+>(
+  org: string,
+  options?: {
+    query?: Partial<
+      CreateQueryOptions<
+        Awaited<ReturnType<typeof adminServiceGetOrganizationStyle>>,
+        TError,
+        TData
+      >
+    >;
+  },
+  queryClient?: QueryClient,
+): CreateQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getAdminServiceGetOrganizationStyleQueryOptions(
+    org,
+    options,
+  );
+
+  const query = createQuery(queryOptions, queryClient) as CreateQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary UpdateOrganizationStyle sets an organization's Kairos Style; an empty style restores the default.
+ */
+export const adminServiceUpdateOrganizationStyle = (
+  org: string,
+  adminServiceUpdateOrganizationStyleBody: AdminServiceUpdateOrganizationStyleBody,
+) => {
+  return httpClient<V1UpdateOrganizationStyleResponse>({
+    url: `/v1/orgs/${org}/kairos-style`,
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    data: adminServiceUpdateOrganizationStyleBody,
+  });
+};
+
+export const getAdminServiceUpdateOrganizationStyleMutationOptions = <
+  TError = RpcStatus,
+  TContext = unknown,
+>(options?: {
+  mutation?: CreateMutationOptions<
+    Awaited<ReturnType<typeof adminServiceUpdateOrganizationStyle>>,
+    TError,
+    { org: string; data: AdminServiceUpdateOrganizationStyleBody },
+    TContext
+  >;
+}): CreateMutationOptions<
+  Awaited<ReturnType<typeof adminServiceUpdateOrganizationStyle>>,
+  TError,
+  { org: string; data: AdminServiceUpdateOrganizationStyleBody },
+  TContext
+> => {
+  const mutationKey = ["adminServiceUpdateOrganizationStyle"];
+  const { mutation: mutationOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey } };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminServiceUpdateOrganizationStyle>>,
+    { org: string; data: AdminServiceUpdateOrganizationStyleBody }
+  > = (props) => {
+    const { org, data } = props ?? {};
+
+    return adminServiceUpdateOrganizationStyle(org, data);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminServiceUpdateOrganizationStyleMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminServiceUpdateOrganizationStyle>>
+>;
+export type AdminServiceUpdateOrganizationStyleMutationBody =
+  AdminServiceUpdateOrganizationStyleBody;
+export type AdminServiceUpdateOrganizationStyleMutationError = RpcStatus;
+
+/**
+ * @summary UpdateOrganizationStyle sets an organization's Kairos Style; an empty style restores the default.
+ */
+export const createAdminServiceUpdateOrganizationStyle = <
+  TError = RpcStatus,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: CreateMutationOptions<
+      Awaited<ReturnType<typeof adminServiceUpdateOrganizationStyle>>,
+      TError,
+      { org: string; data: AdminServiceUpdateOrganizationStyleBody },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): CreateMutationResult<
+  Awaited<ReturnType<typeof adminServiceUpdateOrganizationStyle>>,
+  TError,
+  { org: string; data: AdminServiceUpdateOrganizationStyleBody },
+  TContext
+> => {
+  const mutationOptions =
+    getAdminServiceUpdateOrganizationStyleMutationOptions(options);
+
+  return createMutation(mutationOptions, queryClient);
+};
 /**
  * @summary ListOrganizationMemberUsers lists all the org members
  */

@@ -923,6 +923,11 @@ components:
                 permissions:
                     $ref: '#/components/schemas/v1OrganizationPermissions'
             type: object
+        v1GetOrganizationStyleResponse:
+            properties:
+                style:
+                    type: string
+            type: object
         v1GetPaymentsPortalURLResponse:
             properties:
                 url:
@@ -2644,6 +2649,11 @@ components:
                 organization:
                     $ref: '#/components/schemas/v1Organization'
             type: object
+        v1UpdateOrganizationStyleResponse:
+            properties:
+                style:
+                    type: string
+            type: object
         v1UpdateProjectResponse:
             properties:
                 project:
@@ -3753,6 +3763,64 @@ paths:
                     description: An unexpected error response.
             summary: ListOrganizationInvites lists all the org invites
             x-visibility: public
+    /v1/orgs/{org}/kairos-style:
+        get:
+            operationId: AdminService_GetOrganizationStyle
+            parameters:
+                - in: path
+                  name: org
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/v1GetOrganizationStyleResponse'
+                    description: A successful response.
+                default:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/rpcStatus'
+                    description: An unexpected error response.
+            summary: |-
+                GetOrganizationStyle returns the Kairos Style an organization paints its app with (kairos-cloud#242).
+                An empty style means the default.
+        put:
+            operationId: AdminService_UpdateOrganizationStyle
+            parameters:
+                - in: path
+                  name: org
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            properties:
+                                style:
+                                    description: Keep in step with STYLES in web-common/src/features/kairos-styles/styles.ts (scripts/style-guard.js checks it).
+                                    type: string
+                            type: object
+                required: true
+                x-originalParamName: body
+            responses:
+                "200":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/v1UpdateOrganizationStyleResponse'
+                    description: A successful response.
+                default:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/rpcStatus'
+                    description: An unexpected error response.
+            summary: UpdateOrganizationStyle sets an organization's Kairos Style; an empty style restores the default.
     /v1/orgs/{org}/members:
         get:
             operationId: AdminService_ListOrganizationMemberUsers
