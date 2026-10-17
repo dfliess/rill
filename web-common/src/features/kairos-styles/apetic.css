@@ -1,0 +1,242 @@
+/*
+ * Style "apetic": a customer-branded demo, from apetic.pe. Its cyan
+ * (#00a2df, the logo and buttons) and navy (#002b48, the menu text), white
+ * pages, Spectral headings, Karla text and Poppins actions. In light the
+ * header is a navy band (light again under an Org logo, which is drawn for
+ * a light header); card titles carry the short cyan rule the site puts
+ * before its section labels.
+ */
+:root[data-kairos-style="apetic"] {
+  --radius: 4px;
+  --kairos-radius-default: 4px;
+
+  /* Cyan palettes in the order Rill reads them. */
+  --color-primary-light-50: #e6f7fd;
+  --color-primary-light-100: #c2ecfa;
+  --color-primary-light-200: #8ddcf5;
+  --color-primary-light-300: #4fc8ee;
+  --color-primary-light-400: #1bb3e7;
+  --color-primary-light-500: #00a2df;
+  --color-primary-light-600: #0089c0;
+  --color-primary-light-700: #006f9c;
+  --color-primary-light-800: #005a80;
+  --color-primary-light-900: #004a69;
+  --color-primary-light-950: #002f44;
+
+  --color-primary-dark-50: #002f44;
+  --color-primary-dark-100: #004a69;
+  --color-primary-dark-200: #005a80;
+  --color-primary-dark-300: #006f9c;
+  --color-primary-dark-400: #0089c0;
+  --color-primary-dark-500: #00a2df;
+  --color-primary-dark-600: #1bb3e7;
+  --color-primary-dark-700: #4fc8ee;
+  --color-primary-dark-800: #8ddcf5;
+  --color-primary-dark-900: #c2ecfa;
+  --color-primary-dark-950: #e6f7fd;
+
+  &:not(.dark) {
+    --surface-base: #f4f6f9;
+    --surface-background: #f4f6f9;
+    --surface-subtle: #eaeef3;
+    --surface-card: #ffffff;
+    --surface-overlay: #ffffff;
+    --surface-muted: #eaeef3;
+    --surface-hover: #e6f7fd;
+    --surface-active: #c2ecfa;
+
+    --popover: #ffffff;
+    --popover-footer: #f4f6f9;
+    --tooltip: #ffffff;
+
+    --fg-primary: #121212;
+    --fg-secondary: #33404d;
+    --fg-tertiary: #5f6b77;
+    --fg-muted: #5f6b77;
+    --fg-accent: #006f9c;
+    --fg-inverse: #ffffff;
+
+    --icon-default: #33404d;
+    --icon-muted: #5f6b77;
+    --icon-accent: #0089c0;
+
+    --accent-primary: #00a2df;
+    --accent-primary-action: #0089c0;
+    --accent-secondary: #002b48;
+    --accent-secondary-action: #00396f;
+    --ring-focus: #00a2df;
+
+    --border: #dde3ea;
+    --input: #ffffff;
+
+    --kpi-positive: #0f7a4a;
+    --kpi-negative: #c0392b;
+
+    --kairos-chart-grid: #e6ebf0;
+    --kairos-chart-axis: #5f6b77;
+    --kairos-title: #121212;
+    --kairos-brand: #00a2df;
+    --kairos-brand-ink: #002b48;
+  }
+
+  &.dark {
+    --surface-base: #061726;
+    --surface-background: #061726;
+    --surface-subtle: #0a1e31;
+    --surface-card: #0b2238;
+    --surface-overlay: #0f2a44;
+    --surface-muted: #0a1e31;
+    --surface-hover: #10304d;
+    --surface-active: #143a5c;
+
+    --popover: #0f2a44;
+    --popover-footer: #0a1e31;
+    --tooltip: #0f2a44;
+
+    --fg-primary: #eaf2f8;
+    --fg-secondary: #c3d2df;
+    --fg-tertiary: #8ea3b6;
+    --fg-muted: #8ea3b6;
+    --fg-accent: #4fc8ee;
+    --fg-inverse: #061726;
+
+    --icon-default: #c3d2df;
+    --icon-muted: #8ea3b6;
+    --icon-accent: #33b8ea;
+
+    --accent-primary: #33b8ea;
+    --accent-primary-action: #33b8ea;
+    --accent-secondary: #8ddcf5;
+    --accent-secondary-action: #8ddcf5;
+    --ring-focus: #33b8ea;
+
+    --border: #1a3550;
+    --input: #08192a;
+
+    --kpi-positive: #3ccf8e;
+    --kpi-negative: #ff7a6b;
+
+    --kairos-chart-grid: #14304a;
+    --kairos-chart-axis: #8ea3b6;
+    --kairos-title: #eaf2f8;
+    --kairos-brand: #33b8ea;
+    --kairos-brand-ink: #eaf2f8;
+  }
+
+  & body {
+    font-family: "Karla", system-ui, sans-serif;
+  }
+
+  /* The navy header band in light mode. Not under an Org logo. */
+  &:not(.dark):not(:has(.kairos-org-logo))
+    :is(.kairos-app-header, .tabs-container) {
+    --surface-base: #002b48;
+    --surface-background: #002b48;
+    --surface-hover: #00396f;
+    --surface-active: #00396f;
+    --fg-primary: #ffffff;
+    --fg-secondary: #d4e3ef;
+    --fg-tertiary: #a6bccf;
+    --fg-muted: #a6bccf;
+    --fg-accent: #4fc8ee;
+    --icon-default: #d4e3ef;
+    --icon-muted: #a6bccf;
+    --border: #0d3c60;
+    --accent-primary-action: #33b8ea;
+    --color-gray-50: #002b48;
+    --color-gray-100: #00396f;
+    --color-gray-200: #0d3c60;
+
+    background-color: var(--surface-base);
+    border-color: var(--surface-base);
+
+    & .kairos-logo-on-light {
+      display: none;
+    }
+    & .kairos-symbol-ink {
+      fill: var(--fg-primary);
+    }
+  }
+
+  @media (min-width: 640px) {
+    &:not(.dark) .kairos-app-header .kairos-logo-on-dark {
+      display: block;
+    }
+  }
+
+  & :is(.component-card, .kairos-home-box) {
+    border-radius: 6px;
+    box-shadow: none;
+  }
+
+  & :is(.component-header-container .title, .kairos-home-box-title) {
+    font-family: "Spectral", Georgia, serif;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--kairos-title);
+
+    &::before {
+      content: "";
+      display: inline-block;
+      width: 16px;
+      height: 2px;
+      margin-right: 8px;
+      vertical-align: middle;
+      background-color: var(--kairos-brand);
+    }
+  }
+
+  & .big-number {
+    font-family: "Poppins", "Karla", sans-serif;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  &
+    :is(button, a):is(
+      .primary,
+      .secondary,
+      .secondary-destructive,
+      .tertiary,
+      .ghost,
+      .destructive,
+      .neutral,
+      .toolbar
+    ):not(.circle, .rounded) {
+    border-radius: var(--radius);
+    font-family: "Poppins", "Karla", sans-serif;
+    font-weight: 600;
+  }
+
+  & .suggested-prompt {
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background-color: var(--surface-card);
+  }
+
+  & .suggested-prompt-label {
+    font-family: "Poppins", "Karla", sans-serif;
+    font-weight: 600;
+    color: var(--kairos-brand-ink);
+  }
+
+  & :is(.agent-note li, .kairos-home-box li)::marker {
+    color: var(--kairos-brand);
+  }
+
+  & .kairos-home-menu .item {
+    border-radius: var(--radius);
+  }
+
+  & .kairos-home-menu .item.active {
+    background-color: var(--surface-hover);
+    box-shadow: inset 3px 0 0 var(--kairos-brand);
+  }
+
+  & .chip.time {
+    border-color: var(--border);
+  }
+}

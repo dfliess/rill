@@ -16,6 +16,7 @@
 @import "./editorial.css";
 @import "./lumen.css";
 @import "./glass.css";
+@import "./apetic.css";
 
 /* Shared by every Style: inputs take the --input token (Rill leaves some on
    the browser's white). :where() keeps the specificity of a base rule. */

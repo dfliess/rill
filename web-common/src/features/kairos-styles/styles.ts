@@ -13,6 +13,7 @@ export const STYLES = [
   "editorial",
   "lumen",
   "glass",
+  "apetic",
 ] as const;
 
 export type StyleId = (typeof STYLES)[number];

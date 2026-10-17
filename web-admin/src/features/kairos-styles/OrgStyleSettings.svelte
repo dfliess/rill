@@ -28,6 +28,7 @@
     editorial: m.kairos_style_editorial,
     lumen: m.kairos_style_lumen,
     glass: m.kairos_style_glass,
+    apetic: m.kairos_style_apetic,
   };
   const options = STYLES.map((style) => ({
     value: style,
