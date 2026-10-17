@@ -112,13 +112,20 @@ for (const [style, modes] of Object.entries(EXPECTED)) {
         root.classList.toggle("dark", mode === "dark");
         // Any CSS color (oklab, color-mix, …) as [r, g, b], through a canvas.
         const ctx = document.createElement("canvas").getContext("2d");
+        if (!ctx) throw new Error("no 2d canvas");
         const rgb = (color) => {
           ctx.clearRect(0, 0, 1, 1);
           ctx.fillStyle = color;
           ctx.fillRect(0, 0, 1, 1);
           return [...ctx.getImageData(0, 0, 1, 1).data.slice(0, 3)];
         };
-        const cs = (id) => getComputedStyle(document.getElementById(id));
+        // A fixture element gone missing must fail loudly, not compare against nothing.
+        const el = (id) => {
+          const found = document.getElementById(id);
+          if (!found) throw new Error(`the fixture lacks #${id}`);
+          return found;
+        };
+        const cs = (id) => getComputedStyle(el(id));
         return {
           page: rgb(cs("page").backgroundColor),
           card: rgb(cs("card").backgroundColor),
@@ -145,7 +152,7 @@ for (const [style, modes] of Object.entries(EXPECTED)) {
           // The PDF rasterizes each card alone: its edge must be drawn inside it.
           pdfEdge:
             cs("pdf-card").outlineStyle === "none" &&
-            getComputedStyle(document.getElementById("pdf-card"), "::after").borderTopWidth === "1px"
+            getComputedStyle(el("pdf-card"), "::after").borderTopWidth === "1px"
               ? "inset"
               : "outside",
         };
@@ -154,8 +161,9 @@ for (const [style, modes] of Object.entries(EXPECTED)) {
     );
     for (const [key, want] of Object.entries(expected)) {
       const got = actual[key];
-      const ok = want.startsWith("#")
-        ? want.match(/[0-9a-f]{2}/gi).every((c, i) => Math.abs(parseInt(c, 16) - got[i]) <= 2)
+      const channels = want.startsWith("#") ? want.match(/[0-9a-f]{2}/gi) : null;
+      const ok = channels
+        ? channels.every((c, i) => Math.abs(parseInt(c, 16) - got[i]) <= 2)
         : got === want;
       if (!ok) failures.push(`${style} ${mode} ${key}: expected ${want}, got ${Array.isArray(got) ? `rgb(${got})` : got}`);
     }
