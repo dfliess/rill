@@ -2145,7 +2145,8 @@ export type AdminServiceListOrganizationInvitesParams = {
 };
 
 export type AdminServiceUpdateOrganizationStyleBody = {
-  /** Keep in step with STYLES in web-common/src/features/kairos-styles/styles.ts (scripts/style-guard.js checks it). */
+  /** Empty restores the default. The server checks it against kairosStyles (admin/server/kairos_styles.go),
+so adding a Style never changes this file. */
   style?: string;
 };
 
