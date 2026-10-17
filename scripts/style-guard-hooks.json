@@ -1,0 +1,39 @@
+{
+  "_comment": "Kairos Styles (kairos-cloud#242): every class a Style's CSS targets, and the component file that must keep it. Upstream renaming or dropping one fails scripts/style-guard.js on the sync, instead of a Style silently losing a rule. kairos-* classes are hooks Kairos added; the rest are upstream's own stable names. A hook is checked in the markup (class=\"…\" or class:name); `\"via\": \"style\"` checks a rule of the component's own <style> instead, for classes set from a prop (Button's variant).",
+  "hooks": {
+    "component-card": "web-common/src/features/canvas/CanvasComponent.svelte",
+    "component-header-container": "web-common/src/features/canvas/ComponentHeader.svelte",
+    "title": "web-common/src/features/canvas/ComponentHeader.svelte",
+    "big-number": "web-common/src/features/canvas/components/kpi/KPI.svelte",
+    "agent-note": "web-common/src/features/canvas/components/agent-note/AgentNote.svelte",
+    "suggested-prompt": "web-common/src/features/chat/core/suggested-prompts/SuggestedPrompts.svelte",
+    "suggested-prompt-label": "web-common/src/features/chat/core/suggested-prompts/SuggestedPrompts.svelte",
+    "tabs-container": "web-admin/src/features/projects/ProjectTabs.svelte",
+    "primary": { "file": "web-common/src/components/button/Button.svelte", "via": "style" },
+    "secondary": { "file": "web-common/src/components/button/Button.svelte", "via": "style" },
+    "tertiary": { "file": "web-common/src/components/button/Button.svelte", "via": "style" },
+    "ghost": { "file": "web-common/src/components/button/Button.svelte", "via": "style" },
+    "kairos-app-header": "web-common/src/layout/header/Header.svelte",
+    "kairos-logo-on-light": "web-common/src/layout/header/HeaderLogo.svelte",
+    "kairos-logo-on-dark": "web-common/src/layout/header/HeaderLogo.svelte",
+    "kairos-symbol-ink": "web-common/src/components/icons/RillLogoSquareNegative.svelte",
+    "kairos-home-menu": "web-admin/src/features/kairos-home/HomeMenu.svelte",
+    "item": "web-admin/src/features/kairos-home/HomeMenu.svelte",
+    "active": "web-admin/src/features/kairos-home/HomeMenu.svelte",
+    "kairos-home-box": "web-admin/src/features/kairos-home/HomeBox.svelte",
+    "kairos-home-box-title": "web-admin/src/features/kairos-home/HomeBox.svelte"
+  },
+  "upstreamTokenPrefixes": ["--surface-", "--fg-", "--icon-", "--accent-", "--popover", "--kpi-", "--ring-", "--destructive", "--tooltip", "--border", "--input"],
+  "upstreamTokenBaseline": [
+    "--accent-primary", "--accent-primary-action", "--accent-secondary", "--accent-secondary-action",
+    "--border", "--destructive", "--destructive-foreground",
+    "--fg-accent", "--fg-disabled", "--fg-inverse", "--fg-muted", "--fg-primary", "--fg-secondary", "--fg-tertiary",
+    "--icon-accent", "--icon-default", "--icon-disabled", "--icon-muted",
+    "--input", "--kpi-negative", "--kpi-positive",
+    "--popover", "--popover-accent", "--popover-footer", "--popover-foreground",
+    "--ring-focus", "--ring-offset",
+    "--surface-active", "--surface-background", "--surface-base", "--surface-card", "--surface-hover",
+    "--surface-muted", "--surface-overlay", "--surface-subtle",
+    "--tooltip"
+  ]
+}

@@ -68,7 +68,10 @@
     onUpdate={(w) => homeMenuWidth.set(w)}
   />
   <div class="flex w-full flex-col gap-y-5 overflow-y-auto px-2 py-4">
-    <nav class="flex flex-col gap-y-0.5" aria-label={m.home_menu_label()}>
+    <nav
+      class="kairos-home-menu flex flex-col gap-y-0.5"
+      aria-label={m.home_menu_label()}
+    >
       {#each items as item (item.name)}
         {@const Icon = homeMenuIcon(item.icon)}
         <a

@@ -37,8 +37,12 @@
     <img
       src={kairosLogoLight}
       alt="logo"
-      class="h-7 hidden sm:block sm:dark:hidden"
+      class="kairos-logo-on-light h-7 hidden sm:block sm:dark:hidden"
     />
-    <img src={kairosLogoDark} alt="logo" class="h-7 hidden sm:dark:block" />
+    <img
+      src={kairosLogoDark}
+      alt="logo"
+      class="kairos-logo-on-dark h-7 hidden sm:dark:block"
+    />
   {/if}
 </a>

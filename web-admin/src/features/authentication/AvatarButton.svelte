@@ -30,6 +30,7 @@
   import { m } from "@rilldata/web-common/lib/i18n/gen/messages";
   import ViewAsUserPopover from "../view-as-user/ViewAsUserPopover.svelte";
   import ThemeToggle from "@rilldata/web-common/features/themes/ThemeToggle.svelte";
+  import StyleMenu from "@rilldata/web-common/features/kairos-styles/StyleMenu.svelte";
   import { featureFlags } from "@rilldata/web-common/features/feature-flags";
 
   export let projectPermissions: V1ProjectPermissions | undefined = undefined;
@@ -141,6 +142,7 @@
     {/if}
 
     <ThemeToggle />
+    <StyleMenu />
     <LanguageSwitcher />
     <DropdownMenu.Separator />
 

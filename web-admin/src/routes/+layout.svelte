@@ -31,6 +31,7 @@
   import ErrorBoundary from "../components/errors/ErrorBoundary.svelte";
   import OrgHeader from "../features/organizations/OrgHeader.svelte";
   import "@rilldata/web-common/app.css";
+  import "@rilldata/web-common/features/kairos-styles/style-control";
   import * as Tooltip from "@rilldata/web-common/components/tooltip-v2";
   import { themeControl } from "@rilldata/web-common/features/themes/theme-control";
   import { getThemedLogoUrl } from "@rilldata/web-admin/features/themes/organization-logo";

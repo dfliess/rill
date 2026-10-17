@@ -27,7 +27,13 @@ const THEME_COLORS: Record<"light" | "dark", string> = {
 function applyThemeColor(scheme: "light" | "dark") {
   const meta = document.querySelector('meta[name="theme-color"]');
   // web-local has no such meta; nothing to keep in step there.
-  if (meta instanceof HTMLMetaElement) meta.content = THEME_COLORS[scheme];
+  if (!(meta instanceof HTMLMetaElement)) return;
+  // Each Kairos Style paints its own --surface-base (kairos-styles/); the
+  // constants cover the moment before the stylesheet applies.
+  const base = getComputedStyle(document.documentElement)
+    .getPropertyValue("--surface-base")
+    .trim();
+  meta.content = base || THEME_COLORS[scheme];
 }
 
 class ThemeControl {

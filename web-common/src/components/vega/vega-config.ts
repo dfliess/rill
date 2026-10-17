@@ -29,10 +29,17 @@ export const getRillTheme: (
   isDarkMode?: boolean,
   theme?: Record<string, string>,
 ) => Config = (isDarkMode = false, theme) => {
-  const gridColor = isDarkMode ? colors.dark.grid : colors.light.grid;
-  const axisLabelColor = isDarkMode
-    ? colors.dark.axisLabel
-    : colors.light.axisLabel;
+  // Kairos Styles may tint the neutrals (--kairos-chart-*); Rill's otherwise.
+  const gridColor = resolveCSSVariable(
+    "var(--kairos-chart-grid)",
+    isDarkMode,
+    isDarkMode ? colors.dark.grid : colors.light.grid,
+  );
+  const axisLabelColor = resolveCSSVariable(
+    "var(--kairos-chart-axis)",
+    isDarkMode,
+    isDarkMode ? colors.dark.axisLabel : colors.light.axisLabel,
+  );
 
   // Use provided theme if available, otherwise resolve from CSS variables
   let lineColor: string,

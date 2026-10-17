@@ -32,6 +32,7 @@
     showPreviewNav,
   } from "./route-constants";
   import "@rilldata/web-common/app.css";
+  import "@rilldata/web-common/features/kairos-styles/style-control";
 
   export let data: LayoutData;
 

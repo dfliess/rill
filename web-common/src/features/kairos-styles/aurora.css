@@ -1,0 +1,173 @@
+/*
+ * Style "aurora": rounded cards lifted by soft shadows, a teal accent, pill
+ * buttons and quiet uppercase card labels. Dark is navy-black; light is a
+ * cool grey with white cards. Cards stay a solid color: KPIGrid paints its
+ * gaps with --surface-card (span.border-overlay), which frames a gradient.
+ */
+:root[data-kairos-style="aurora"] {
+  --radius: 12px;
+
+  /* Teal palettes in the order Rill reads them: light 50 is the palest,
+     dark 50 the deepest. */
+  --color-primary-light-50: #f0fdfa;
+  --color-primary-light-100: #ccfbf1;
+  --color-primary-light-200: #99f6e4;
+  --color-primary-light-300: #5eead4;
+  --color-primary-light-400: #14b8a6;
+  --color-primary-light-500: #0d9488;
+  --color-primary-light-600: #0f766e;
+  --color-primary-light-700: #115e59;
+  --color-primary-light-800: #134e4a;
+  --color-primary-light-900: #0f3d3a;
+  --color-primary-light-950: #042f2e;
+
+  --color-primary-dark-50: #042f2e;
+  --color-primary-dark-100: #134e4a;
+  --color-primary-dark-200: #115e59;
+  --color-primary-dark-300: #0f766e;
+  --color-primary-dark-400: #0d9488;
+  --color-primary-dark-500: #14b8a6;
+  --color-primary-dark-600: #2dd4bf;
+  --color-primary-dark-700: #5eead4;
+  --color-primary-dark-800: #99f6e4;
+  --color-primary-dark-900: #ccfbf1;
+  --color-primary-dark-950: #f0fdfa;
+
+  &:not(.dark) {
+    --surface-base: #eef2f5;
+    --surface-background: #eef2f5;
+    --surface-subtle: #e6ecf0;
+    --surface-card: #ffffff;
+    --surface-overlay: #ffffff;
+    --surface-muted: #e6ecf0;
+    --surface-hover: #e3f5f2;
+    --surface-active: #cdeee8;
+
+    --popover: #ffffff;
+    --popover-footer: #f6f9fa;
+
+    --fg-primary: #0f1b24;
+    --fg-secondary: #2d3e4a;
+    --fg-tertiary: #5d707c;
+    --fg-muted: #5d707c;
+    --fg-accent: #0f766e;
+
+    --icon-default: #2d3e4a;
+    --icon-muted: #5d707c;
+    --icon-accent: #0d9488;
+
+    --accent-primary: #0d9488;
+    --accent-primary-action: #0d9488;
+    --accent-secondary: #0f766e;
+    --accent-secondary-action: #0f766e;
+    --ring-focus: #14b8a6;
+
+    --border: #dbe3e8;
+    --input: #ffffff;
+
+    --kpi-positive: #059669;
+    --kpi-negative: #d97706;
+
+    --kairos-card-shadow:
+      0 1px 2px rgb(15 27 36 / 0.04), 0 8px 24px rgb(15 27 36 / 0.06);
+    --kairos-chart-grid: #dbe3e8;
+    --kairos-chart-axis: #5d707c;
+  }
+
+  &.dark {
+    --surface-base: #0a1015;
+    --surface-background: #0a1015;
+    --surface-subtle: #0f171d;
+    --surface-card: #111a21;
+    --surface-overlay: #16212a;
+    --surface-muted: #16212a;
+    --surface-hover: #15252b;
+    --surface-active: #123033;
+
+    --tooltip: #16212a;
+    --popover: #16212a;
+    --popover-footer: #16212a;
+
+    --fg-primary: #e6edf0;
+    --fg-secondary: #b4c2c9;
+    --fg-tertiary: #7f9199;
+    --fg-muted: #7f9199;
+    --fg-accent: #5eead4;
+    --fg-inverse: #06201d;
+
+    --icon-default: #e6edf0;
+    --icon-muted: #7f9199;
+    --icon-accent: #2dd4bf;
+
+    --accent-primary: #2dd4bf;
+    --accent-primary-action: #2dd4bf;
+    --accent-secondary: #14b8a6;
+    --accent-secondary-action: #2dd4bf;
+    --ring-focus: #2dd4bf;
+
+    --border: rgb(148 163 184 / 0.12);
+    --input: #0d151b;
+
+    --kpi-positive: #34d399;
+    --kpi-negative: #f59e0b;
+
+    --kairos-card-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.03), 0 8px 24px rgb(0 0 0 / 0.35);
+    --kairos-chart-grid: #1c2830;
+    --kairos-chart-axis: #7f9199;
+  }
+
+  & :is(article.component-card, .kairos-home-box) {
+    border-radius: 14px;
+    box-shadow: var(--kairos-card-shadow);
+  }
+
+  & :is(.component-header-container .title, .kairos-home-box-title) {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--fg-tertiary);
+  }
+
+  & .big-number {
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  & :is(button, a):is(.primary, .secondary, .tertiary, .ghost) {
+    border-radius: 9999px;
+    padding-inline: 14px;
+  }
+
+  & .suggested-prompt {
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background-color: var(--surface-card);
+  }
+
+  & .suggested-prompt-label {
+    color: var(--fg-accent);
+  }
+
+  & :is(.agent-note li, .kairos-home-box li)::marker {
+    color: var(--accent-primary);
+  }
+
+  & .kairos-home-menu .item {
+    border-radius: 10px;
+  }
+
+  & .kairos-home-menu .item.active {
+    background-color: color-mix(
+      in oklab,
+      var(--accent-primary) 14%,
+      transparent
+    );
+    box-shadow: inset 3px 0 0 var(--accent-primary);
+  }
+
+  &:not(.dark) :is(.kairos-app-header, .tabs-container) {
+    background-color: var(--surface-card);
+  }
+}

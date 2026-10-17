@@ -1,0 +1,25 @@
+/*
+ * Kairos Styles (kairos-cloud#242). Each Style sets the app tokens per mode
+ * under :root[data-kairos-style=…]:not(.dark) / .dark, which outrank
+ * upstream's :root and :root.dark (0,3,0 over 0,2,0) wherever this file
+ * lands in the cascade. Component rules use stable class names and var()
+ * only, never colour literals, so project themes keep coloring dashboards.
+ * scripts/style-guard.js checks all of that on every upstream sync.
+ */
+@import "./kairos-v1.css";
+@import "./kairos.css";
+@import "./aurora.css";
+
+/* Shared by every Style: inputs take the --input token (Rill leaves some on
+   the browser's white). */
+@layer base {
+  textarea,
+  input[type="text"],
+  input[type="search"],
+  input[type="email"],
+  input[type="password"],
+  input[type="url"],
+  input[type="number"] {
+    background-color: var(--input);
+  }
+}

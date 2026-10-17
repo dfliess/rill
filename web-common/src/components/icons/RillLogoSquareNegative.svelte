@@ -16,14 +16,14 @@
     y="0"
     width="5"
     height="18"
-    class="fill-[#232629] dark:fill-[#FBFBF9]"
+    class="kairos-symbol-ink fill-[#232629] dark:fill-[#FBFBF9]"
   />
   <rect
     x="7"
     y="7"
     width="4"
     height="4"
-    class="fill-[#232629] dark:fill-[#FBFBF9]"
+    class="kairos-symbol-ink fill-[#232629] dark:fill-[#FBFBF9]"
   />
   <rect x="13" y="0" width="5" height="5" fill="#2C53B0" />
   <rect
@@ -31,6 +31,6 @@
     y="13"
     width="5"
     height="5"
-    class="fill-[#232629] dark:fill-[#FBFBF9]"
+    class="kairos-symbol-ink fill-[#232629] dark:fill-[#FBFBF9]"
   />
 </svg>

@@ -29,10 +29,10 @@
 <!-- Framed like a canvas component (outline, shadow, radius) so under a
      canvas they read as part of it. -->
 <section
-  class="flex min-w-0 flex-col overflow-hidden rounded-sm bg-surface-card shadow-sm outline outline-[1px] outline-border"
+  class="kairos-home-box flex min-w-0 flex-col overflow-hidden rounded-sm bg-surface-card shadow-sm outline outline-[1px] outline-border"
 >
   <header class="flex items-baseline justify-between gap-x-3 px-4 pb-1 pt-3">
-    <h2 class="text-sm font-semibold text-fg-primary">
+    <h2 class="kairos-home-box-title text-sm font-semibold text-fg-primary">
       {title}
       {#if count > 0}
         <span class="ml-1 font-normal text-fg-muted">{count}</span>

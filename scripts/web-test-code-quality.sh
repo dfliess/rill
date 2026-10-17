@@ -101,6 +101,12 @@ echo "== brand guard: no Rill brand on Tenant-visible surfaces =="
 # (often behind `i18n-ignore`). See the header of scripts/brand-guard.js.
 node ./scripts/brand-guard.js || exit_code=$?
 
+echo ""
+echo "== style guard: Kairos Styles still hook into upstream =="
+# Kairos: the Styles lean on upstream tokens and component classes a rebase can
+# rename without a conflict. See the header of scripts/style-guard.js.
+node ./scripts/style-guard.js || exit_code=$?
+
 if [[ "$LOCAL" == "true" ]]; then
   echo ""
   echo "== lint and type checks for web local =="
