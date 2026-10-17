@@ -1,0 +1,219 @@
+/*
+ * Style "editorial": a board report. Warm paper and warm charcoal, square
+ * panels, Source Serif 4 card titles over a hairline, Source Sans 3 for
+ * text and figures, a navy accent, and a clay bar that marks what the
+ * agent says.
+ */
+:root[data-kairos-style="editorial"] {
+  --radius: 2px;
+  --kairos-radius-default: 2px;
+
+  /* Navy palettes in the order Rill reads them. */
+  --color-primary-light-50: #f2f5f9;
+  --color-primary-light-100: #e1e8f1;
+  --color-primary-light-200: #c5d2e3;
+  --color-primary-light-300: #9db1cc;
+  --color-primary-light-400: #6f8aae;
+  --color-primary-light-500: #4c6a93;
+  --color-primary-light-600: #3a5479;
+  --color-primary-light-700: #2e4463;
+  --color-primary-light-800: #263752;
+  --color-primary-light-900: #1e2c42;
+  --color-primary-light-950: #131c2b;
+
+  --color-primary-dark-50: #131c2b;
+  --color-primary-dark-100: #1e2c42;
+  --color-primary-dark-200: #263752;
+  --color-primary-dark-300: #2e4463;
+  --color-primary-dark-400: #3a5479;
+  --color-primary-dark-500: #4c6a93;
+  --color-primary-dark-600: #6f8aae;
+  --color-primary-dark-700: #9db1cc;
+  --color-primary-dark-800: #c5d2e3;
+  --color-primary-dark-900: #e1e8f1;
+  --color-primary-dark-950: #f2f5f9;
+
+  &:not(.dark) {
+    --surface-base: #f7f4ee;
+    --surface-background: #f7f4ee;
+    --surface-subtle: #efebe3;
+    --surface-card: #fffefb;
+    --surface-overlay: #fffefb;
+    --surface-muted: #efebe3;
+    --surface-hover: #f0ebe1;
+    --surface-active: #e6dfd2;
+
+    --popover: #fffefb;
+    --popover-footer: #efebe3;
+    --tooltip: #fffefb;
+
+    --fg-primary: #1c1a17;
+    --fg-secondary: #3d3933;
+    --fg-tertiary: #6b655b;
+    --fg-muted: #6b655b;
+    --fg-accent: #1e3a5f;
+    --fg-inverse: #ffffff;
+
+    --icon-default: #3d3933;
+    --icon-muted: #6b655b;
+    --icon-accent: #1e3a5f;
+
+    --accent-primary: #1e3a5f;
+    --accent-primary-action: #1e3a5f;
+    --accent-secondary: #2e4463;
+    --accent-secondary-action: #2e4463;
+    --ring-focus: #1e3a5f;
+
+    --border: #e3ddd1;
+    --input: #fffefb;
+
+    --kpi-positive: #2f6b3a;
+    --kpi-negative: #a3301f;
+
+    --kairos-chart-grid: #e8e2d7;
+    --kairos-chart-axis: #6b655b;
+    --kairos-title: #1c1a17;
+    --kairos-rule: #ddd6c9;
+    --kairos-note: #a84b2a;
+    --kairos-note-strong: #8f3e21;
+  }
+
+  &.dark {
+    --surface-base: #161514;
+    --surface-background: #161514;
+    --surface-subtle: #1b1a18;
+    --surface-card: #1e1c1a;
+    --surface-overlay: #252320;
+    --surface-muted: #1b1a18;
+    --surface-hover: #292724;
+    --surface-active: #322f2b;
+
+    --popover: #252320;
+    --popover-footer: #1b1a18;
+    --tooltip: #252320;
+
+    --fg-primary: #ede7dc;
+    --fg-secondary: #d3cbbe;
+    --fg-tertiary: #a59d90;
+    --fg-muted: #a59d90;
+    --fg-accent: #9db4d3;
+    --fg-inverse: #161514;
+
+    --icon-default: #d3cbbe;
+    --icon-muted: #a59d90;
+    --icon-accent: #9db4d3;
+
+    --accent-primary: #9db4d3;
+    --accent-primary-action: #9db4d3;
+    --accent-secondary: #c5d2e3;
+    --accent-secondary-action: #c5d2e3;
+    --ring-focus: #9db4d3;
+
+    --border: #2f2c28;
+    --input: #1a1917;
+
+    --kpi-positive: #86c495;
+    --kpi-negative: #e8907c;
+
+    --kairos-chart-grid: #2c2a26;
+    --kairos-chart-axis: #a59d90;
+    --kairos-title: #ede7dc;
+    --kairos-rule: #3a3631;
+    --kairos-note: #d98b6b;
+    --kairos-note-strong: #e5a487;
+  }
+
+  & body {
+    font-family: "Source Sans 3", system-ui, sans-serif;
+  }
+
+  & :is(.component-card, .kairos-home-box) {
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  & .component-header-container {
+    border-bottom: 1px solid var(--kairos-rule);
+    padding-bottom: 6px;
+    margin-bottom: 8px;
+  }
+
+  & :is(.component-header-container .title, .kairos-home-box-title) {
+    font-family: "Source Serif 4", Georgia, serif;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    text-transform: none;
+    color: var(--kairos-title);
+  }
+
+  & .big-number {
+    font-family: "Source Sans 3", sans-serif;
+    font-variant-numeric: tabular-nums lining-nums;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  &
+    :is(button, a):is(
+      .primary,
+      .secondary,
+      .secondary-destructive,
+      .tertiary,
+      .ghost,
+      .destructive,
+      .neutral,
+      .toolbar
+    ):not(.circle, .rounded) {
+    border-radius: var(--radius);
+  }
+
+  /* What the agent says: a clay bar, and its first bold line set as a
+     serif title over a hairline. */
+  & .agent-note {
+    box-shadow: inset 3px 0 0 var(--kairos-note);
+    padding-left: 6px;
+  }
+
+  & .agent-note strong {
+    color: var(--kairos-note-strong);
+  }
+
+  & .agent-note p:first-child > strong:only-child {
+    display: block;
+    font-family: "Source Serif 4", Georgia, serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--kairos-title);
+    border-bottom: 1px solid var(--kairos-rule);
+    padding-bottom: 6px;
+    margin-bottom: 4px;
+  }
+
+  & :is(.agent-note li, .kairos-home-box li)::marker {
+    color: var(--kairos-note);
+  }
+
+  & .suggested-prompt {
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background-color: transparent;
+  }
+
+  & .suggested-prompt-label {
+    color: var(--fg-accent);
+  }
+
+  & .kairos-home-menu .item {
+    border-radius: var(--radius);
+  }
+
+  & .kairos-home-menu .item.active {
+    background-color: var(--surface-hover);
+    box-shadow: inset 2px 0 0 var(--kairos-note);
+  }
+
+  & .chip.time {
+    border-color: var(--border);
+  }
+}

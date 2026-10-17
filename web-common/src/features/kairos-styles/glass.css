@@ -1,0 +1,228 @@
+/*
+ * Style "glass": translucent panels over soft color fields. The page and
+ * base surfaces are transparent so the fields show through; cards are
+ * tinted glass with a light edge and blur. Dark is its strongest mode.
+ * Popovers stay near-opaque to read. In the PDF export cards are solid:
+ * the rasterizer does not render backdrop-filter.
+ */
+:root[data-kairos-style="glass"] {
+  --radius: 10px;
+  --kairos-radius-default: 8px;
+
+  /* Blue palettes in the order Rill reads them. */
+  --color-primary-light-50: #eff4ff;
+  --color-primary-light-100: #dbe6fe;
+  --color-primary-light-200: #bfd2fe;
+  --color-primary-light-300: #93b4fd;
+  --color-primary-light-400: #6a93f5;
+  --color-primary-light-500: #3b6fd8;
+  --color-primary-light-600: #2c5bc0;
+  --color-primary-light-700: #2349a0;
+  --color-primary-light-800: #1f3d82;
+  --color-primary-light-900: #1c3468;
+  --color-primary-light-950: #132244;
+
+  --color-primary-dark-50: #132244;
+  --color-primary-dark-100: #1c3468;
+  --color-primary-dark-200: #1f3d82;
+  --color-primary-dark-300: #2349a0;
+  --color-primary-dark-400: #2c5bc0;
+  --color-primary-dark-500: #3b6fd8;
+  --color-primary-dark-600: #7aa2ff;
+  --color-primary-dark-700: #93b4fd;
+  --color-primary-dark-800: #bfd2fe;
+  --color-primary-dark-900: #dbe6fe;
+  --color-primary-dark-950: #eff4ff;
+
+  &:not(.dark) {
+    --surface-base: transparent;
+    --surface-background: transparent;
+    --surface-subtle: rgb(255 255 255 / 0.35);
+    --surface-card: rgb(255 255 255 / 0.58);
+    --surface-overlay: rgb(255 255 255 / 0.94);
+    --surface-muted: rgb(255 255 255 / 0.35);
+    --surface-hover: rgb(255 255 255 / 0.55);
+    --surface-active: rgb(255 255 255 / 0.7);
+
+    --popover: rgb(255 255 255 / 0.95);
+    --popover-footer: rgb(246 248 252 / 0.95);
+    --tooltip: #ffffff;
+
+    --fg-primary: #141a26;
+    --fg-secondary: #2f3747;
+    --fg-tertiary: #566074;
+    --fg-muted: #566074;
+    --fg-accent: #2c5bc0;
+    --fg-inverse: #ffffff;
+
+    --icon-default: #2f3747;
+    --icon-muted: #566074;
+    --icon-accent: #3b6fd8;
+
+    --accent-primary: #3b6fd8;
+    --accent-primary-action: #3b6fd8;
+    --accent-secondary: #2c5bc0;
+    --accent-secondary-action: #2c5bc0;
+    --ring-focus: #3b6fd8;
+
+    --border: rgb(20 26 38 / 0.1);
+    --input: rgb(255 255 255 / 0.7);
+
+    --kpi-positive: #047857;
+    --kpi-negative: #b42318;
+
+    --kairos-chart-grid: rgb(20 26 38 / 0.08);
+    --kairos-chart-axis: #566074;
+    --kairos-label: #3c4658;
+    --kairos-glass: rgb(255 255 255 / 0.58);
+    --kairos-glass-solid: #ffffff;
+    --kairos-glass-edge: rgb(255 255 255 / 0.75);
+    --kairos-glass-bar: rgb(255 255 255 / 0.35);
+    --kairos-glass-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.6), 0 10px 30px rgb(30 45 80 / 0.1);
+    --kairos-glass-field:
+      radial-gradient(1200px 700px at 8% -10%, #bccff5 0%, transparent 60%),
+      radial-gradient(900px 600px at 100% 10%, #c6e8ec 0%, transparent 55%),
+      radial-gradient(1000px 800px at 60% 120%, #dcd2f3 0%, transparent 60%),
+      #eef1f6;
+  }
+
+  &.dark {
+    --surface-base: transparent;
+    --surface-background: transparent;
+    --surface-subtle: rgb(255 255 255 / 0.04);
+    --surface-card: rgb(22 28 42 / 0.55);
+    --surface-overlay: rgb(24 30 44 / 0.96);
+    --surface-muted: rgb(255 255 255 / 0.04);
+    --surface-hover: rgb(255 255 255 / 0.07);
+    --surface-active: rgb(255 255 255 / 0.11);
+
+    --popover: rgb(24 30 44 / 0.97);
+    --popover-footer: rgb(24 30 44 / 0.97);
+    --tooltip: #1c2232;
+
+    --fg-primary: #eef2fa;
+    --fg-secondary: #c9d1e0;
+    --fg-tertiary: #98a3b8;
+    --fg-muted: #98a3b8;
+    --fg-accent: #9db8ff;
+    --fg-inverse: #0b0f1a;
+
+    --icon-default: #c9d1e0;
+    --icon-muted: #98a3b8;
+    --icon-accent: #7aa2ff;
+
+    --accent-primary: #7aa2ff;
+    --accent-primary-action: #7aa2ff;
+    --accent-secondary: #9db8ff;
+    --accent-secondary-action: #9db8ff;
+    --ring-focus: #7aa2ff;
+
+    --border: rgb(255 255 255 / 0.09);
+    --input: rgb(255 255 255 / 0.05);
+
+    --kpi-positive: #34d399;
+    --kpi-negative: #f87171;
+
+    --kairos-chart-grid: rgb(255 255 255 / 0.07);
+    --kairos-chart-axis: #98a3b8;
+    --kairos-label: #aeb9cf;
+    --kairos-glass: rgb(22 28 42 / 0.55);
+    --kairos-glass-solid: #161c2a;
+    --kairos-glass-edge: rgb(255 255 255 / 0.1);
+    --kairos-glass-bar: rgb(10 14 24 / 0.45);
+    --kairos-glass-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.06), 0 12px 32px rgb(0 0 0 / 0.35);
+    --kairos-glass-field:
+      radial-gradient(1100px 700px at 5% -10%, #1d2f5c 0%, transparent 60%),
+      radial-gradient(900px 650px at 100% 0%, #123a44 0%, transparent 55%),
+      radial-gradient(1000px 800px at 55% 120%, #2a2050 0%, transparent 60%),
+      #0b0f1a;
+  }
+
+  background: var(--kairos-glass-field) fixed;
+
+  & body {
+    background: transparent;
+    font-family: "Geist", "Inter", system-ui, sans-serif;
+  }
+
+  & :is(.component-card, .kairos-home-box) {
+    border-radius: 16px;
+    background-color: var(--kairos-glass);
+    outline: 1px solid var(--kairos-glass-edge);
+    outline-offset: -1px;
+    box-shadow: var(--kairos-glass-shadow);
+    backdrop-filter: blur(18px) saturate(150%);
+  }
+
+  /* A card's content would repaint the translucent card color over it and
+     stack into a box in a box: inside a card it is clear. */
+  & :is(.component-card, .kairos-home-box) * {
+    --surface-card: transparent;
+  }
+
+  & #canvas-pdf-export-view .component-card {
+    background-color: var(--kairos-glass-solid);
+    backdrop-filter: none;
+  }
+
+  & :is(.kairos-app-header, .tabs-container) {
+    background-color: var(--kairos-glass-bar);
+    backdrop-filter: blur(20px) saturate(160%);
+    border-color: var(--border);
+  }
+
+  & :is(.component-header-container .title, .kairos-home-box-title) {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--kairos-label);
+  }
+
+  & .big-number {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+  }
+
+  &
+    :is(button, a):is(
+      .primary,
+      .secondary,
+      .secondary-destructive,
+      .tertiary,
+      .ghost,
+      .destructive,
+      .neutral,
+      .toolbar
+    ):not(.circle, .rounded) {
+    border-radius: var(--radius);
+  }
+
+  & .suggested-prompt {
+    border-radius: 12px;
+    background-color: var(--kairos-glass);
+    outline: 1px solid var(--kairos-glass-edge);
+    outline-offset: -1px;
+    backdrop-filter: blur(14px);
+  }
+
+  & .suggested-prompt-label {
+    color: var(--fg-accent);
+  }
+
+  & .kairos-home-menu .item {
+    border-radius: var(--radius);
+  }
+
+  & .kairos-home-menu .item.active {
+    background-color: var(--kairos-glass);
+    box-shadow: var(--kairos-glass-shadow);
+  }
+
+  & .chip.time {
+    border-color: var(--kairos-glass-edge);
+  }
+}

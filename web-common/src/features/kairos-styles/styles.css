@@ -12,6 +12,10 @@
 @import "./kairos-v1.css";
 @import "./kairos.css";
 @import "./aurora.css";
+@import "./nova.css";
+@import "./editorial.css";
+@import "./lumen.css";
+@import "./glass.css";
 
 /* Shared by every Style: inputs take the --input token (Rill leaves some on
    the browser's white). :where() keeps the specificity of a base rule. */

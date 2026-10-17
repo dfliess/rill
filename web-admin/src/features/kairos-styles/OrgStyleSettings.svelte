@@ -24,6 +24,10 @@
     "kairos-v1": m.kairos_style_kairos_v1,
     kairos: m.kairos_style_kairos,
     aurora: m.kairos_style_aurora,
+    nova: m.kairos_style_nova,
+    editorial: m.kairos_style_editorial,
+    lumen: m.kairos_style_lumen,
+    glass: m.kairos_style_glass,
   };
   const options = STYLES.map((style) => ({
     value: style,

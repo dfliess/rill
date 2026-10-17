@@ -49,6 +49,23 @@ const EXPECTED = {
     light: { page: "#eef2f5", card: "#ffffff", header: "#ffffff", accent: "#0d9488", cardRadius: "14px", rounded: "8px", button: "9999px", font: "Inter", title: "uppercase", pdfEdge: "inset" },
     dark: { page: "#0a1015", card: "#111a21", header: "#0a1015", accent: "#2dd4bf", cardRadius: "14px", rounded: "8px", button: "9999px", font: "Inter", title: "uppercase", pdfEdge: "inset" },
   },
+  nova: {
+    light: { page: "#f1f4f8", card: "#ffffff", header: "#0a0f1a", accent: "#0e7490", cardRadius: "8px", rounded: "4px", button: "4px", font: "Geist", title: "uppercase", pdfEdge: "inset", themedTitle: "#5b6b80", chip: "#c9d2de" },
+    dark: { page: "#070b12", card: "#0d1420", header: "#070b12", accent: "#22d3ee", cardRadius: "8px", rounded: "4px", button: "4px", font: "Geist", title: "uppercase", pdfEdge: "inset", themedTitle: "#7d8da3", chip: "#26344a" },
+  },
+  editorial: {
+    light: { page: "#f7f4ee", card: "#fffefb", header: "#f7f4ee", accent: "#1e3a5f", cardRadius: "0px", rounded: "2px", button: "2px", font: "Source Sans 3", title: "none", pdfEdge: "inset", themedTitle: "#1c1a17", chip: "#e3ddd1" },
+    dark: { page: "#161514", card: "#1e1c1a", header: "#161514", accent: "#9db4d3", cardRadius: "0px", rounded: "2px", button: "2px", font: "Source Sans 3", title: "none", pdfEdge: "inset", themedTitle: "#ede7dc", chip: "#2f2c28" },
+  },
+  lumen: {
+    light: { page: "#ffffff", card: "#ffffff", header: "#ffffff", accent: "#1d4ed8", cardRadius: "4px", rounded: "4px", button: "4px", font: "Atkinson Hyperlegible Next", title: "none", pdfEdge: "inset", themedTitle: "#0a0a0a", chip: "#6b7280" },
+    dark: { page: "#0b0b0c", card: "#161618", header: "#0b0b0c", accent: "#93b4ff", cardRadius: "4px", rounded: "4px", button: "4px", font: "Atkinson Hyperlegible Next", title: "none", pdfEdge: "inset", themedTitle: "#ffffff", chip: "#8a929e" },
+  },
+  // Translucent: the page is transparent and colors are read without alpha.
+  glass: {
+    light: { card: "#ffffff", header: "#ffffff", accent: "#3b6fd8", cardRadius: "16px", rounded: "8px", button: "10px", font: "Geist", title: "none", pdfEdge: "inset", themedTitle: "#3c4658", chip: "#ffffff" },
+    dark: { card: "#161b2a", header: "#0b0d18", accent: "#7aa2ff", cardRadius: "16px", rounded: "8px", button: "10px", font: "Geist", title: "none", pdfEdge: "inset", themedTitle: "#aeb9cf", chip: "#ffffff" },
+  },
 };
 
 const started = Date.now();

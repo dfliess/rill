@@ -1,0 +1,198 @@
+/*
+ * Style "lumen": high contrast. White and near-black, strong grey frames,
+ * Atkinson Hyperlegible Next (its slashed zero is deliberate), bold
+ * sentence-case titles, underlined links in content, a visible focus ring.
+ */
+:root[data-kairos-style="lumen"] {
+  --radius: 4px;
+  --kairos-radius-default: 4px;
+
+  /* Blue palettes in the order Rill reads them. */
+  --color-primary-light-50: #eff6ff;
+  --color-primary-light-100: #dbeafe;
+  --color-primary-light-200: #bfdbfe;
+  --color-primary-light-300: #93c5fd;
+  --color-primary-light-400: #60a5fa;
+  --color-primary-light-500: #3b82f6;
+  --color-primary-light-600: #2563eb;
+  --color-primary-light-700: #1d4ed8;
+  --color-primary-light-800: #1e40af;
+  --color-primary-light-900: #1e3a8a;
+  --color-primary-light-950: #172554;
+
+  --color-primary-dark-50: #172554;
+  --color-primary-dark-100: #1e3a8a;
+  --color-primary-dark-200: #1e40af;
+  --color-primary-dark-300: #1d4ed8;
+  --color-primary-dark-400: #2563eb;
+  --color-primary-dark-500: #3b82f6;
+  --color-primary-dark-600: #60a5fa;
+  --color-primary-dark-700: #93c5fd;
+  --color-primary-dark-800: #bfdbfe;
+  --color-primary-dark-900: #dbeafe;
+  --color-primary-dark-950: #eff6ff;
+
+  &:not(.dark) {
+    --surface-base: #ffffff;
+    --surface-background: #ffffff;
+    --surface-subtle: #f3f4f6;
+    --surface-card: #ffffff;
+    --surface-overlay: #ffffff;
+    --surface-muted: #f3f4f6;
+    --surface-hover: #eaf0fc;
+    --surface-active: #d6e2fa;
+
+    --popover: #ffffff;
+    --popover-footer: #f3f4f6;
+    --tooltip: #ffffff;
+
+    --fg-primary: #0a0a0a;
+    --fg-secondary: #1f2937;
+    --fg-tertiary: #4b5563;
+    --fg-muted: #4b5563;
+    --fg-accent: #1d4ed8;
+    --fg-inverse: #ffffff;
+
+    --icon-default: #1f2937;
+    --icon-muted: #4b5563;
+    --icon-accent: #1d4ed8;
+
+    --accent-primary: #1d4ed8;
+    --accent-primary-action: #1d4ed8;
+    --accent-secondary: #1e40af;
+    --accent-secondary-action: #1e40af;
+    --ring-focus: #1d4ed8;
+
+    --border: #6b7280;
+    --input: #ffffff;
+
+    --kpi-positive: #006b3c;
+    --kpi-negative: #b00020;
+
+    --kairos-chart-grid: #d1d5db;
+    --kairos-chart-axis: #4b5563;
+    --kairos-title: #0a0a0a;
+    --kairos-focus: #1d4ed8;
+  }
+
+  &.dark {
+    --surface-base: #0b0b0c;
+    --surface-background: #0b0b0c;
+    --surface-subtle: #141416;
+    --surface-card: #161618;
+    --surface-overlay: #1e1e21;
+    --surface-muted: #141416;
+    --surface-hover: #1d2a44;
+    --surface-active: #24375c;
+
+    --popover: #1e1e21;
+    --popover-footer: #141416;
+    --tooltip: #1e1e21;
+
+    --fg-primary: #ffffff;
+    --fg-secondary: #e5e7eb;
+    --fg-tertiary: #c3c8d0;
+    --fg-muted: #c3c8d0;
+    --fg-accent: #93b4ff;
+    --fg-inverse: #0b0b0c;
+
+    --icon-default: #e5e7eb;
+    --icon-muted: #c3c8d0;
+    --icon-accent: #93b4ff;
+
+    --accent-primary: #93b4ff;
+    --accent-primary-action: #93b4ff;
+    --accent-secondary: #bfd0ff;
+    --accent-secondary-action: #bfd0ff;
+    --ring-focus: #93b4ff;
+
+    --border: #8a929e;
+    --input: #111113;
+
+    --kpi-positive: #5ee09a;
+    --kpi-negative: #ff8a8a;
+
+    --kairos-chart-grid: #3a3f47;
+    --kairos-chart-axis: #c3c8d0;
+    --kairos-title: #ffffff;
+    --kairos-focus: #93b4ff;
+  }
+
+  & body {
+    font-family: "Atkinson Hyperlegible Next", system-ui, sans-serif;
+  }
+
+  & :is(.component-card, .kairos-home-box) {
+    border-radius: 4px;
+    box-shadow: none;
+    outline-width: 2px;
+  }
+
+  & :is(.component-header-container .title, .kairos-home-box-title) {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--kairos-title);
+  }
+
+  & .big-number {
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+  }
+
+  &
+    :is(button, a):is(
+      .primary,
+      .secondary,
+      .secondary-destructive,
+      .tertiary,
+      .ghost,
+      .destructive,
+      .neutral,
+      .toolbar
+    ):not(.circle, .rounded) {
+    border-radius: var(--radius);
+  }
+
+  & :is(button, a):is(.secondary, .tertiary) {
+    border: 1px solid var(--border);
+  }
+
+  /* Underline links in content only: nav and breadcrumbs stay plain. */
+  & :is(.agent-note, .kairos-home-box) a {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+  }
+
+  & :focus-visible {
+    outline: 2px solid var(--kairos-focus);
+    outline-offset: 2px;
+  }
+
+  & .suggested-prompt {
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background-color: var(--surface-card);
+  }
+
+  & .suggested-prompt-label {
+    color: var(--fg-accent);
+    font-weight: 700;
+  }
+
+  & :is(.agent-note li, .kairos-home-box li)::marker {
+    color: var(--kairos-title);
+  }
+
+  & .kairos-home-menu .item.active {
+    background-color: var(--surface-hover);
+    box-shadow: inset 3px 0 0 var(--kairos-focus);
+    font-weight: 700;
+  }
+
+  & .chip.time {
+    border-color: var(--border);
+  }
+}

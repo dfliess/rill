@@ -15,7 +15,7 @@ describe("resolveStyle", () => {
     ["app: default with neither", {}, DEFAULT_STYLE],
     [
       "app: unknown user value falls to Org",
-      { user: "nova", org: "aurora" },
+      { user: "retired", org: "aurora" },
       "aurora",
     ],
     ["app: unknown Org value falls to default", { org: "x" }, DEFAULT_STYLE],

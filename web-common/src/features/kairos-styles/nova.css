@@ -1,0 +1,236 @@
+/*
+ * Style "nova": a cockpit. Near-black blue in dark, a cool grey in light
+ * with the dark header band, a cyan accent, Geist for text and figures and
+ * Geist Mono for the small uppercase card labels; 8px panels.
+ */
+:root[data-kairos-style="nova"] {
+  --radius: 4px;
+  --kairos-radius-default: 4px;
+
+  /* Cyan palettes in the order Rill reads them: light 50 is the palest,
+     dark 50 the deepest. */
+  --color-primary-light-50: #ecfeff;
+  --color-primary-light-100: #cffafe;
+  --color-primary-light-200: #a5f3fc;
+  --color-primary-light-300: #67e8f9;
+  --color-primary-light-400: #22d3ee;
+  --color-primary-light-500: #06b6d4;
+  --color-primary-light-600: #0891b2;
+  --color-primary-light-700: #0e7490;
+  --color-primary-light-800: #155e75;
+  --color-primary-light-900: #164e63;
+  --color-primary-light-950: #083344;
+
+  --color-primary-dark-50: #083344;
+  --color-primary-dark-100: #164e63;
+  --color-primary-dark-200: #155e75;
+  --color-primary-dark-300: #0e7490;
+  --color-primary-dark-400: #0891b2;
+  --color-primary-dark-500: #06b6d4;
+  --color-primary-dark-600: #22d3ee;
+  --color-primary-dark-700: #67e8f9;
+  --color-primary-dark-800: #a5f3fc;
+  --color-primary-dark-900: #cffafe;
+  --color-primary-dark-950: #ecfeff;
+
+  &:not(.dark) {
+    --surface-base: #f1f4f8;
+    --surface-background: #f1f4f8;
+    --surface-subtle: #e8edf3;
+    --surface-card: #ffffff;
+    --surface-overlay: #ffffff;
+    --surface-muted: #e8edf3;
+    --surface-hover: #eaf6f9;
+    --surface-active: #d5eef4;
+
+    --popover: #ffffff;
+    --popover-footer: #e8edf3;
+    --tooltip: #ffffff;
+
+    --fg-primary: #0b1220;
+    --fg-secondary: #344054;
+    --fg-tertiary: #5b6b80;
+    --fg-muted: #5b6b80;
+    --fg-accent: #0e7490;
+    --fg-inverse: #ffffff;
+
+    --icon-default: #344054;
+    --icon-muted: #5b6b80;
+    --icon-accent: #0e7490;
+
+    --accent-primary: #0e7490;
+    --accent-primary-action: #0e7490;
+    --accent-secondary: #155e75;
+    --accent-secondary-action: #155e75;
+    --ring-focus: #0e7490;
+
+    --border: #c9d2de;
+    --input: #ffffff;
+
+    --kpi-positive: #047857;
+    --kpi-negative: #b42318;
+
+    --kairos-chart-grid: #e3e8ef;
+    --kairos-chart-axis: #5b6b80;
+    --kairos-label: #5b6b80;
+    --kairos-marker: #0e7490;
+    --kairos-figure-glow: none;
+  }
+
+  &.dark {
+    --surface-base: #070b12;
+    --surface-background: #070b12;
+    --surface-subtle: #0b111b;
+    --surface-card: #0d1420;
+    --surface-overlay: #121b2a;
+    --surface-muted: #0b111b;
+    --surface-hover: #122033;
+    --surface-active: #14304a;
+
+    --popover: #121b2a;
+    --popover-footer: #0b111b;
+    --tooltip: #121b2a;
+
+    --fg-primary: #e6edf5;
+    --fg-secondary: #b3c0d1;
+    --fg-tertiary: #7d8da3;
+    --fg-muted: #7d8da3;
+    --fg-accent: #67e8f9;
+    --fg-inverse: #04131a;
+
+    --icon-default: #b3c0d1;
+    --icon-muted: #7d8da3;
+    --icon-accent: #22d3ee;
+
+    --accent-primary: #22d3ee;
+    --accent-primary-action: #22d3ee;
+    --accent-secondary: #67e8f9;
+    --accent-secondary-action: #67e8f9;
+    --ring-focus: #22d3ee;
+
+    --border: #26344a;
+    --input: #0a101a;
+
+    --kpi-positive: #34d399;
+    --kpi-negative: #f87171;
+
+    --kairos-chart-grid: #162131;
+    --kairos-chart-axis: #7d8da3;
+    --kairos-label: #7d8da3;
+    --kairos-marker: #22d3ee;
+    --kairos-figure-glow: 0 0 18px rgb(34 211 238 / 0.18);
+  }
+
+  & body {
+    font-family: "Geist", "Inter", system-ui, sans-serif;
+  }
+
+  /* The dark header band in light mode, as in "kairos": the header redefines
+     the tokens its content reads. Not under an Org logo. */
+  &:not(.dark):not(:has(.kairos-org-logo))
+    :is(.kairos-app-header, .tabs-container) {
+    --surface-base: #0a0f1a;
+    --surface-background: #0a0f1a;
+    --surface-hover: #16213a;
+    --surface-active: #16213a;
+    --fg-primary: #e6edf5;
+    --fg-secondary: #b3c0d1;
+    --fg-tertiary: #7d8da3;
+    --fg-muted: #7d8da3;
+    --fg-accent: #67e8f9;
+    --icon-default: #b3c0d1;
+    --icon-muted: #7d8da3;
+    --border: #1c2737;
+    --accent-primary-action: #22d3ee;
+    --color-gray-50: #0a0f1a;
+    --color-gray-100: #16213a;
+    --color-gray-200: #1c2737;
+
+    background-color: var(--surface-base);
+    border-color: var(--border);
+
+    & .kairos-logo-on-light {
+      display: none;
+    }
+    & .kairos-symbol-ink {
+      fill: var(--fg-primary);
+    }
+  }
+
+  @media (min-width: 640px) {
+    &:not(.dark) .kairos-app-header .kairos-logo-on-dark {
+      display: block;
+    }
+  }
+
+  & :is(.component-card, .kairos-home-box) {
+    border-radius: 8px;
+    box-shadow: none;
+  }
+
+  & :is(.component-header-container .title, .kairos-home-box-title) {
+    font-family: "Geist Mono", ui-monospace, monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--kairos-label);
+  }
+
+  & .big-number {
+    font-family: "Geist", "Inter", sans-serif;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    text-shadow: var(--kairos-figure-glow);
+  }
+
+  & #canvas-pdf-export-view .big-number {
+    text-shadow: none;
+  }
+
+  &
+    :is(button, a):is(
+      .primary,
+      .secondary,
+      .secondary-destructive,
+      .tertiary,
+      .ghost,
+      .destructive,
+      .neutral,
+      .toolbar
+    ):not(.circle, .rounded) {
+    border-radius: var(--radius);
+  }
+
+  & .suggested-prompt {
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background-color: var(--surface-card);
+  }
+
+  & .suggested-prompt-label {
+    color: var(--fg-accent);
+  }
+
+  & :is(.agent-note li, .kairos-home-box li)::marker {
+    color: var(--kairos-marker);
+  }
+
+  & .kairos-home-menu .item {
+    border-radius: 4px;
+  }
+
+  & .kairos-home-menu .item.active {
+    background-color: color-mix(
+      in oklab,
+      var(--kairos-marker) 10%,
+      transparent
+    );
+    box-shadow: inset 2px 0 0 var(--kairos-marker);
+  }
+
+  & .chip.time {
+    border-color: var(--border);
+  }
+}

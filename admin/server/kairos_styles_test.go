@@ -49,7 +49,7 @@ func TestOrganizationStyles(t *testing.T) {
 	require.Equal(t, codes.PermissionDenied, status.Code(err))
 
 	// Only known Styles
-	_, err = admin.UpdateOrganizationStyle(ctx, &adminv1.UpdateOrganizationStyleRequest{Org: name, Style: "nova"})
+	_, err = admin.UpdateOrganizationStyle(ctx, &adminv1.UpdateOrganizationStyleRequest{Org: name, Style: "retired"})
 	require.Equal(t, codes.InvalidArgument, status.Code(err))
 
 	// Empty restores the default

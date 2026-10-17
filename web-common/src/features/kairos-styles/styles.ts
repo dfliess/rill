@@ -5,7 +5,15 @@
 // The Style is an attribute on <html>; each Style's CSS lives in this folder,
 // with one block per mode. Nothing here touches the mode.
 
-export const STYLES = ["kairos-v1", "kairos", "aurora"] as const;
+export const STYLES = [
+  "kairos-v1",
+  "kairos",
+  "aurora",
+  "nova",
+  "editorial",
+  "lumen",
+  "glass",
+] as const;
 
 export type StyleId = (typeof STYLES)[number];
 

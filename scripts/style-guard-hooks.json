@@ -145,6 +145,8 @@
     "h3",
     "h4",
     "li",
+    "p",
+    "strong",
     "button",
     "a",
     "textarea",
