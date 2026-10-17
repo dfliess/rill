@@ -41,7 +41,7 @@ func TestOrganizationStyles(t *testing.T) {
 	require.Equal(t, "aurora", got.Style)
 
 	// A member who can't manage the org can't change it
-	_, err = viewer.UpdateOrganizationStyle(ctx, &adminv1.UpdateOrganizationStyleRequest{Org: name, Style: "kairos-v1"})
+	_, err = viewer.UpdateOrganizationStyle(ctx, &adminv1.UpdateOrganizationStyleRequest{Org: name, Style: "editorial"})
 	require.Equal(t, codes.PermissionDenied, status.Code(err))
 
 	// Someone outside the org can't read it

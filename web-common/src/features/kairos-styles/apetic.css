@@ -2,8 +2,8 @@
  * Style "apetic": a customer-branded demo, from apetic.pe. Its cyan
  * (#00a2df, the logo and buttons) and navy (#002b48, the menu text), white
  * pages, Spectral headings, Karla text and Poppins actions. In light the
- * header is a navy band (light again under an Org logo, which is drawn for
- * a light header); card titles carry the short cyan rule the site puts
+ * header is a navy band (light again under a lone Org logo, which is
+ * drawn for a light header); card titles carry the short cyan rule the site puts
  * before its section labels.
  */
 :root[data-kairos-style="apetic"] {
@@ -127,7 +127,7 @@
     font-family: "Karla", system-ui, sans-serif;
   }
 
-  /* The navy header band in light mode. Not under an Org logo. */
+  /* The navy header band in light mode. Not under a lone Org logo. */
   &:not(.dark):not(:has(.kairos-org-logo))
     :is(.kairos-app-header, .tabs-container) {
     --surface-base: #002b48;
@@ -150,8 +150,11 @@
     background-color: var(--surface-base);
     border-color: var(--surface-base);
 
-    & .kairos-logo-on-light {
+    & :is(.kairos-logo-on-light, .kairos-org-logo-on-light) {
       display: none;
+    }
+    & .kairos-org-logo-on-dark {
+      display: block;
     }
     & .kairos-symbol-ink {
       fill: var(--fg-primary);

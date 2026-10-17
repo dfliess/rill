@@ -23,10 +23,10 @@ func testOrganizationStyles(t *testing.T, db database.DB) {
 	require.Equal(t, "", style)
 
 	require.NoError(t, db.UpdateOrganizationStyle(ctx, org.ID, "aurora"))
-	require.NoError(t, db.UpdateOrganizationStyle(ctx, org.ID, "kairos-v1"))
+	require.NoError(t, db.UpdateOrganizationStyle(ctx, org.ID, "editorial"))
 	style, err = db.FindOrganizationStyle(ctx, org.ID)
 	require.NoError(t, err)
-	require.Equal(t, "kairos-v1", style)
+	require.Equal(t, "editorial", style)
 
 	// Another organization is untouched
 	style, err = db.FindOrganizationStyle(ctx, other.ID)
@@ -49,7 +49,7 @@ func testOrganizationStyles(t *testing.T, db database.DB) {
 	require.NoError(t, err)
 	style, err = db.FindOrganizationStyle(ctx, org.ID)
 	require.NoError(t, err)
-	require.Equal(t, "kairos-v1", style)
+	require.Equal(t, "editorial", style)
 
 	// "" restores the default
 	require.NoError(t, db.UpdateOrganizationStyle(ctx, org.ID, ""))

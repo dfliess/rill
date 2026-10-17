@@ -33,6 +33,8 @@
     /* label-caps ink, ours alone: a project theme re-derives --fg-accent
        inside the dashboard, which painted canvas titles in its brand color. */
     --kairos-label: #5b6065;
+    /* Home menu's active face: primary-soft under the bar. */
+    --kairos-nav-active: #edeff4;
 
     --icon-default: #3a3e42;
     --icon-muted: #5b6065;
@@ -70,6 +72,8 @@
     --fg-muted: #a8acaf;
     --fg-accent: #9bb6f2;
     --kairos-label: #9bb6f2;
+    /* Control's rail: the raised dark panel under the bar. */
+    --kairos-nav-active: #2b2e32;
   }
 
   /* Upstream sets `body { font-family: "Inter" }` unlayered and late, so the
@@ -86,8 +90,9 @@
 
   /* Antracita header band in light mode: the header becomes a dark island
      by redefining the tokens its content reads, the gray palette included
-     (tab and breadcrumb hovers use bg-gray-100). Not under an Org logo: it
-     was drawn for the light header its Org sees elsewhere. */
+     (tab and breadcrumb hovers use bg-gray-100). Not under a lone Org logo:
+     it was drawn for a light header. An Org with a dark logo too keeps the
+     band and shows that one. */
   &:not(.dark):not(:has(.kairos-org-logo))
     :is(.kairos-app-header, .tabs-container) {
     --surface-base: #232629;
@@ -110,8 +115,11 @@
     background-color: var(--surface-base);
     border-color: var(--surface-base);
 
-    & .kairos-logo-on-light {
+    & :is(.kairos-logo-on-light, .kairos-org-logo-on-light) {
       display: none;
+    }
+    & .kairos-org-logo-on-dark {
+      display: block;
     }
     & .kairos-symbol-ink {
       fill: var(--fg-primary);
@@ -168,6 +176,45 @@
     font-weight: 600;
   }
 
+  /* Header buttons on the dark header (the band in light mode, the header in
+     dark): Rill's secondary in Control's accent on dark, both modes alike.
+     Control's details on top: a tinted hover, a press, the focus ring, and
+     the raised panel for a pressed toggle (AI). Plain white hairlines read
+     flat on the antracita. */
+  --kairos-accent-on-dark: #9bb6f2;
+  --kairos-accent-on-dark-hover: rgb(155 182 242 / 0.1);
+  --kairos-on-dark-raised: #2b2e32;
+
+  &:is(.dark, :not(:has(.kairos-org-logo))) .kairos-app-header .secondary {
+    border-color: var(--kairos-accent-on-dark);
+    background-color: transparent;
+    color: var(--kairos-accent-on-dark);
+    transition:
+      background-color 0.18s ease,
+      transform 0.12s ease;
+
+    &:hover:not(:disabled) {
+      background-color: var(--kairos-accent-on-dark-hover);
+      color: var(--kairos-accent-on-dark);
+    }
+    &.active {
+      background-color: var(--kairos-on-dark-raised);
+    }
+    &:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+    &:focus-visible {
+      outline: 3px solid var(--kairos-accent-on-dark);
+      outline-offset: 3px;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      transition: none;
+      &:active:not(:disabled) {
+        transform: none;
+      }
+    }
+  }
+
   & .suggested-prompt {
     border-radius: var(--radius);
     border-color: transparent;
@@ -180,8 +227,22 @@
     color: var(--fg-accent);
   }
 
+  /* Control's active face (platform DESIGN.md, Shell): an accent bar, the
+     icon emphasized and a tinted panel. Lucide icons are outlines, so
+     "filled" is the accent ink at a heavier stroke. */
+  /* The bar is the selected tab's underline blue, and square on its side,
+     a block like the logo's: on a rounded item a curved bar read as a
+     bracket. */
   & .kairos-home-menu .item.active {
-    box-shadow: inset 2px 0 0 var(--accent-primary);
+    --kairos-nav-bar: var(--color-primary-500);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    background-color: var(--kairos-nav-active);
+    box-shadow: inset 3px 0 0 var(--kairos-nav-bar);
+
+    & svg {
+      color: var(--kairos-nav-bar);
+      stroke-width: 2.4;
+    }
   }
 }
 

@@ -17,7 +17,7 @@ import (
 // kairosStyles are the Styles an organization can pick, in the order of STYLES in
 // web-common/src/features/kairos-styles/styles.ts (scripts/style-guard.js checks it).
 // Validated here rather than in the proto, so adding a Style doesn't regenerate api.pb.go.
-var kairosStyles = []string{"kairos-v1", "kairos", "aurora", "nova", "editorial", "lumen", "glass", "apetic"}
+var kairosStyles = []string{"kairos", "aurora", "nova", "editorial", "lumen", "glass", "apetic"}
 
 // kairosStyleEmbedParam is the embed URL parameter the frontend paints the Style from.
 // It is a Kairos name so it can't collide with a parameter upstream adds.

@@ -85,6 +85,8 @@
       "markup": "class:rounded\\b"
     },
     "kairos-org-logo": "web-common/src/layout/header/HeaderLogo.svelte",
+    "kairos-org-logo-on-light": "web-common/src/layout/header/HeaderLogo.svelte",
+    "kairos-org-logo-on-dark": "web-common/src/layout/header/HeaderLogo.svelte",
     "#canvas-pdf-export-view": "web-common/src/features/exports/pdf/CanvasPdfExportView.svelte"
   },
   "upstreamTokenPrefixes": [
@@ -150,7 +152,8 @@
     "button",
     "a",
     "textarea",
-    "input"
+    "input",
+    "svg"
   ],
   "bootScripts": [
     "web-admin/src/app.html",

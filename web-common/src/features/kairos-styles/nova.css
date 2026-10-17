@@ -126,7 +126,7 @@
   }
 
   /* The dark header band in light mode, as in "kairos": the header redefines
-     the tokens its content reads. Not under an Org logo. */
+     the tokens its content reads. Not under a lone Org logo. */
   &:not(.dark):not(:has(.kairos-org-logo))
     :is(.kairos-app-header, .tabs-container) {
     --surface-base: #0a0f1a;
@@ -149,8 +149,11 @@
     background-color: var(--surface-base);
     border-color: var(--border);
 
-    & .kairos-logo-on-light {
+    & :is(.kairos-logo-on-light, .kairos-org-logo-on-light) {
       display: none;
+    }
+    & .kairos-org-logo-on-dark {
+      display: block;
     }
     & .kairos-symbol-ink {
       fill: var(--fg-primary);

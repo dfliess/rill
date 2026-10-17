@@ -41,7 +41,7 @@ func TestAddOrganizationStyle(t *testing.T) {
 	require.Equal(t, "aurora", query[kairosStyleEmbedParam])
 
 	// The embedder's own choice wins
-	query = map[string]string{kairosStyleEmbedParam: "kairos-v1"}
+	query = map[string]string{kairosStyleEmbedParam: "editorial"}
 	require.NoError(t, s.addOrganizationStyle(ctx, org.ID, query))
-	require.Equal(t, "kairos-v1", query[kairosStyleEmbedParam])
+	require.Equal(t, "editorial", query[kairosStyleEmbedParam])
 }

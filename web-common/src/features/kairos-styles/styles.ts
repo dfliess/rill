@@ -6,7 +6,6 @@
 // with one block per mode. Nothing here touches the mode.
 
 export const STYLES = [
-  "kairos-v1",
   "kairos",
   "aurora",
   "nova",
@@ -17,6 +16,17 @@ export const STYLES = [
 ] as const;
 
 export type StyleId = (typeof STYLES)[number];
+
+// Styles made for one customer (kairos-cloud#244): not listed in the pickers,
+// so other customers don't see them, but usable by whoever knows the id (the
+// Org settings take it as free text). Not access control: the server accepts
+// any Style, and every bundle carries every Style's CSS.
+export const UNLISTED_STYLES: readonly StyleId[] = ["apetic"];
+
+/** The Styles a picker lists: the listed ones, plus `active` if unlisted. */
+export function listedStyles(active?: string | null): StyleId[] {
+  return STYLES.filter((s) => !UNLISTED_STYLES.includes(s) || s === active);
+}
 
 export const DEFAULT_STYLE: StyleId = "kairos";
 

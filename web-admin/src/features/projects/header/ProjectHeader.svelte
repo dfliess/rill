@@ -227,6 +227,8 @@
     href={rillLogoHref}
     logoUrl={organizationLogoUrl}
     faviconUrl={$page.data.organization?.faviconUrl}
+    logoLightUrl={$page.data.organization?.logoUrl}
+    logoDarkUrl={$page.data.organization?.logoDarkUrl}
   />
   {#if onPublicURLPage}
     <PageTitle title={publicURLDashboardTitle} />

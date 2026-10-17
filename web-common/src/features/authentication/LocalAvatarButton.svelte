@@ -10,7 +10,6 @@
     createLocalServiceGetMetadata,
   } from "@rilldata/web-common/runtime-client/local-service";
   import Spinner from "@rilldata/web-common/features/entity-management/Spinner.svelte";
-  import ThemeToggle from "@rilldata/web-common/features/themes/ThemeToggle.svelte";
   import StyleMenu from "@rilldata/web-common/features/kairos-styles/StyleMenu.svelte";
 
   $: user = createLocalServiceGetCurrentUser({
@@ -71,7 +70,6 @@
       {/if}
     </DropdownMenu.Trigger>
     <DropdownMenu.Content class="p-1">
-      <ThemeToggle />
       <StyleMenu local />
       <DropdownMenu.Separator />
 

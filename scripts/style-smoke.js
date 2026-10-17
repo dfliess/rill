@@ -17,7 +17,11 @@ import loadConfig from "tailwindcss/loadConfig.js";
 import { chromium } from "playwright";
 
 const FIXTURE = `
-<header class="kairos-app-header bg-surface-base" id="header">header</header>
+<header class="kairos-app-header bg-surface-base" id="header">
+  <img class="kairos-org-logo-on-light h-7 dark:hidden" id="org-logo-light" />
+  <img class="kairos-org-logo-on-dark h-7 hidden dark:block" id="org-logo-dark" />
+  <button class="secondary border border-accent-primary-action text-accent-primary-action" id="header-button">Share</button>
+</header>
 <main class="bg-surface-base" id="page">
   <article class="component-card bg-surface-card rounded-sm" id="card">
     <div class="component-header-container"><h1 class="title" id="title">Title</h1></div>
@@ -26,6 +30,7 @@ const FIXTURE = `
   <button class="primary" id="button">Button</button>
   <span class="text-accent-primary" id="accent">accent</span>
   <div class="rounded" id="rounded">rounded</div>
+  <nav class="kairos-home-menu"><a class="item active text-fg-secondary" id="nav-active"><svg id="nav-icon"></svg>Home</a></nav>
 </main>
 <div class="dashboard-theme-boundary" style="--fg-accent: #e52822; --accent-primary: #e52822">
   <article class="component-card"><div class="component-header-container"><h1 class="title" id="themed-title">Title</h1></div>
@@ -37,38 +42,34 @@ const FIXTURE = `
 // as hex, compared after both sides are rendered to RGB; a channel may differ
 // by 2 (color-mix rounding).
 const EXPECTED = {
-  "kairos-v1": {
-    light: { page: "#f4f4f1", card: "#fbfbf9", header: "#f4f4f1", accent: "#2c53b0", cardRadius: "0px", rounded: "4px", font: "Inter", title: "none", pdfEdge: "inset" },
-    dark: { page: "#232629", card: "#2b2e32", header: "#232629", accent: "#4b74d0", cardRadius: "0px", rounded: "4px", font: "Inter", title: "none", pdfEdge: "inset" },
-  },
   kairos: {
-    light: { page: "#f4f4f1", card: "#fbfbf9", header: "#232629", accent: "#2c53b0", cardRadius: "6px", rounded: "4px", button: "4px", font: "Source Sans 3", title: "uppercase", pdfEdge: "inset", themedTitle: "#5b6065", chip: "#dcdcd6" },
-    dark: { page: "#232629", card: "#2b2e32", header: "#232629", accent: "#4b74d0", cardRadius: "6px", rounded: "4px", button: "4px", font: "Source Sans 3", title: "uppercase", pdfEdge: "inset", themedTitle: "#9bb6f2", chip: "#3b3e43" },
+    light: { page: "#f4f4f1", card: "#fbfbf9", header: "#232629", accent: "#2c53b0", cardRadius: "6px", rounded: "4px", button: "4px", font: "Source Sans 3", title: "uppercase", pdfEdge: "inset", themedTitle: "#5b6065", chip: "#dcdcd6", orgLogo: "dark", headerButton: "#9bb6f2", navActive: "#edeff4", navIcon: "#2c53b0" },
+    dark: { page: "#232629", card: "#2b2e32", header: "#232629", accent: "#4b74d0", cardRadius: "6px", rounded: "4px", button: "4px", font: "Source Sans 3", title: "uppercase", pdfEdge: "inset", themedTitle: "#9bb6f2", chip: "#3b3e43", orgLogo: "dark", headerButton: "#9bb6f2", navActive: "#2b2e32", navIcon: "#4b74d0" },
   },
   aurora: {
-    light: { page: "#eef2f5", card: "#ffffff", header: "#ffffff", accent: "#0d9488", cardRadius: "14px", rounded: "8px", button: "9999px", font: "Inter", title: "uppercase", pdfEdge: "inset" },
-    dark: { page: "#0a1015", card: "#111a21", header: "#0a1015", accent: "#2dd4bf", cardRadius: "14px", rounded: "8px", button: "9999px", font: "Inter", title: "uppercase", pdfEdge: "inset" },
+    light: { page: "#eef2f5", card: "#ffffff", header: "#ffffff", accent: "#0d9488", cardRadius: "14px", rounded: "8px", button: "9999px", font: "Inter", title: "uppercase", pdfEdge: "inset", orgLogo: "light" },
+    dark: { page: "#0a1015", card: "#111a21", header: "#0a1015", accent: "#2dd4bf", cardRadius: "14px", rounded: "8px", button: "9999px", font: "Inter", title: "uppercase", pdfEdge: "inset", orgLogo: "dark" },
   },
   nova: {
-    light: { page: "#f1f4f8", card: "#ffffff", header: "#0a0f1a", accent: "#0e7490", cardRadius: "8px", rounded: "4px", button: "4px", font: "Geist", title: "uppercase", pdfEdge: "inset", themedTitle: "#5b6b80", chip: "#c9d2de" },
-    dark: { page: "#070b12", card: "#0d1420", header: "#070b12", accent: "#22d3ee", cardRadius: "8px", rounded: "4px", button: "4px", font: "Geist", title: "uppercase", pdfEdge: "inset", themedTitle: "#7d8da3", chip: "#26344a" },
+    light: { page: "#f1f4f8", card: "#ffffff", header: "#0a0f1a", accent: "#0e7490", cardRadius: "8px", rounded: "4px", button: "4px", font: "Geist", title: "uppercase", pdfEdge: "inset", themedTitle: "#5b6b80", chip: "#c9d2de", orgLogo: "dark" },
+    dark: { page: "#070b12", card: "#0d1420", header: "#070b12", accent: "#22d3ee", cardRadius: "8px", rounded: "4px", button: "4px", font: "Geist", title: "uppercase", pdfEdge: "inset", themedTitle: "#7d8da3", chip: "#26344a", orgLogo: "dark" },
   },
   editorial: {
-    light: { page: "#f7f4ee", card: "#fffefb", header: "#f7f4ee", accent: "#1e3a5f", cardRadius: "0px", rounded: "2px", button: "2px", font: "Source Sans 3", title: "none", pdfEdge: "inset", themedTitle: "#1c1a17", chip: "#e3ddd1" },
-    dark: { page: "#161514", card: "#1e1c1a", header: "#161514", accent: "#9db4d3", cardRadius: "0px", rounded: "2px", button: "2px", font: "Source Sans 3", title: "none", pdfEdge: "inset", themedTitle: "#ede7dc", chip: "#2f2c28" },
+    light: { page: "#f7f4ee", card: "#fffefb", header: "#f7f4ee", accent: "#1e3a5f", cardRadius: "0px", rounded: "2px", button: "2px", font: "Source Sans 3", title: "none", pdfEdge: "inset", themedTitle: "#1c1a17", chip: "#e3ddd1", orgLogo: "light" },
+    dark: { page: "#161514", card: "#1e1c1a", header: "#161514", accent: "#9db4d3", cardRadius: "0px", rounded: "2px", button: "2px", font: "Source Sans 3", title: "none", pdfEdge: "inset", themedTitle: "#ede7dc", chip: "#2f2c28", orgLogo: "dark" },
   },
   lumen: {
-    light: { page: "#ffffff", card: "#ffffff", header: "#ffffff", accent: "#1d4ed8", cardRadius: "4px", rounded: "4px", button: "4px", font: "Atkinson Hyperlegible Next", title: "none", pdfEdge: "inset", themedTitle: "#0a0a0a", chip: "#6b7280" },
-    dark: { page: "#0b0b0c", card: "#161618", header: "#0b0b0c", accent: "#93b4ff", cardRadius: "4px", rounded: "4px", button: "4px", font: "Atkinson Hyperlegible Next", title: "none", pdfEdge: "inset", themedTitle: "#ffffff", chip: "#8a929e" },
+    light: { page: "#ffffff", card: "#ffffff", header: "#ffffff", accent: "#1d4ed8", cardRadius: "4px", rounded: "4px", button: "4px", font: "Atkinson Hyperlegible Next", title: "none", pdfEdge: "inset", themedTitle: "#0a0a0a", chip: "#6b7280", orgLogo: "light" },
+    dark: { page: "#0b0b0c", card: "#161618", header: "#0b0b0c", accent: "#93b4ff", cardRadius: "4px", rounded: "4px", button: "4px", font: "Atkinson Hyperlegible Next", title: "none", pdfEdge: "inset", themedTitle: "#ffffff", chip: "#8a929e", orgLogo: "dark" },
   },
   // Translucent: the page is transparent and colors are read without alpha.
   glass: {
-    light: { card: "#ffffff", header: "#ffffff", accent: "#3b6fd8", cardRadius: "16px", rounded: "8px", button: "10px", font: "Geist", title: "none", pdfEdge: "inset", themedTitle: "#3c4658", chip: "#ffffff" },
-    dark: { card: "#161b2a", header: "#0b0d18", accent: "#7aa2ff", cardRadius: "16px", rounded: "8px", button: "10px", font: "Geist", title: "none", pdfEdge: "inset", themedTitle: "#aeb9cf", chip: "#ffffff" },
+    light: { card: "#ffffff", header: "#ffffff", accent: "#3b6fd8", cardRadius: "16px", rounded: "8px", button: "10px", font: "Geist", title: "none", pdfEdge: "inset", themedTitle: "#3c4658", chip: "#ffffff", orgLogo: "light" },
+    dark: { card: "#161b2a", header: "#0b0d18", accent: "#7aa2ff", cardRadius: "16px", rounded: "8px", button: "10px", font: "Geist", title: "none", pdfEdge: "inset", themedTitle: "#aeb9cf", chip: "#ffffff", orgLogo: "dark" },
   },
   apetic: {
-    light: { page: "#f4f6f9", card: "#ffffff", header: "#002b48", accent: "#00a2df", cardRadius: "6px", rounded: "4px", button: "4px", font: "Karla", title: "none", pdfEdge: "inset", themedTitle: "#121212", chip: "#dde3ea" },
-    dark: { page: "#061726", card: "#0b2238", header: "#061726", accent: "#33b8ea", cardRadius: "6px", rounded: "4px", button: "4px", font: "Karla", title: "none", pdfEdge: "inset", themedTitle: "#eaf2f8", chip: "#1a3550" },
+    light: { page: "#f4f6f9", card: "#ffffff", header: "#002b48", accent: "#00a2df", cardRadius: "6px", rounded: "4px", button: "4px", font: "Karla", title: "none", pdfEdge: "inset", themedTitle: "#121212", chip: "#dde3ea", orgLogo: "dark" },
+    dark: { page: "#061726", card: "#0b2238", header: "#061726", accent: "#33b8ea", cardRadius: "6px", rounded: "4px", button: "4px", font: "Karla", title: "none", pdfEdge: "inset", themedTitle: "#eaf2f8", chip: "#1a3550", orgLogo: "dark" },
   },
 };
 
@@ -90,7 +91,11 @@ const browser = await chromium.launch(
   process.env.STYLE_SMOKE_CHROMIUM ? { executablePath: process.env.STYLE_SMOKE_CHROMIUM } : {},
 );
 const page = await browser.newPage();
-await page.setContent(`<!doctype html><html><head><style>${css}</style></head><body>${FIXTURE}</body></html>`);
+// No transitions: values are read right after switching Style and mode, and
+// a transition would still be on its way from the previous one.
+await page.setContent(
+  `<!doctype html><html><head><style>${css}</style><style>*, *::before, *::after { transition: none !important; }</style></head><body>${FIXTURE}</body></html>`,
+);
 
 const failures = [];
 for (const [style, modes] of Object.entries(EXPECTED)) {
@@ -122,6 +127,16 @@ for (const [style, modes] of Object.entries(EXPECTED)) {
           // Inside a project theme that re-derives the accent, the title keeps the Style's ink.
           themedTitle: rgb(cs("themed-title").color),
           chip: rgb(cs("chip").borderTopColor),
+          headerButton: rgb(cs("header-button").borderTopColor),
+          navActive: rgb(cs("nav-active").backgroundColor),
+          navIcon: rgb(cs("nav-icon").color),
+          // An Org with both logos shows the one drawn for the header's background.
+          orgLogo:
+            cs("org-logo-dark").display !== "none" && cs("org-logo-light").display === "none"
+              ? "dark"
+              : cs("org-logo-light").display !== "none" && cs("org-logo-dark").display === "none"
+                ? "light"
+                : "both or none",
           // The PDF rasterizes each card alone: its edge must be drawn inside it.
           pdfEdge:
             cs("pdf-card").outlineStyle === "none" &&

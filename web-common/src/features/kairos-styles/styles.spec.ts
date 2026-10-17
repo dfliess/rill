@@ -2,11 +2,17 @@ import { get } from "svelte/store";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { themeControl } from "../themes/theme-control";
 import { styleControl } from "./style-control";
-import { DEFAULT_STYLE, STYLE_ATTRIBUTE, resolveStyle } from "./styles";
+import {
+  DEFAULT_STYLE,
+  STYLE_ATTRIBUTE,
+  UNLISTED_STYLES,
+  listedStyles,
+  resolveStyle,
+} from "./styles";
 
 describe("resolveStyle", () => {
   it.each([
-    ["app: user wins over Org", { user: "aurora", org: "kairos-v1" }, "aurora"],
+    ["app: user wins over Org", { user: "aurora", org: "editorial" }, "aurora"],
     [
       "app: Org when the user follows it",
       { user: null, org: "aurora" },
@@ -26,13 +32,13 @@ describe("resolveStyle", () => {
     ],
     [
       "embed: param wins over Org",
-      { isEmbed: true, embedParam: "aurora", org: "kairos-v1" },
+      { isEmbed: true, embedParam: "aurora", org: "editorial" },
       "aurora",
     ],
     [
       "embed: viewer's own choice is ignored",
-      { isEmbed: true, user: "aurora", org: "kairos-v1" },
-      "kairos-v1",
+      { isEmbed: true, user: "aurora", org: "editorial" },
+      "editorial",
     ],
     ["embed: default with neither", { isEmbed: true }, DEFAULT_STYLE],
   ])("%s", (_, sources, expected) => {
@@ -55,13 +61,13 @@ describe("styleControl", () => {
   });
 
   it("persists the viewer's choice and clears it to follow the Org", () => {
-    styleControl.setOrg("acme", "kairos-v1");
+    styleControl.setOrg("acme", "editorial");
     styleControl.setPreference("aurora");
     expect(localStorage.getItem("kairos:style")).toBe("aurora");
 
     styleControl.setPreference(null);
     expect(localStorage.getItem("kairos:style")).toBeNull();
-    expect(get(styleControl)).toBe("kairos-v1");
+    expect(get(styleControl)).toBe("editorial");
   });
 
   it("uses the cached Org default while the Org loads", () => {
@@ -85,10 +91,23 @@ describe("styleControl", () => {
 
   it("an embed paints its URL parameter, never the viewer's choice", () => {
     styleControl.setPreference("aurora");
-    styleControl.setEmbed("kairos-v1");
-    expect(get(styleControl)).toBe("kairos-v1");
+    styleControl.setEmbed("editorial");
+    expect(get(styleControl)).toBe("editorial");
 
     styleControl.setEmbed(null);
     expect(get(styleControl)).toBe(DEFAULT_STYLE);
+  });
+});
+
+describe("listedStyles", () => {
+  it("leaves the unlisted Styles out, unless one is in use", () => {
+    expect(UNLISTED_STYLES).toContain("apetic");
+    expect(listedStyles()).not.toContain("apetic");
+    expect(listedStyles("kairos")).not.toContain("apetic");
+    expect(listedStyles("apetic")).toContain("apetic");
+  });
+
+  it("still resolves an unlisted Style: unlisted is not forbidden", () => {
+    expect(resolveStyle({ org: "apetic" })).toBe("apetic");
   });
 });

@@ -9,7 +9,6 @@
  * only, never colour literals, so project themes keep coloring dashboards.
  * scripts/style-guard.js checks all of that on every upstream sync.
  */
-@import "./kairos-v1.css";
 @import "./kairos.css";
 @import "./aurora.css";
 @import "./nova.css";
