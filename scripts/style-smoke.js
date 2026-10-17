@@ -67,6 +67,11 @@ const EXPECTED = {
     light: { card: "#ffffff", header: "#ffffff", accent: "#3b6fd8", cardRadius: "16px", rounded: "8px", button: "10px", font: "Geist", title: "none", pdfEdge: "inset", themedTitle: "#3c4658", chip: "#ffffff", orgLogo: "light" },
     dark: { card: "#161b2a", header: "#0b0d18", accent: "#7aa2ff", cardRadius: "16px", rounded: "8px", button: "10px", font: "Geist", title: "none", pdfEdge: "inset", themedTitle: "#aeb9cf", chip: "#ffffff", orgLogo: "dark" },
   },
+  // Rill's own indigo, upstream's colors.css; Rill's body font.
+  base: {
+    light: { accent: "#5655ff", font: "Inter", headerButton: "#5655ff" },
+    dark: { accent: "#5b5ef3", font: "Inter" },
+  },
   apetic: {
     light: { page: "#f4f6f9", card: "#ffffff", header: "#002b48", accent: "#00a2df", cardRadius: "6px", rounded: "4px", button: "4px", font: "Karla", title: "none", pdfEdge: "inset", themedTitle: "#121212", chip: "#dde3ea", orgLogo: "dark" },
     dark: { page: "#061726", card: "#0b2238", header: "#061726", accent: "#33b8ea", cardRadius: "6px", rounded: "4px", button: "4px", font: "Karla", title: "none", pdfEdge: "inset", themedTitle: "#eaf2f8", chip: "#1a3550", orgLogo: "dark" },

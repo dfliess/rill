@@ -13,6 +13,7 @@ export const STYLES = [
   "lumen",
   "glass",
   "apetic",
+  "base",
 ] as const;
 
 export type StyleId = (typeof STYLES)[number];
@@ -21,7 +22,7 @@ export type StyleId = (typeof STYLES)[number];
 // so other customers don't see them, but usable by whoever knows the id (the
 // Org settings take it as free text). Not access control: the server accepts
 // any Style, and every bundle carries every Style's CSS.
-export const UNLISTED_STYLES: readonly StyleId[] = ["apetic"];
+export const UNLISTED_STYLES: readonly StyleId[] = ["apetic", "base"];
 
 /** The Styles a picker lists: the listed ones, plus `active` if unlisted. */
 export function listedStyles(active?: string | null): StyleId[] {

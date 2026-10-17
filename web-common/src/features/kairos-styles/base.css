@@ -1,0 +1,37 @@
+/*
+ * Style "base": Rill as upstream ships it, to compare with or to check that
+ * something is ours and not Rill's. Unlisted (styles.ts).
+ *
+ * Outside the Styles, Kairos only changes Rill's look globally in one place:
+ * the primary palette (colors.ts, Rill's indigo swapped for Control's steel
+ * blue). This puts upstream's back, copied from upstream's colors.css; the
+ * surfaces, inks and Inter are already Rill's in app.css. Both palettes in
+ * both modes: dark mode also reads the light shades. Not reverted: the
+ * Kairos logo, the default mode (dark), and a project theme's fallback
+ * primary, which theme-manager.ts takes from colors.ts.
+ */
+:root[data-kairos-style="base"] {
+  --color-primary-light-50: oklch(0.96 0.019 273.047);
+  --color-primary-light-100: oklch(0.92 0.038 274.1);
+  --color-primary-light-200: oklch(0.86 0.069 274.935);
+  --color-primary-light-300: oklch(0.76 0.122 275.41);
+  --color-primary-light-400: oklch(0.65 0.188 276.794);
+  --color-primary-light-500: oklch(0.56 0.244 275.39);
+  --color-primary-light-600: oklch(0.5 0.266 275.04);
+  --color-primary-light-700: oklch(0.42 0.232 274.45);
+  --color-primary-light-800: oklch(0.39 0.203 275.31);
+  --color-primary-light-900: oklch(0.35 0.157 277.12);
+  --color-primary-light-950: oklch(0.25 0.102 280.81);
+
+  --color-primary-dark-50: oklch(0.256 0.099 276.039);
+  --color-primary-dark-100: oklch(0.316 0.122 276.039);
+  --color-primary-dark-200: oklch(0.387 0.149 276.039);
+  --color-primary-dark-300: oklch(0.46 0.177 276.039);
+  --color-primary-dark-400: oklch(0.513 0.197 276.039);
+  --color-primary-dark-500: oklch(0.567 0.218 276.039);
+  --color-primary-dark-600: oklch(0.66 0.182 275.863);
+  --color-primary-dark-700: oklch(0.782 0.111 275.025);
+  --color-primary-dark-800: oklch(0.884 0.057 273.734);
+  --color-primary-dark-900: oklch(0.925 0.036 273.826);
+  --color-primary-dark-950: oklch(0.967 0.016 274.624);
+}

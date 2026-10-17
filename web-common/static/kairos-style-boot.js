@@ -5,7 +5,7 @@
 // the scripts SvelteKit generates. Keep STYLES in step with styles.ts
 // (scripts/style-guard.js checks it).
 (function () {
-  var STYLES = ["kairos", "aurora", "nova", "editorial", "lumen", "glass", "apetic"];
+  var STYLES = ["kairos", "aurora", "nova", "editorial", "lumen", "glass", "apetic", "base"];
   try {
     var path = window.location.pathname;
     var org = path.split("/")[1];

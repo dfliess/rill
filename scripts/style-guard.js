@@ -233,8 +233,10 @@ for (const id of declared) {
     errors.push(`Style "${id}" is in styles.ts but has no CSS`);
     continue;
   }
-  if (entry.light.size === 0) errors.push(`Style "${id}" has no light block`);
-  if (entry.dark.size === 0) errors.push(`Style "${id}" has no dark block`);
+  // One mode missing is a Style that forgot it. Neither is deliberate: a
+  // Style that only sets tokens for both modes alike ("base").
+  if (entry.light.size === 0 && entry.dark.size > 0) errors.push(`Style "${id}" has no light block`);
+  if (entry.dark.size === 0 && entry.light.size > 0) errors.push(`Style "${id}" has no dark block`);
   const lightOnly = [...entry.light].filter((t) => !entry.dark.has(t));
   const darkOnly = [...entry.dark].filter((t) => !entry.light.has(t));
   if (lightOnly.length) warnings.push(`Style "${id}" sets in light only (dark keeps Rill's): ${lightOnly.join(" ")}`);

@@ -32,6 +32,7 @@
     lumen: m.kairos_style_lumen,
     glass: m.kairos_style_glass,
     apetic: m.kairos_style_apetic,
+    base: m.kairos_style_base,
   };
 
   // "" is the Org's Style (or, local, the default).
