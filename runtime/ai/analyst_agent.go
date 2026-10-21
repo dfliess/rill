@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -219,9 +220,13 @@ func (t *AnalystAgent) Handler(ctx context.Context, args *AnalystAgentArgs) (*An
 	if uiMessage := uiContextCompletionMessage(ctx); uiMessage != nil {
 		messages = append(messages, uiMessage)
 	}
-	// 2. Previous analyst calls with their tool calls
+	// 2. Previous analyst calls with their tool calls.
+	// Their reasoning is left out: providers only require it within the current tool-use turn,
+	// and it is bound to the exact prompt it was produced under, which is rendered again for each turn.
 	notCurrentCall := func(m *Message) bool { return m.ID != s.ParentID }
-	messages = append(messages, s.NewCompletionMessages(s.MessagesWithChildren(FilterByType(MessageTypeCall), FilterByTool(AnalystAgentName), notCurrentCall))...)
+	previous := s.MessagesWithChildren(FilterByType(MessageTypeCall), FilterByTool(AnalystAgentName), notCurrentCall)
+	previous = slices.DeleteFunc(previous, func(m *Message) bool { return m.Type == MessageTypeReasoning })
+	messages = append(messages, s.NewCompletionMessages(previous)...)
 	// 3. User prompt
 	messages = append(messages, NewTextCompletionMessage(RoleUser, userPrompt))
 	// 4. Seeded tool calls for the current iteration

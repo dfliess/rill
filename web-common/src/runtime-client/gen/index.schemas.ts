@@ -836,6 +836,7 @@ export interface V1ContentBlock {
   text?: string;
   toolCall?: V1ToolCall;
   toolResult?: V1ToolResult;
+  reasoning?: V1Reasoning;
 }
 
 export interface V1Conversation {
@@ -917,6 +918,20 @@ This helps the agent understand which file the user is referring to in their req
 }
 
 /** A non-destructive UI action explicitly exposed to the AI by the browser. */
+/**
+ * The model's reasoning before its text or tool calls.
+Some providers require it passed back unmodified within a tool-use turn,
+and only accept it from the model that produced it.
+ */
+export interface V1Reasoning {
+  /** Readable reasoning; often empty, since providers may return it summarized or not at all. */
+  text?: string;
+  /** Opaque provider token that lets the provider verify and restore the full reasoning. */
+  signature?: string;
+  /** The model that produced it. */
+  model?: string;
+}
+
 export interface V1UIAction {
   /** Stable identifier from the element's data-ai-action attribute. */
   id?: string;

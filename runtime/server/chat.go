@@ -739,6 +739,16 @@ func messageToPB(s *ai.Session, msg *ai.Message) (*runtimev1.Message, error) {
 // messageContentToPB converts an ai.Message Content to a aiv1.ContentBlock.
 func messageContentToPB(msg *ai.Message) (*aiv1.ContentBlock, error) {
 	switch msg.Type {
+	case ai.MessageTypeReasoning:
+		reasoning := &aiv1.Reasoning{}
+		if err := protojson.Unmarshal([]byte(msg.Content), reasoning); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal reasoning for message %q: %w", msg.ID, err)
+		}
+		return &aiv1.ContentBlock{
+			BlockType: &aiv1.ContentBlock_Reasoning{
+				Reasoning: reasoning,
+			},
+		}, nil
 	case ai.MessageTypeProgress:
 		return &aiv1.ContentBlock{
 			BlockType: &aiv1.ContentBlock_Text{

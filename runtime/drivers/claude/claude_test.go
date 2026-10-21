@@ -3,6 +3,7 @@ package claude
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -70,20 +71,55 @@ func TestCompleteSetsCacheBreakpoints(t *testing.T) {
 	require.Contains(t, content[len(content)-1], "cache_control")
 }
 
-func TestCompleteDropsThinkingBlocks(t *testing.T) {
-	// Current models return the thinking block empty by default; as a text block it is rejected on replay.
+func TestCompleteKeepsThinkingAsReasoning(t *testing.T) {
+	// Current models return the thinking block empty by default; only its signature lets it be passed back.
 	resp := `{"id":"msg_1","type":"message","role":"assistant","model":"claude-test","content":[{"type":"thinking","thinking":"","signature":"sig"},{"type":"text","text":"hello"}],"stop_reason":"end_turn","usage":{"input_tokens":10,"output_tokens":5}}`
 	h, _ := newTestHandle(t, nil, resp)
 	res, err := h.Complete(t.Context(), userPrompt("hi"))
 	require.NoError(t, err)
-	require.Len(t, res.Message.Content, 1)
-	require.Equal(t, "hello", res.Message.Content[0].GetText())
+	require.Len(t, res.Message.Content, 2)
+	reasoning := res.Message.Content[0].GetReasoning()
+	require.NotNil(t, reasoning)
+	require.Equal(t, "sig", reasoning.Signature)
+	require.Equal(t, "claude-test", reasoning.Model)
+	require.Equal(t, "hello", res.Message.Content[1].GetText())
+}
+
+func TestCompleteReplaysReasoningFromSameModel(t *testing.T) {
+	h, srv := newTestHandle(t, nil, textResponse)
+	opts := userPrompt("hi")
+	opts.Messages = append(opts.Messages, reasoningMessage("sig", "claude-test"), textMessage("assistant", "checking"))
+	_, err := h.Complete(t.Context(), opts)
+	require.NoError(t, err)
+
+	body := srv.lastBody(t)
+	messages := body["messages"].([]any)
+	thinking := messages[1].(map[string]any)["content"].([]any)[0].(map[string]any)
+	require.Equal(t, "thinking", thinking["type"])
+	require.Equal(t, "sig", thinking["signature"])
+	// A history that no longer matches drops the block instead of failing the request.
+	require.Equal(t, map[string]any{"prefix_mismatch_behavior": "drop_block"}, body["thinking"].(map[string]any)["block_binding"])
+	require.Contains(t, srv.lastHeader.Get("anthropic-beta"), "thinking-binding-controls-2026-08-01")
+}
+
+func TestCompleteDropsReasoningFromOtherModel(t *testing.T) {
+	// A thinking block is only valid for the model that produced it.
+	h, srv := newTestHandle(t, nil, textResponse)
+	opts := userPrompt("hi")
+	opts.Messages = append(opts.Messages, reasoningMessage("sig", "other-model"), textMessage("assistant", "checking"))
+	_, err := h.Complete(t.Context(), opts)
+	require.NoError(t, err)
+
+	body := srv.lastBody(t)
+	require.NotContains(t, fmt.Sprint(body["messages"]), "thinking")
+	require.NotContains(t, body, "thinking")
 }
 
 const textResponse = `{"id":"msg_1","type":"message","role":"assistant","model":"claude-test","content":[{"type":"text","text":"hello"}],"stop_reason":"end_turn","usage":{"input_tokens":10,"output_tokens":5}}`
 
 type testServer struct {
-	bodies [][]byte
+	bodies     [][]byte
+	lastHeader http.Header
 }
 
 // newTestHandle opens the driver against a fake Messages API that answers every request with response.
@@ -93,6 +129,7 @@ func newTestHandle(t *testing.T, config map[string]any, response string) (*handl
 		b, err := io.ReadAll(r.Body)
 		require.NoError(t, err)
 		ts.bodies = append(ts.bodies, b)
+		ts.lastHeader = r.Header.Clone()
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(response))
 	}))
@@ -116,6 +153,13 @@ func (ts *testServer) lastBody(t *testing.T) map[string]any {
 
 func userPrompt(text string) *drivers.CompleteOptions {
 	return &drivers.CompleteOptions{Messages: []*aiv1.CompletionMessage{textMessage("user", text)}}
+}
+
+func reasoningMessage(signature, model string) *aiv1.CompletionMessage {
+	return &aiv1.CompletionMessage{
+		Role:    "assistant",
+		Content: []*aiv1.ContentBlock{{BlockType: &aiv1.ContentBlock_Reasoning{Reasoning: &aiv1.Reasoning{Signature: signature, Model: model}}}},
+	}
 }
 
 func textMessage(role, text string) *aiv1.CompletionMessage {

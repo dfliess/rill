@@ -30,6 +30,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
@@ -497,6 +498,9 @@ const (
 	MessageTypeCall     MessageType = "call"
 	MessageTypeProgress MessageType = "progress"
 	MessageTypeResult   MessageType = "result"
+	// MessageTypeReasoning is the model's reasoning before its tool calls, stored as an aiv1.Reasoning in JSON.
+	// It is persisted so a completion loop can be rebuilt with it, since some providers require it passed back within a tool-use turn.
+	MessageTypeReasoning MessageType = "reasoning"
 )
 
 // MessageContentType is the type of content contained in a message.
@@ -1446,6 +1450,22 @@ func (s *Session) Complete(ctx context.Context, name string, out any, opts *Comp
 			// TODO: How to do durable execution here?
 			for _, block := range res.Message.Content {
 				switch block := block.BlockType.(type) {
+				case *aiv1.ContentBlock_Reasoning:
+					content, err := protojson.Marshal(block.Reasoning)
+					if err != nil {
+						return nil, fmt.Errorf("failed to marshal reasoning: %w", err)
+					}
+					msg := s.AddMessage(&AddMessageOptions{
+						Role:        RoleAssistant,
+						Type:        MessageTypeReasoning,
+						ContentType: MessageContentTypeJSON,
+						Content:     string(content),
+					})
+					msgPB, err := s.NewCompletionMessage(msg)
+					if err != nil {
+						return nil, err
+					}
+					messages = append(messages, msgPB)
 				case *aiv1.ContentBlock_Text:
 					msg := s.AddMessage(&AddMessageOptions{
 						Role:        RoleAssistant,
@@ -1517,6 +1537,8 @@ func (s *Session) Complete(ctx context.Context, name string, out any, opts *Comp
 				} else if outputSchema != nil {
 					outVal = json.RawMessage(block.Text)
 				}
+			case *aiv1.ContentBlock_Reasoning:
+				// Not kept: providers only require reasoning passed back within a tool-use turn, and this turn is over.
 			default:
 				return nil, fmt.Errorf("unexpected result block type: %T", block)
 			}
@@ -1602,6 +1624,16 @@ func (s *Session) NewCompletionMessage(m *Message) (*aiv1.CompletionMessage, err
 	}
 
 	switch m.Type {
+	case MessageTypeReasoning:
+		reasoning := &aiv1.Reasoning{}
+		if err := protojson.Unmarshal([]byte(m.Content), reasoning); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal reasoning for message %q: %w", m.ID, err)
+		}
+		block = &aiv1.ContentBlock{
+			BlockType: &aiv1.ContentBlock_Reasoning{
+				Reasoning: reasoning,
+			},
+		}
 	case MessageTypeCall:
 		// Calls made by the assistant are serialized as tool calls.
 		// Any other calls are serialized as user messages.
